@@ -1,0 +1,20 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+This project follows a simple, human-readable changelog format and aims to use clear conventional commit messages.
+
+## [Unreleased]
+
+### Added
+
+- Project foundation documentation.
+- Roadmap for data, modeling, simulation, dashboard, QA, CI/CD, and portfolio polish.
+- Data, model, QA, and validation strategy documents.
+- Agent working instructions for future Codex sessions.
+
+## [0.0.0] - 2026-06-08
+
+### Added
+
+- Initial documentation foundation for the World Cup 2026 Predictor project.
