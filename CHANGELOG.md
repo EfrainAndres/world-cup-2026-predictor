@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.6 data and modeling research documentation.
+- Data source inventory, planned data dictionary, model roadmap, validation strategy, and backtesting strategy.
 - Phase 0.5 UX research and product discovery documentation.
 - Product vision, user flows, dashboard structure, design system direction, and portfolio story.
 - Phase 0.2 technical decisions foundation documentation.

@@ -8,6 +8,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.1 | Architecture Foundation | Define repository structure, architecture rules, ADRs, and package boundaries. | Done |
 | 0.2 | Technical Decisions Foundation | Define stack choices, coding standards, Git workflow, and technical ADRs. | Done |
 | 0.5 | UX Research & Product Discovery | Research dashboard patterns, prediction UX, product principles, and user journeys. | Done |
+| 0.6 | Data & Modeling Research | Define data sources, data dictionary, model path, validation, and backtesting strategy. | Done |
 | 1.0 | Data Pipeline Foundation | Collect, clean, validate, and version football datasets. | Recommended next |
 | 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
 | 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
@@ -116,6 +117,35 @@ Exit criteria:
 - The dashboard has a clear product direction before UI implementation.
 - Prediction displays avoid misleading certainty.
 - Future UI work has product, design, and portfolio guidance.
+
+## Phase 0.6 - Data & Modeling Research
+
+Research and document the data and modeling foundation before creating pipelines or prediction logic.
+
+Deliverables:
+
+- Candidate data source inventory
+- Planned data dictionary
+- Progressive model roadmap
+- Model validation strategy
+- Backtesting strategy
+
+Deferred to future phases:
+
+- Dependency installation
+- Dataset download
+- Data pipeline implementation
+- Prediction logic
+- Model training
+- Dashboard integration
+
+Exit criteria:
+
+- Candidate sources and licensing risks are documented.
+- MVP data source direction is clear.
+- Planned data fields are defined before pipeline work begins.
+- Model progression and validation expectations are clear.
+- Phase 1.0 can start with a concrete data pipeline target.
 
 ## Phase 1.0 - Data Pipeline Foundation
 
