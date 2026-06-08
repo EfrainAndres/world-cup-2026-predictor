@@ -41,6 +41,7 @@ For data or modeling work, also read:
 - `docs/MODEL_VALIDATION.md`
 - `docs/BACKTESTING_STRATEGY.md`
 - `packages/data/README.md` when changing data package behavior
+- `packages/model/README.md` when changing model package behavior
 
 For project structure, milestone, release, or phase implementation work, also read:
 
@@ -66,6 +67,7 @@ For project structure, milestone, release, or phase implementation work, also re
 - Follow data/modeling research docs before creating or modifying datasets, pipelines, models, validation, or backtests.
 - Follow delivery and release docs before creating project structure, implementing phases, defining milestones, or preparing releases.
 - Keep `packages/data` focused on data contracts, normalization, validation, ingestion, and data quality; do not add prediction models there.
+- Keep `packages/model` focused on model logic, validation, backtesting, scoring, and simulation; do not add UI, database, or API service code there.
 
 ## Architecture Standards
 
