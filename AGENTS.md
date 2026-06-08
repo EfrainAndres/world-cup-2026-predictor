@@ -41,6 +41,13 @@ For data or modeling work, also read:
 - `docs/MODEL_VALIDATION.md`
 - `docs/BACKTESTING_STRATEGY.md`
 
+For project structure, milestone, release, or phase implementation work, also read:
+
+- `docs/REPOSITORY_STRUCTURE.md`
+- `docs/DEFINITION_OF_DONE.md`
+- `docs/MILESTONES.md`
+- `docs/RELEASE_STRATEGY.md`
+
 ## Working Rules
 
 - Check `git status` before editing.
@@ -56,6 +63,7 @@ For data or modeling work, also read:
 - Follow `docs/TECH_STACK.md`, `docs/CODING_STANDARDS.md`, and `docs/GIT_WORKFLOW.md` when implementation or workflow decisions are relevant.
 - Follow product and design guidance before creating or modifying dashboard UI.
 - Follow data/modeling research docs before creating or modifying datasets, pipelines, models, validation, or backtests.
+- Follow delivery and release docs before creating project structure, implementing phases, defining milestones, or preparing releases.
 
 ## Architecture Standards
 
