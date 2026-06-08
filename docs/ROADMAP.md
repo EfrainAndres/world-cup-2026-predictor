@@ -12,8 +12,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.7 | Delivery & Development Plan | Define repository structure, Definition of Done, milestones, and release strategy. | Done |
 | 1.0 | Data Pipeline Foundation | Create workspace structure, data package contracts, validation, normalization, and tests. | Done |
 | 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Done |
-| 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Recommended next |
-| 4.0 | Monte Carlo Tournament Simulation | Simulate groups, knockouts, and full tournament outcomes. | Planned |
+| 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Done |
+| 4.0 | Monte Carlo Tournament Simulation Foundation | Simulate groups, knockouts, and full tournament outcomes. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -243,20 +243,37 @@ Exit criteria:
 
 Add goal-based match modeling.
 
-Potential deliverables:
+Deliverables:
+
+- Expected-goals input type
+- Poisson probability mass function
+- Scoreline probability calculation
+- Configurable score matrix generation
+- Win/draw/loss probability aggregation
+- Most likely scoreline ranking
+- Dixon-Coles low-score adjustment foundation
+- Deterministic model unit tests
+- Documentation of assumptions, validation coverage, and limitations
+
+Deferred to future phases:
 
 - Team attack and defense strength estimates
-- Poisson goal model
-- Dixon-Coles low-score adjustment
-- Comparison against Elo baseline
-- Calibration and scoring reports
+- Elo-to-expected-goals mapping
+- Home advantage
+- Full Dixon-Coles parameter optimization
+- Comparison against Elo baseline on historical backtests
+- Calibration and scoring reports from real data
+- Monte Carlo tournament simulation
 
 Exit criteria:
 
 - The model produces valid match outcome probabilities.
-- Improvements or tradeoffs are measured rather than assumed.
+- Scoreline probabilities are deterministic and tested.
+- Dixon-Coles behavior is documented as a foundation, not a calibrated model.
+- Existing Elo and data tests still pass.
+- No Monte Carlo, FastAPI, database, dashboard, or external dataset work has been added.
 
-## Phase 4.0 - Monte Carlo Tournament Simulation
+## Phase 4.0 - Monte Carlo Tournament Simulation Foundation
 
 Simulate the full tournament.
 

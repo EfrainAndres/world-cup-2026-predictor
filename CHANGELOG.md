@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 3.0 Poisson/Dixon-Coles foundation implementation.
+- TypeScript Poisson scoreline probabilities, outcome aggregation, Dixon-Coles low-score adjustment foundation, deterministic tests, and model result documentation.
 - Phase 2.0 Elo baseline foundation implementation.
 - TypeScript model package with Elo rating logic, deterministic tests, and model result documentation.
 - Phase 1.0 data pipeline foundation implementation.
