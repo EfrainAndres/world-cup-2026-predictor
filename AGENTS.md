@@ -40,6 +40,7 @@ For data or modeling work, also read:
 - `docs/MODEL_ROADMAP.md`
 - `docs/MODEL_VALIDATION.md`
 - `docs/BACKTESTING_STRATEGY.md`
+- Relevant files in `docs/model-results/`
 - `packages/data/README.md` when changing data package behavior
 - `packages/model/README.md` when changing model package behavior
 

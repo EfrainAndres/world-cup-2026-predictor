@@ -41,3 +41,30 @@ export interface EloProcessResult {
   ratings: EloRatingMap;
   matchHistory: EloMatchRatingHistory[];
 }
+
+export interface ExpectedGoalsInput {
+  expectedHomeGoals: number;
+  expectedAwayGoals: number;
+}
+
+export interface PoissonConfig {
+  maxGoals: number;
+  normalizeMatrix: boolean;
+}
+
+export interface ScorelineProbability {
+  homeGoals: number;
+  awayGoals: number;
+  probability: number;
+}
+
+export interface OutcomeProbabilities {
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  totalProbability: number;
+}
+
+export interface DixonColesConfig extends PoissonConfig {
+  rho: number;
+}

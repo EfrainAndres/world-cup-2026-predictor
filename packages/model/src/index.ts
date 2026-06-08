@@ -5,7 +5,12 @@ export type {
   EloProcessResult,
   EloRatingEntry,
   EloRatingMap,
-  EloResult
+  EloResult,
+  DixonColesConfig,
+  ExpectedGoalsInput,
+  OutcomeProbabilities,
+  PoissonConfig,
+  ScorelineProbability
 } from "./types.js";
 
 export {
@@ -20,3 +25,21 @@ export {
   resultToScore,
   updateRatingsAfterMatch
 } from "./elo.js";
+
+export {
+  DEFAULT_POISSON_CONFIG,
+  calculateScorelineProbability,
+  factorial,
+  generateScoreMatrix,
+  poissonProbability,
+  validateExpectedGoals
+} from "./poisson.js";
+
+export { aggregateOutcomeProbabilities, getMostLikelyScorelines } from "./probability.js";
+
+export {
+  DEFAULT_DIXON_COLES_CONFIG,
+  calculateDixonColesScorelineProbability,
+  dixonColesAdjustmentFactor,
+  generateDixonColesScoreMatrix
+} from "./dixon-coles.js";
