@@ -4,9 +4,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 
 | Phase | Name | Primary Outcome | Status |
 | --- | --- | --- | --- |
-| 0.0 | Project Foundation | Define scope, docs, roadmap, and working standards. | In progress |
-| 0.1 | Architecture Foundation | Define repository structure, stack decisions, command conventions, and quality gates. | Planned |
-| 0.5 | UX Research & Dashboard Inspiration | Research dashboard patterns, prediction UX, and user journeys. | Planned |
+| 0.0 | Project Foundation | Define scope, docs, roadmap, and working standards. | Done |
+| 0.1 | Architecture Foundation | Define repository structure, architecture rules, ADRs, and package boundaries. | Done |
+| 0.5 | UX Research & Dashboard Inspiration | Research dashboard patterns, prediction UX, and user journeys. | Recommended next |
 | 1.0 | Data Pipeline | Collect, clean, validate, and version football datasets. | Planned |
 | 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
 | 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
@@ -42,21 +42,31 @@ Exit criteria:
 
 Decide how the repository will be organized before implementation begins.
 
-Potential deliverables:
+Deliverables:
 
 - Proposed repository tree
-- Technology decision record
-- Local command conventions
-- Environment variable strategy
-- Data directory policy
+- Architecture overview
+- Layer responsibility rules
+- Dependency direction rules
 - Testing strategy by package or layer
-- Initial CI plan
+- C4-style Mermaid diagrams
+- Architecture Decision Records
+- Initial package boundary guidance
+
+Deferred to future phases:
+
+- Exact package manager and workspace configuration
+- Environment variable strategy
+- Data directory implementation
+- CI workflow files
+- Application scaffolding
 
 Exit criteria:
 
 - Future implementation work has a clear structure.
 - Tool choices are documented with tradeoffs.
 - No major app or model implementation has started prematurely.
+- Future architecture changes are expected to update `docs/ARCHITECTURE.md` or relevant ADRs.
 
 ## Phase 0.5 - UX Research & Dashboard Inspiration
 
