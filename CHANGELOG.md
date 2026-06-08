@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 1.0 data pipeline foundation implementation.
+- pnpm workspace and Turborepo configuration.
+- TypeScript data package with match contracts, validation, normalization, tests, and data quality docs.
 - Phase 0.7 delivery and development plan documentation.
 - Repository structure plan, Definition of Done, milestones, and release strategy.
 - Phase 0.6 data and modeling research documentation.

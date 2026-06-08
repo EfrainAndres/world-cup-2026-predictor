@@ -10,8 +10,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.5 | UX Research & Product Discovery | Research dashboard patterns, prediction UX, product principles, and user journeys. | Done |
 | 0.6 | Data & Modeling Research | Define data sources, data dictionary, model path, validation, and backtesting strategy. | Done |
 | 0.7 | Delivery & Development Plan | Define repository structure, Definition of Done, milestones, and release strategy. | Done |
-| 1.0 | Data Pipeline Foundation | Collect, clean, validate, and version football datasets. | Recommended next |
-| 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
+| 1.0 | Data Pipeline Foundation | Create workspace structure, data package contracts, validation, normalization, and tests. | Done |
+| 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Recommended next |
 | 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
 | 4.0 | Monte Carlo Tournament Simulation | Simulate groups, knockouts, and full tournament outcomes. | Planned |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
@@ -178,22 +178,35 @@ Exit criteria:
 
 Build a reliable data foundation.
 
-Potential deliverables:
+Deliverables:
 
-- Raw and processed data directory structure
-- Data source inventory
-- Ingestion scripts
-- Cleaning and normalization logic
+- pnpm workspace setup
+- Turborepo configuration
+- Initial monorepo folders
+- `packages/data` TypeScript package
+- Data contracts from `docs/DATA_DICTIONARY.md`
+- Match validation and normalization functions
+- Small local test fixtures
 - Data validation checks
-- Dataset documentation
+- Data quality documentation
+
+Deferred to future phases:
+
+- External dataset downloads
+- Large raw data files
+- CSV ingestion
+- Canonical team ID mapping
+- Duplicate detection across full datasets
+- Prediction models
 
 Exit criteria:
 
-- Data can be refreshed with documented commands.
-- Data quality checks catch common failures.
-- Model inputs are reproducible.
+- Workspace configuration exists for future packages.
+- Data package tests cover core validation and normalization behavior.
+- Data quality docs explain current coverage and gaps.
+- No model, web app, FastAPI service, database, or external dataset has been added.
 
-## Phase 2.0 - Elo Baseline
+## Phase 2.0 - Elo Baseline Foundation
 
 Create the first working prediction baseline.
 
