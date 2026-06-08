@@ -9,6 +9,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.2 | Technical Decisions Foundation | Define stack choices, coding standards, Git workflow, and technical ADRs. | Done |
 | 0.5 | UX Research & Product Discovery | Research dashboard patterns, prediction UX, product principles, and user journeys. | Done |
 | 0.6 | Data & Modeling Research | Define data sources, data dictionary, model path, validation, and backtesting strategy. | Done |
+| 0.7 | Delivery & Development Plan | Define repository structure, Definition of Done, milestones, and release strategy. | Done |
 | 1.0 | Data Pipeline Foundation | Collect, clean, validate, and version football datasets. | Recommended next |
 | 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
 | 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
@@ -146,6 +147,32 @@ Exit criteria:
 - Planned data fields are defined before pipeline work begins.
 - Model progression and validation expectations are clear.
 - Phase 1.0 can start with a concrete data pipeline target.
+
+## Phase 0.7 - Delivery & Development Plan
+
+Define how the project should be structured, delivered, reviewed, and released before implementation begins.
+
+Deliverables:
+
+- Planned repository structure
+- Definition of Done
+- Milestone plan
+- Release strategy
+
+Deferred to future phases:
+
+- Creating `apps/` or `packages/`
+- Installing dependencies
+- Initializing Next.js or Python tooling
+- Writing application, data, or model code
+- Creating release tags
+
+Exit criteria:
+
+- Future phases have a clear delivery framework.
+- Repository structure is documented without creating placeholder folders.
+- Phase-specific quality expectations are defined.
+- Release criteria are clear before MVP implementation begins.
 
 ## Phase 1.0 - Data Pipeline Foundation
 

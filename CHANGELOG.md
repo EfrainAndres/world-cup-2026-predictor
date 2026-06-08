@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.7 delivery and development plan documentation.
+- Repository structure plan, Definition of Done, milestones, and release strategy.
 - Phase 0.6 data and modeling research documentation.
 - Data source inventory, planned data dictionary, model roadmap, validation strategy, and backtesting strategy.
 - Phase 0.5 UX research and product discovery documentation.
