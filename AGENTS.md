@@ -19,6 +19,13 @@ For architecture-sensitive work, also read:
 - `docs/ARCHITECTURE.md`
 - Relevant ADRs in `docs/adr/`
 
+For technology, implementation, workflow, or standards-sensitive work, also read:
+
+- `docs/TECH_STACK.md`
+- `docs/CODING_STANDARDS.md`
+- `docs/GIT_WORKFLOW.md`
+- `docs/DECISIONS.md`
+
 ## Working Rules
 
 - Check `git status` before editing.
@@ -31,6 +38,7 @@ For architecture-sensitive work, also read:
 - Update documentation when decisions, commands, assumptions, or workflows change.
 - Follow `docs/ARCHITECTURE.md` when adding packages, app code, data code, model code, or cross-layer behavior.
 - Document major architecture decisions with ADRs.
+- Follow `docs/TECH_STACK.md`, `docs/CODING_STANDARDS.md`, and `docs/GIT_WORKFLOW.md` when implementation or workflow decisions are relevant.
 
 ## Architecture Standards
 
@@ -51,6 +59,7 @@ For architecture-sensitive work, also read:
 - Prefer small focused files over one large document.
 - Use Markdown tables where they improve scanning.
 - Use Mermaid diagrams only when they clarify architecture or flow.
+- Update `docs/DECISIONS.md` when adding, superseding, or changing major technical decisions.
 
 ## Modeling Standards
 

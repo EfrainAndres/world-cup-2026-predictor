@@ -6,6 +6,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | --- | --- | --- | --- |
 | 0.0 | Project Foundation | Define scope, docs, roadmap, and working standards. | Done |
 | 0.1 | Architecture Foundation | Define repository structure, architecture rules, ADRs, and package boundaries. | Done |
+| 0.2 | Technical Decisions Foundation | Define stack choices, coding standards, Git workflow, and technical ADRs. | Done |
 | 0.5 | UX Research & Dashboard Inspiration | Research dashboard patterns, prediction UX, and user journeys. | Recommended next |
 | 1.0 | Data Pipeline | Collect, clean, validate, and version football datasets. | Planned |
 | 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
@@ -67,6 +68,34 @@ Exit criteria:
 - Tool choices are documented with tradeoffs.
 - No major app or model implementation has started prematurely.
 - Future architecture changes are expected to update `docs/ARCHITECTURE.md` or relevant ADRs.
+
+## Phase 0.2 - Technical Decisions Foundation
+
+Define the project-level technology decisions before implementation begins.
+
+Deliverables:
+
+- Technical stack documentation
+- Decision index
+- Coding standards
+- Git workflow rules
+- ADRs for package manager, monorepo tooling, model service, database, and CI/CD
+
+Deferred to future phases:
+
+- Dependency installation
+- Next.js initialization
+- Python or FastAPI initialization
+- Database schema and migrations
+- GitHub Actions workflow files
+- Application logic
+
+Exit criteria:
+
+- The planned stack is documented with responsibilities and tradeoffs.
+- Future contributors know the expected coding and Git standards.
+- Major technical decisions have ADRs.
+- No dependencies, app scaffolding, data pipelines, models, or CI files have been created.
 
 ## Phase 0.5 - UX Research & Dashboard Inspiration
 

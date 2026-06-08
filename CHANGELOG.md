@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.2 technical decisions foundation documentation.
+- Technical stack, coding standards, Git workflow, and decision index.
+- Architecture Decision Records for pnpm, Turborepo, FastAPI, PostgreSQL, and GitHub Actions.
 - Phase 0.1 architecture foundation documentation.
 - Monorepo and Clean Architecture / Hexagonal Architecture direction.
 - Architecture Decision Records for monorepo, architecture style, Next.js App Router, and Python modeling.
