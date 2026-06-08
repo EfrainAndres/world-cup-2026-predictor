@@ -94,7 +94,7 @@ export function validateScores(input: MatchResultInput): ValidationIssue[] {
 
     const parsedValue = typeof value === "string" ? Number(value.trim()) : value;
 
-    if (!Number.isInteger(parsedValue) || parsedValue < 0) {
+    if (typeof parsedValue !== "number" || !Number.isInteger(parsedValue) || parsedValue < 0) {
       return [
         {
           field,

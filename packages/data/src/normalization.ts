@@ -85,6 +85,7 @@ export function normalizeMatch(input: MatchResultInput): NormalizationResult {
   const awayScore = optionalScore(input.away_score);
   const explicitResult = normalizeResultValue(input.result);
   const derivedResult = deriveResultFromScores(homeScore, awayScore);
+  const result = explicitResult ?? derivedResult;
 
   const match: NormalizedMatch = {
     match_id: String(input.match_id).trim(),
@@ -105,8 +106,8 @@ export function normalizeMatch(input: MatchResultInput): NormalizationResult {
     match.away_score = awayScore;
   }
 
-  if (explicitResult ?? derivedResult) {
-    match.result = explicitResult ?? derivedResult;
+  if (result !== undefined) {
+    match.result = result;
   }
 
   return {
