@@ -11,8 +11,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.6 | Data & Modeling Research | Define data sources, data dictionary, model path, validation, and backtesting strategy. | Done |
 | 0.7 | Delivery & Development Plan | Define repository structure, Definition of Done, milestones, and release strategy. | Done |
 | 1.0 | Data Pipeline Foundation | Create workspace structure, data package contracts, validation, normalization, and tests. | Done |
-| 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Recommended next |
-| 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
+| 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Done |
+| 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Recommended next |
 | 4.0 | Monte Carlo Tournament Simulation | Simulate groups, knockouts, and full tournament outcomes. | Planned |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
@@ -210,20 +210,36 @@ Exit criteria:
 
 Create the first working prediction baseline.
 
-Potential deliverables:
+Deliverables:
 
 - Elo rating implementation
-- Match probability conversion
-- Backtesting report
-- Baseline metrics
+- Default Elo configuration
+- Expected score and rating delta functions
+- Sequential match processing
+- Rating history output
+- Deterministic model unit tests
 - Documentation of assumptions
+- Documentation of validation coverage and limitations
+
+Deferred to future phases:
+
+- Poisson modeling
+- Dixon-Coles adjustment
+- Monte Carlo simulation
+- Historical backtesting on full datasets
+- Home advantage
+- Competition weighting
+- Recency weighting
+- Dashboard integration
 
 Exit criteria:
 
 - The model is simple, explainable, and tested.
-- Metrics provide a baseline for future models.
+- Ratings update deterministically without mutating inputs.
+- Assumptions, validation coverage, and limitations are documented.
+- No Poisson, Dixon-Coles, Monte Carlo, FastAPI, database, or dashboard work has been added.
 
-## Phase 3.0 - Poisson/Dixon-Coles Model
+## Phase 3.0 - Poisson/Dixon-Coles Foundation
 
 Add goal-based match modeling.
 

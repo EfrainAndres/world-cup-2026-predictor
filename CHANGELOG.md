@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 2.0 Elo baseline foundation implementation.
+- TypeScript model package with Elo rating logic, deterministic tests, and model result documentation.
 - Phase 1.0 data pipeline foundation implementation.
 - pnpm workspace and Turborepo configuration.
 - TypeScript data package with match contracts, validation, normalization, tests, and data quality docs.
