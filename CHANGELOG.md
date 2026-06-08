@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.5 UX research and product discovery documentation.
+- Product vision, user flows, dashboard structure, design system direction, and portfolio story.
 - Phase 0.2 technical decisions foundation documentation.
 - Technical stack, coding standards, Git workflow, and decision index.
 - Architecture Decision Records for pnpm, Turborepo, FastAPI, PostgreSQL, and GitHub Actions.

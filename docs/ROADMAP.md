@@ -7,8 +7,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.0 | Project Foundation | Define scope, docs, roadmap, and working standards. | Done |
 | 0.1 | Architecture Foundation | Define repository structure, architecture rules, ADRs, and package boundaries. | Done |
 | 0.2 | Technical Decisions Foundation | Define stack choices, coding standards, Git workflow, and technical ADRs. | Done |
-| 0.5 | UX Research & Dashboard Inspiration | Research dashboard patterns, prediction UX, and user journeys. | Recommended next |
-| 1.0 | Data Pipeline | Collect, clean, validate, and version football datasets. | Planned |
+| 0.5 | UX Research & Product Discovery | Research dashboard patterns, prediction UX, product principles, and user journeys. | Done |
+| 1.0 | Data Pipeline Foundation | Collect, clean, validate, and version football datasets. | Recommended next |
 | 2.0 | Elo Baseline | Build a transparent baseline rating and prediction model. | Planned |
 | 3.0 | Poisson/Dixon-Coles Model | Model goal distributions and improve match probability estimates. | Planned |
 | 4.0 | Monte Carlo Tournament Simulation | Simulate groups, knockouts, and full tournament outcomes. | Planned |
@@ -97,24 +97,27 @@ Exit criteria:
 - Major technical decisions have ADRs.
 - No dependencies, app scaffolding, data pipelines, models, or CI files have been created.
 
-## Phase 0.5 - UX Research & Dashboard Inspiration
+## Phase 0.5 - UX Research & Product Discovery
 
 Research how the future dashboard should communicate predictions, uncertainty, and tournament scenarios.
 
-Potential deliverables:
+Deliverables:
 
 - UX research notes
 - Dashboard inspiration references
 - Core user journeys
-- Initial information architecture
-- Wireframe direction
+- Product vision
+- Planned dashboard structure
+- Design system direction
+- Portfolio story
 
 Exit criteria:
 
 - The dashboard has a clear product direction before UI implementation.
 - Prediction displays avoid misleading certainty.
+- Future UI work has product, design, and portfolio guidance.
 
-## Phase 1.0 - Data Pipeline
+## Phase 1.0 - Data Pipeline Foundation
 
 Build a reliable data foundation.
 

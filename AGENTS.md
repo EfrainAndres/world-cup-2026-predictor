@@ -26,6 +26,13 @@ For technology, implementation, workflow, or standards-sensitive work, also read
 - `docs/GIT_WORKFLOW.md`
 - `docs/DECISIONS.md`
 
+For UI, dashboard, product, or UX-sensitive work, also read:
+
+- `docs/PRODUCT_VISION.md`
+- `docs/DASHBOARD_STRUCTURE.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/USER_FLOWS.md`
+
 ## Working Rules
 
 - Check `git status` before editing.
@@ -39,6 +46,7 @@ For technology, implementation, workflow, or standards-sensitive work, also read
 - Follow `docs/ARCHITECTURE.md` when adding packages, app code, data code, model code, or cross-layer behavior.
 - Document major architecture decisions with ADRs.
 - Follow `docs/TECH_STACK.md`, `docs/CODING_STANDARDS.md`, and `docs/GIT_WORKFLOW.md` when implementation or workflow decisions are relevant.
+- Follow product and design guidance before creating or modifying dashboard UI.
 
 ## Architecture Standards
 
