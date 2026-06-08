@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.1 architecture foundation documentation.
+- Monorepo and Clean Architecture / Hexagonal Architecture direction.
+- Architecture Decision Records for monorepo, architecture style, Next.js App Router, and Python modeling.
 - Project foundation documentation.
 - Roadmap for data, modeling, simulation, dashboard, QA, CI/CD, and portfolio polish.
 - Data, model, QA, and validation strategy documents.

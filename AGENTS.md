@@ -8,10 +8,16 @@ Before making changes, always read:
 
 1. `PROJECT_BRIEF.md`
 2. `AGENTS.md`
-3. Any relevant document under `docs/`
-4. Existing code and tests related to the requested change, when code exists
+3. `docs/ROADMAP.md`
+4. Any relevant document under `docs/`
+5. Existing code and tests related to the requested change, when code exists
 
 Use those files as the project context before planning or editing.
+
+For architecture-sensitive work, also read:
+
+- `docs/ARCHITECTURE.md`
+- Relevant ADRs in `docs/adr/`
 
 ## Working Rules
 
@@ -23,6 +29,20 @@ Use those files as the project context before planning or editing.
 - Do not create application logic during documentation-only phases.
 - Prefer simple, explainable architecture over premature complexity.
 - Update documentation when decisions, commands, assumptions, or workflows change.
+- Follow `docs/ARCHITECTURE.md` when adding packages, app code, data code, model code, or cross-layer behavior.
+- Document major architecture decisions with ADRs.
+
+## Architecture Standards
+
+- React components must not contain business logic.
+- API route handlers must be thin and must not contain prediction logic.
+- UI must not access datasets, CSV files, databases, or external APIs directly.
+- Domain code must remain independent from frameworks.
+- Application code must orchestrate use cases.
+- Infrastructure code must handle external integrations.
+- Model code must isolate prediction and modeling logic.
+- Data code must isolate ingestion, cleaning, and validation.
+- Shared code must stay small and purposeful.
 
 ## Documentation Standards
 
