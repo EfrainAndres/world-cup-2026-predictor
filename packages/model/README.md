@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 adds a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A adds a match-level Monte Carlo simulation engine.
 
 ## Current Scope
 
@@ -21,6 +21,8 @@ The package currently includes:
 - Win/draw/loss probability aggregation.
 - Most likely scoreline ranking.
 - Simple Dixon-Coles low-score adjustment with fixed `rho`.
+- Seeded match-level Monte Carlo simulation.
+- Simulation aggregation for home wins, draws, away wins, and common scorelines.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -35,12 +37,19 @@ The package currently includes:
 | Poisson max goals | `7` |
 | Poisson matrix normalization | `true` |
 | Dixon-Coles rho | `-0.1` |
+| Maximum simulation count | `1,000,000` |
 
 ## Poisson And Dixon-Coles Scope
 
 The Poisson foundation accepts expected home and away goals directly, then converts those expected goals into scoreline probabilities. Outcome probabilities are calculated by summing scorelines into home win, draw, and away win buckets.
 
 The Dixon-Coles foundation applies a small fixed adjustment to low-score outcomes: `0-0`, `1-0`, `0-1`, and `1-1`. It is intentionally not calibrated yet. Future phases must validate whether this adjustment improves probabilistic metrics before using it as a trusted product model.
+
+## Monte Carlo Scope
+
+The Monte Carlo foundation simulates one match many times from an existing score probability matrix. It supports deterministic seeds and injected random functions so tests and future reports can reproduce results.
+
+This phase does not simulate group tables, knockout brackets, penalty shootouts, or full tournament paths. Those rules belong in later tournament simulation phases.
 
 ## Boundaries
 
@@ -49,7 +58,9 @@ This package does not implement:
 - Mapping Elo ratings to expected goals.
 - Calibrated attack and defense strengths.
 - Full Dixon-Coles parameter optimization.
-- Monte Carlo simulation.
+- Group-stage simulation.
+- Knockout bracket simulation.
+- Full tournament simulation.
 - FastAPI service.
 - Database access.
 - Dashboard behavior.

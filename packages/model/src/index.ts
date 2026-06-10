@@ -10,7 +10,12 @@ export type {
   ExpectedGoalsInput,
   OutcomeProbabilities,
   PoissonConfig,
-  ScorelineProbability
+  ScorelineProbability,
+  MonteCarloMatchSimulationResult,
+  MonteCarloSimulationConfig,
+  RandomFunction,
+  SimulatedScoreline,
+  SimulatedScorelineSummary
 } from "./types.js";
 
 export {
@@ -43,3 +48,5 @@ export {
   dixonColesAdjustmentFactor,
   generateDixonColesScoreMatrix
 } from "./dixon-coles.js";
+
+export { createSeededRandom, runMatchSimulations, simulateOneMatch, validateProbabilityMatrix } from "./simulation.js";
