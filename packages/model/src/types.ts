@@ -717,3 +717,127 @@ export interface HistoricalTournamentReplayBacktestResult {
   summary: HistoricalTournamentReplayAggregateSummary;
   metadata: HistoricalTournamentReplayMetadata;
 }
+
+export interface HistoricalMonteCarloEloToExpectedGoalsConfig {
+  baseExpectedGoals: number;
+  eloAdjustmentPer100: number;
+  maxGoalAdjustment: number;
+  minExpectedGoals: number;
+  poissonConfig: PoissonConfig;
+}
+
+export interface HistoricalMonteCarloReplayFixtureInput {
+  homeTeam: string;
+  awayTeam: string;
+}
+
+export interface HistoricalMonteCarloReplayGroupInput {
+  name: string;
+  teams: readonly string[];
+  fixtures: readonly HistoricalMonteCarloReplayFixtureInput[];
+  qualifiersCount?: number;
+}
+
+export interface HistoricalMonteCarloReplayTournamentInput {
+  name: string;
+  groups: readonly HistoricalMonteCarloReplayGroupInput[];
+  groupQualifiersCount?: number;
+  metadata?: Record<string, string>;
+}
+
+export interface HistoricalMonteCarloReplaySimulationConfig {
+  simulationCount: number;
+  seed?: number;
+  random?: RandomFunction;
+  maxSimulationCount?: number;
+}
+
+export type HistoricalMonteCarloReplayWarningCode =
+  | "uncalibrated_elo_to_goals"
+  | "foundation_historical_data"
+  | "simplified_tournament_bracket";
+
+export type HistoricalMonteCarloReplayWarningSeverity = "info" | "warning" | "error";
+
+export interface HistoricalMonteCarloReplayWarning {
+  code: HistoricalMonteCarloReplayWarningCode;
+  severity: HistoricalMonteCarloReplayWarningSeverity;
+  message: string;
+  tournamentYear?: number;
+}
+
+export interface HistoricalMonteCarloReplayYearMetadata {
+  tournamentName: string;
+  simulationCount: number;
+  seed?: number;
+  snapshotModelVersion?: string;
+  snapshotDataCutoff?: string;
+  snapshotDataCoverage: HistoricalEloReplayDataCoverage;
+  eloToExpectedGoalsConfig: HistoricalMonteCarloEloToExpectedGoalsConfig;
+  tournamentFormat: string;
+  notes: readonly string[];
+}
+
+export interface HistoricalMonteCarloReplayYearInput {
+  fixtureSubset: HistoricalTournamentFixtureSubset;
+  snapshot: GeneratedHistoricalEloSnapshot;
+  tournamentInput: HistoricalMonteCarloReplayTournamentInput;
+  simulationConfig: HistoricalMonteCarloReplaySimulationConfig;
+  eloToExpectedGoalsConfig?: Partial<HistoricalMonteCarloEloToExpectedGoalsConfig>;
+}
+
+export interface HistoricalMonteCarloReplayYearResult {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  actualChampion: string;
+  actualRunnerUp: string;
+  snapshotType: HistoricalBacktestingSnapshotType;
+  simulationCount: number;
+  championProbability: number;
+  championRank: number | null;
+  runnerUpProbability: number;
+  runnerUpRank: number | null;
+  championTop1Hit: boolean;
+  championTop3Hit: boolean;
+  championTop5Hit: boolean;
+  brierScore: number;
+  logLoss: number;
+  championProbabilities: readonly TournamentTeamProbabilitySummary[];
+  runnerUpProbabilities: readonly TournamentTeamProbabilitySummary[];
+  warnings: readonly HistoricalMonteCarloReplayWarning[];
+  metadata: HistoricalMonteCarloReplayYearMetadata;
+}
+
+export interface HistoricalMonteCarloReplaySimulationCountSummary {
+  min: number;
+  max: number;
+  total: number;
+}
+
+export interface HistoricalMonteCarloReplayAggregateSummary {
+  yearsEvaluated: number[];
+  tournamentCount: number;
+  averageBrierScore: number;
+  averageLogLoss: number;
+  top1HitRate: number;
+  top3HitRate: number;
+  top5HitRate: number;
+  warnings: readonly HistoricalMonteCarloReplayWarning[];
+  simulationCountSummary: HistoricalMonteCarloReplaySimulationCountSummary;
+}
+
+export interface HistoricalMonteCarloReplayMetadata {
+  replayCount: number;
+  notes: readonly string[];
+}
+
+export interface HistoricalMonteCarloReplayInput {
+  replays: readonly HistoricalMonteCarloReplayYearInput[];
+}
+
+export interface HistoricalMonteCarloReplayResult {
+  results: readonly HistoricalMonteCarloReplayYearResult[];
+  summary: HistoricalMonteCarloReplayAggregateSummary;
+  metadata: HistoricalMonteCarloReplayMetadata;
+}

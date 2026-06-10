@@ -25,7 +25,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Done |
 | 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Done |
 | 4.0L | Historical Elo Snapshot Replay | Generate cutoff-safe historical Elo foundation snapshots from available match data. | Done |
-| 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Recommended next |
+| 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Done |
+| 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -619,14 +620,17 @@ Exit criteria:
 
 Convert cutoff-safe pre-tournament snapshots into historical tournament simulations and compare simulated probabilities against actual outcomes.
 
-Potential deliverables:
+Deliverables:
 
 - Elo-to-match-probability mapping foundation.
-- Historical tournament simulation inputs for 2010, 2014, 2018, and 2022.
-- Monte Carlo replay outputs for champion, runner-up, and stage probabilities.
-- Replay reports comparing simulated probabilities against actual outcomes.
-- Calibration notes for Elo, Poisson, and tournament simulation parameters.
-- Documentation of whether model realism is sufficient before Phase 5.0.
+- Elo-to-expected-goals mapping foundation.
+- Poisson score matrix generation from Elo-derived expected goals.
+- Explicit simplified historical tournament replay simulation inputs.
+- Monte Carlo replay outputs for champion and runner-up probabilities.
+- Per-year replay scoring with Brier Score, Log Loss, Top-1, Top-3, and Top-5.
+- Aggregate replay summaries with simulation count metadata.
+- Warnings for uncalibrated Elo-to-goals mapping and simplified bracket assumptions.
+- Documentation of remaining realism gaps before API/dashboard publication.
 
 Exit criteria:
 
@@ -634,6 +638,26 @@ Exit criteria:
 - Simulation outputs are deterministic when seeded.
 - Reports distinguish simulation evidence from public accuracy claims.
 - Remaining gaps toward dashboard/API publication are documented.
+
+## Phase 4.0N - Historical Tournament Bracket Reconstruction
+
+Rebuild historical group and knockout structures so Monte Carlo replay can use more realistic tournament paths.
+
+Potential deliverables:
+
+- Historical group membership inputs for 2010, 2014, 2018, and 2022.
+- Historical knockout bracket path reconstruction.
+- Tournament-specific fixture builders for replay simulations.
+- Validation tests that reconstructed brackets match curated historical fixture metadata.
+- Integration with historical Monte Carlo replay inputs.
+- Documentation of remaining official tie-breaker limitations.
+
+Exit criteria:
+
+- Historical replay simulations can use tournament-specific group and bracket structures.
+- Bracket reconstruction does not use actual match outcomes to generate pre-tournament probabilities.
+- Existing data/model checks remain deterministic.
+- Remaining model calibration gaps are documented before Phase 5.0.
 
 ## Phase 5.0 - Web Dashboard
 

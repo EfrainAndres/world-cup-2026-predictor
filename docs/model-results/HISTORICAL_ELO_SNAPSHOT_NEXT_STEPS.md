@@ -1,6 +1,6 @@
 # Historical Elo Snapshot Next Steps
 
-Phase 4.0L creates the Elo snapshot replay foundation. The next step is to make replay inputs more complete and turn ratings into tournament simulations.
+Phase 4.0L creates the Elo snapshot replay foundation. Phase 4.0M connects Elo snapshots to a historical Monte Carlo replay foundation. The next step is to reconstruct historical tournament groups and brackets more accurately.
 
 ## Improve Historical Inputs
 
@@ -36,18 +36,23 @@ That work should include:
 - Checking Brier Score, Log Loss, and calibration.
 - Keeping simpler baselines if added complexity does not improve validation.
 
-## Run Monte Carlo Historical Replay
+## Phase 4.0M Completed Scope
 
-The recommended next modeling phase is Phase 4.0M, Historical Monte Carlo Replay.
+Phase 4.0M added Historical Monte Carlo Replay foundations:
 
-That phase should:
-
-- Use Elo-derived match probabilities.
-- Simulate historical tournament paths before each tournament.
+- Use Elo-derived expected goals.
+- Generate Poisson score matrices.
+- Simulate explicit simplified tournament paths.
 - Estimate champion and runner-up probabilities.
 - Compare simulated probabilities to actual outcomes.
-- Calibrate parameters carefully.
-- Publish results with conservative limitations.
+- Report Brier Score, Log Loss, and Top-N champion hits.
+- Publish foundation limitations and conservative warnings.
+
+## Recommended Next Phase
+
+The recommended next modeling phase is Phase 4.0N, Historical Tournament Bracket Reconstruction.
+
+That phase should rebuild historical group membership and knockout paths so Monte Carlo replay can simulate more realistic historical tournament structures.
 
 ## Publication Standard
 
