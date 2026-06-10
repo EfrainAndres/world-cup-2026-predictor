@@ -13,7 +13,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 1.0 | Data Pipeline Foundation | Create workspace structure, data package contracts, validation, normalization, and tests. | Done |
 | 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Done |
 | 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Done |
-| 4.0 | Monte Carlo Tournament Simulation Foundation | Simulate groups, knockouts, and full tournament outcomes. | Recommended next |
+| 4.0A | Monte Carlo Simulation Engine Foundation | Simulate single matches from scoreline probabilities. | Done |
+| 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and full tournament outcomes. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -273,7 +274,41 @@ Exit criteria:
 - Existing Elo and data tests still pass.
 - No Monte Carlo, FastAPI, database, dashboard, or external dataset work has been added.
 
-## Phase 4.0 - Monte Carlo Tournament Simulation Foundation
+## Phase 4.0A - Monte Carlo Simulation Engine Foundation
+
+Create the match-level simulation engine that future tournament simulations will use.
+
+Deliverables:
+
+- Seeded pseudo-random support
+- Injectable random function support
+- Single-match scoreline sampling
+- Repeated match simulation
+- Home win, draw, and away win count aggregation
+- Estimated outcome probabilities
+- Most common scoreline summaries
+- Probability matrix validation
+- Deterministic simulation tests
+- Monte Carlo assumptions, validation, and limitation docs
+
+Deferred to future phases:
+
+- Group-stage standings
+- Knockout bracket simulation
+- Full tournament path simulation
+- Official World Cup 2026 rules
+- Penalty shootout handling
+- Dashboard-ready tournament exports
+
+Exit criteria:
+
+- Match-level simulations are reproducible with a seed.
+- Result counts sum to the requested simulation count.
+- Estimated probabilities are internally consistent.
+- High-count simulation approximates analytical probabilities.
+- No group-stage, knockout, FastAPI, database, dashboard, or external dataset work has been added.
+
+## Phase 4.0B - Tournament Simulation Foundation
 
 Simulate the full tournament.
 

@@ -68,3 +68,33 @@ export interface OutcomeProbabilities {
 export interface DixonColesConfig extends PoissonConfig {
   rho: number;
 }
+
+export type RandomFunction = () => number;
+
+export interface MonteCarloSimulationConfig {
+  simulationCount: number;
+  seed?: number;
+  random?: RandomFunction;
+  mostCommonScorelineLimit?: number;
+}
+
+export interface SimulatedScoreline {
+  homeGoals: number;
+  awayGoals: number;
+}
+
+export interface SimulatedScorelineSummary extends SimulatedScoreline {
+  count: number;
+  estimatedProbability: number;
+}
+
+export interface MonteCarloMatchSimulationResult {
+  homeWins: number;
+  draws: number;
+  awayWins: number;
+  estimatedHomeWinProbability: number;
+  estimatedDrawProbability: number;
+  estimatedAwayWinProbability: number;
+  mostCommonScorelines: SimulatedScorelineSummary[];
+  simulationCount: number;
+}
