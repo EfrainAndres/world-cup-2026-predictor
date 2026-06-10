@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D adds FIFA 2026 format and fixture modeling foundations.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E adds historical tournament validation foundations.
 
 ## Current Scope
 
@@ -32,6 +32,11 @@ The package currently includes:
 - FIFA 2026 group/team validation helpers.
 - Best third-place qualification helpers.
 - Round of 32 fixture validation and simple development bracket builder.
+- Historical tournament prediction validation types.
+- Champion Brier Score and Log Loss helpers.
+- Top-N champion hit checks.
+- Runner-up and knockout qualification evaluation helpers.
+- Multi-tournament validation summaries and calibration bucket foundation.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -82,6 +87,12 @@ The FIFA 2026 format foundation models 48 teams, 12 groups of 4, top-2 automatic
 
 This phase does not load real teams or fixtures. The Round of 32 builder is a deterministic development helper, not the official FIFA knockout mapping.
 
+## Historical Validation Scope
+
+The historical validation foundation compares tournament-level probability snapshots against known outcomes. It supports champion Brier Score, champion Log Loss, Top-N hit checks, runner-up ranking checks, knockout qualification hit rates, and basic champion calibration buckets.
+
+This phase does not load real historical World Cup data and does not claim predictive accuracy. It creates tested validation mechanics so future historical dataset integration can report model quality honestly.
+
 ## Boundaries
 
 This package does not implement:
@@ -93,6 +104,9 @@ This package does not implement:
 - Real World Cup 2026 fixtures and groups.
 - Official FIFA group tie-breakers.
 - Official FIFA knockout slot mapping.
+- Real historical World Cup backtesting.
+- Real historical fixture loading.
+- Historical model calibration reports.
 - Large-scale repeated-run performance optimization.
 - FastAPI service.
 - Database access.

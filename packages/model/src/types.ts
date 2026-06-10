@@ -272,3 +272,77 @@ export interface FIFA2026TournamentFormat {
   knockoutTeams: number;
   groupIds: readonly FIFA2026GroupId[];
 }
+
+export interface TeamProbabilitySnapshot {
+  team: string;
+  probability: number;
+}
+
+export interface HistoricalTournamentPredictionInput {
+  tournamentId: string;
+  tournamentName: string;
+  championProbabilities: readonly TeamProbabilitySnapshot[];
+  runnerUpProbabilities?: readonly TeamProbabilitySnapshot[];
+  knockoutQualificationProbabilities?: readonly TeamProbabilitySnapshot[];
+  metadata?: Record<string, string>;
+}
+
+export interface ActualTournamentResult {
+  tournamentId: string;
+  tournamentName: string;
+  champion: string;
+  runnerUp?: string;
+  knockoutTeams?: readonly string[];
+  metadata?: Record<string, string>;
+}
+
+export interface RunnerUpEvaluationResult {
+  actualRunnerUp: string;
+  probability: number;
+  top1Hit: boolean;
+  top3Hit: boolean;
+}
+
+export interface KnockoutQualificationEvaluationResult {
+  evaluatedTeams: number;
+  hitCount: number;
+  hitRate: number;
+}
+
+export interface HistoricalTournamentEvaluationResult {
+  tournamentId: string;
+  tournamentName: string;
+  actualChampion: string;
+  championProbability: number;
+  championBrierScore: number;
+  championLogLoss: number;
+  championTop1Hit: boolean;
+  championTop3Hit: boolean;
+  runnerUpEvaluation?: RunnerUpEvaluationResult;
+  knockoutQualificationEvaluation?: KnockoutQualificationEvaluationResult;
+}
+
+export interface ChampionCalibrationBucket {
+  bucketStart: number;
+  bucketEnd: number;
+  predictionCount: number;
+  averagePredictedProbability: number;
+  actualRate: number;
+}
+
+export interface ValidationMetricSummary {
+  tournamentCount: number;
+  averageChampionBrierScore: number;
+  averageChampionLogLoss: number;
+  championTop1HitRate: number;
+  championTop3HitRate: number;
+  runnerUpTop1HitRate?: number;
+  runnerUpTop3HitRate?: number;
+  averageKnockoutQualificationHitRate?: number;
+  championCalibrationBuckets: ChampionCalibrationBucket[];
+}
+
+export interface HistoricalValidationResult {
+  results: HistoricalTournamentEvaluationResult[];
+  summary: ValidationMetricSummary;
+}

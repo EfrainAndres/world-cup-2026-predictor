@@ -41,7 +41,16 @@ export type {
   FIFA2026QualificationSource,
   FIFA2026RoundOf32Fixture,
   FIFA2026Team,
-  FIFA2026TournamentFormat
+  FIFA2026TournamentFormat,
+  ActualTournamentResult,
+  ChampionCalibrationBucket,
+  HistoricalTournamentEvaluationResult,
+  HistoricalTournamentPredictionInput,
+  HistoricalValidationResult,
+  KnockoutQualificationEvaluationResult,
+  RunnerUpEvaluationResult,
+  TeamProbabilitySnapshot,
+  ValidationMetricSummary
 } from "./types.js";
 
 export {
@@ -107,3 +116,17 @@ export {
   buildSimpleFIFA2026RoundOf32Fixtures,
   validateFIFA2026RoundOf32Fixtures
 } from "./fifa-2026-fixtures.js";
+
+export {
+  HISTORICAL_VALIDATION_EPSILON,
+  buildChampionCalibrationBuckets,
+  calculateChampionBrierScore,
+  calculateChampionLogLoss,
+  evaluateHistoricalTournamentPrediction,
+  evaluateKnockoutQualificationPrediction,
+  evaluateRunnerUpPrediction,
+  isTeamInTopN,
+  summarizeHistoricalTournamentValidations,
+  validateHistoricalTournaments,
+  validateProbabilitySnapshot
+} from "./historical-validation.js";

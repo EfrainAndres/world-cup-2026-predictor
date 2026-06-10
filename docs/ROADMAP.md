@@ -17,7 +17,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and a simplified tournament. | Done |
 | 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Done |
 | 4.0D | FIFA 2026 Format & Fixture Modeling | Model the real tournament structure, fixtures, and official progression rules. | Done |
-| 4.0E | Historical Tournament Validation | Validate tournament logic and model assumptions against historical tournament structures and results. | Recommended next |
+| 4.0E | Historical Tournament Validation | Validate tournament logic and model assumptions against historical tournament structures and results. | Done |
+| 4.0F | Real Historical Dataset Integration | Connect validation helpers to licensed historical tournament data and real backtest outputs. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -408,21 +409,54 @@ Exit criteria:
 
 ## Phase 4.0E - Historical Tournament Validation
 
-Validate tournament structure and model assumptions against historical tournaments before exposing outputs.
+Validate tournament-level probability snapshots against known tournament outcomes before exposing outputs.
 
-Potential deliverables:
+Deliverables:
 
-- Historical tournament fixture fixtures or compact local test fixtures
-- Validation cases for group qualification patterns
-- Validation cases for knockout bracket progression
-- Comparison between simplified and official tie-breaker behavior
-- Documentation of remaining realism gaps
+- Historical tournament validation contracts
+- Champion probability Brier Score
+- Champion probability Log Loss with safe epsilon handling
+- Top-N champion hit checks
+- Runner-up probability ranking checks
+- Knockout qualification hit-rate foundation
+- Champion calibration bucket foundation
+- Deterministic validation tests
+- Historical validation assumptions, report, and limitations docs
+
+Deferred to future phases:
+
+- Real historical World Cup dataset ingestion
+- Real historical fixture loading
+- Time-based historical model outputs
+- Official FIFA historical tie-breaker validation
+- Model promotion or accuracy claims
 
 Exit criteria:
 
-- Tournament logic is tested against representative historical patterns.
-- Known deviations from official FIFA rules are documented.
-- The model is ready for API planning or another realism pass.
+- Historical validation metrics are implemented and tested.
+- Invalid probability snapshots and missing actual outcomes are rejected.
+- The docs clearly state that no real model accuracy is claimed yet.
+- The model is ready for real historical dataset integration or API planning.
+
+## Phase 4.0F - Real Historical Dataset Integration
+
+Connect the validation foundation to real historical tournament data after source licensing and data provenance are clear.
+
+Potential deliverables:
+
+- Licensed historical World Cup source selection
+- Historical fixture and result normalization
+- Dataset metadata and retrieval-date tracking
+- Historical tournament validation fixtures
+- Backtest reports using real model outputs
+- Calibration notes across historical tournaments
+- Documentation of data quality exclusions
+
+Exit criteria:
+
+- Historical data provenance is documented.
+- Validation results are reproducible from local commands.
+- Model quality claims are backed by metrics, data cutoffs, and limitations.
 
 ## Phase 5.0 - Web Dashboard
 
