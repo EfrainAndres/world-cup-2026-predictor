@@ -16,7 +16,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0A | Monte Carlo Simulation Engine Foundation | Simulate single matches from scoreline probabilities. | Done |
 | 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and a simplified tournament. | Done |
 | 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Done |
-| 4.0D | FIFA 2026 Format & Fixture Modeling | Model the real tournament structure, fixtures, and official progression rules. | Recommended next |
+| 4.0D | FIFA 2026 Format & Fixture Modeling | Model the real tournament structure, fixtures, and official progression rules. | Done |
+| 4.0E | Historical Tournament Validation | Validate tournament logic and model assumptions against historical tournament structures and results. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -377,20 +378,51 @@ Exit criteria:
 
 Model the real World Cup 2026 structure before exposing tournament results more broadly.
 
-Potential deliverables:
+Deliverables:
 
 - FIFA 2026 group and fixture input contracts
 - Official number of teams and groups
 - Third-place qualification modeling
-- Official group and knockout progression rules
+- Group validation for 12 groups of 4 teams
+- Unique 48-team validation
+- Best 8 third-place selection helper
+- Round of 32 fixture validation
+- Simple deterministic Round of 32 development bracket builder
 - Fixture metadata requirements
 - Validation docs for format assumptions
+
+Deferred to future phases:
+
+- Real FIFA 2026 fixture loading
+- Official knockout slot mapping
+- Full official FIFA tie-breaker chain
+- Historical validation against past tournaments
+- API/dashboard integration
 
 Exit criteria:
 
 - The tournament engine can represent the real FIFA 2026 structure.
 - Simplified assumptions are replaced or clearly isolated.
 - The engine remains deterministic and tested.
+- No external fixtures, API, UI, database, or network-dependent logic has been added.
+
+## Phase 4.0E - Historical Tournament Validation
+
+Validate tournament structure and model assumptions against historical tournaments before exposing outputs.
+
+Potential deliverables:
+
+- Historical tournament fixture fixtures or compact local test fixtures
+- Validation cases for group qualification patterns
+- Validation cases for knockout bracket progression
+- Comparison between simplified and official tie-breaker behavior
+- Documentation of remaining realism gaps
+
+Exit criteria:
+
+- Tournament logic is tested against representative historical patterns.
+- Known deviations from official FIFA rules are documented.
+- The model is ready for API planning or another realism pass.
 
 ## Phase 5.0 - Web Dashboard
 
