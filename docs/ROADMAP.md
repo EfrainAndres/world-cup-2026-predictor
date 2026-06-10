@@ -20,7 +20,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0E | Historical Tournament Validation | Validate tournament logic and model assumptions against historical tournament structures and results. | Done |
 | 4.0F | Real Historical Dataset Integration | Connect validation helpers to licensed historical tournament data and real backtest outputs. | Done |
 | 4.0G | Historical Backtesting & Calibration | Score historical probability outputs and document calibration before API work. | Done |
-| 4.0H | Complete Historical World Cup Dataset | Expand historical fixtures before relying on backtesting for model decisions. | Recommended next |
+| 4.0H | Complete Historical World Cup Dataset | Expand historical fixtures before relying on backtesting for model decisions. | Done |
+| 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -506,14 +507,14 @@ Exit criteria:
 
 Expand historical data coverage so future backtesting can evaluate full tournament behavior.
 
-Potential deliverables:
+Deliverables:
 
-- Complete 2018 and 2022 fixture coverage
-- Earlier World Cup fixture coverage, starting with 2014 if source quality is acceptable
-- Group-stage results and standings
-- Full knockout bracket metadata
-- Venue and host context where useful
+- Complete 2010, 2014, 2018, and 2022 fixture coverage
+- Group-stage and knockout result records
+- Winner, decision method, penalty score, and stage-order metadata
 - Source metadata and review notes
+- 64-match validation per tournament
+- 256-match validation across the historical dataset
 - Expanded data validation tests
 
 Exit criteria:
@@ -521,6 +522,27 @@ Exit criteria:
 - Historical fixture coverage is complete enough for meaningful backtesting.
 - Source provenance and limitations are documented.
 - Data validation protects full-tournament structure before model scoring.
+
+## Phase 4.0I - Real Historical Backtesting Reports
+
+Use complete historical fixture data and model-generated probability snapshots to produce documented backtesting reports.
+
+Potential deliverables:
+
+- Historical probability snapshot fixtures or generated outputs
+- Match-level and tournament-level scoring reports
+- Brier Score and Log Loss reports
+- Calibration bucket reports
+- Baseline comparisons
+- Data cutoff and model version metadata
+- Clear interpretation of what the reports can and cannot prove
+
+Exit criteria:
+
+- Backtesting reports are reproducible from local commands.
+- Reports use complete fixture coverage and documented model snapshots.
+- Results are framed as validation evidence, not guarantees.
+- Remaining calibration and data limitations are documented.
 
 ## Phase 5.0 - Web Dashboard
 

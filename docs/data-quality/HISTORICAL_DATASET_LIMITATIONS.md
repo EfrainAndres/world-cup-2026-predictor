@@ -1,40 +1,40 @@
 # Historical Dataset Limitations
 
-Phase 4.0F creates a real historical fixture foundation, not a complete backtesting dataset.
+Phase 4.0H completes fixture-level result coverage for the 2010, 2014, 2018, and 2022 FIFA World Cups. It is still not a full football intelligence dataset.
 
 ## Current Limitations
 
 | Limitation | Impact |
 | --- | --- |
-| Dataset is incomplete | Only semi-finals, third-place matches, and finals are included for 2018 and 2022. |
-| No automated source synchronization | Fixtures must be manually reviewed when updated. |
-| No player-level data | Injuries, suspensions, lineups, and squad strength are not represented. |
-| No pre-tournament probability snapshots | Historical model validation cannot be scored yet. |
-| No real backtesting metrics claimed | The project cannot yet claim model performance. |
-| Limited penalty metadata | Penalty winners and scores are represented, but detailed shootout events are not. |
-| No venue metadata | Stadium, city, altitude, weather, and travel effects are not modeled. |
+| Fixture/result-level only | The dataset records match outcomes, not the context that produced them. |
+| No player-level data | Injuries, suspensions, substitutions, and squad strength are not represented. |
+| No lineup data | The model cannot evaluate tactical or player availability effects. |
+| No pre-match Elo snapshots | Historical rating state still needs to be generated or imported. |
+| No pre-tournament probability snapshots | Backtesting needs model outputs created with clear data cutoffs. |
+| No xG | Expected-goals model calibration cannot use shot-quality data yet. |
+| No venue detail | Stadium, city, altitude, weather, and travel effects are not modeled. |
+| No automated sync | Fixture updates remain manually reviewed and committed. |
+| Simplified source notes | Row-level notes identify source category, not every verification step. |
 
 ## Not Suitable Yet For
 
 Do not use this dataset to:
 
 - Claim model accuracy.
-- Publish World Cup 2026 prediction quality.
-- Compare models against external forecasts.
-- Reconstruct full tournament brackets.
-- Validate official FIFA tie-breakers.
-- Train or tune model parameters.
+- Publish prediction quality.
+- Compare this model against external forecasts.
+- Tune model parameters without a documented validation plan.
+- Validate every official FIFA tie-breaker detail.
+- Represent player availability, rest, travel, or venue effects.
 
 ## Future Improvements
 
 Future phases should add:
 
-- Complete historical World Cup match coverage.
-- Source metadata per fixture file.
-- Venue and stage metadata.
-- Detailed penalty shootout event fields.
-- Group standings and qualification outcomes.
-- Historical pre-match probability snapshots.
-- Backtesting reports with data cutoffs and model versions.
-
-Until then, this dataset is a compact integration foundation for deterministic validation and future backtesting work.
+- Historical pre-match Elo snapshots.
+- Model-generated probability snapshots by tournament and match.
+- Match-level scoring reports.
+- Calibration reports by confidence bucket.
+- Venue and host context where useful.
+- Optional official match IDs if a permitted source is selected.
+- Automated source checks after licensing and provenance rules are settled.

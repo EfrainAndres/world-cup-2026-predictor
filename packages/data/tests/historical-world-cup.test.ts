@@ -1,16 +1,30 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  EXPECTED_HISTORICAL_WORLD_CUP_TOTAL_MATCHES,
+  loadHistoricalWorldCupDataset,
   loadHistoricalWorldCupMatches,
   normalizeHistoricalWorldCupMatches,
+  validateHistoricalWorldCupDataset,
   validateHistoricalWorldCupFixtureFile
 } from "../src/index.js";
 import type { HistoricalWorldCupFixtureFile, NormalizedMatch } from "../src/index.js";
+
+const fixtureFiles = [
+  "world-cup-2010-results.json",
+  "world-cup-2014-results.json",
+  "world-cup-2018-results.json",
+  "world-cup-2022-results.json"
+] as const;
 
 function readFixture(fileName: string): HistoricalWorldCupFixtureFile {
   const fixtureUrl = new URL(`../fixtures/world-cup/${fileName}`, import.meta.url);
 
   return JSON.parse(readFileSync(fixtureUrl, "utf8")) as HistoricalWorldCupFixtureFile;
+}
+
+function readAllFixtures(): HistoricalWorldCupFixtureFile[] {
+  return fixtureFiles.map((fileName) => readFixture(fileName));
 }
 
 function cloneFixture(fixture: HistoricalWorldCupFixtureFile): HistoricalWorldCupFixtureFile {
@@ -37,38 +51,66 @@ function expectModelCompatibleMatch(match: NormalizedMatch): void {
 }
 
 describe("historical World Cup fixture loading", () => {
-  it("loads the 2018 fixture successfully", () => {
-    const matches = loadHistoricalWorldCupMatches(readFixture("world-cup-2018-results.json"));
+  it.each([
+    ["2010", "world-cup-2010-results.json"],
+    ["2014", "world-cup-2014-results.json"],
+    ["2018", "world-cup-2018-results.json"],
+    ["2022", "world-cup-2022-results.json"]
+  ])("loads the %s fixture successfully with 64 matches", (year, fileName) => {
+    const matches = loadHistoricalWorldCupMatches(readFixture(fileName));
 
-    expect(matches).toHaveLength(4);
-    expect(matches.map((match) => match.tournament_year)).toEqual([2018, 2018, 2018, 2018]);
-    expect(matches.at(-1)).toMatchObject({
-      match_id: "2018-WC-F-001",
-      home_team: "France",
-      away_team: "Croatia",
-      result: "home_win",
-      winner: "France",
-      decided_by: "regular_time",
-      stage_order: 3
-    });
+    expect(matches).toHaveLength(64);
+    expect(matches.every((match) => match.tournament_year === Number(year))).toBe(true);
   });
 
-  it("loads the 2022 fixture successfully", () => {
-    const matches = loadHistoricalWorldCupMatches(readFixture("world-cup-2022-results.json"));
+  it("loads all supported tournaments as a 256-match dataset", () => {
+    const fixtures = readAllFixtures();
+    const validation = validateHistoricalWorldCupDataset(fixtures);
+    const matches = loadHistoricalWorldCupDataset(fixtures);
 
-    expect(matches).toHaveLength(4);
-    expect(matches.map((match) => match.tournament_year)).toEqual([2022, 2022, 2022, 2022]);
-    expect(matches.at(-1)).toMatchObject({
-      match_id: "2022-WC-F-001",
-      home_team: "Argentina",
-      away_team: "France",
-      result: "draw",
-      winner: "Argentina",
-      decided_by: "penalties",
-      penalty_home_score: 4,
-      penalty_away_score: 2,
-      stage_order: 3
-    });
+    expect(validation.valid).toBe(true);
+    expect(matches).toHaveLength(EXPECTED_HISTORICAL_WORLD_CUP_TOTAL_MATCHES);
+  });
+
+  it("validates stage order for all historical matches", () => {
+    const matches = loadHistoricalWorldCupDataset(readAllFixtures());
+    const expectedStageOrder = {
+      group_stage: 1,
+      round_of_16: 2,
+      quarter_final: 3,
+      semi_final: 4,
+      third_place: 5,
+      final: 6
+    };
+
+    for (const match of matches) {
+      expect(match.stage_order).toBe(expectedStageOrder[match.stage]);
+    }
+  });
+
+  it("requires knockout scoreline draws to have a winner", () => {
+    const matches = loadHistoricalWorldCupDataset(readAllFixtures());
+    const knockoutDraws = matches.filter((match) => match.stage !== "group_stage" && match.result === "draw");
+
+    expect(knockoutDraws.length).toBeGreaterThan(0);
+    expect(knockoutDraws.every((match) => match.winner !== null)).toBe(true);
+  });
+
+  it("allows group-stage draws without a winner", () => {
+    const matches = loadHistoricalWorldCupDataset(readAllFixtures());
+    const groupDraws = matches.filter((match) => match.stage === "group_stage" && match.result === "draw");
+
+    expect(groupDraws.length).toBeGreaterThan(0);
+    expect(groupDraws.every((match) => match.winner === null && match.decided_by === "draw")).toBe(true);
+  });
+
+  it("requires penalty-decided matches to include penalty scores", () => {
+    const matches = loadHistoricalWorldCupDataset(readAllFixtures());
+    const penaltyMatches = matches.filter((match) => match.decided_by === "penalties");
+
+    expect(penaltyMatches.length).toBeGreaterThan(0);
+    expect(penaltyMatches.every((match) => typeof match.penalty_home_score === "number")).toBe(true);
+    expect(penaltyMatches.every((match) => typeof match.penalty_away_score === "number")).toBe(true);
   });
 
   it("requires all historical fixture fields", () => {
@@ -78,7 +120,7 @@ describe("historical World Cup fixture loading", () => {
 
     expect(result.valid).toBe(false);
     expect(result.issues).toContainEqual({
-      match_id: "2018-WC-SF-001",
+      match_id: "2018-WC-001",
       field: "source_note",
       code: "missing_required_field",
       message: "source_note is required."
@@ -101,21 +143,35 @@ describe("historical World Cup fixture loading", () => {
 
   it("rejects invalid stage values", () => {
     const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
-    mutableMatches(fixture)[0]!.stage = "semi";
+    mutableMatches(fixture)[0]!.stage = "group";
 
     expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("stage must be one of");
   });
 
-  it("rejects duplicate match IDs", () => {
+  it("rejects invalid decided_by values", () => {
+    const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
+    mutableMatches(fixture)[0]!.decided_by = "coin_toss";
+
+    expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("decided_by must be one of");
+  });
+
+  it("rejects duplicate match IDs within a fixture", () => {
     const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
     mutableMatches(fixture)[1]!.match_id = mutableMatches(fixture)[0]?.match_id;
 
     expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("duplicate match_id");
   });
 
+  it("rejects invalid winners", () => {
+    const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
+    mutableMatches(fixture)[63]!.winner = "Brazil";
+
+    expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("winner must match home_team or away_team");
+  });
+
   it("rejects penalty winners that do not match penalty scores", () => {
     const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
-    mutableMatches(fixture)[3]!.winner = "France";
+    mutableMatches(fixture)[63]!.winner = "France";
 
     expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("winner must match the penalty shootout winner");
   });
@@ -124,12 +180,12 @@ describe("historical World Cup fixture loading", () => {
     const historicalMatches = loadHistoricalWorldCupMatches(readFixture("world-cup-2022-results.json"));
     const normalizedMatches = normalizeHistoricalWorldCupMatches(historicalMatches);
 
-    expect(normalizedMatches).toHaveLength(4);
+    expect(normalizedMatches).toHaveLength(64);
     expect(normalizedMatches[0]).toMatchObject({
-      match_id: "2022-WC-SF-001",
+      match_id: "2022-WC-001",
       competition: "FIFA World Cup 2022",
-      home_team: "Argentina",
-      away_team: "Croatia",
+      home_team: "Qatar",
+      away_team: "Ecuador",
       data_source: historicalMatches[0]?.source_note
     });
 

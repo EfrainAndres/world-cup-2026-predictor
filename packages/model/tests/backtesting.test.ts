@@ -32,10 +32,10 @@ interface RawFixtureMatch {
   home_score: number;
   away_score: number;
   result: EloResult;
-  winner?: string;
+  winner?: string | null;
   decided_by?: HistoricalBacktestDecisionMethod;
-  penalty_home_score?: number;
-  penalty_away_score?: number;
+  penalty_home_score?: number | null;
+  penalty_away_score?: number | null;
 }
 
 function readFixture(fileName: string): RawFixtureFile {
@@ -58,7 +58,7 @@ function toBacktestFixture(match: RawFixtureMatch): HistoricalBacktestFixture {
     result: match.result
   };
 
-  if (match.winner !== undefined) {
+  if (match.winner !== undefined && match.winner !== null) {
     fixture.winner = match.winner;
   }
 
@@ -66,11 +66,11 @@ function toBacktestFixture(match: RawFixtureMatch): HistoricalBacktestFixture {
     fixture.decidedBy = match.decided_by;
   }
 
-  if (match.penalty_home_score !== undefined) {
+  if (match.penalty_home_score !== undefined && match.penalty_home_score !== null) {
     fixture.penaltyHomeScore = match.penalty_home_score;
   }
 
-  if (match.penalty_away_score !== undefined) {
+  if (match.penalty_away_score !== undefined && match.penalty_away_score !== null) {
     fixture.penaltyAwayScore = match.penalty_away_score;
   }
 
@@ -83,8 +83,8 @@ function subset(year: 2018 | 2022): HistoricalTournamentFixtureSubset {
     tournamentName: `FIFA World Cup ${year}`,
     tournamentYear: year,
     matches: readFixture(`world-cup-${year}-results.json`).matches.map(toBacktestFixture),
-    isPartial: true,
-    coverageNote: "Curated partial fixture subset: semi-finals, third-place match, and final only."
+    isPartial: false,
+    coverageNote: "Curated complete fixture-level results from group stage through final."
   };
 }
 
@@ -144,14 +144,14 @@ function predictions(): HistoricalTournamentPredictionInput[] {
 }
 
 describe("historical backtesting and calibration foundation", () => {
-  it("accepts a valid partial historical dataset", () => {
+  it("accepts a valid historical dataset", () => {
     const result = runHistoricalBacktest({
       fixtureSubsets: [subset(2018), subset(2022)],
       predictions: predictions()
     });
 
     expect(result.results).toHaveLength(2);
-    expect(result.metadata.isPartialHistoricalValidation).toBe(true);
+    expect(result.metadata.isPartialHistoricalValidation).toBe(false);
   });
 
   it("extracts the 2018 champion", () => {
@@ -211,14 +211,30 @@ describe("historical backtesting and calibration foundation", () => {
     expect(result.summary.championTopNHitRate).toBe(1);
   });
 
-  it("returns partial dataset warning metadata", () => {
+  it("returns no partial warnings for complete fixture subsets", () => {
     const result = runHistoricalBacktest({
       fixtureSubsets: [subset(2018)],
       predictions: [predictions()[0]!]
     });
 
+    expect(result.summary.warnings).toEqual([]);
+    expect(result.metadata.notes.join(" ")).toContain("Complete fixture results still require model-generated probability snapshots");
+  });
+
+  it("returns partial warning metadata when a fixture subset is marked partial", () => {
+    const result = runHistoricalBacktest({
+      fixtureSubsets: [
+        {
+          ...subset(2018),
+          isPartial: true,
+          coverageNote: "Deliberately partial test subset."
+        }
+      ],
+      predictions: [predictions()[0]!]
+    });
+
     expect(result.summary.warnings.join(" ")).toContain("Partial historical validation only");
-    expect(result.metadata.notes.join(" ")).toContain("not complete historical World Cup datasets");
+    expect(result.metadata.notes.join(" ")).toContain("one or more fixture subsets are marked partial");
   });
 
   it("rejects invalid probability snapshots", () => {
