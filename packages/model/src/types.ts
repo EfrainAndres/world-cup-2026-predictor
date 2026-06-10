@@ -98,3 +98,95 @@ export interface MonteCarloMatchSimulationResult {
   mostCommonScorelines: SimulatedScorelineSummary[];
   simulationCount: number;
 }
+
+export interface TournamentTeamInput {
+  name: string;
+}
+
+export interface GroupMatchInput {
+  homeTeam: string;
+  awayTeam: string;
+  scoreMatrix: readonly ScorelineProbability[];
+}
+
+export interface GroupInput {
+  name: string;
+  teams: readonly TournamentTeamInput[];
+  matches: readonly GroupMatchInput[];
+  qualifiersCount?: number;
+}
+
+export interface GroupStanding {
+  team: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface SimulatedGroupMatch extends GroupMatchInput {
+  homeGoals: number;
+  awayGoals: number;
+}
+
+export interface SimulatedGroupResult {
+  groupName: string;
+  matches: SimulatedGroupMatch[];
+  standings: GroupStanding[];
+  qualifiers: GroupStanding[];
+}
+
+export interface KnockoutFixtureInput {
+  homeTeam: string;
+  awayTeam: string;
+  scoreMatrix: readonly ScorelineProbability[];
+}
+
+export interface SimulatedKnockoutMatch extends KnockoutFixtureInput {
+  homeGoals: number;
+  awayGoals: number;
+  winner: string;
+  loser: string;
+  tieBreakUsed: boolean;
+}
+
+export interface SimulatedKnockoutRound {
+  roundName: string;
+  matches: SimulatedKnockoutMatch[];
+  winners: string[];
+}
+
+export interface TournamentSimulationConfig {
+  seed?: number;
+  random?: RandomFunction;
+}
+
+export interface TournamentInput {
+  name: string;
+  groups: readonly GroupInput[];
+  knockoutScoreMatrix: readonly ScorelineProbability[];
+  groupQualifiersCount?: number;
+  metadata?: Record<string, string>;
+}
+
+export interface TournamentMetadata {
+  tournamentName: string;
+  groupCount: number;
+  qualifiedTeamCount: number;
+  knockoutRoundCount: number;
+  format: string;
+  notes: string[];
+  metadata?: Record<string, string>;
+}
+
+export interface SimulatedTournamentResult {
+  groupResults: SimulatedGroupResult[];
+  knockoutResults: SimulatedKnockoutRound[];
+  champion: string;
+  runnerUp: string;
+  metadata: TournamentMetadata;
+}

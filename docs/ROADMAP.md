@@ -14,7 +14,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Done |
 | 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Done |
 | 4.0A | Monte Carlo Simulation Engine Foundation | Simulate single matches from scoreline probabilities. | Done |
-| 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and full tournament outcomes. | Recommended next |
+| 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and a simplified tournament. | Done |
+| 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -310,20 +311,54 @@ Exit criteria:
 
 ## Phase 4.0B - Tournament Simulation Foundation
 
-Simulate the full tournament.
+Simulate a simplified tournament from explicit group fixtures through a knockout bracket.
 
-Potential deliverables:
+Deliverables:
 
 - Group-stage simulation
 - Knockout bracket simulation
-- Tournament outcome probabilities
-- Scenario exports for dashboard use
+- Group standings with points, goal difference, goals for, and team-name fallback sorting
+- Group qualifier selection
+- Knockout draw tie-break handling
+- Simplified power-of-two tournament bracket
+- Champion and runner-up output
 - Simulation reproducibility checks
+- Tournament assumptions, validation, and limitation docs
+
+Deferred to future phases:
+
+- Repeated tournament runs
+- Stage and champion probability summaries
+- Full FIFA World Cup 2026 format
+- Official FIFA group tie-breakers
+- Real fixtures and groups
+- Dashboard-ready exports
 
 Exit criteria:
 
-- Tournament outcomes are generated from match probabilities.
-- Results are stable enough for dashboard presentation.
+- A simplified tournament can produce group results, knockout results, champion, and runner-up.
+- Group and knockout rules are deterministic and tested.
+- Existing data, Elo, Poisson, Dixon-Coles, and Monte Carlo tests still pass.
+- No FastAPI, database, dashboard, real fixtures, or external datasets have been added.
+
+## Phase 4.0C - Tournament Simulation Validation & Repeated Runs
+
+Run many tournament simulations to estimate tournament-level probabilities.
+
+Potential deliverables:
+
+- Repeated tournament simulation runner
+- Champion probability summaries
+- Stage advancement probability summaries
+- Simulation stability checks by run count
+- Seed strategy for repeated runs
+- Validation report for tournament probability outputs
+
+Exit criteria:
+
+- Repeated simulations produce stable, explainable probability summaries.
+- Outputs include model and simulation metadata.
+- Known limitations are documented before dashboard integration.
 
 ## Phase 5.0 - Web Dashboard
 

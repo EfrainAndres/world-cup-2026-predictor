@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A adds a match-level Monte Carlo simulation engine.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B adds simplified group-stage, knockout, and tournament simulation foundations.
 
 ## Current Scope
 
@@ -23,6 +23,9 @@ The package currently includes:
 - Simple Dixon-Coles low-score adjustment with fixed `rho`.
 - Seeded match-level Monte Carlo simulation.
 - Simulation aggregation for home wins, draws, away wins, and common scorelines.
+- Simplified group-stage standings and qualifiers.
+- Simplified knockout match and round simulation.
+- Simplified tournament orchestration from group qualifiers to champion.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -51,6 +54,12 @@ The Monte Carlo foundation simulates one match many times from an existing score
 
 This phase does not simulate group tables, knockout brackets, penalty shootouts, or full tournament paths. Those rules belong in later tournament simulation phases.
 
+## Tournament Scope
+
+The tournament foundation simulates explicit group fixtures, ranks group standings by points, goal difference, goals for, then team name, and advances qualifiers into a simplified power-of-two knockout bracket.
+
+This is not full FIFA World Cup 2026 support. Real fixtures, official FIFA tie-breakers, third-place qualification, extra time, penalties, and repeated tournament probability runs are future work.
+
 ## Boundaries
 
 This package does not implement:
@@ -58,9 +67,9 @@ This package does not implement:
 - Mapping Elo ratings to expected goals.
 - Calibrated attack and defense strengths.
 - Full Dixon-Coles parameter optimization.
-- Group-stage simulation.
-- Knockout bracket simulation.
-- Full tournament simulation.
+- Full FIFA World Cup 2026 tournament format.
+- Official FIFA group tie-breakers.
+- Repeated tournament probability simulations.
 - FastAPI service.
 - Database access.
 - Dashboard behavior.

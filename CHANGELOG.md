@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0B tournament simulation foundation.
+- Simplified TypeScript group-stage standings, knockout rounds, tournament orchestration, deterministic tests, and tournament model result documentation.
 - Phase 4.0A Monte Carlo match simulation engine foundation.
 - Seeded TypeScript match simulation, simulation aggregation, deterministic tests, and Monte Carlo model result documentation.
 - Phase 3.0 Poisson/Dixon-Coles foundation implementation.
