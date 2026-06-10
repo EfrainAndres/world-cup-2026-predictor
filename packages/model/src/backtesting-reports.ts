@@ -6,6 +6,7 @@ import {
   validateProbabilitySnapshot
 } from "./historical-validation.js";
 import { extractActualChampion, extractActualRunnerUp } from "./backtesting.js";
+import { HISTORICAL_ELO_REPLAY_SNAPSHOT_FOUNDATION_WARNING } from "./historical-elo-snapshots.js";
 import type {
   ActualTournamentResult,
   ChampionCalibrationBucket,
@@ -45,9 +46,12 @@ function validateReportPrediction(prediction: HistoricalBacktestingReportPredict
   if (
     prediction.snapshotType !== "synthetic_report_fixture" &&
     prediction.snapshotType !== "baseline_pre_tournament_snapshot" &&
+    prediction.snapshotType !== "historical_elo_replay_snapshot_foundation" &&
     prediction.snapshotType !== "model_generated"
   ) {
-    throw new Error("prediction snapshotType must be synthetic_report_fixture, baseline_pre_tournament_snapshot, or model_generated.");
+    throw new Error(
+      "prediction snapshotType must be synthetic_report_fixture, baseline_pre_tournament_snapshot, historical_elo_replay_snapshot_foundation, or model_generated."
+    );
   }
 
   validateProbabilitySnapshot(prediction.championProbabilities, "champion probability snapshot");
@@ -170,6 +174,10 @@ function buildWarnings(
 
   if (prediction.snapshotType === "baseline_pre_tournament_snapshot") {
     warnings.push(BASELINE_PRE_TOURNAMENT_SNAPSHOT_WARNING);
+  }
+
+  if (prediction.snapshotType === "historical_elo_replay_snapshot_foundation") {
+    warnings.push(HISTORICAL_ELO_REPLAY_SNAPSHOT_FOUNDATION_WARNING);
   }
 
   if (!datasetCompleteness.isComplete) {

@@ -6,6 +6,7 @@ import {
 } from "./backtesting-reports.js";
 import { extractActualChampion, extractActualRunnerUp } from "./backtesting.js";
 import { buildChampionCalibrationBuckets } from "./historical-validation.js";
+import { HISTORICAL_ELO_REPLAY_SNAPSHOT_FOUNDATION_WARNING } from "./historical-elo-snapshots.js";
 import type {
   ActualTournamentResult,
   ChampionCalibrationBucket,
@@ -48,8 +49,12 @@ function validateReplaySnapshot(snapshot: HistoricalTournamentReplaySnapshotInpu
     throw new Error("historical tournament replay requires pre-tournament snapshots; synthetic_report_fixture is not allowed.");
   }
 
-  if (snapshot.snapshotType !== "baseline_pre_tournament_snapshot" && snapshot.snapshotType !== "model_generated") {
-    throw new Error("replay snapshotType must be baseline_pre_tournament_snapshot or model_generated.");
+  if (
+    snapshot.snapshotType !== "baseline_pre_tournament_snapshot" &&
+    snapshot.snapshotType !== "historical_elo_replay_snapshot_foundation" &&
+    snapshot.snapshotType !== "model_generated"
+  ) {
+    throw new Error("replay snapshotType must be baseline_pre_tournament_snapshot, historical_elo_replay_snapshot_foundation, or model_generated.");
   }
 
   if (snapshot.actualTournamentResultsIncluded === true) {
@@ -118,6 +123,12 @@ function buildReplayWarnings(
 
   if (snapshot.snapshotType === "baseline_pre_tournament_snapshot") {
     warnings.push(replayWarning("baseline_snapshot", "warning", BASELINE_PRE_TOURNAMENT_SNAPSHOT_WARNING, subset.tournamentYear));
+  }
+
+  if (snapshot.snapshotType === "historical_elo_replay_snapshot_foundation") {
+    warnings.push(
+      replayWarning("historical_elo_foundation_snapshot", "warning", HISTORICAL_ELO_REPLAY_SNAPSHOT_FOUNDATION_WARNING, subset.tournamentYear)
+    );
   }
 
   if (!subset.isPartial && subset.matches.length !== DEFAULT_HISTORICAL_REPORT_EXPECTED_MATCHES) {
