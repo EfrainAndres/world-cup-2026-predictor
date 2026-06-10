@@ -21,7 +21,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0F | Real Historical Dataset Integration | Connect validation helpers to licensed historical tournament data and real backtest outputs. | Done |
 | 4.0G | Historical Backtesting & Calibration | Score historical probability outputs and document calibration before API work. | Done |
 | 4.0H | Complete Historical World Cup Dataset | Expand historical fixtures before relying on backtesting for model decisions. | Done |
-| 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Recommended next |
+| 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Done |
+| 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -527,14 +528,16 @@ Exit criteria:
 
 Use complete historical fixture data and model-generated probability snapshots to produce documented backtesting reports.
 
-Potential deliverables:
+Deliverables:
 
-- Historical probability snapshot fixtures or generated outputs
-- Match-level and tournament-level scoring reports
-- Brier Score and Log Loss reports
-- Calibration bucket reports
-- Baseline comparisons
-- Data cutoff and model version metadata
+- Historical report generation helpers
+- Per-year reports for 2010, 2014, 2018, and 2022
+- Champion and runner-up extraction from complete fixture datasets
+- Champion rank, probability, Top-1, Top-3, and Top-5 outputs
+- Brier Score and Log Loss report fields
+- Calibration bucket summaries
+- Dataset completeness metadata
+- Synthetic snapshot warnings
 - Clear interpretation of what the reports can and cannot prove
 
 Exit criteria:
@@ -543,6 +546,26 @@ Exit criteria:
 - Reports use complete fixture coverage and documented model snapshots.
 - Results are framed as validation evidence, not guarantees.
 - Remaining calibration and data limitations are documented.
+
+## Phase 4.0J - True Pre-Tournament Snapshot Generation
+
+Generate real historical probability snapshots from model logic using only information available before each evaluated tournament.
+
+Potential deliverables:
+
+- Pre-tournament Elo snapshots for historical World Cups
+- Elo-to-expected-goals mapping foundation
+- Historical tournament simulation snapshot generation
+- Snapshot metadata with model version and data cutoff
+- Replacement of synthetic report fixtures with model-generated snapshots
+- Backtesting report reruns using real model outputs
+
+Exit criteria:
+
+- Historical snapshots are generated reproducibly.
+- Data leakage checks protect tournament cutoffs.
+- Reports distinguish model-generated snapshots from synthetic fixtures.
+- Model performance remains framed as evidence with limitations.
 
 ## Phase 5.0 - Web Dashboard
 

@@ -347,7 +347,7 @@ export interface HistoricalValidationResult {
   summary: ValidationMetricSummary;
 }
 
-export type HistoricalBacktestDecisionMethod = "regular_time" | "extra_time" | "penalties";
+export type HistoricalBacktestDecisionMethod = "regular_time" | "extra_time" | "penalties" | "draw";
 
 export interface HistoricalBacktestFixture {
   matchId: string;
@@ -420,4 +420,75 @@ export interface HistoricalBacktestResult {
     isPartialHistoricalValidation: boolean;
     notes: string[];
   };
+}
+
+export type HistoricalBacktestingSnapshotType = "synthetic_report_fixture" | "model_generated";
+
+export interface HistoricalBacktestingReportPredictionInput extends HistoricalTournamentPredictionInput {
+  tournamentYear: number;
+  snapshotType: HistoricalBacktestingSnapshotType;
+  modelVersion?: string;
+  dataCutoff?: string;
+}
+
+export interface HistoricalBacktestingDatasetCompleteness {
+  isComplete: boolean;
+  matchCount: number;
+  expectedMatchCount: number;
+  coverageNote: string;
+  sourceNote?: string;
+}
+
+export interface HistoricalBacktestingCalibrationBucketSummary {
+  bucketStart: number;
+  bucketEnd: number;
+  predictionCount: number;
+  averagePredictedProbability: number;
+  actualRate: number;
+}
+
+export interface HistoricalBacktestingYearReport {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  actualChampion: string;
+  actualRunnerUp: string;
+  championProbabilityRank: number | null;
+  runnerUpProbabilityRank?: number | null;
+  championProbability: number;
+  runnerUpProbability?: number;
+  championTop1Hit: boolean;
+  championTop3Hit: boolean;
+  championTop5Hit: boolean;
+  brierScore: number;
+  logLoss: number;
+  calibrationBucketSummary?: HistoricalBacktestingCalibrationBucketSummary;
+  datasetCompleteness: HistoricalBacktestingDatasetCompleteness;
+  probabilitySnapshotType: HistoricalBacktestingSnapshotType;
+  modelVersion?: string;
+  dataCutoff?: string;
+  warnings: string[];
+}
+
+export interface HistoricalBacktestingReportSummary {
+  yearsEvaluated: number[];
+  tournamentCount: number;
+  averageBrierScore: number;
+  averageLogLoss: number;
+  top1HitRate: number;
+  top3HitRate: number;
+  top5HitRate: number;
+  warnings: string[];
+}
+
+export interface HistoricalBacktestingReportInput {
+  fixtureSubsets: readonly HistoricalTournamentFixtureSubset[];
+  predictions: readonly HistoricalBacktestingReportPredictionInput[];
+  expectedMatchesPerTournament?: number;
+  calibrationBucketSize?: number;
+}
+
+export interface HistoricalBacktestingReport {
+  reports: HistoricalBacktestingYearReport[];
+  summary: HistoricalBacktestingReportSummary;
 }
