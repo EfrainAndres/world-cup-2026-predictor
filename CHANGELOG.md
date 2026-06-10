@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0C tournament repeated-runs foundation.
+- Repeated TypeScript tournament simulation aggregation with champion, runner-up, group qualification, knockout qualification probabilities, deterministic tests, and model result documentation.
 - Phase 4.0B tournament simulation foundation.
 - Simplified TypeScript group-stage standings, knockout rounds, tournament orchestration, deterministic tests, and tournament model result documentation.
 - Phase 4.0A Monte Carlo match simulation engine foundation.

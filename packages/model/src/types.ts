@@ -190,3 +190,32 @@ export interface SimulatedTournamentResult {
   runnerUp: string;
   metadata: TournamentMetadata;
 }
+
+export interface TournamentRepeatedRunsConfig extends TournamentSimulationConfig {
+  runCount: number;
+  maxRunCount?: number;
+}
+
+export interface TournamentTeamProbabilitySummary {
+  team: string;
+  count: number;
+  probability: number;
+}
+
+export interface TournamentRepeatedRunsMetadata {
+  tournamentName: string;
+  totalRuns: number;
+  seed?: number;
+  maxRunCount: number;
+  format: string;
+  notes: string[];
+}
+
+export interface TournamentRepeatedRunsResult {
+  totalRuns: number;
+  championProbabilities: TournamentTeamProbabilitySummary[];
+  runnerUpProbabilities: TournamentTeamProbabilitySummary[];
+  knockoutQualificationProbabilities: TournamentTeamProbabilitySummary[];
+  groupQualificationProbabilities: TournamentTeamProbabilitySummary[];
+  metadata: TournamentRepeatedRunsMetadata;
+}
