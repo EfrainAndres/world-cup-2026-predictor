@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0F real historical dataset integration foundation.
+- Curated 2018 and 2022 World Cup fixture JSON subsets, TypeScript historical fixture loader, validation tests, and data quality documentation.
 - Phase 4.0E historical tournament validation foundation.
 - TypeScript historical validation metrics for champion probabilities, runner-up ranking, knockout qualification, calibration buckets, deterministic tests, and model result documentation.
 - Phase 4.0D FIFA 2026 format and fixture modeling foundation.

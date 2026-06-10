@@ -1,0 +1,59 @@
+{
+  "dataset_id": "world-cup-2022-results",
+  "version": "0.1.0",
+  "description": "Curated lightweight FIFA World Cup 2022 knockout-stage fixture subset for validation tests.",
+  "matches": [
+    {
+      "match_id": "2022-WC-SF-001",
+      "tournament_year": 2022,
+      "stage": "semi_final",
+      "match_date": "2022-12-13",
+      "home_team": "Argentina",
+      "away_team": "Croatia",
+      "home_score": 3,
+      "away_score": 0,
+      "result": "home_win",
+      "neutral_site": true,
+      "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
+    },
+    {
+      "match_id": "2022-WC-SF-002",
+      "tournament_year": 2022,
+      "stage": "semi_final",
+      "match_date": "2022-12-14",
+      "home_team": "France",
+      "away_team": "Morocco",
+      "home_score": 2,
+      "away_score": 0,
+      "result": "home_win",
+      "neutral_site": true,
+      "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
+    },
+    {
+      "match_id": "2022-WC-TP-001",
+      "tournament_year": 2022,
+      "stage": "third_place",
+      "match_date": "2022-12-17",
+      "home_team": "Croatia",
+      "away_team": "Morocco",
+      "home_score": 2,
+      "away_score": 1,
+      "result": "home_win",
+      "neutral_site": true,
+      "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
+    },
+    {
+      "match_id": "2022-WC-F-001",
+      "tournament_year": 2022,
+      "stage": "final",
+      "match_date": "2022-12-18",
+      "home_team": "Argentina",
+      "away_team": "France",
+      "home_score": 3,
+      "away_score": 3,
+      "result": "draw",
+      "neutral_site": true,
+      "source_note": "Curated from public FIFA World Cup 2022 final records. Argentina won 4-2 on penalties; the result field follows score consistency only."
+    }
+  ]
+}
