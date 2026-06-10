@@ -15,7 +15,20 @@ export type {
   MonteCarloSimulationConfig,
   RandomFunction,
   SimulatedScoreline,
-  SimulatedScorelineSummary
+  SimulatedScorelineSummary,
+  GroupInput,
+  GroupMatchInput,
+  GroupStanding,
+  KnockoutFixtureInput,
+  SimulatedGroupMatch,
+  SimulatedGroupResult,
+  SimulatedKnockoutMatch,
+  SimulatedKnockoutRound,
+  SimulatedTournamentResult,
+  TournamentInput,
+  TournamentMetadata,
+  TournamentSimulationConfig,
+  TournamentTeamInput
 } from "./types.js";
 
 export {
@@ -50,3 +63,9 @@ export {
 } from "./dixon-coles.js";
 
 export { createSeededRandom, runMatchSimulations, simulateOneMatch, validateProbabilityMatrix } from "./simulation.js";
+
+export { createInitialStandings, simulateGroup, sortGroupStandings, validateGroupInput } from "./group-stage.js";
+
+export { simulateKnockoutMatch, simulateKnockoutRound, validateKnockoutFixture } from "./knockout.js";
+
+export { simulateTournament } from "./tournament.js";
