@@ -21,7 +21,7 @@ import type {
 } from "./types.js";
 
 export const PARTIAL_HISTORICAL_BACKTEST_WARNING =
-  "Partial historical validation only: current fixtures include semi-finals, third-place matches, and finals for 2018 and 2022.";
+  "Partial historical validation only: one or more fixture subsets are marked partial.";
 
 const DEFAULT_BACKTEST_TOP_N = 3;
 const DEFAULT_CALIBRATION_BUCKET_SIZE = 0.25;
@@ -242,9 +242,9 @@ export function runHistoricalBacktest(input: HistoricalBacktestInput): Historica
       predictionCount: input.predictions.length,
       isPartialHistoricalValidation: input.fixtureSubsets.some((subset) => subset.isPartial),
       notes: [
-        PARTIAL_HISTORICAL_BACKTEST_WARNING,
+        ...(input.fixtureSubsets.some((subset) => subset.isPartial) ? [PARTIAL_HISTORICAL_BACKTEST_WARNING] : []),
         "Backtesting output is based on supplied probability snapshots, not trained model predictions.",
-        "The current curated fixtures are not complete historical World Cup datasets."
+        "Complete fixture results still require model-generated probability snapshots before accuracy can be reported."
       ]
     }
   };

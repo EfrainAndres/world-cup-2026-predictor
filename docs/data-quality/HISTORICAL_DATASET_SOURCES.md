@@ -1,49 +1,50 @@
 # Historical Dataset Sources
 
-The Phase 4.0F fixtures are manually curated from public historical FIFA World Cup match records. They are not downloaded automatically and they are not a complete historical dataset.
+The Phase 4.0H fixtures are manually curated factual match records from public FIFA World Cup result references. They are committed as small reviewed JSON fixtures and are not downloaded during tests.
 
 ## Source References
 
-| Tournament | Fixture Scope | Source References |
+| Tournament | Primary Reference | Cross-Check Reference |
 | --- | --- | --- |
-| 2018 FIFA World Cup | Semi-finals, third-place match, final | [2018 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2018_FIFA_World_Cup_knockout_stage), [2018 FIFA World Cup final](https://en.wikipedia.org/wiki/2018_FIFA_World_Cup_final) |
-| 2022 FIFA World Cup | Semi-finals, third-place match, final | [2022 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_knockout_stage), [2022 FIFA World Cup final](https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_final) |
+| 2010 FIFA World Cup | [OpenFootball World Cup 2010 data](https://github.com/openfootball/worldcup/tree/master/2010--south-africa) | [2010 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2010_FIFA_World_Cup_knockout_stage) |
+| 2014 FIFA World Cup | [OpenFootball World Cup 2014 data](https://github.com/openfootball/worldcup/tree/master/2014--brazil) | [2014 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2014_FIFA_World_Cup_knockout_stage) |
+| 2018 FIFA World Cup | [OpenFootball World Cup 2018 data](https://github.com/openfootball/worldcup/tree/master/2018--russia) | [2018 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2018_FIFA_World_Cup_knockout_stage) |
+| 2022 FIFA World Cup | [OpenFootball World Cup 2022 data](https://github.com/openfootball/worldcup/tree/master/2022--qatar) | [2022 FIFA World Cup knockout stage](https://en.wikipedia.org/wiki/2022_FIFA_World_Cup_knockout_stage) |
 
-Future production-quality data work should prefer official FIFA pages, licensed datasets, or explicitly reusable public datasets. Public reference pages can be useful for cross-checking but should not be the only source for published model claims.
+Additional public tournament result pages may be used by future contributors to verify group-stage dates, scores, penalty winners, and final outcomes.
 
-## How Sources Should Be Cited
+## Source Review Rules
 
 Future data updates should record:
 
 - Source name.
 - Source URL.
 - Retrieval date.
+- Fixture scope.
 - Field-level transformations.
 - Manual corrections.
 - License or usage note.
 - Reviewer initials or review note when manually curated.
 
-For this phase, each fixture row includes a `source_note`, and this document provides the source reference index.
+Each fixture row includes a concise `source_note`; this document is the source index for the fixture directory.
 
 ## Licensing And Usage Considerations
 
-The committed fixtures are small manually curated factual records used for tests and portfolio demonstration. They are not bulk scraped data.
+The committed fixtures are small manually curated factual records used for tests and portfolio demonstration. They are not bulk scraped website content.
 
 Before expanding the dataset:
 
 - Confirm whether the chosen source permits reuse.
+- Prefer stable sources with clear licenses or public factual records.
 - Avoid automated scraping unless terms allow it.
-- Prefer stable downloadable datasets with clear licenses.
-- Avoid committing large raw datasets without a redistribution review.
-- Keep generated outputs separate from source fixtures.
+- Avoid committing large raw datasets without redistribution review.
+- Keep source notes factual and short.
 
 ## Why Curated Fixtures Instead Of Automatic Download
 
-Automatic downloads are intentionally out of scope for this phase because:
+Automatic downloads are intentionally out of scope because:
 
-- The project does not yet have source-license automation rules.
 - Network-dependent tests would make local checks less reliable.
-- A small fixture keeps review simple.
-- Manual curation makes assumptions visible before scaling.
-
-The next phase can add broader ingestion only after the source strategy is approved and documented.
+- Manual review keeps early data quality visible.
+- The dataset is small enough to inspect in pull requests.
+- Source licensing and provenance rules should be settled before automated ingestion.

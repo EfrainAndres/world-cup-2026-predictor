@@ -41,12 +41,16 @@ export {
 } from "./normalization.js";
 
 export {
+  EXPECTED_HISTORICAL_WORLD_CUP_MATCHES_PER_TOURNAMENT,
+  EXPECTED_HISTORICAL_WORLD_CUP_TOTAL_MATCHES,
   HISTORICAL_WORLD_CUP_DATASET_CREATED_AT,
   HISTORICAL_WORLD_CUP_DECIDED_BY,
   HISTORICAL_WORLD_CUP_STAGES,
   HISTORICAL_WORLD_CUP_YEARS,
+  loadHistoricalWorldCupDataset,
   loadHistoricalWorldCupMatches,
   normalizeHistoricalWorldCupMatch,
   normalizeHistoricalWorldCupMatches,
+  validateHistoricalWorldCupDataset,
   validateHistoricalWorldCupFixtureFile
 } from "./historical-world-cup.js";
