@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0D FIFA 2026 format and fixture modeling foundation.
+- TypeScript FIFA 2026 format constants, group validation, best third-place qualification, Round of 32 fixture validation, deterministic tests, and model result documentation.
 - Phase 4.0C tournament repeated-runs foundation.
 - Repeated TypeScript tournament simulation aggregation with champion, runner-up, group qualification, knockout qualification probabilities, deterministic tests, and model result documentation.
 - Phase 4.0B tournament simulation foundation.

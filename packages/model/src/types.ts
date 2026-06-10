@@ -219,3 +219,56 @@ export interface TournamentRepeatedRunsResult {
   groupQualificationProbabilities: TournamentTeamProbabilitySummary[];
   metadata: TournamentRepeatedRunsMetadata;
 }
+
+export type FIFA2026GroupId = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L";
+
+export interface FIFA2026Team {
+  id: string;
+  name: string;
+}
+
+export interface FIFA2026Group {
+  id: FIFA2026GroupId;
+  teams: readonly FIFA2026Team[];
+}
+
+export interface FIFA2026GroupStanding {
+  team: FIFA2026Team;
+  groupId: FIFA2026GroupId;
+  position: number;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export type FIFA2026QualificationSource = "group_winner" | "group_runner_up" | "third_place";
+
+export interface FIFA2026QualifiedTeam extends FIFA2026GroupStanding {
+  qualificationSource: FIFA2026QualificationSource;
+}
+
+export interface FIFA2026BracketSlot {
+  slotId: string;
+  team: FIFA2026QualifiedTeam;
+}
+
+export interface FIFA2026RoundOf32Fixture {
+  fixtureId: string;
+  homeSlot: FIFA2026BracketSlot;
+  awaySlot: FIFA2026BracketSlot;
+}
+
+export interface FIFA2026TournamentFormat {
+  totalTeams: number;
+  groupCount: number;
+  teamsPerGroup: number;
+  topTeamsPerGroup: number;
+  bestThirdPlaceTeams: number;
+  knockoutTeams: number;
+  groupIds: readonly FIFA2026GroupId[];
+}
