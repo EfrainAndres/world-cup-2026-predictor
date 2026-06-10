@@ -542,3 +542,101 @@ export interface GeneratedPreTournamentSnapshot extends HistoricalBacktestingRep
   championProbabilities: readonly SnapshotTeamProbability[];
   snapshotMetadata: PreTournamentSnapshotMetadata;
 }
+
+export type HistoricalTournamentReplayWarningCode =
+  | "baseline_snapshot"
+  | "dataset_incomplete"
+  | "lookahead_guardrail_error"
+  | "lookahead_guardrail_warning"
+  | "missing_lookahead_guardrails"
+  | "model_snapshot_metadata_missing";
+
+export type HistoricalTournamentReplayWarningSeverity = "info" | "warning" | "error";
+
+export interface HistoricalTournamentReplayWarning {
+  code: HistoricalTournamentReplayWarningCode;
+  severity: HistoricalTournamentReplayWarningSeverity;
+  message: string;
+  tournamentYear?: number;
+}
+
+export interface HistoricalTournamentReplayLookAheadStatus {
+  passed: boolean;
+  guardrails: readonly LookAheadGuardrailResult[];
+  errorCount: number;
+  warningCount: number;
+}
+
+export interface HistoricalTournamentReplaySnapshotInput extends HistoricalBacktestingReportPredictionInput {
+  snapshotMetadata?: PreTournamentSnapshotMetadata;
+  actualTournamentResultsIncluded?: boolean;
+}
+
+export interface HistoricalTournamentReplayYearInput {
+  fixtureSubset: HistoricalTournamentFixtureSubset;
+  snapshot: HistoricalTournamentReplaySnapshotInput;
+  calibrationBuckets?: readonly ChampionCalibrationBucket[];
+  expectedMatchesPerTournament?: number;
+}
+
+export interface HistoricalTournamentReplayYearResult {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  actualChampion: string;
+  actualRunnerUp: string;
+  snapshotType: HistoricalBacktestingSnapshotType;
+  championProbability: number;
+  championRank: number | null;
+  runnerUpProbability?: number;
+  runnerUpRank?: number | null;
+  championTop1Hit: boolean;
+  championTop3Hit: boolean;
+  championTop5Hit: boolean;
+  brierScore: number;
+  logLoss: number;
+  calibrationBucketSummary?: HistoricalBacktestingCalibrationBucketSummary;
+  datasetCompleteness: HistoricalBacktestingDatasetCompleteness;
+  lookAheadGuardrailStatus: HistoricalTournamentReplayLookAheadStatus;
+  warnings: readonly HistoricalTournamentReplayWarning[];
+  modelVersion?: string;
+  dataCutoff?: string;
+}
+
+export interface HistoricalTournamentReplaySnapshotTypeSummary {
+  snapshotType: HistoricalBacktestingSnapshotType;
+  count: number;
+}
+
+export interface HistoricalTournamentReplayAggregateSummary {
+  yearsEvaluated: number[];
+  tournamentCount: number;
+  averageBrierScore: number;
+  averageLogLoss: number;
+  top1HitRate: number;
+  top3HitRate: number;
+  top5HitRate: number;
+  warnings: readonly HistoricalTournamentReplayWarning[];
+  snapshotTypeSummary: readonly HistoricalTournamentReplaySnapshotTypeSummary[];
+}
+
+export interface HistoricalTournamentReplayMetadata {
+  fixtureSubsetCount: number;
+  snapshotCount: number;
+  expectedMatchesPerTournament: number;
+  calibrationBucketSize: number;
+  notes: readonly string[];
+}
+
+export interface HistoricalTournamentReplayInput {
+  fixtureSubsets: readonly HistoricalTournamentFixtureSubset[];
+  snapshots: readonly HistoricalTournamentReplaySnapshotInput[];
+  expectedMatchesPerTournament?: number;
+  calibrationBucketSize?: number;
+}
+
+export interface HistoricalTournamentReplayBacktestResult {
+  results: readonly HistoricalTournamentReplayYearResult[];
+  summary: HistoricalTournamentReplayAggregateSummary;
+  metadata: HistoricalTournamentReplayMetadata;
+}
