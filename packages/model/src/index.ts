@@ -61,6 +61,18 @@ export type {
   HistoricalTournamentEvaluationResult,
   HistoricalTournamentFixtureSubset,
   HistoricalTournamentPredictionInput,
+  HistoricalTournamentReplayAggregateSummary,
+  HistoricalTournamentReplayBacktestResult,
+  HistoricalTournamentReplayInput,
+  HistoricalTournamentReplayLookAheadStatus,
+  HistoricalTournamentReplayMetadata,
+  HistoricalTournamentReplaySnapshotInput,
+  HistoricalTournamentReplaySnapshotTypeSummary,
+  HistoricalTournamentReplayWarning,
+  HistoricalTournamentReplayWarningCode,
+  HistoricalTournamentReplayWarningSeverity,
+  HistoricalTournamentReplayYearInput,
+  HistoricalTournamentReplayYearResult,
   HistoricalValidationResult,
   GeneratedPreTournamentSnapshot,
   KnockoutQualificationEvaluationResult,
@@ -186,3 +198,11 @@ export {
   validateGeneratedSnapshotProbabilities,
   validatePreTournamentSnapshotInput
 } from "./pre-tournament-snapshots.js";
+
+export {
+  HISTORICAL_TOURNAMENT_REPLAY_YEARS,
+  MISSING_LOOKAHEAD_GUARDRAILS_WARNING,
+  MODEL_SNAPSHOT_METADATA_MISSING_WARNING,
+  evaluateHistoricalTournamentReplayYear,
+  runHistoricalTournamentReplayBacktest
+} from "./tournament-replay-backtesting.js";

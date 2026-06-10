@@ -23,7 +23,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0H | Complete Historical World Cup Dataset | Expand historical fixtures before relying on backtesting for model decisions. | Done |
 | 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Done |
 | 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Done |
-| 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Recommended next |
+| 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Done |
+| 4.0L | Historical Elo Snapshot Replay | Generate true pre-tournament Elo snapshots from historical match data before each replayed tournament. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -573,14 +574,16 @@ Exit criteria:
 
 Replay historical tournament predictions using pre-tournament snapshots and compare the generated probabilities against actual outcomes.
 
-Potential deliverables:
+Deliverables:
 
 - Historical tournament replay helper
 - Baseline report reruns using `baseline_pre_tournament_snapshot`
-- Comparison against synthetic report fixtures
+- Per-year replay outputs for 2010, 2014, 2018, and 2022
 - Snapshot safety checks in report generation
 - First replay-oriented model validation report
-- Clear decision on whether to proceed to API work or improve model realism first
+- Look-ahead guardrail status in replay outputs
+- Baseline snapshot warnings in per-year and aggregate summaries
+- Clear decision to improve model realism before public accuracy claims
 
 Exit criteria:
 
@@ -588,6 +591,26 @@ Exit criteria:
 - Reports use safe pre-tournament snapshots.
 - Results are interpreted without overclaiming accuracy.
 - Remaining gaps toward calibrated Elo/Poisson simulation are documented.
+
+## Phase 4.0L - Historical Elo Snapshot Replay
+
+Replace seed-rating replay snapshots with true pre-tournament Elo snapshots generated from historical match data.
+
+Potential deliverables:
+
+- Historical match dataset cutoff inputs for 2010, 2014, 2018, and 2022.
+- Sequential Elo replay before each tournament start date.
+- Pre-tournament Elo snapshot artifacts.
+- Replay reports comparing Elo snapshots against actual tournament outcomes.
+- Calibration notes comparing seed-rating baseline replay against Elo replay.
+- Documentation of remaining gaps before API/dashboard publication.
+
+Exit criteria:
+
+- Elo snapshots are generated only from data available before each tournament.
+- Replay reports distinguish Elo replay from seed-rating baseline replay.
+- Metrics are reported with Brier Score, Log Loss, Top-N hits, and calibration notes.
+- The project has enough evidence to decide whether Phase 5.0 can begin or model realism should improve further.
 
 ## Phase 5.0 - Web Dashboard
 
