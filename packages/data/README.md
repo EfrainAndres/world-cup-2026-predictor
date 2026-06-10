@@ -18,6 +18,9 @@ This package currently includes:
 - Result-value standardization.
 - Date parsing to ISO output.
 - Result derivation from completed-match scores.
+- Curated historical World Cup fixture loading.
+- Historical fixture validation for years, stages, scores, results, and duplicate match IDs.
+- Historical fixture normalization into the existing `NormalizedMatch` contract.
 - Deterministic unit tests with small local fixtures.
 
 ## Out Of Scope
@@ -28,6 +31,9 @@ This package does not yet include:
 - CSV parsing.
 - External APIs.
 - Large raw data files.
+- Complete historical World Cup coverage.
+- Automated historical source synchronization.
+- Penalty shootout winner modeling.
 - Elo ratings.
 - Poisson or Dixon-Coles modeling.
 - Monte Carlo simulation.
@@ -48,3 +54,5 @@ These commands require `pnpm` and workspace dependencies to be installed.
 ## Design Notes
 
 The package follows `docs/DATA_DICTIONARY.md` for planned field names and `docs/ARCHITECTURE.md` for layer boundaries. Model logic belongs in `packages/model`, not this package.
+
+The historical World Cup fixtures are intentionally small curated JSON files. They are useful for validating data structure and loader behavior, but they are not enough to claim model accuracy or run complete historical backtests.

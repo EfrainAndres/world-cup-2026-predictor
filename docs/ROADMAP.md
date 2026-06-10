@@ -18,7 +18,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Done |
 | 4.0D | FIFA 2026 Format & Fixture Modeling | Model the real tournament structure, fixtures, and official progression rules. | Done |
 | 4.0E | Historical Tournament Validation | Validate tournament logic and model assumptions against historical tournament structures and results. | Done |
-| 4.0F | Real Historical Dataset Integration | Connect validation helpers to licensed historical tournament data and real backtest outputs. | Recommended next |
+| 4.0F | Real Historical Dataset Integration | Connect validation helpers to licensed historical tournament data and real backtest outputs. | Done |
+| 4.0G | Historical Backtesting & Calibration | Score historical probability outputs and document calibration before API work. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -442,21 +443,51 @@ Exit criteria:
 
 Connect the validation foundation to real historical tournament data after source licensing and data provenance are clear.
 
-Potential deliverables:
+Deliverables:
 
-- Licensed historical World Cup source selection
-- Historical fixture and result normalization
+- Curated 2018 and 2022 historical fixture subsets
+- Historical World Cup fixture JSON structure
+- Historical fixture loader and validation helpers
+- Historical fixture normalization into `NormalizedMatch`
 - Dataset metadata and retrieval-date tracking
-- Historical tournament validation fixtures
+- Documentation of data quality exclusions
+- Deterministic tests for loading, validation, and normalization
+
+Deferred to future phases:
+
+- Complete historical World Cup coverage
+- Automated source synchronization
+- Penalty winner modeling
+- Historical pre-tournament probability snapshots
 - Backtest reports using real model outputs
 - Calibration notes across historical tournaments
-- Documentation of data quality exclusions
 
 Exit criteria:
 
 - Historical data provenance is documented.
 - Validation results are reproducible from local commands.
-- Model quality claims are backed by metrics, data cutoffs, and limitations.
+- The fixture subset is small, curated, and validated.
+- No model quality claims are made from the partial dataset.
+
+## Phase 4.0G - Historical Backtesting & Calibration
+
+Use validated historical fixture data and model outputs to produce the first backtesting and calibration reports.
+
+Potential deliverables:
+
+- Historical prediction snapshot fixtures
+- Match-level backtesting command foundation
+- Tournament-level historical validation report
+- Accuracy, Brier Score, Log Loss, and calibration output
+- Baseline comparison notes
+- Data cutoff and model version metadata
+- Clear decision on whether the current model is ready for API exposure
+
+Exit criteria:
+
+- Historical metrics are generated from reproducible local commands.
+- Calibration and scoring reports are documented.
+- Any model quality claims are backed by data, cutoffs, and limitations.
 
 ## Phase 5.0 - Web Dashboard
 
