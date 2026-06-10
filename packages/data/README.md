@@ -20,6 +20,7 @@ This package currently includes:
 - Result derivation from completed-match scores.
 - Curated historical World Cup fixture loading.
 - Historical fixture validation for years, stages, scores, results, and duplicate match IDs.
+- Historical fixture winner, decision method, penalty score, and stage-order metadata.
 - Historical fixture normalization into the existing `NormalizedMatch` contract.
 - Deterministic unit tests with small local fixtures.
 
@@ -33,7 +34,7 @@ This package does not yet include:
 - Large raw data files.
 - Complete historical World Cup coverage.
 - Automated historical source synchronization.
-- Penalty shootout winner modeling.
+- Complete penalty shootout detail beyond winner and penalty score metadata.
 - Elo ratings.
 - Poisson or Dixon-Coles modeling.
 - Monte Carlo simulation.

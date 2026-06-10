@@ -10,6 +10,7 @@ export type {
 
 export type {
   HistoricalWorldCupFixtureFile,
+  HistoricalWorldCupDecidedBy,
   HistoricalWorldCupMatch,
   HistoricalWorldCupMatchInput,
   HistoricalWorldCupStage,
@@ -41,6 +42,7 @@ export {
 
 export {
   HISTORICAL_WORLD_CUP_DATASET_CREATED_AT,
+  HISTORICAL_WORLD_CUP_DECIDED_BY,
   HISTORICAL_WORLD_CUP_STAGES,
   HISTORICAL_WORLD_CUP_YEARS,
   loadHistoricalWorldCupMatches,

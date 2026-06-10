@@ -13,6 +13,9 @@
       "home_score": 3,
       "away_score": 0,
       "result": "home_win",
+      "winner": "Argentina",
+      "decided_by": "regular_time",
+      "stage_order": 1,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -26,6 +29,9 @@
       "home_score": 2,
       "away_score": 0,
       "result": "home_win",
+      "winner": "France",
+      "decided_by": "regular_time",
+      "stage_order": 1,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -39,6 +45,9 @@
       "home_score": 2,
       "away_score": 1,
       "result": "home_win",
+      "winner": "Croatia",
+      "decided_by": "regular_time",
+      "stage_order": 2,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2022 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -52,6 +61,11 @@
       "home_score": 3,
       "away_score": 3,
       "result": "draw",
+      "winner": "Argentina",
+      "decided_by": "penalties",
+      "penalty_home_score": 4,
+      "penalty_away_score": 2,
+      "stage_order": 3,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2022 final records. Argentina won 4-2 on penalties; the result field follows score consistency only."
     }

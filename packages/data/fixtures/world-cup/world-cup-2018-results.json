@@ -13,6 +13,9 @@
       "home_score": 1,
       "away_score": 0,
       "result": "home_win",
+      "winner": "France",
+      "decided_by": "regular_time",
+      "stage_order": 1,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2018 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -26,6 +29,9 @@
       "home_score": 2,
       "away_score": 1,
       "result": "home_win",
+      "winner": "Croatia",
+      "decided_by": "extra_time",
+      "stage_order": 1,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2018 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -39,6 +45,9 @@
       "home_score": 2,
       "away_score": 0,
       "result": "home_win",
+      "winner": "Belgium",
+      "decided_by": "regular_time",
+      "stage_order": 2,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2018 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     },
@@ -52,6 +61,9 @@
       "home_score": 4,
       "away_score": 2,
       "result": "home_win",
+      "winner": "France",
+      "decided_by": "regular_time",
+      "stage_order": 3,
       "neutral_site": true,
       "source_note": "Curated from public FIFA World Cup 2018 knockout-stage records; see docs/data-quality/HISTORICAL_DATASET_SOURCES.md."
     }

@@ -22,6 +22,9 @@ Each match includes:
 - `home_score`
 - `away_score`
 - `result`
+- `winner`
+- `decided_by`
+- `stage_order`
 - `neutral_site`
 - `source_note`
 
@@ -35,4 +38,14 @@ The files are intentionally small and manually reviewable. They are not complete
 - `draw`
 - `away_win`
 
-For knockout matches decided on penalties, the scoreline can still be a draw. Penalty winners are not modeled in these fixtures yet.
+For knockout matches decided on penalties, the scoreline can still be a draw. The `winner` and penalty score fields identify the team that advanced or won the match.
+
+## Winner Metadata
+
+`winner` identifies the match winner when a knockout match requires more than scoreline result. `decided_by` can be:
+
+- `regular_time`
+- `extra_time`
+- `penalties`
+
+Penalty shootout scores are included only when `decided_by` is `penalties`.

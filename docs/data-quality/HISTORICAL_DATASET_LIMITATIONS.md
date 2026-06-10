@@ -11,7 +11,7 @@ Phase 4.0F creates a real historical fixture foundation, not a complete backtest
 | No player-level data | Injuries, suspensions, lineups, and squad strength are not represented. |
 | No pre-tournament probability snapshots | Historical model validation cannot be scored yet. |
 | No real backtesting metrics claimed | The project cannot yet claim model performance. |
-| No penalty winner field | Knockout draws decided by penalties are represented as scoreline draws only. |
+| Limited penalty metadata | Penalty winners and scores are represented, but detailed shootout events are not. |
 | No venue metadata | Stadium, city, altitude, weather, and travel effects are not modeled. |
 
 ## Not Suitable Yet For
@@ -32,7 +32,7 @@ Future phases should add:
 - Complete historical World Cup match coverage.
 - Source metadata per fixture file.
 - Venue and stage metadata.
-- Penalty shootout winner fields.
+- Detailed penalty shootout event fields.
 - Group standings and qualification outcomes.
 - Historical pre-match probability snapshots.
 - Backtesting reports with data cutoffs and model versions.

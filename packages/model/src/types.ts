@@ -346,3 +346,78 @@ export interface HistoricalValidationResult {
   results: HistoricalTournamentEvaluationResult[];
   summary: ValidationMetricSummary;
 }
+
+export type HistoricalBacktestDecisionMethod = "regular_time" | "extra_time" | "penalties";
+
+export interface HistoricalBacktestFixture {
+  matchId: string;
+  tournamentYear: number;
+  stage: string;
+  stageOrder: number;
+  matchDate: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+  result: EloResult;
+  winner?: string;
+  decidedBy?: HistoricalBacktestDecisionMethod;
+  penaltyHomeScore?: number;
+  penaltyAwayScore?: number;
+}
+
+export interface HistoricalTournamentFixtureSubset {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  matches: readonly HistoricalBacktestFixture[];
+  isPartial: boolean;
+  coverageNote: string;
+  sourceNote?: string;
+}
+
+export interface HistoricalBacktestInput {
+  fixtureSubsets: readonly HistoricalTournamentFixtureSubset[];
+  predictions: readonly HistoricalTournamentPredictionInput[];
+  topN?: number;
+  calibrationBucketSize?: number;
+}
+
+export interface HistoricalBacktestYearResult {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  actual: ActualTournamentResult;
+  evaluation: HistoricalTournamentEvaluationResult;
+  topN: number;
+  championTopNHit: boolean;
+  runnerUpTopNHit?: boolean;
+  isPartial: boolean;
+  warnings: string[];
+}
+
+export interface HistoricalBacktestSummary {
+  tournamentCount: number;
+  years: number[];
+  averageChampionBrierScore: number;
+  averageChampionLogLoss: number;
+  championTop1HitRate: number;
+  championTop3HitRate: number;
+  championTopNHitRate: number;
+  runnerUpTop1HitRate?: number;
+  runnerUpTop3HitRate?: number;
+  runnerUpTopNHitRate?: number;
+  calibrationBuckets: ChampionCalibrationBucket[];
+  warnings: string[];
+}
+
+export interface HistoricalBacktestResult {
+  results: HistoricalBacktestYearResult[];
+  summary: HistoricalBacktestSummary;
+  metadata: {
+    fixtureSubsetCount: number;
+    predictionCount: number;
+    isPartialHistoricalValidation: boolean;
+    notes: string[];
+  };
+}

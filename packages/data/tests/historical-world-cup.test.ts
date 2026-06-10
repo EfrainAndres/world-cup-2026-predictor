@@ -46,7 +46,10 @@ describe("historical World Cup fixture loading", () => {
       match_id: "2018-WC-F-001",
       home_team: "France",
       away_team: "Croatia",
-      result: "home_win"
+      result: "home_win",
+      winner: "France",
+      decided_by: "regular_time",
+      stage_order: 3
     });
   });
 
@@ -59,7 +62,12 @@ describe("historical World Cup fixture loading", () => {
       match_id: "2022-WC-F-001",
       home_team: "Argentina",
       away_team: "France",
-      result: "draw"
+      result: "draw",
+      winner: "Argentina",
+      decided_by: "penalties",
+      penalty_home_score: 4,
+      penalty_away_score: 2,
+      stage_order: 3
     });
   });
 
@@ -103,6 +111,13 @@ describe("historical World Cup fixture loading", () => {
     mutableMatches(fixture)[1]!.match_id = mutableMatches(fixture)[0]?.match_id;
 
     expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("duplicate match_id");
+  });
+
+  it("rejects penalty winners that do not match penalty scores", () => {
+    const fixture = cloneFixture(readFixture("world-cup-2022-results.json"));
+    mutableMatches(fixture)[3]!.winner = "France";
+
+    expect(() => loadHistoricalWorldCupMatches(fixture)).toThrow("winner must match the penalty shootout winner");
   });
 
   it("normalizes historical fixtures into model-compatible match data", () => {
