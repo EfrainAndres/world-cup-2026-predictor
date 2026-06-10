@@ -1,6 +1,6 @@
 # Historical Replay Backtesting Next Steps
 
-Phase 4.0K proves that historical tournaments can be replayed with frozen pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo foundation snapshots from available match inputs. The next improvement is to turn Elo-derived snapshots into historical tournament simulations.
+Phase 4.0K proves that historical tournaments can be replayed with frozen pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo foundation snapshots from available match inputs. Phase 4.0M adds a historical Monte Carlo replay foundation. The next improvement is to reconstruct historical tournament brackets more accurately.
 
 ## Move From Baseline Replay To True Model Replay
 
@@ -47,6 +47,6 @@ That phase added:
 
 ## Recommended Next Phase
 
-Phase 4.0M should focus on Historical Monte Carlo Replay.
+Phase 4.0N should focus on Historical Tournament Bracket Reconstruction.
 
-That phase should convert cutoff-safe Elo-derived match probabilities into tournament simulation outputs for 2010, 2014, 2018, and 2022. After that, the project can decide whether to improve model realism further or move to Phase 5.0 API/dashboard foundation.
+That phase should rebuild group membership and knockout paths for 2010, 2014, 2018, and 2022 so Monte Carlo replay can use more realistic historical tournament structures. After that, the project can decide whether to improve model realism further or move to Phase 5.0 API/dashboard foundation.

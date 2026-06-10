@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0M historical Monte Carlo replay foundation.
+- TypeScript Monte Carlo replay helpers for Elo-to-expected-goals mapping, Poisson score matrices, explicit simplified tournament simulations, per-year replay scoring, aggregate summaries, deterministic tests, and model result documentation.
 - Phase 4.0L historical Elo snapshot replay foundation.
 - TypeScript historical Elo replay helpers for cutoff-safe match filtering, Elo rating snapshots, Elo-derived probability normalization, foundation snapshot metadata, replay warnings, deterministic tests, and model result documentation.
 - Phase 4.0K historical tournament replay backtesting foundation.

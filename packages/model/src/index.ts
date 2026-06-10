@@ -85,6 +85,22 @@ export type {
   HistoricalEloReplayWarningCode,
   HistoricalEloReplayWarningSeverity,
   HistoricalEloTeamSnapshot,
+  HistoricalMonteCarloEloToExpectedGoalsConfig,
+  HistoricalMonteCarloReplayAggregateSummary,
+  HistoricalMonteCarloReplayFixtureInput,
+  HistoricalMonteCarloReplayGroupInput,
+  HistoricalMonteCarloReplayInput,
+  HistoricalMonteCarloReplayMetadata,
+  HistoricalMonteCarloReplayResult,
+  HistoricalMonteCarloReplaySimulationConfig,
+  HistoricalMonteCarloReplaySimulationCountSummary,
+  HistoricalMonteCarloReplayTournamentInput,
+  HistoricalMonteCarloReplayWarning,
+  HistoricalMonteCarloReplayWarningCode,
+  HistoricalMonteCarloReplayWarningSeverity,
+  HistoricalMonteCarloReplayYearInput,
+  HistoricalMonteCarloReplayYearMetadata,
+  HistoricalMonteCarloReplayYearResult,
   KnockoutQualificationEvaluationResult,
   LookAheadGuardrailName,
   LookAheadGuardrailResult,
@@ -227,3 +243,16 @@ export {
   evaluateHistoricalTournamentReplayYear,
   runHistoricalTournamentReplayBacktest
 } from "./tournament-replay-backtesting.js";
+
+export {
+  DEFAULT_HISTORICAL_MONTE_CARLO_ELO_TO_GOALS_CONFIG,
+  FOUNDATION_HISTORICAL_DATA_WARNING,
+  HISTORICAL_MONTE_CARLO_REPLAY_MODEL_VERSION,
+  SIMPLIFIED_TOURNAMENT_BRACKET_WARNING,
+  UNCALIBRATED_ELO_TO_GOALS_WARNING,
+  buildPairwiseExpectedGoalsFromEloSnapshot,
+  generatePairwisePoissonMatrixFromEloSnapshot,
+  mapEloRatingsToExpectedGoals,
+  runHistoricalMonteCarloReplay,
+  runHistoricalMonteCarloReplayYear
+} from "./historical-monte-carlo-replay.js";
