@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I adds historical backtesting report helpers over those fixtures.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails.
 
 ## Current Scope
 
@@ -43,6 +43,8 @@ The package currently includes:
 - Calibration bucket generation for supplied historical probability snapshots.
 - Historical backtesting report helpers for per-year and aggregate summaries.
 - Synthetic probability snapshot warnings for report validation fixtures.
+- Baseline pre-tournament snapshot generation from seed ratings.
+- Look-ahead bias guardrails for historical snapshot inputs.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -111,6 +113,12 @@ The historical report foundation generates per-year report objects for complete 
 
 Current tests use deterministic `synthetic_report_fixture` snapshots. These validate the report pipeline only; they are not real historical model predictions.
 
+## Pre-Tournament Snapshot Scope
+
+The pre-tournament snapshot foundation generates `baseline_pre_tournament_snapshot` outputs from caller-supplied team seed ratings. It normalizes seed ratings into champion probabilities, ranks teams deterministically, records snapshot metadata, and evaluates basic look-ahead guardrails.
+
+This is a transparent baseline, not a calibrated model forecast. Future work should replace seed ratings with sequential historical Elo replay using only data available before each tournament.
+
 ## Boundaries
 
 This package does not implement:
@@ -122,8 +130,8 @@ This package does not implement:
 - Real World Cup 2026 fixtures and groups.
 - Official FIFA group tie-breakers.
 - Official FIFA knockout slot mapping.
-- Historical model-generated probability snapshots.
-- True pre-tournament historical snapshot generation.
+- Historical match replay from complete international results.
+- Calibrated pre-tournament Elo snapshots.
 - Public model accuracy claims.
 - Large-scale repeated-run performance optimization.
 - FastAPI service.

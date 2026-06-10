@@ -1,6 +1,6 @@
 # Real Historical Backtesting Next Steps
 
-Phase 4.0I validates the report layer. The next step is to generate true historical probability snapshots.
+Phase 4.0I validates the report layer. Phase 4.0J adds baseline pre-tournament snapshots from seed ratings. The next step is to replay historical tournaments with stronger pre-tournament model inputs.
 
 ## Path To True Model Backtesting
 
@@ -24,15 +24,26 @@ Every real historical probability snapshot should include:
 - Generation command or reproducible workflow.
 - Known exclusions.
 
-## Recommended Phase 4.0J Scope
+## Phase 4.0J Completed Scope
 
-Phase 4.0J should focus on true pre-tournament snapshot generation:
+Phase 4.0J focused on baseline pre-tournament snapshot generation:
 
-- Build a deterministic command or helper to generate historical snapshots.
-- Ensure Elo is calculated only from matches before the cutoff.
-- Avoid using tournament results from the evaluated year.
-- Store or emit model version metadata.
-- Produce report inputs that can replace `synthetic_report_fixture` snapshots.
+- Built deterministic helpers to generate baseline historical snapshots.
+- Added seed-rating probability normalization.
+- Added look-ahead bias guardrails.
+- Avoided using tournament results from the evaluated year.
+- Stored model version and data cutoff metadata.
+- Produced report inputs that can replace `synthetic_report_fixture` snapshots.
+
+## Recommended Phase 4.0K Scope
+
+Phase 4.0K should focus on historical tournament replay backtesting:
+
+- Use `baseline_pre_tournament_snapshot` outputs in historical reports.
+- Compare replay outputs against actual outcomes.
+- Document whether seed-rating baselines are useful enough to keep.
+- Prepare the path for true Elo replay from historical match data.
+- Keep all claims conservative until calibrated model snapshots exist.
 
 ## Publishing Guidance
 

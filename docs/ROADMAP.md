@@ -22,7 +22,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0G | Historical Backtesting & Calibration | Score historical probability outputs and document calibration before API work. | Done |
 | 4.0H | Complete Historical World Cup Dataset | Expand historical fixtures before relying on backtesting for model decisions. | Done |
 | 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Done |
-| 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Recommended next |
+| 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Done |
+| 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -551,14 +552,15 @@ Exit criteria:
 
 Generate real historical probability snapshots from model logic using only information available before each evaluated tournament.
 
-Potential deliverables:
+Deliverables:
 
-- Pre-tournament Elo snapshots for historical World Cups
-- Elo-to-expected-goals mapping foundation
-- Historical tournament simulation snapshot generation
+- Baseline pre-tournament snapshot input contracts
+- Team seed rating probability normalization
+- Deterministic team probability ranking
+- Look-ahead bias guardrail results
 - Snapshot metadata with model version and data cutoff
-- Replacement of synthetic report fixtures with model-generated snapshots
-- Backtesting report reruns using real model outputs
+- Baseline snapshots for 2010, 2014, 2018, and 2022 in tests
+- Integration with historical backtesting report helpers
 
 Exit criteria:
 
@@ -566,6 +568,26 @@ Exit criteria:
 - Data leakage checks protect tournament cutoffs.
 - Reports distinguish model-generated snapshots from synthetic fixtures.
 - Model performance remains framed as evidence with limitations.
+
+## Phase 4.0K - Historical Tournament Replay Backtesting
+
+Replay historical tournament predictions using pre-tournament snapshots and compare the generated probabilities against actual outcomes.
+
+Potential deliverables:
+
+- Historical tournament replay helper
+- Baseline report reruns using `baseline_pre_tournament_snapshot`
+- Comparison against synthetic report fixtures
+- Snapshot safety checks in report generation
+- First replay-oriented model validation report
+- Clear decision on whether to proceed to API work or improve model realism first
+
+Exit criteria:
+
+- Historical replay outputs are deterministic.
+- Reports use safe pre-tournament snapshots.
+- Results are interpreted without overclaiming accuracy.
+- Remaining gaps toward calibrated Elo/Poisson simulation are documented.
 
 ## Phase 5.0 - Web Dashboard
 
