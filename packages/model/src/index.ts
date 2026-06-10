@@ -75,6 +75,16 @@ export type {
   HistoricalTournamentReplayYearResult,
   HistoricalValidationResult,
   GeneratedPreTournamentSnapshot,
+  GeneratedHistoricalEloSnapshot,
+  HistoricalEloReplayConfig,
+  HistoricalEloReplayDataCoverage,
+  HistoricalEloReplayInput,
+  HistoricalEloReplayMetadata,
+  HistoricalEloReplayRatingResult,
+  HistoricalEloReplayWarning,
+  HistoricalEloReplayWarningCode,
+  HistoricalEloReplayWarningSeverity,
+  HistoricalEloTeamSnapshot,
   KnockoutQualificationEvaluationResult,
   LookAheadGuardrailName,
   LookAheadGuardrailResult,
@@ -198,6 +208,17 @@ export {
   validateGeneratedSnapshotProbabilities,
   validatePreTournamentSnapshotInput
 } from "./pre-tournament-snapshots.js";
+
+export {
+  DEFAULT_HISTORICAL_ELO_REPLAY_CONFIG,
+  HISTORICAL_ELO_REPLAY_SNAPSHOT_FOUNDATION_WARNING,
+  HISTORICAL_ELO_REPLAY_SNAPSHOT_MODEL_VERSION,
+  buildHistoricalEloRatings,
+  generateHistoricalEloSnapshot,
+  normalizeHistoricalEloProbabilities,
+  rankHistoricalEloProbabilities,
+  splitHistoricalEloMatchesByCutoff
+} from "./historical-elo-snapshots.js";
 
 export {
   HISTORICAL_TOURNAMENT_REPLAY_YEARS,

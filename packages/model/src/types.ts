@@ -422,7 +422,11 @@ export interface HistoricalBacktestResult {
   };
 }
 
-export type HistoricalBacktestingSnapshotType = "synthetic_report_fixture" | "baseline_pre_tournament_snapshot" | "model_generated";
+export type HistoricalBacktestingSnapshotType =
+  | "synthetic_report_fixture"
+  | "baseline_pre_tournament_snapshot"
+  | "historical_elo_replay_snapshot_foundation"
+  | "model_generated";
 
 export interface HistoricalBacktestingReportPredictionInput extends HistoricalTournamentPredictionInput {
   tournamentYear: number;
@@ -543,9 +547,82 @@ export interface GeneratedPreTournamentSnapshot extends HistoricalBacktestingRep
   snapshotMetadata: PreTournamentSnapshotMetadata;
 }
 
+export type HistoricalEloReplayDataCoverage = "complete_international_history" | "curated_world_cup_fixtures_only" | "custom_partial_history";
+
+export interface HistoricalEloReplayConfig extends EloConfig {
+  probabilityRatingScale: number;
+}
+
+export interface HistoricalEloReplayInput {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  tournamentStartDate: string;
+  generatedAt: string;
+  inputDataCutoff: string;
+  targetTeams: readonly string[];
+  historicalMatches: readonly EloMatch[];
+  config?: Partial<HistoricalEloReplayConfig>;
+  dataCoverage?: HistoricalEloReplayDataCoverage;
+  actualTournamentResultsIncluded?: boolean;
+  metadata?: Record<string, string>;
+}
+
+export type HistoricalEloReplayWarningCode = "incomplete_historical_data" | "matches_after_cutoff_ignored" | "no_matches_before_cutoff";
+
+export type HistoricalEloReplayWarningSeverity = "info" | "warning" | "error";
+
+export interface HistoricalEloReplayWarning {
+  code: HistoricalEloReplayWarningCode;
+  severity: HistoricalEloReplayWarningSeverity;
+  message: string;
+}
+
+export interface HistoricalEloTeamSnapshot extends TeamProbabilitySnapshot {
+  eloRating: number;
+  rank: number;
+}
+
+export interface HistoricalEloReplayMetadata {
+  tournamentYear: number;
+  tournamentStartDate: string;
+  inputDataCutoff: string;
+  generatedAt: string;
+  modelVersion: string;
+  snapshotType: "historical_elo_replay_snapshot_foundation";
+  dataCoverage: HistoricalEloReplayDataCoverage;
+  inputMatchCount: number;
+  matchesUsed: number;
+  matchesIgnoredAfterCutoff: number;
+  targetTeamCount: number;
+  inputDataLatestDate?: string;
+  usedMatchLatestDate?: string;
+  config: HistoricalEloReplayConfig;
+  warnings: readonly HistoricalEloReplayWarning[];
+  lookAheadGuardrails: readonly LookAheadGuardrailResult[];
+}
+
+export interface HistoricalEloReplayRatingResult {
+  ratings: readonly EloRatingEntry[];
+  matchHistory: readonly EloMatchRatingHistory[];
+  matchesUsed: readonly EloMatch[];
+  matchesIgnoredAfterCutoff: readonly EloMatch[];
+  inputDataLatestDate?: string;
+  usedMatchLatestDate?: string;
+}
+
+export interface GeneratedHistoricalEloSnapshot extends HistoricalBacktestingReportPredictionInput {
+  snapshotType: "historical_elo_replay_snapshot_foundation";
+  teams: readonly string[];
+  championProbabilities: readonly HistoricalEloTeamSnapshot[];
+  eloRatings: readonly HistoricalEloTeamSnapshot[];
+  snapshotMetadata: HistoricalEloReplayMetadata;
+}
+
 export type HistoricalTournamentReplayWarningCode =
   | "baseline_snapshot"
   | "dataset_incomplete"
+  | "historical_elo_foundation_snapshot"
   | "lookahead_guardrail_error"
   | "lookahead_guardrail_warning"
   | "missing_lookahead_guardrails"
@@ -568,7 +645,7 @@ export interface HistoricalTournamentReplayLookAheadStatus {
 }
 
 export interface HistoricalTournamentReplaySnapshotInput extends HistoricalBacktestingReportPredictionInput {
-  snapshotMetadata?: PreTournamentSnapshotMetadata;
+  snapshotMetadata?: PreTournamentSnapshotMetadata | HistoricalEloReplayMetadata;
   actualTournamentResultsIncluded?: boolean;
 }
 

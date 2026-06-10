@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0L historical Elo snapshot replay foundation.
+- TypeScript historical Elo replay helpers for cutoff-safe match filtering, Elo rating snapshots, Elo-derived probability normalization, foundation snapshot metadata, replay warnings, deterministic tests, and model result documentation.
 - Phase 4.0K historical tournament replay backtesting foundation.
 - TypeScript replay helpers for 2010, 2014, 2018, and 2022 pre-tournament snapshots, per-year replay metrics, aggregate replay summaries, look-ahead guardrail status, baseline snapshot warnings, deterministic tests, and replay documentation.
 - Phase 4.0J true pre-tournament snapshot generation foundation.

@@ -24,7 +24,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0I | Real Historical Backtesting Reports | Generate documented reports from complete historical fixtures and model probability snapshots. | Done |
 | 4.0J | True Pre-Tournament Snapshot Generation | Generate real historical model snapshots using only pre-tournament data cutoffs. | Done |
 | 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Done |
-| 4.0L | Historical Elo Snapshot Replay | Generate true pre-tournament Elo snapshots from historical match data before each replayed tournament. | Recommended next |
+| 4.0L | Historical Elo Snapshot Replay | Generate cutoff-safe historical Elo foundation snapshots from available match data. | Done |
+| 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -594,23 +595,45 @@ Exit criteria:
 
 ## Phase 4.0L - Historical Elo Snapshot Replay
 
-Replace seed-rating replay snapshots with true pre-tournament Elo snapshots generated from historical match data.
+Replace seed-rating replay snapshots with cutoff-safe Elo snapshots generated from available historical match data.
 
-Potential deliverables:
+Deliverables:
 
-- Historical match dataset cutoff inputs for 2010, 2014, 2018, and 2022.
-- Sequential Elo replay before each tournament start date.
-- Pre-tournament Elo snapshot artifacts.
-- Replay reports comparing Elo snapshots against actual tournament outcomes.
-- Calibration notes comparing seed-rating baseline replay against Elo replay.
-- Documentation of remaining gaps before API/dashboard publication.
+- Historical Elo replay input, config, snapshot, metadata, and warning contracts.
+- Match filtering that uses only matches on or before the cutoff date.
+- Rejection of cutoffs on or after tournament start dates.
+- Sequential Elo replay before each tournament start date when data is supplied.
+- Elo-derived champion probability normalization and deterministic ranking.
+- `historical_elo_replay_snapshot_foundation` snapshot outputs.
+- Replay-helper compatibility for generated Elo foundation snapshots.
+- Documentation of remaining data and calibration gaps before API/dashboard publication.
 
 Exit criteria:
 
-- Elo snapshots are generated only from data available before each tournament.
-- Replay reports distinguish Elo replay from seed-rating baseline replay.
+- Elo snapshots are generated only from data available on or before the cutoff.
+- Replay reports distinguish Elo foundation replay from seed-rating baseline replay.
 - Metrics are reported with Brier Score, Log Loss, Top-N hits, and calibration notes.
 - The project has enough evidence to decide whether Phase 5.0 can begin or model realism should improve further.
+
+## Phase 4.0M - Historical Monte Carlo Replay
+
+Convert cutoff-safe pre-tournament snapshots into historical tournament simulations and compare simulated probabilities against actual outcomes.
+
+Potential deliverables:
+
+- Elo-to-match-probability mapping foundation.
+- Historical tournament simulation inputs for 2010, 2014, 2018, and 2022.
+- Monte Carlo replay outputs for champion, runner-up, and stage probabilities.
+- Replay reports comparing simulated probabilities against actual outcomes.
+- Calibration notes for Elo, Poisson, and tournament simulation parameters.
+- Documentation of whether model realism is sufficient before Phase 5.0.
+
+Exit criteria:
+
+- Historical simulations use only pre-tournament data.
+- Simulation outputs are deterministic when seeded.
+- Reports distinguish simulation evidence from public accuracy claims.
+- Remaining gaps toward dashboard/API publication are documented.
 
 ## Phase 5.0 - Web Dashboard
 
