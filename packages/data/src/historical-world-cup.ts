@@ -8,6 +8,9 @@ export type HistoricalWorldCupYear = (typeof HISTORICAL_WORLD_CUP_YEARS)[number]
 export const HISTORICAL_WORLD_CUP_STAGES = ["group", "round_of_16", "quarter_final", "semi_final", "third_place", "final"] as const;
 export type HistoricalWorldCupStage = (typeof HISTORICAL_WORLD_CUP_STAGES)[number];
 
+export const HISTORICAL_WORLD_CUP_DECIDED_BY = ["regular_time", "extra_time", "penalties"] as const;
+export type HistoricalWorldCupDecidedBy = (typeof HISTORICAL_WORLD_CUP_DECIDED_BY)[number];
+
 export const HISTORICAL_WORLD_CUP_DATASET_CREATED_AT = "2026-06-09T00:00:00.000Z";
 
 export interface HistoricalWorldCupMatchInput {
@@ -20,6 +23,11 @@ export interface HistoricalWorldCupMatchInput {
   home_score?: unknown;
   away_score?: unknown;
   result?: unknown;
+  winner?: unknown;
+  decided_by?: unknown;
+  penalty_home_score?: unknown;
+  penalty_away_score?: unknown;
+  stage_order?: unknown;
   neutral_site?: unknown;
   source_note?: unknown;
 }
@@ -41,6 +49,11 @@ export interface HistoricalWorldCupMatch {
   home_score: number;
   away_score: number;
   result: MatchResult;
+  winner: string;
+  decided_by: HistoricalWorldCupDecidedBy;
+  penalty_home_score?: number;
+  penalty_away_score?: number;
+  stage_order: number;
   neutral_site: boolean;
   source_note: string;
 }
@@ -54,6 +67,9 @@ export type HistoricalWorldCupValidationErrorCode =
   | "invalid_team"
   | "invalid_score"
   | "invalid_result"
+  | "invalid_winner"
+  | "invalid_decided_by"
+  | "invalid_stage_order"
   | "invalid_neutral_site"
   | "duplicate_match_id";
 
@@ -79,6 +95,9 @@ const REQUIRED_HISTORICAL_FIELDS: readonly (keyof HistoricalWorldCupMatchInput)[
   "home_score",
   "away_score",
   "result",
+  "winner",
+  "decided_by",
+  "stage_order",
   "neutral_site",
   "source_note"
 ];
@@ -97,6 +116,14 @@ function isHistoricalWorldCupStage(value: unknown): value is HistoricalWorldCupS
 
 function isMatchResult(value: unknown): value is MatchResult {
   return typeof value === "string" && VALID_RESULTS.includes(value as MatchResult);
+}
+
+function isHistoricalWorldCupDecidedBy(value: unknown): value is HistoricalWorldCupDecidedBy {
+  return typeof value === "string" && HISTORICAL_WORLD_CUP_DECIDED_BY.includes(value as HistoricalWorldCupDecidedBy);
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
 function issue(
@@ -166,10 +193,10 @@ function validateHistoricalWorldCupMatch(input: HistoricalWorldCupMatchInput): H
     issues.push(issue(input, "away_team", "invalid_team", "away_team must be different from home_team."));
   }
 
-  for (const field of ["home_score", "away_score"] as const) {
+  for (const field of ["home_score", "away_score", "penalty_home_score", "penalty_away_score"] as const) {
     const value = input[field];
 
-    if (value !== undefined && (typeof value !== "number" || !Number.isInteger(value) || value < 0)) {
+    if (value !== undefined && !isNonNegativeInteger(value)) {
       issues.push(issue(input, field, "invalid_score", `${field} must be a non-negative integer.`));
     }
   }
@@ -186,6 +213,52 @@ function validateHistoricalWorldCupMatch(input: HistoricalWorldCupMatchInput): H
     }
   }
 
+  const winner = typeof input.winner === "string" ? normalizeTeamName(input.winner) : "";
+
+  if (input.winner !== undefined) {
+    if (winner.length === 0) {
+      issues.push(issue(input, "winner", "invalid_winner", "winner must be a non-empty team name."));
+    } else if (winner !== homeTeam && winner !== awayTeam) {
+      issues.push(issue(input, "winner", "invalid_winner", "winner must match home_team or away_team."));
+    }
+  }
+
+  if (input.decided_by !== undefined && !isHistoricalWorldCupDecidedBy(input.decided_by)) {
+    issues.push(issue(input, "decided_by", "invalid_decided_by", `decided_by must be one of: ${HISTORICAL_WORLD_CUP_DECIDED_BY.join(", ")}.`));
+  }
+
+  if (input.stage_order !== undefined && !isNonNegativeInteger(input.stage_order)) {
+    issues.push(issue(input, "stage_order", "invalid_stage_order", "stage_order must be a non-negative integer."));
+  }
+
+  if (isMatchResult(input.result) && winner.length > 0) {
+    if (input.result === "home_win" && winner !== homeTeam) {
+      issues.push(issue(input, "winner", "invalid_winner", "winner must match home_team when result is home_win."));
+    }
+
+    if (input.result === "away_win" && winner !== awayTeam) {
+      issues.push(issue(input, "winner", "invalid_winner", "winner must match away_team when result is away_win."));
+    }
+  }
+
+  if (input.decided_by === "penalties") {
+    if (!isNonNegativeInteger(input.penalty_home_score) || !isNonNegativeInteger(input.penalty_away_score)) {
+      issues.push(issue(input, "decided_by", "invalid_decided_by", "penalty scores are required when decided_by is penalties."));
+    } else if (input.penalty_home_score === input.penalty_away_score) {
+      issues.push(issue(input, "decided_by", "invalid_decided_by", "penalty scores must produce a winner."));
+    } else {
+      const penaltyWinner = input.penalty_home_score > input.penalty_away_score ? homeTeam : awayTeam;
+
+      if (winner.length > 0 && winner !== penaltyWinner) {
+        issues.push(issue(input, "winner", "invalid_winner", "winner must match the penalty shootout winner."));
+      }
+    }
+  }
+
+  if (input.result === "draw" && input.decided_by !== "penalties" && input.stage !== "group") {
+    issues.push(issue(input, "decided_by", "invalid_decided_by", "knockout scoreline draws must be decided by penalties."));
+  }
+
   if (input.neutral_site !== undefined && typeof input.neutral_site !== "boolean") {
     issues.push(issue(input, "neutral_site", "invalid_neutral_site", "neutral_site must be a boolean."));
   }
@@ -198,7 +271,7 @@ function validateHistoricalWorldCupMatch(input: HistoricalWorldCupMatchInput): H
 }
 
 function parseHistoricalWorldCupMatch(input: HistoricalWorldCupMatchInput): HistoricalWorldCupMatch {
-  return {
+  const match: HistoricalWorldCupMatch = {
     match_id: String(input.match_id).trim(),
     tournament_year: input.tournament_year as HistoricalWorldCupYear,
     stage: input.stage as HistoricalWorldCupStage,
@@ -208,9 +281,22 @@ function parseHistoricalWorldCupMatch(input: HistoricalWorldCupMatchInput): Hist
     home_score: input.home_score as number,
     away_score: input.away_score as number,
     result: input.result as MatchResult,
+    winner: normalizeTeamName(String(input.winner)),
+    decided_by: input.decided_by as HistoricalWorldCupDecidedBy,
+    stage_order: input.stage_order as number,
     neutral_site: input.neutral_site as boolean,
     source_note: String(input.source_note).trim()
   };
+
+  if (input.penalty_home_score !== undefined) {
+    match.penalty_home_score = input.penalty_home_score as number;
+  }
+
+  if (input.penalty_away_score !== undefined) {
+    match.penalty_away_score = input.penalty_away_score as number;
+  }
+
+  return match;
 }
 
 export function validateHistoricalWorldCupFixtureFile(rawFixtureFile: unknown): HistoricalWorldCupValidationResult {

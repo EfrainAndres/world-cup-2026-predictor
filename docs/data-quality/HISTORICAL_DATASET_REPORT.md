@@ -35,6 +35,9 @@ The data package now validates:
 - Non-negative integer scores.
 - Result values.
 - Result consistency with score.
+- Winner and decision method metadata.
+- Penalty scores when a match is decided by penalties.
+- Stage-order metadata for deterministic extraction.
 - Neutral-site boolean.
 - Duplicate `match_id` values.
 
@@ -44,8 +47,8 @@ Current validation does not yet cover:
 
 - Complete tournament coverage.
 - Official venue, city, referee, or attendance metadata.
-- Penalty shootout winners.
-- Extra-time flags.
+- Full penalty shootout detail beyond winner and score.
+- Complete extra-time event metadata.
 - Group standings.
 - Official FIFA tie-breaker reconstruction.
 - Cross-source reconciliation.

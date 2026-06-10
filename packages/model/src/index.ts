@@ -44,7 +44,14 @@ export type {
   FIFA2026TournamentFormat,
   ActualTournamentResult,
   ChampionCalibrationBucket,
+  HistoricalBacktestDecisionMethod,
+  HistoricalBacktestFixture,
+  HistoricalBacktestInput,
+  HistoricalBacktestResult,
+  HistoricalBacktestSummary,
+  HistoricalBacktestYearResult,
   HistoricalTournamentEvaluationResult,
+  HistoricalTournamentFixtureSubset,
   HistoricalTournamentPredictionInput,
   HistoricalValidationResult,
   KnockoutQualificationEvaluationResult,
@@ -130,3 +137,15 @@ export {
   validateHistoricalTournaments,
   validateProbabilitySnapshot
 } from "./historical-validation.js";
+
+export {
+  PARTIAL_HISTORICAL_BACKTEST_WARNING,
+  buildActualTournamentResultFromFixtureSubset,
+  calculateBacktestBrierScore,
+  calculateBacktestLogLoss,
+  evaluateHistoricalBacktestYear,
+  extractActualChampion,
+  extractActualRunnerUp,
+  generateBacktestCalibrationBuckets,
+  runHistoricalBacktest
+} from "./backtesting.js";

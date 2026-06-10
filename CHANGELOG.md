@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0G historical backtesting and calibration foundation.
+- TypeScript backtesting helpers for curated historical fixture subsets, champion and runner-up extraction, Brier Score, Log Loss, Top-N hits, calibration buckets, deterministic tests, and model result documentation.
 - Phase 4.0F real historical dataset integration foundation.
 - Curated 2018 and 2022 World Cup fixture JSON subsets, TypeScript historical fixture loader, validation tests, and data quality documentation.
 - Phase 4.0E historical tournament validation foundation.
