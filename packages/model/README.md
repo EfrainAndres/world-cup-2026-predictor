@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expands the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I adds historical backtesting report helpers over those fixtures.
 
 ## Current Scope
 
@@ -41,6 +41,8 @@ The package currently includes:
 - Champion and runner-up extraction from historical fixtures.
 - Backtest summaries with dataset coverage metadata.
 - Calibration bucket generation for supplied historical probability snapshots.
+- Historical backtesting report helpers for per-year and aggregate summaries.
+- Synthetic probability snapshot warnings for report validation fixtures.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -103,6 +105,12 @@ The backtesting foundation evaluates supplied tournament probability snapshots a
 
 The data package now includes complete fixture-level results for 2010, 2014, 2018, and 2022. The model still needs real probability snapshots and reporting commands before the project can claim backtesting results.
 
+## Historical Report Scope
+
+The historical report foundation generates per-year report objects for complete 2010, 2014, 2018, and 2022 fixture datasets. Reports include champion and runner-up outcomes, champion rank, Top-1/Top-3/Top-5 flags, Brier Score, Log Loss, calibration bucket summaries, dataset completeness metadata, and snapshot warnings.
+
+Current tests use deterministic `synthetic_report_fixture` snapshots. These validate the report pipeline only; they are not real historical model predictions.
+
 ## Boundaries
 
 This package does not implement:
@@ -115,7 +123,7 @@ This package does not implement:
 - Official FIFA group tie-breakers.
 - Official FIFA knockout slot mapping.
 - Historical model-generated probability snapshots.
-- Real historical backtesting reports.
+- True pre-tournament historical snapshot generation.
 - Public model accuracy claims.
 - Large-scale repeated-run performance optimization.
 - FastAPI service.

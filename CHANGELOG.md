@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0I real historical backtesting report foundation.
+- TypeScript historical backtesting report helpers for complete 2010, 2014, 2018, and 2022 fixture datasets, synthetic snapshot warnings, per-year reports, aggregate metrics, deterministic tests, and model result documentation.
 - Phase 4.0H complete historical World Cup dataset foundation.
 - Complete curated 2010, 2014, 2018, and 2022 World Cup fixture result files, expanded historical fixture validation, 256-match dataset checks, deterministic data tests, and historical dataset validation documentation.
 - Phase 4.0G historical backtesting and calibration foundation.

@@ -50,6 +50,14 @@ export type {
   HistoricalBacktestResult,
   HistoricalBacktestSummary,
   HistoricalBacktestYearResult,
+  HistoricalBacktestingCalibrationBucketSummary,
+  HistoricalBacktestingDatasetCompleteness,
+  HistoricalBacktestingReport,
+  HistoricalBacktestingReportInput,
+  HistoricalBacktestingReportPredictionInput,
+  HistoricalBacktestingReportSummary,
+  HistoricalBacktestingSnapshotType,
+  HistoricalBacktestingYearReport,
   HistoricalTournamentEvaluationResult,
   HistoricalTournamentFixtureSubset,
   HistoricalTournamentPredictionInput,
@@ -149,3 +157,12 @@ export {
   generateBacktestCalibrationBuckets,
   runHistoricalBacktest
 } from "./backtesting.js";
+
+export {
+  DEFAULT_HISTORICAL_REPORT_CALIBRATION_BUCKET_SIZE,
+  DEFAULT_HISTORICAL_REPORT_EXPECTED_MATCHES,
+  SYNTHETIC_REPORT_FIXTURE_WARNING,
+  generateHistoricalBacktestingReport,
+  generateHistoricalBacktestingYearReport,
+  getProbabilityRank
+} from "./backtesting-reports.js";
