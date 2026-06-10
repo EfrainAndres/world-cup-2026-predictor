@@ -15,7 +15,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Done |
 | 4.0A | Monte Carlo Simulation Engine Foundation | Simulate single matches from scoreline probabilities. | Done |
 | 4.0B | Tournament Simulation Foundation | Simulate groups, knockouts, and a simplified tournament. | Done |
-| 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Recommended next |
+| 4.0C | Tournament Simulation Validation & Repeated Runs | Run repeated tournament simulations and summarize stage/champion probabilities. | Done |
+| 4.0D | FIFA 2026 Format & Fixture Modeling | Model the real tournament structure, fixtures, and official progression rules. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -345,20 +346,51 @@ Exit criteria:
 
 Run many tournament simulations to estimate tournament-level probabilities.
 
-Potential deliverables:
+Deliverables:
 
 - Repeated tournament simulation runner
 - Champion probability summaries
-- Stage advancement probability summaries
-- Simulation stability checks by run count
+- Runner-up probability summaries
+- Group qualification probability summaries
+- Knockout qualification probability summaries
 - Seed strategy for repeated runs
 - Validation report for tournament probability outputs
+- Deterministic repeated-run tests
+
+Deferred to future phases:
+
+- Full FIFA World Cup 2026 format
+- Official FIFA fixture and group modeling
+- Official tournament progression rules
+- Stage-specific probability summaries beyond the simplified bracket
+- Large-run performance optimization
+- Dashboard-ready exports
 
 Exit criteria:
 
 - Repeated simulations produce stable, explainable probability summaries.
 - Outputs include model and simulation metadata.
 - Known limitations are documented before dashboard integration.
+- Existing data, Elo, Poisson, Dixon-Coles, Monte Carlo, group, knockout, and tournament tests still pass.
+
+## Phase 4.0D - FIFA 2026 Format & Fixture Modeling
+
+Model the real World Cup 2026 structure before exposing tournament results more broadly.
+
+Potential deliverables:
+
+- FIFA 2026 group and fixture input contracts
+- Official number of teams and groups
+- Third-place qualification modeling
+- Official group and knockout progression rules
+- Fixture metadata requirements
+- Validation docs for format assumptions
+
+Exit criteria:
+
+- The tournament engine can represent the real FIFA 2026 structure.
+- Simplified assumptions are replaced or clearly isolated.
+- The engine remains deterministic and tested.
 
 ## Phase 5.0 - Web Dashboard
 

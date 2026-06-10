@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B adds simplified group-stage, knockout, and tournament simulation foundations.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C adds repeated tournament runs and probability summaries.
 
 ## Current Scope
 
@@ -26,6 +26,8 @@ The package currently includes:
 - Simplified group-stage standings and qualifiers.
 - Simplified knockout match and round simulation.
 - Simplified tournament orchestration from group qualifiers to champion.
+- Repeated tournament simulation aggregation.
+- Champion, runner-up, group qualification, and knockout qualification probability summaries.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -41,6 +43,7 @@ The package currently includes:
 | Poisson matrix normalization | `true` |
 | Dixon-Coles rho | `-0.1` |
 | Maximum simulation count | `1,000,000` |
+| Maximum repeated tournament runs | `10,000` |
 
 ## Poisson And Dixon-Coles Scope
 
@@ -60,6 +63,12 @@ The tournament foundation simulates explicit group fixtures, ranks group standin
 
 This is not full FIFA World Cup 2026 support. Real fixtures, official FIFA tie-breakers, third-place qualification, extra time, penalties, and repeated tournament probability runs are future work.
 
+## Repeated Runs Scope
+
+The repeated-runs foundation simulates the same simplified tournament many times and summarizes how often teams become champion, finish runner-up, qualify from groups, and enter the knockout bracket.
+
+These probabilities are still based on simplified tournament rules and input score matrices. They are useful for validating aggregation and explaining uncertainty, but they are not final World Cup 2026 predictions.
+
 ## Boundaries
 
 This package does not implement:
@@ -69,7 +78,8 @@ This package does not implement:
 - Full Dixon-Coles parameter optimization.
 - Full FIFA World Cup 2026 tournament format.
 - Official FIFA group tie-breakers.
-- Repeated tournament probability simulations.
+- Real World Cup 2026 fixtures and groups.
+- Large-scale repeated-run performance optimization.
 - FastAPI service.
 - Database access.
 - Dashboard behavior.

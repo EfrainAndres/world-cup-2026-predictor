@@ -28,7 +28,11 @@ export type {
   TournamentInput,
   TournamentMetadata,
   TournamentSimulationConfig,
-  TournamentTeamInput
+  TournamentTeamInput,
+  TournamentRepeatedRunsConfig,
+  TournamentRepeatedRunsMetadata,
+  TournamentRepeatedRunsResult,
+  TournamentTeamProbabilitySummary
 } from "./types.js";
 
 export {
@@ -69,3 +73,5 @@ export { createInitialStandings, simulateGroup, sortGroupStandings, validateGrou
 export { simulateKnockoutMatch, simulateKnockoutRound, validateKnockoutFixture } from "./knockout.js";
 
 export { simulateTournament } from "./tournament.js";
+
+export { DEFAULT_TOURNAMENT_RUNS_MAX, runTournamentRepeatedRuns, summarizeTeamCounts } from "./tournament-runs.js";
