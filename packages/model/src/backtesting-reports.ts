@@ -22,6 +22,8 @@ import type {
 
 export const SYNTHETIC_REPORT_FIXTURE_WARNING =
   "Probability snapshot is a synthetic_report_fixture for validating report plumbing, not a real model prediction.";
+export const BASELINE_PRE_TOURNAMENT_SNAPSHOT_WARNING =
+  "Probability snapshot is a baseline_pre_tournament_snapshot generated from seed ratings, not a calibrated model forecast.";
 
 export const DEFAULT_HISTORICAL_REPORT_EXPECTED_MATCHES = 64;
 export const DEFAULT_HISTORICAL_REPORT_CALIBRATION_BUCKET_SIZE = 0.25;
@@ -40,8 +42,12 @@ function validateReportPrediction(prediction: HistoricalBacktestingReportPredict
     throw new Error("prediction tournamentYear must be an integer.");
   }
 
-  if (prediction.snapshotType !== "synthetic_report_fixture" && prediction.snapshotType !== "model_generated") {
-    throw new Error("prediction snapshotType must be synthetic_report_fixture or model_generated.");
+  if (
+    prediction.snapshotType !== "synthetic_report_fixture" &&
+    prediction.snapshotType !== "baseline_pre_tournament_snapshot" &&
+    prediction.snapshotType !== "model_generated"
+  ) {
+    throw new Error("prediction snapshotType must be synthetic_report_fixture, baseline_pre_tournament_snapshot, or model_generated.");
   }
 
   validateProbabilitySnapshot(prediction.championProbabilities, "champion probability snapshot");
@@ -160,6 +166,10 @@ function buildWarnings(
 
   if (prediction.snapshotType === "synthetic_report_fixture") {
     warnings.push(SYNTHETIC_REPORT_FIXTURE_WARNING);
+  }
+
+  if (prediction.snapshotType === "baseline_pre_tournament_snapshot") {
+    warnings.push(BASELINE_PRE_TOURNAMENT_SNAPSHOT_WARNING);
   }
 
   if (!datasetCompleteness.isComplete) {

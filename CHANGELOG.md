@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0J true pre-tournament snapshot generation foundation.
+- Baseline pre-tournament snapshot helpers, seed-rating probability normalization, look-ahead bias guardrails, deterministic snapshot tests, and model result documentation.
 - Phase 4.0I real historical backtesting report foundation.
 - TypeScript historical backtesting report helpers for complete 2010, 2014, 2018, and 2022 fixture datasets, synthetic snapshot warnings, per-year reports, aggregate metrics, deterministic tests, and model result documentation.
 - Phase 4.0H complete historical World Cup dataset foundation.

@@ -422,7 +422,7 @@ export interface HistoricalBacktestResult {
   };
 }
 
-export type HistoricalBacktestingSnapshotType = "synthetic_report_fixture" | "model_generated";
+export type HistoricalBacktestingSnapshotType = "synthetic_report_fixture" | "baseline_pre_tournament_snapshot" | "model_generated";
 
 export interface HistoricalBacktestingReportPredictionInput extends HistoricalTournamentPredictionInput {
   tournamentYear: number;
@@ -491,4 +491,54 @@ export interface HistoricalBacktestingReportInput {
 export interface HistoricalBacktestingReport {
   reports: HistoricalBacktestingYearReport[];
   summary: HistoricalBacktestingReportSummary;
+}
+
+export interface PreTournamentTeamSeedRating {
+  team: string;
+  rating: number;
+}
+
+export interface PreTournamentSnapshotInput {
+  tournamentId: string;
+  tournamentName: string;
+  tournamentYear: number;
+  tournamentStartDate: string;
+  generatedAt: string;
+  inputDataCutoff: string;
+  teamSeedRatings: readonly PreTournamentTeamSeedRating[];
+  actualTournamentResultsIncluded?: boolean;
+  metadata?: Record<string, string>;
+}
+
+export interface SnapshotTeamProbability extends TeamProbabilitySnapshot {
+  rating: number;
+  rank: number;
+}
+
+export type LookAheadGuardrailName = "input_data_before_tournament" | "generated_before_tournament" | "no_actual_results_in_input";
+
+export type LookAheadGuardrailSeverity = "warning" | "error";
+
+export interface LookAheadGuardrailResult {
+  guardrail: LookAheadGuardrailName;
+  passed: boolean;
+  severity: LookAheadGuardrailSeverity;
+  message: string;
+}
+
+export interface PreTournamentSnapshotMetadata {
+  tournamentYear: number;
+  tournamentStartDate: string;
+  inputDataCutoff: string;
+  generatedAt: string;
+  modelVersion: string;
+  snapshotType: "baseline_pre_tournament_snapshot";
+  warnings: string[];
+  lookAheadGuardrails: LookAheadGuardrailResult[];
+}
+
+export interface GeneratedPreTournamentSnapshot extends HistoricalBacktestingReportPredictionInput {
+  snapshotType: "baseline_pre_tournament_snapshot";
+  championProbabilities: readonly SnapshotTeamProbability[];
+  snapshotMetadata: PreTournamentSnapshotMetadata;
 }

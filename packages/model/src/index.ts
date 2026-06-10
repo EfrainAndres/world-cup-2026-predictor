@@ -62,8 +62,16 @@ export type {
   HistoricalTournamentFixtureSubset,
   HistoricalTournamentPredictionInput,
   HistoricalValidationResult,
+  GeneratedPreTournamentSnapshot,
   KnockoutQualificationEvaluationResult,
+  LookAheadGuardrailName,
+  LookAheadGuardrailResult,
+  LookAheadGuardrailSeverity,
+  PreTournamentSnapshotInput,
+  PreTournamentSnapshotMetadata,
+  PreTournamentTeamSeedRating,
   RunnerUpEvaluationResult,
+  SnapshotTeamProbability,
   TeamProbabilitySnapshot,
   ValidationMetricSummary
 } from "./types.js";
@@ -159,6 +167,7 @@ export {
 } from "./backtesting.js";
 
 export {
+  BASELINE_PRE_TOURNAMENT_SNAPSHOT_WARNING,
   DEFAULT_HISTORICAL_REPORT_CALIBRATION_BUCKET_SIZE,
   DEFAULT_HISTORICAL_REPORT_EXPECTED_MATCHES,
   SYNTHETIC_REPORT_FIXTURE_WARNING,
@@ -166,3 +175,14 @@ export {
   generateHistoricalBacktestingYearReport,
   getProbabilityRank
 } from "./backtesting-reports.js";
+
+export {
+  BASELINE_PRE_TOURNAMENT_SNAPSHOT_MODEL_VERSION,
+  PROBABILITY_SUM_TOLERANCE,
+  evaluateLookAheadGuardrails,
+  generateBaselinePreTournamentSnapshot,
+  normalizeRatingProbabilities,
+  rankSnapshotProbabilities,
+  validateGeneratedSnapshotProbabilities,
+  validatePreTournamentSnapshotInput
+} from "./pre-tournament-snapshots.js";
