@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 5.3 API endpoint validation.
+- Endpoint-level runtime tests for health, model info, match simulation, all supported historical summaries, invalid historical years, replay audit metadata, unsupported routes, unsupported methods, deterministic responses, and JSON error shapes.
 - Phase 5.2 API runtime foundation.
 - Dependency-free HTTP-ready runtime adapter with JSON routes for health, model info, match simulation, historical tournament summaries, replay audit metadata, typed runtime errors, deterministic local request tests, and runtime documentation.
 - Phase 5.1 API integration validation.
