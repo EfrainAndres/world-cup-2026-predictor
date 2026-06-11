@@ -54,3 +54,25 @@ export {
   validateHistoricalWorldCupDataset,
   validateHistoricalWorldCupFixtureFile
 } from "./historical-world-cup.js";
+
+export type {
+  InternationalMatch,
+  InternationalMatchDatasetMetadata,
+  InternationalMatchDatasetResult,
+  InternationalMatchFixtureFile,
+  InternationalMatchInput,
+  InternationalMatchValidationErrorCode,
+  InternationalMatchValidationIssue,
+  InternationalMatchValidationResult
+} from "./international-matches.js";
+
+export {
+  INTERNATIONAL_MATCH_DATASET_CREATED_AT,
+  INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING,
+  INTERNATIONAL_MATCH_SAMPLE_DATASET_ID,
+  INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING,
+  loadInternationalMatchDataset,
+  normalizeInternationalMatch,
+  normalizeInternationalMatches,
+  validateInternationalMatchDataset
+} from "./international-matches.js";
