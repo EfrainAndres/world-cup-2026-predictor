@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0O complete historical replay validation foundation.
+- TypeScript validation helpers that audit dataset completeness, bracket reconstruction, historical Elo snapshots, Monte Carlo replay, replay backtesting reports, per-year status, aggregate status, foundation warnings, deterministic tests, and model result documentation.
 - Phase 4.0N historical tournament bracket reconstruction foundation.
 - TypeScript reconstruction helpers for 2010, 2014, 2018, and 2022 historical groups, standings, qualifiers, knockout rounds, champion, runner-up, third place, match-count validation, deterministic tests, and model result documentation.
 - Phase 4.0M historical Monte Carlo replay foundation.

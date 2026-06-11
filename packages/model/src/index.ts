@@ -1,4 +1,17 @@
 export type {
+  CompleteHistoricalReplayAggregateValidation,
+  CompleteHistoricalReplayComponentStatus,
+  CompleteHistoricalReplayValidationComponent,
+  CompleteHistoricalReplayValidationInput,
+  CompleteHistoricalReplayValidationMetadata,
+  CompleteHistoricalReplayValidationResult,
+  CompleteHistoricalReplayValidationStatus,
+  CompleteHistoricalReplayValidationWarning,
+  CompleteHistoricalReplayValidationWarningCode,
+  CompleteHistoricalReplayYearValidation
+} from "./complete-historical-replay-validation.js";
+
+export type {
   HistoricalBracketMetadata,
   HistoricalBracketStage,
   HistoricalBracketValidationCode,
@@ -296,3 +309,10 @@ export {
   separateHistoricalFixturesByStage,
   validateHistoricalBracketInput
 } from "./historical-brackets.js";
+
+export {
+  COMPLETE_HISTORICAL_REPLAY_EXPECTED_YEARS,
+  COMPLETE_HISTORICAL_REPLAY_FOUNDATION_WARNING,
+  COMPLETE_HISTORICAL_REPLAY_VALIDATION_VERSION,
+  validateCompleteHistoricalReplay
+} from "./complete-historical-replay-validation.js";
