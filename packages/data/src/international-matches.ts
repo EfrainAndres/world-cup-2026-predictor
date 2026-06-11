@@ -4,10 +4,22 @@ import { VALID_RESULTS } from "./validation.js";
 
 export const INTERNATIONAL_MATCH_DATASET_CREATED_AT = "2026-06-11T00:00:00.000Z";
 export const INTERNATIONAL_MATCH_SAMPLE_DATASET_ID = "international-matches-sample-v1";
+export const INTERNATIONAL_MATCH_EXPANDED_DATASET_ID = "international-matches-expanded-v1";
 export const INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING =
   "This dataset is a small curated sample only. It does not represent complete international match history.";
 export const INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING =
   "This fixture file is marked as a sample only and should not be used for production model calibration.";
+export const INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING =
+  "partial_international_history: the fixture file covers selected competitions and dates only.";
+export const INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING =
+  "curated_sample_only: matches were manually selected for lightweight validation coverage.";
+export const INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING =
+  "not_complete_global_match_history: this is not a complete global senior international match database.";
+
+export type InternationalMatchDatasetWarningCode =
+  | "partial_international_history"
+  | "curated_sample_only"
+  | "not_complete_global_match_history";
 
 export interface InternationalMatchInput {
   match_id?: unknown;
@@ -76,6 +88,7 @@ export interface InternationalMatchDatasetMetadata {
   earliestMatchDate: string | undefined;
   latestMatchDate: string | undefined;
   isSampleOnly: boolean;
+  warningCodes: readonly InternationalMatchDatasetWarningCode[];
   foundationWarnings: readonly string[];
   createdAt: string;
 }
@@ -329,9 +342,19 @@ export function loadInternationalMatchDataset(rawFixtureFile: unknown): Internat
   const competitions = collectCompetitions(matches);
   const fileMetadata = extractFileMetadata(rawFixtureFile);
 
-  const foundationWarnings: string[] = [INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING];
+  const warningCodes: InternationalMatchDatasetWarningCode[] = [
+    "partial_international_history",
+    "not_complete_global_match_history"
+  ];
+  const foundationWarnings: string[] = [
+    INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING,
+    INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING,
+    INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING
+  ];
 
   if (fileMetadata.isSampleOnly) {
+    warningCodes.push("curated_sample_only");
+    foundationWarnings.push(INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING);
     foundationWarnings.push(INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING);
   }
 
@@ -343,6 +366,7 @@ export function loadInternationalMatchDataset(rawFixtureFile: unknown): Internat
     earliestMatchDate: earliest,
     latestMatchDate: latest,
     isSampleOnly: fileMetadata.isSampleOnly,
+    warningCodes,
     foundationWarnings,
     createdAt: fileMetadata.createdAt
   };

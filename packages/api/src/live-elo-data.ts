@@ -274,7 +274,7 @@ export const LIVE_ELO_FOUNDATION_MATCH_COUNT = 256 as const;
 export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_MATCH_COUNT = 12 as const;
 export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE = "2024-09-07" as const;
 export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_DATA_SCOPE =
-  "copa_america_2024_euro_2024_wcq_2026_international_friendly" as const;
+  "world_cup_2022_copa_america_2024_euro_2024_wcq_2026_international_friendly" as const;
 
 export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT: readonly EloCompatibleMatch[] = [
   { match_id: "INT-COPA24-001", match_date: "2024-07-14", home_team: "Argentina", away_team: "Colombia", neutral_site: true, home_score: 1, away_score: 0, result: "home_win" },
@@ -290,3 +290,130 @@ export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT: readonly EloCompatibleMatch[] = 
   { match_id: "INT-FRI-002", match_date: "2024-03-26", home_team: "Spain", away_team: "Brazil", neutral_site: false, home_score: 3, away_score: 3, result: "draw" },
   { match_id: "INT-FRI-003", match_date: "2024-06-06", home_team: "Morocco", away_team: "USA", neutral_site: false, home_score: 3, away_score: 0, result: "home_win" },
 ];
+
+export const LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_DATASET_ID = "international-matches-expanded-v1" as const;
+export const LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_MATCH_COUNT = 56 as const;
+export const LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE = "2024-07-14" as const;
+
+export const LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT: readonly EloCompatibleMatch[] = [
+  { match_id: "EXP-WC22-001", match_date: "2022-11-20", home_team: "Qatar", away_team: "Ecuador", neutral_site: true, home_score: 0, away_score: 2, result: "away_win" },
+  { match_id: "EXP-WC22-002", match_date: "2022-11-21", home_team: "England", away_team: "Iran", neutral_site: true, home_score: 6, away_score: 2, result: "home_win" },
+  { match_id: "EXP-WC22-003", match_date: "2022-11-22", home_team: "Argentina", away_team: "Saudi Arabia", neutral_site: true, home_score: 1, away_score: 2, result: "away_win" },
+  { match_id: "EXP-WC22-004", match_date: "2022-11-22", home_team: "France", away_team: "Australia", neutral_site: true, home_score: 4, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WC22-005", match_date: "2022-11-23", home_team: "Germany", away_team: "Japan", neutral_site: true, home_score: 1, away_score: 2, result: "away_win" },
+  { match_id: "EXP-WC22-006", match_date: "2022-11-23", home_team: "Spain", away_team: "Costa Rica", neutral_site: true, home_score: 7, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WC22-007", match_date: "2022-12-03", home_team: "Netherlands", away_team: "USA", neutral_site: true, home_score: 3, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WC22-008", match_date: "2022-12-03", home_team: "Argentina", away_team: "Australia", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WC22-009", match_date: "2022-12-09", home_team: "Netherlands", away_team: "Argentina", neutral_site: true, home_score: 2, away_score: 2, result: "draw" },
+  { match_id: "EXP-WC22-010", match_date: "2022-12-13", home_team: "Argentina", away_team: "Croatia", neutral_site: true, home_score: 3, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WC22-011", match_date: "2022-12-14", home_team: "France", away_team: "Morocco", neutral_site: true, home_score: 2, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WC22-012", match_date: "2022-12-18", home_team: "Argentina", away_team: "France", neutral_site: true, home_score: 3, away_score: 3, result: "draw" },
+  { match_id: "EXP-COPA24-001", match_date: "2024-06-20", home_team: "Argentina", away_team: "Canada", neutral_site: true, home_score: 2, away_score: 0, result: "home_win" },
+  { match_id: "EXP-COPA24-002", match_date: "2024-06-21", home_team: "Peru", away_team: "Chile", neutral_site: true, home_score: 0, away_score: 0, result: "draw" },
+  { match_id: "EXP-COPA24-003", match_date: "2024-06-22", home_team: "Ecuador", away_team: "Venezuela", neutral_site: true, home_score: 1, away_score: 2, result: "away_win" },
+  { match_id: "EXP-COPA24-004", match_date: "2024-06-23", home_team: "USA", away_team: "Bolivia", neutral_site: false, home_score: 2, away_score: 0, result: "home_win" },
+  { match_id: "EXP-COPA24-005", match_date: "2024-06-23", home_team: "Uruguay", away_team: "Panama", neutral_site: true, home_score: 3, away_score: 1, result: "home_win" },
+  { match_id: "EXP-COPA24-006", match_date: "2024-06-24", home_team: "Colombia", away_team: "Paraguay", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-COPA24-007", match_date: "2024-06-24", home_team: "Brazil", away_team: "Costa Rica", neutral_site: true, home_score: 0, away_score: 0, result: "draw" },
+  { match_id: "EXP-COPA24-008", match_date: "2024-06-27", home_team: "Panama", away_team: "USA", neutral_site: false, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-COPA24-009", match_date: "2024-06-28", home_team: "Colombia", away_team: "Costa Rica", neutral_site: true, home_score: 3, away_score: 0, result: "home_win" },
+  { match_id: "EXP-COPA24-010", match_date: "2024-07-04", home_team: "Argentina", away_team: "Ecuador", neutral_site: true, home_score: 1, away_score: 1, result: "draw" },
+  { match_id: "EXP-COPA24-011", match_date: "2024-07-09", home_team: "Argentina", away_team: "Canada", neutral_site: true, home_score: 2, away_score: 0, result: "home_win" },
+  { match_id: "EXP-COPA24-012", match_date: "2024-07-10", home_team: "Colombia", away_team: "Uruguay", neutral_site: true, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-COPA24-013", match_date: "2024-07-14", home_team: "Argentina", away_team: "Colombia", neutral_site: true, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-EURO24-001", match_date: "2024-06-14", home_team: "Germany", away_team: "Scotland", neutral_site: false, home_score: 5, away_score: 1, result: "home_win" },
+  { match_id: "EXP-EURO24-002", match_date: "2024-06-15", home_team: "Hungary", away_team: "Switzerland", neutral_site: true, home_score: 1, away_score: 3, result: "away_win" },
+  { match_id: "EXP-EURO24-003", match_date: "2024-06-15", home_team: "Spain", away_team: "Croatia", neutral_site: true, home_score: 3, away_score: 0, result: "home_win" },
+  { match_id: "EXP-EURO24-004", match_date: "2024-06-15", home_team: "Italy", away_team: "Albania", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-EURO24-005", match_date: "2024-06-16", home_team: "Poland", away_team: "Netherlands", neutral_site: true, home_score: 1, away_score: 2, result: "away_win" },
+  { match_id: "EXP-EURO24-006", match_date: "2024-06-16", home_team: "Serbia", away_team: "England", neutral_site: true, home_score: 0, away_score: 1, result: "away_win" },
+  { match_id: "EXP-EURO24-007", match_date: "2024-06-17", home_team: "Austria", away_team: "France", neutral_site: true, home_score: 0, away_score: 1, result: "away_win" },
+  { match_id: "EXP-EURO24-008", match_date: "2024-06-18", home_team: "Portugal", away_team: "Czech Republic", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-EURO24-009", match_date: "2024-07-05", home_team: "Spain", away_team: "Germany", neutral_site: false, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-EURO24-010", match_date: "2024-07-09", home_team: "Spain", away_team: "France", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-EURO24-011", match_date: "2024-07-10", home_team: "Netherlands", away_team: "England", neutral_site: true, home_score: 1, away_score: 2, result: "away_win" },
+  { match_id: "EXP-EURO24-012", match_date: "2024-07-14", home_team: "Spain", away_team: "England", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WCQ26-001", match_date: "2023-09-07", home_team: "Paraguay", away_team: "Peru", neutral_site: false, home_score: 0, away_score: 0, result: "draw" },
+  { match_id: "EXP-WCQ26-002", match_date: "2023-09-07", home_team: "Colombia", away_team: "Venezuela", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WCQ26-003", match_date: "2023-09-07", home_team: "Argentina", away_team: "Ecuador", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WCQ26-004", match_date: "2023-09-08", home_team: "Uruguay", away_team: "Chile", neutral_site: false, home_score: 3, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WCQ26-005", match_date: "2023-09-08", home_team: "Brazil", away_team: "Bolivia", neutral_site: false, home_score: 5, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WCQ26-006", match_date: "2023-09-12", home_team: "Bolivia", away_team: "Argentina", neutral_site: false, home_score: 0, away_score: 3, result: "away_win" },
+  { match_id: "EXP-WCQ26-007", match_date: "2023-09-12", home_team: "Ecuador", away_team: "Uruguay", neutral_site: false, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-WCQ26-008", match_date: "2023-09-12", home_team: "Venezuela", away_team: "Paraguay", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WCQ26-009", match_date: "2023-09-12", home_team: "Peru", away_team: "Brazil", neutral_site: false, home_score: 0, away_score: 1, result: "away_win" },
+  { match_id: "EXP-WCQ26-010", match_date: "2023-10-12", home_team: "Argentina", away_team: "Paraguay", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "EXP-WCQ26-011", match_date: "2023-10-12", home_team: "Colombia", away_team: "Uruguay", neutral_site: false, home_score: 2, away_score: 2, result: "draw" },
+  { match_id: "EXP-WCQ26-012", match_date: "2023-10-12", home_team: "Brazil", away_team: "Venezuela", neutral_site: false, home_score: 1, away_score: 1, result: "draw" },
+  { match_id: "EXP-FRI-001", match_date: "2023-09-12", home_team: "Germany", away_team: "France", neutral_site: false, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "EXP-FRI-002", match_date: "2024-03-23", home_team: "France", away_team: "Germany", neutral_site: false, home_score: 0, away_score: 2, result: "away_win" },
+  { match_id: "EXP-FRI-003", match_date: "2024-03-26", home_team: "England", away_team: "Belgium", neutral_site: false, home_score: 2, away_score: 2, result: "draw" },
+  { match_id: "EXP-FRI-004", match_date: "2024-03-26", home_team: "Spain", away_team: "Brazil", neutral_site: false, home_score: 3, away_score: 3, result: "draw" },
+  { match_id: "EXP-FRI-005", match_date: "2024-03-22", home_team: "Spain", away_team: "Colombia", neutral_site: true, home_score: 0, away_score: 1, result: "away_win" },
+  { match_id: "EXP-FRI-006", match_date: "2024-06-08", home_team: "Mexico", away_team: "Brazil", neutral_site: true, home_score: 2, away_score: 3, result: "away_win" },
+  { match_id: "EXP-FRI-007", match_date: "2024-06-08", home_team: "USA", away_team: "Colombia", neutral_site: false, home_score: 1, away_score: 5, result: "away_win" },
+];
+
+export interface LiveEloInternationalSupplementLoadResult {
+  matches: readonly EloCompatibleMatch[];
+  metadata: {
+    datasetId: string;
+    matchCount: number;
+    competitions: readonly string[];
+    latestMatchDate: string | undefined;
+    warningCodes: readonly string[];
+    foundationWarnings: readonly string[];
+  };
+  fallbackUsed: boolean;
+  loadWarnings: readonly string[];
+}
+
+function fallbackSupplementLoadResult(reason: string): LiveEloInternationalSupplementLoadResult {
+  return {
+    matches: LIVE_ELO_INTERNATIONAL_SUPPLEMENT,
+    metadata: {
+      datasetId: "international-matches-inline-fallback-v1",
+      matchCount: LIVE_ELO_INTERNATIONAL_SUPPLEMENT_MATCH_COUNT,
+      competitions: ["Copa America 2024", "FIFA World Cup 2026 Qualifier", "International Friendly", "UEFA Euro 2024"],
+      latestMatchDate: LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
+      warningCodes: ["partial_international_history", "curated_sample_only", "not_complete_global_match_history"],
+      foundationWarnings: [
+        "partial_international_history: inline fallback supplement covers selected competitions and dates only.",
+        "curated_sample_only: inline fallback supplement is manually selected for lightweight validation coverage.",
+        "not_complete_global_match_history: inline fallback supplement is not a complete global senior international match database."
+      ]
+    },
+    fallbackUsed: true,
+    loadWarnings: [`Expanded international supplement unavailable; using inline supplement fallback. ${reason}`]
+  };
+}
+
+export function loadLiveEloInternationalSupplement(): LiveEloInternationalSupplementLoadResult {
+  if (LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT.length === 0) {
+    return fallbackSupplementLoadResult("expanded supplement has no matches.");
+  }
+
+  return {
+    matches: LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT,
+    metadata: {
+      datasetId: LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_DATASET_ID,
+      matchCount: LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_MATCH_COUNT,
+      competitions: [
+        "Copa America 2024",
+        "FIFA World Cup 2022",
+        "FIFA World Cup 2026 Qualifier",
+        "International Friendly",
+        "UEFA Euro 2024"
+      ],
+      latestMatchDate: LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
+      warningCodes: ["partial_international_history", "curated_sample_only", "not_complete_global_match_history"],
+      foundationWarnings: [
+        "partial_international_history: expanded supplement covers selected competitions and dates only.",
+        "curated_sample_only: expanded supplement is manually selected for lightweight validation coverage.",
+        "not_complete_global_match_history: expanded supplement is not a complete global senior international match database."
+      ]
+    },
+    fallbackUsed: false,
+    loadWarnings: []
+  };
+}

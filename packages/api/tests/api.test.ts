@@ -278,7 +278,7 @@ describe("getLiveEloRatingsFoundation", () => {
 
     expect(result.status).toBe("success");
     expect(result.teams.length).toBeGreaterThan(0);
-    expect(result.matchesProcessed).toBe(268);
+    expect(result.matchesProcessed).toBe(312);
     expect(result.teamsRatedTotal).toBeGreaterThan(0);
     expect(result.dataCoverage.length).toBeGreaterThan(0);
     expect(result.pipelineVersion.length).toBeGreaterThan(0);
@@ -334,7 +334,7 @@ describe("getLiveEloRatingsFoundation", () => {
   it("latestMatchDate reflects the international supplement's latest match date", () => {
     const result = getLiveEloRatingsFoundation();
 
-    expect(result.latestMatchDate).toBe("2024-09-07");
+    expect(result.latestMatchDate).toBe("2024-07-14");
   });
 
   it("dataCoverage mentions international supplement competitions", () => {
@@ -348,6 +348,15 @@ describe("getLiveEloRatingsFoundation", () => {
     const result = getLiveEloRatingsFoundation();
 
     expect(result.warnings.some((w) => w.includes("International match supplement"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("partial_international_history"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("not_complete_global_match_history"))).toBe(true);
+  });
+
+  it("metadata notes include the expanded international dataset", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.metadata.notes.some((note) => note.includes("international-matches-expanded-v1"))).toBe(true);
+    expect(result.metadata.notes.some((note) => note.includes("56 expanded international supplement matches"))).toBe(true);
   });
 
   it("known strong teams appear in the top results", () => {

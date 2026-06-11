@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING,
   INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING,
+  INTERNATIONAL_MATCH_EXPANDED_DATASET_ID,
+  INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING,
+  INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING,
   INTERNATIONAL_MATCH_SAMPLE_DATASET_ID,
   INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING,
   loadInternationalMatchDataset,
@@ -13,6 +17,10 @@ import type { InternationalMatch, InternationalMatchFixtureFile } from "../src/i
 
 const rawSampleFixtureFile = JSON.parse(
   readFileSync(new URL("../fixtures/international/sample-international-matches.json", import.meta.url), "utf-8")
+) as InternationalMatchFixtureFile;
+
+const rawExpandedFixtureFile = JSON.parse(
+  readFileSync(new URL("../fixtures/international/expanded-international-matches.json", import.meta.url), "utf-8")
 ) as InternationalMatchFixtureFile;
 
 function makeValidMatch(overrides: Partial<Record<string, unknown>> = {}): Record<string, unknown> {
@@ -195,6 +203,17 @@ describe("loadInternationalMatchDataset", () => {
     expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING);
   });
 
+  it("includes explicit partial-history warning codes in metadata", () => {
+    const result = loadInternationalMatchDataset(rawSampleFixtureFile);
+
+    expect(result.metadata.warningCodes).toContain("partial_international_history");
+    expect(result.metadata.warningCodes).toContain("curated_sample_only");
+    expect(result.metadata.warningCodes).toContain("not_complete_global_match_history");
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING);
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING);
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING);
+  });
+
   it("omits the sample-only warning when is_sample_only is false", () => {
     const fixture = { ...rawSampleFixtureFile, is_sample_only: false };
     const result = loadInternationalMatchDataset(fixture);
@@ -242,6 +261,66 @@ describe("loadInternationalMatchDataset", () => {
       expect(typeof firstMatch.neutral_site).toBe("boolean");
       expect(typeof firstMatch.source_note).toBe("string");
     }
+  });
+
+  it("loads the expanded fixture successfully", () => {
+    const result = loadInternationalMatchDataset(rawExpandedFixtureFile);
+
+    expect(result.metadata.datasetId).toBe(INTERNATIONAL_MATCH_EXPANDED_DATASET_ID);
+    expect(result.matches).toHaveLength(56);
+    expect(result.metadata.matchCount).toBe(56);
+  });
+
+  it("expanded fixture has the expected minimum match count", () => {
+    const result = loadInternationalMatchDataset(rawExpandedFixtureFile);
+
+    expect(result.matches.length).toBeGreaterThanOrEqual(50);
+    expect(result.matches.length).toBeLessThanOrEqual(100);
+  });
+
+  it("expanded fixture includes the required competition metadata", () => {
+    const result = loadInternationalMatchDataset(rawExpandedFixtureFile);
+
+    expect(result.metadata.competitions).toEqual([
+      "Copa America 2024",
+      "FIFA World Cup 2022",
+      "FIFA World Cup 2026 Qualifier",
+      "International Friendly",
+      "UEFA Euro 2024"
+    ]);
+    expect(result.metadata.earliestMatchDate).toBe("2022-11-20");
+    expect(result.metadata.latestMatchDate).toBe("2024-07-14");
+  });
+
+  it("expanded fixture includes partial dataset warnings", () => {
+    const result = loadInternationalMatchDataset(rawExpandedFixtureFile);
+
+    expect(result.metadata.warningCodes).toEqual([
+      "partial_international_history",
+      "not_complete_global_match_history",
+      "curated_sample_only"
+    ]);
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING);
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING);
+    expect(result.metadata.foundationWarnings).toContain(INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING);
+  });
+
+  it("validation catches duplicate match ids in expanded-style fixtures", () => {
+    const duplicateFixture = {
+      ...rawExpandedFixtureFile,
+      matches: [
+        ...(rawExpandedFixtureFile.matches as unknown[]),
+        {
+          ...((rawExpandedFixtureFile.matches as Record<string, unknown>[])[0] ?? makeValidMatch()),
+          home_team: "Duplicate Team A",
+          away_team: "Duplicate Team B"
+        }
+      ]
+    };
+    const result = validateInternationalMatchDataset(duplicateFixture);
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((issue) => issue.code === "duplicate_match_id")).toBe(true);
   });
 });
 
@@ -319,5 +398,22 @@ describe("normalizeInternationalMatches", () => {
     const normalized = normalizeInternationalMatches([], CREATED_AT);
 
     expect(normalized).toHaveLength(0);
+  });
+
+  it("normalizes the expanded fixture to Elo-compatible match fields", () => {
+    const { matches } = loadInternationalMatchDataset(rawExpandedFixtureFile);
+    const normalized = normalizeInternationalMatches(matches, CREATED_AT);
+
+    expect(normalized).toHaveLength(56);
+    expect(normalized[0]).toMatchObject({
+      match_id: "EXP-WC22-001",
+      match_date: "2022-11-20",
+      home_team: "Qatar",
+      away_team: "Ecuador",
+      neutral_site: true,
+      home_score: 0,
+      away_score: 2,
+      result: "away_win"
+    });
   });
 });

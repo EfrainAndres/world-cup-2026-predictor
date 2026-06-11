@@ -13,6 +13,7 @@ This package exposes pure TypeScript handler functions and a lightweight HTTP-re
 | `simulateMatch(request)` | Generates Poisson outcome probabilities and optional seeded Monte Carlo match simulation from caller-supplied expected goals. |
 | `getHistoricalTournamentSummary(year)` | Returns curated historical tournament summary metadata for 2010, 2014, 2018, or 2022. |
 | `getHistoricalReplayAudit()` | Returns historical replay audit readiness metadata and warnings. |
+| `getLiveEloRatingsFoundation()` | Computes live foundation Elo ratings from curated World Cup fixtures plus the expanded partial international supplement. |
 
 ## Runtime
 
@@ -38,6 +39,12 @@ Use `apiRuntime.fetch(request)` or `createApiRuntime()` in tests and future serv
 - No dashboard.
 - No public predictive accuracy claim.
 - No runtime framework dependency.
+
+## Live Elo Data
+
+The live Elo foundation processes 256 curated World Cup fixtures and uses an Elo-compatible static mirror of `packages/data/fixtures/international/expanded-international-matches.json` for the supplement. The expanded fixture currently contains 56 manually curated matches and is still labeled with partial-history warning codes.
+
+The API preserves the previous inline international supplement as fallback behavior. No network, filesystem access during dashboard bundling, database, or external services are used.
 
 ## Validation
 
