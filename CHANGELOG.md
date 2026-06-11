@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 0.8 AI Collaboration Workflow documentation.
+- `CLAUDE.md` with Claude Code session rules, git responsibility split, required reading list, checks, and handoff format.
+- `docs/AI_COLLABORATION_WORKFLOW.md` with tool roles, phase-scoped reading guide, git responsibility split, handoff format, scope rules, and token efficiency guidance.
+- `docs/PROMPTING_GUIDELINES.md` with prompt structure, low-token examples, anti-patterns, tool selection guide, and context management advice.
+- Updated `AGENTS.md` to reference Claude Code, `CLAUDE.md`, `docs/AI_COLLABORATION_WORKFLOW.md`, and `docs/PROMPTING_GUIDELINES.md`.
 - Phase 6.1 match simulation dashboard.
 - Interactive dashboard match simulation form with team, expected-goals, max-goals, optional simulation-count inputs, validation messages, result cards, most likely scorelines, baseline warning copy, and dashboard documentation.
 - Phase 6.0 dashboard foundation.

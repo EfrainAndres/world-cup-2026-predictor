@@ -10,6 +10,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 0.5 | UX Research & Product Discovery | Research dashboard patterns, prediction UX, product principles, and user journeys. | Done |
 | 0.6 | Data & Modeling Research | Define data sources, data dictionary, model path, validation, and backtesting strategy. | Done |
 | 0.7 | Delivery & Development Plan | Define repository structure, Definition of Done, milestones, and release strategy. | Done |
+| 0.8 | AI Collaboration Workflow | Document how Codex CLI and Claude Code collaborate, hand off between sessions, and minimize token usage. | Done |
 | 1.0 | Data Pipeline Foundation | Create workspace structure, data package contracts, validation, normalization, and tests. | Done |
 | 2.0 | Elo Baseline Foundation | Build a transparent baseline rating and prediction model. | Done |
 | 3.0 | Poisson/Dixon-Coles Foundation | Model goal distributions and improve match probability estimates. | Done |
@@ -195,6 +196,25 @@ Exit criteria:
 - Repository structure is documented without creating placeholder folders.
 - Phase-specific quality expectations are defined.
 - Release criteria are clear before MVP implementation begins.
+
+## Phase 0.8 - AI Collaboration Workflow
+
+Document how Codex CLI and Claude Code collaborate in this repository, hand off between sessions, and minimize token and credit usage.
+
+Deliverables:
+
+- `CLAUDE.md` with Claude Code session rules, required reading order, git responsibility split, check commands, and handoff format.
+- `docs/AI_COLLABORATION_WORKFLOW.md` with tool roles, phase-scoped reading guide, handoff format and examples, scope rules, and token efficiency guidance.
+- `docs/PROMPTING_GUIDELINES.md` with prompt structure, low-token examples for documentation and implementation tasks, anti-patterns, tool selection guide, and context management advice.
+- Updated `AGENTS.md` to reference Claude Code and the new collaboration docs.
+- Updated `CHANGELOG.md` and `docs/ROADMAP.md` to reflect this phase.
+
+Exit criteria:
+
+- Any new Codex or Claude Code session can read `CLAUDE.md` and the four required files and start work without needing prior conversation context.
+- The handoff format makes it possible to continue work across sessions and tools without retransmitting full history.
+- Prompt guidelines reduce unnecessary token use while keeping output quality high.
+- No application code, tests, dependencies, or implementation logic was created.
 
 ## Phase 1.0 - Data Pipeline Foundation
 
