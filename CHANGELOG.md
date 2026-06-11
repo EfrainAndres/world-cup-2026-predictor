@@ -8,6 +8,13 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.4 live tournament simulation integration.
+- `simulateTournamentFoundation()` pure API handler in `packages/api` using `runTournamentRepeatedRuns` with an 8-team sample tournament (seed 2026, 1000 runs).
+- `TournamentSimulationTeamResult` and `TournamentSimulationSuccessResponse` schema types in `packages/api/src/schemas.ts`.
+- Updated `TournamentSimulationSection` to render live handler output from `TournamentSimulationSuccessResponse` instead of the static `FOUNDATION_TOURNAMENT_SIMULATION` constant.
+- Updated `TournamentProbabilityCard` to use `TournamentSimulationTeamResult` from the API package instead of `TournamentProbabilityEntry` from the web client.
+- Removed `FOUNDATION_TOURNAMENT_SIMULATION`, `TournamentSimulationFoundation`, and `TournamentProbabilityEntry` from `apps/web/src/lib/api-client.ts`.
+- `docs/dashboard/LIVE_TOURNAMENT_SIMULATION_INTEGRATION.md` documenting the handler, sample tournament input, determinism, component changes, and accuracy framing.
 - Phase 6.3 tournament simulation dashboard.
 - `TournamentSimulationSection` component with simulation engine status, foundation warning, top-5 illustrative probability card grid, model limitations, and match simulation CTA.
 - `TournamentProbabilityCard` component showing team rank, illustrative champion probability, and runner-up probability.

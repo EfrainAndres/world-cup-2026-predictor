@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the Phase 6.0 dashboard foundation for World Cup 2026 Predictor.
+`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 6.4).
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 
@@ -13,7 +13,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Match simulation preview card.
 - Match simulation result cards.
 - Historical replay audit preview card.
-- Tournament simulation section with foundation engine status, illustrative champion/runner-up probability cards, model limitations, and match simulation CTA.
+- Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
 - Accessible semantic HTML.

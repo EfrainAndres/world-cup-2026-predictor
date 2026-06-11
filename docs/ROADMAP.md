@@ -39,6 +39,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.1 | Match Simulation Dashboard | Add the first interactive match simulation UI over the local API client. | Done |
 | 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Done |
 | 6.3 | Tournament Simulation Dashboard | Add a foundation tournament simulation section showing illustrative champion/runner-up probabilities and simulation engine status. | Done |
+| 6.4 | Live Tournament Simulation Integration | Replace static foundation preview with a live local `simulateTournamentFoundation` API handler using `runTournamentRepeatedRuns`. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -916,6 +917,29 @@ Exit criteria:
 - Foundation warning and disclaimer are visible before the probability entries.
 - No charts, auth, database, deployment, or new dependencies are added.
 - All existing tests, typecheck, and build checks pass.
+
+## Phase 6.4 - Live Tournament Simulation Integration
+
+Replace the static foundation preview with a live local API handler.
+
+Deliverables:
+
+- `simulateTournamentFoundation()` pure API handler in `packages/api/src/routes.ts` using `generateScoreMatrix` and `runTournamentRepeatedRuns` with an 8-team 2-group sample tournament (seed 2026, 1000 runs).
+- `TournamentSimulationTeamResult` and `TournamentSimulationSuccessResponse` schema types in `packages/api/src/schemas.ts`.
+- `simulateTournamentFoundation` exported from `packages/api/src/index.ts`.
+- Updated `apps/web/src/lib/api-client.ts` to call the live handler and expose `TournamentSimulationSuccessResponse`; removed static `FOUNDATION_TOURNAMENT_SIMULATION`, `TournamentSimulationFoundation`, and `TournamentProbabilityEntry`.
+- Updated `TournamentSimulationSection` to render `TournamentSimulationSuccessResponse` fields.
+- Updated `TournamentProbabilityCard` to use `TournamentSimulationTeamResult` from the API package.
+- `docs/dashboard/LIVE_TOURNAMENT_SIMULATION_INTEGRATION.md` documenting the handler, sample tournament structure, determinism, component changes, and accuracy framing.
+
+Exit criteria:
+
+- The tournament simulation section renders live output from `simulateTournamentFoundation()` baked at Next.js static build time.
+- The section is clearly labeled "Live local simulation foundation, not a public forecast."
+- Component code calls only the API client wrapper.
+- All 8 sample tournament teams appear in the probability grid.
+- Static foundation constant and its associated types are removed from the web layer.
+- All tests, typecheck, and build checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation
 

@@ -11,9 +11,17 @@ export function getModelInfo(): ModelInfoResponse {
       "Match outcome probability aggregation.",
       "Optional deterministic match-level Monte Carlo simulation.",
       "Historical tournament summary metadata for 2010, 2014, 2018, and 2022.",
-      `Historical replay audit metadata from ${HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION}.`
+      `Historical replay audit metadata from ${HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION}.`,
+      "Seeded deterministic 8-team sample tournament simulation using runTournamentRepeatedRuns."
     ],
-    supportedHandlers: ["getHealth", "getModelInfo", "simulateMatch", "getHistoricalTournamentSummary", "getHistoricalReplayAudit"],
+    supportedHandlers: [
+      "getHealth",
+      "getModelInfo",
+      "simulateMatch",
+      "getHistoricalTournamentSummary",
+      "getHistoricalReplayAudit",
+      "simulateTournamentFoundation"
+    ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",
       "No database or external services are used.",

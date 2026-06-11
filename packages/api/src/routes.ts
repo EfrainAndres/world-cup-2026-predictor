@@ -5,7 +5,8 @@ import {
   aggregateOutcomeProbabilities,
   generateScoreMatrix,
   getMostLikelyScorelines,
-  runMatchSimulations
+  runMatchSimulations,
+  runTournamentRepeatedRuns
 } from "../../model/src/index.js";
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
@@ -18,7 +19,9 @@ import type {
   HistoricalTournamentSummaryResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
-  SupportedHistoricalTournamentYear
+  SupportedHistoricalTournamentYear,
+  TournamentSimulationSuccessResponse,
+  TournamentSimulationTeamResult
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -248,6 +251,94 @@ export function getHistoricalReplayAudit(): HistoricalReplayAuditResponse {
       "Replay outputs are validation evidence, not public predictive accuracy."
     ],
     metadata: buildApiMetadata(["Historical replay audit response exposes readiness metadata without recomputing model reports."])
+  };
+}
+
+const SAMPLE_TOURNAMENT_SEED = 2026;
+const SAMPLE_TOURNAMENT_RUN_COUNT = 1000;
+const SAMPLE_SCORE_MATRIX_MAX_GOALS = 5;
+
+const SAMPLE_GROUP_A_TEAMS = ["Brazil", "France", "Germany", "Portugal"] as const;
+const SAMPLE_GROUP_B_TEAMS = ["Argentina", "England", "Spain", "Netherlands"] as const;
+
+function buildRoundRobinMatches(
+  teams: readonly string[],
+  scoreMatrix: ReturnType<typeof generateScoreMatrix>
+): { homeTeam: string; awayTeam: string; scoreMatrix: ReturnType<typeof generateScoreMatrix> }[] {
+  const matches: { homeTeam: string; awayTeam: string; scoreMatrix: ReturnType<typeof generateScoreMatrix> }[] = [];
+
+  for (let i = 0; i < teams.length; i += 1) {
+    for (let j = i + 1; j < teams.length; j += 1) {
+      const homeTeam = teams[i];
+      const awayTeam = teams[j];
+
+      if (homeTeam !== undefined && awayTeam !== undefined) {
+        matches.push({ homeTeam, awayTeam, scoreMatrix });
+      }
+    }
+  }
+
+  return matches;
+}
+
+export function simulateTournamentFoundation(): TournamentSimulationSuccessResponse {
+  const groupScoreMatrix = generateScoreMatrix(
+    { expectedHomeGoals: 1.1, expectedAwayGoals: 1.1 },
+    { maxGoals: SAMPLE_SCORE_MATRIX_MAX_GOALS, normalizeMatrix: true }
+  );
+
+  const knockoutScoreMatrix = generateScoreMatrix(
+    { expectedHomeGoals: 1.0, expectedAwayGoals: 1.0 },
+    { maxGoals: SAMPLE_SCORE_MATRIX_MAX_GOALS, normalizeMatrix: true }
+  );
+
+  const input = {
+    name: "Sample Foundation Tournament",
+    groups: [
+      {
+        name: "Group A",
+        teams: SAMPLE_GROUP_A_TEAMS.map((name) => ({ name })),
+        matches: buildRoundRobinMatches(SAMPLE_GROUP_A_TEAMS, groupScoreMatrix)
+      },
+      {
+        name: "Group B",
+        teams: SAMPLE_GROUP_B_TEAMS.map((name) => ({ name })),
+        matches: buildRoundRobinMatches(SAMPLE_GROUP_B_TEAMS, groupScoreMatrix)
+      }
+    ],
+    knockoutScoreMatrix,
+    groupQualifiersCount: 2
+  };
+
+  const result = runTournamentRepeatedRuns(input, {
+    runCount: SAMPLE_TOURNAMENT_RUN_COUNT,
+    seed: SAMPLE_TOURNAMENT_SEED
+  });
+
+  const runnerUpMap = new Map(result.runnerUpProbabilities.map((r) => [r.team, r.probability]));
+
+  const teamResults: TournamentSimulationTeamResult[] = result.championProbabilities.map((entry, index) => ({
+    rank: index + 1,
+    team: entry.team,
+    championProbability: entry.probability,
+    runnerUpProbability: runnerUpMap.get(entry.team) ?? 0
+  }));
+
+  return {
+    status: "success",
+    simulationCount: result.totalRuns,
+    tournamentName: input.name,
+    dataScope: "sample_foundation_8_team_tournament",
+    teamResults,
+    warnings: [
+      "Sample foundation tournament uses a simplified 8-team input with equal expected goals.",
+      "These probabilities are not calibrated from real match data or official FIFA 2026 fixtures.",
+      "Live local simulation foundation, not a public forecast."
+    ],
+    metadata: buildApiMetadata([
+      "Tournament simulation uses runTournamentRepeatedRuns with a seeded deterministic 8-team sample input.",
+      "No network calls, database, or external services are used."
+    ])
   };
 }
 

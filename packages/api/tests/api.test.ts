@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { apiRoutes, getHealth, getHistoricalReplayAudit, getHistoricalTournamentSummary, getModelInfo, simulateMatch } from "../src/index.js";
+import {
+  apiRoutes,
+  getHealth,
+  getHistoricalReplayAudit,
+  getHistoricalTournamentSummary,
+  getModelInfo,
+  simulateMatch,
+  simulateTournamentFoundation
+} from "../src/index.js";
 
 describe("api foundation handlers", () => {
   it("returns deterministic health metadata", () => {
@@ -125,5 +133,59 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getHealth()).toEqual(getHealth());
     expect(apiRoutes.getModelInfo()).toEqual(getModelInfo());
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
+  });
+});
+
+describe("simulateTournamentFoundation", () => {
+  it("returns a success response with the sample tournament shape", () => {
+    const result = simulateTournamentFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.tournamentName).toBe("Sample Foundation Tournament");
+    expect(result.dataScope).toBe("sample_foundation_8_team_tournament");
+    expect(result.simulationCount).toBe(1000);
+    expect(result.teamResults).toHaveLength(8);
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.metadata.mode).toBe("pure_handlers");
+    expect(result.metadata.serverEnabled).toBe(false);
+  });
+
+  it("team results are sorted by champion probability descending", () => {
+    const result = simulateTournamentFoundation();
+
+    for (let i = 1; i < result.teamResults.length; i += 1) {
+      const prev = result.teamResults[i - 1];
+      const curr = result.teamResults[i];
+
+      if (prev !== undefined && curr !== undefined) {
+        expect(prev.championProbability).toBeGreaterThanOrEqual(curr.championProbability);
+      }
+    }
+  });
+
+  it("team results have correct shape and ranks", () => {
+    const result = simulateTournamentFoundation();
+
+    result.teamResults.forEach((entry, index) => {
+      expect(entry.rank).toBe(index + 1);
+      expect(entry.team.length).toBeGreaterThan(0);
+      expect(entry.championProbability).toBeGreaterThanOrEqual(0);
+      expect(entry.runnerUpProbability).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  it("champion probabilities sum to approximately 1", () => {
+    const result = simulateTournamentFoundation();
+    const total = result.teamResults.reduce((sum, entry) => sum + entry.championProbability, 0);
+
+    expect(total).toBeCloseTo(1, 1);
+  });
+
+  it("returns deterministic output for the same seed", () => {
+    const first = simulateTournamentFoundation();
+    const second = simulateTournamentFoundation();
+
+    expect(first.teamResults).toEqual(second.teamResults);
+    expect(first.simulationCount).toBe(second.simulationCount);
   });
 });

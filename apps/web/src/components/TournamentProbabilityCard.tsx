@@ -1,8 +1,8 @@
-import type { TournamentProbabilityEntry } from "../lib/api-client";
+import type { TournamentSimulationTeamResult } from "@world-cup-2026-predictor/api";
 import { formatPercent } from "../lib/api-client";
 
 interface TournamentProbabilityCardProps {
-  entry: TournamentProbabilityEntry;
+  entry: TournamentSimulationTeamResult;
 }
 
 export function TournamentProbabilityCard({ entry }: TournamentProbabilityCardProps) {

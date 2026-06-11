@@ -131,6 +131,23 @@ export interface HistoricalReplayAuditResponse {
   metadata: ApiMetadata;
 }
 
+export interface TournamentSimulationTeamResult {
+  rank: number;
+  team: string;
+  championProbability: number;
+  runnerUpProbability: number;
+}
+
+export interface TournamentSimulationSuccessResponse {
+  status: "success";
+  simulationCount: number;
+  tournamentName: string;
+  dataScope: "sample_foundation_8_team_tournament";
+  teamResults: TournamentSimulationTeamResult[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
