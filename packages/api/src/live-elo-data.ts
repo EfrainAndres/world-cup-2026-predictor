@@ -1,4 +1,5 @@
 import type { EloMatch } from "../../model/src/index.js";
+import type { EloCompatibleMatch } from "./international-elo-adapter.js";
 
 // Curated historical World Cup fixture data (2010, 2014, 2018, 2022) for the live Elo pipeline foundation.
 // Matches are pre-sorted chronologically. Each entry includes only the fields required by EloMatch.
@@ -269,3 +270,23 @@ export const LIVE_ELO_FOUNDATION_DATA_SCOPE = "world_cup_2010_2014_2018_2022" as
 export const LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE = "2022-12-18" as const;
 export const LIVE_ELO_FOUNDATION_TOURNAMENT_COUNT = 4 as const;
 export const LIVE_ELO_FOUNDATION_MATCH_COUNT = 256 as const;
+
+export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_MATCH_COUNT = 12 as const;
+export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE = "2024-09-07" as const;
+export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT_DATA_SCOPE =
+  "copa_america_2024_euro_2024_wcq_2026_international_friendly" as const;
+
+export const LIVE_ELO_INTERNATIONAL_SUPPLEMENT: readonly EloCompatibleMatch[] = [
+  { match_id: "INT-COPA24-001", match_date: "2024-07-14", home_team: "Argentina", away_team: "Colombia", neutral_site: true, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "INT-COPA24-002", match_date: "2024-07-09", home_team: "Argentina", away_team: "Canada", neutral_site: true, home_score: 2, away_score: 0, result: "home_win" },
+  { match_id: "INT-COPA24-003", match_date: "2024-07-10", home_team: "Colombia", away_team: "Uruguay", neutral_site: true, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "INT-EURO24-001", match_date: "2024-07-14", home_team: "Spain", away_team: "England", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "INT-EURO24-002", match_date: "2024-07-09", home_team: "Spain", away_team: "France", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "INT-EURO24-003", match_date: "2024-07-10", home_team: "England", away_team: "Netherlands", neutral_site: true, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "INT-WCQ26-001", match_date: "2023-10-12", home_team: "Argentina", away_team: "Paraguay", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "INT-WCQ26-002", match_date: "2023-10-12", home_team: "Brazil", away_team: "Venezuela", neutral_site: false, home_score: 1, away_score: 0, result: "home_win" },
+  { match_id: "INT-WCQ26-003", match_date: "2024-09-07", home_team: "Germany", away_team: "Hungary", neutral_site: false, home_score: 5, away_score: 0, result: "home_win" },
+  { match_id: "INT-FRI-001", match_date: "2023-09-12", home_team: "Germany", away_team: "France", neutral_site: false, home_score: 2, away_score: 1, result: "home_win" },
+  { match_id: "INT-FRI-002", match_date: "2024-03-26", home_team: "Spain", away_team: "Brazil", neutral_site: false, home_score: 3, away_score: 3, result: "draw" },
+  { match_id: "INT-FRI-003", match_date: "2024-06-06", home_team: "Morocco", away_team: "USA", neutral_site: false, home_score: 3, away_score: 0, result: "home_win" },
+];

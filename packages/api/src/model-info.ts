@@ -14,7 +14,7 @@ export function getModelInfo(): ModelInfoResponse {
       `Historical replay audit metadata from ${HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION}.`,
       "Seeded deterministic 8-team sample tournament simulation using runTournamentRepeatedRuns.",
       "Curated seed ratings for top 10 World Cup 2026 contenders with tier and strength classifications.",
-      "Live Elo pipeline computing current ratings from 256 curated World Cup fixtures (2010–2022)."
+      "Live Elo pipeline computing current ratings from 256 World Cup fixtures (2010–2022) plus 12 international supplement matches (Copa America 2024, Euro 2024, WCQ 2026, Friendlies)."
     ],
     supportedHandlers: [
       "getHealth",

@@ -44,6 +44,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.6 | Live Team Ratings Integration | Replace static `FOUNDATION_TEAM_RATINGS` with a live `getTeamRatingsFoundation` API handler; migrate types to the API package. | Done |
 | 7.0A | Live Elo Pipeline Foundation | Build a live Elo pipeline that computes current team ratings from available historical match data. | Done |
 | 7.0B | Historical International Match Dataset Foundation | Create the data infrastructure for loading, validating, and normalizing a broader international match dataset beyond World Cup fixtures. | Done |
+| 7.0C | International Dataset to Live Elo Integration | Wire the international match dataset foundation into the live Elo API flow; supplement World Cup fixtures with Copa, Euro, WCQ, and Friendly matches. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1027,6 +1028,28 @@ Exit criteria:
 - Foundation and sample-only warnings propagate through metadata.
 - All tests, typecheck, and build pass with no regressions.
 - No API changes, no dashboard changes, no model changes.
+
+## Phase 7.0C - International Dataset to Live Elo Integration
+
+Wire the international match dataset foundation into the live Elo API flow while preserving the World Cup-only embedded dataset as a fallback.
+
+Deliverables:
+
+- `packages/api/src/international-elo-adapter.ts` — `EloCompatibleMatch` interface, `toEloMatch()`, `mergeEloMatchSources()`, `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING`.
+- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT` (12 matches) added to `packages/api/src/live-elo-data.ts` as embedded TypeScript constants.
+- `getLiveEloRatingsFoundation()` updated to use `mergeEloMatchSources()` and `dataCoverage: "partial_international_history"`.
+- `packages/api/tests/international-elo-adapter.test.ts` with unit tests for adapter functions.
+- `docs/model-results/INTERNATIONAL_DATASET_LIVE_ELO_INTEGRATION.md` documenting the integration design.
+
+Exit criteria:
+
+- `matchesProcessed` is 268 (256 WC + 12 international supplement).
+- `latestMatchDate` reflects "2024-09-07" (latest supplement match).
+- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING` appears in every response.
+- World Cup fixture data is unchanged and preserved as the pipeline foundation.
+- `supportedHandlers` count remains at 8.
+- All tests, typecheck, and build pass with no regressions.
+- No web package changes, no database, no external services.
 
 ## Phase 7.0 - QA Automation
 

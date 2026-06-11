@@ -278,7 +278,7 @@ describe("getLiveEloRatingsFoundation", () => {
 
     expect(result.status).toBe("success");
     expect(result.teams.length).toBeGreaterThan(0);
-    expect(result.matchesProcessed).toBe(256);
+    expect(result.matchesProcessed).toBe(268);
     expect(result.teamsRatedTotal).toBeGreaterThan(0);
     expect(result.dataCoverage.length).toBeGreaterThan(0);
     expect(result.pipelineVersion.length).toBeGreaterThan(0);
@@ -331,10 +331,23 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(result.topEloRating).toBe(result.teams[0]?.eloRating);
   });
 
-  it("latestMatchDate reflects the 2022 World Cup final date", () => {
+  it("latestMatchDate reflects the international supplement's latest match date", () => {
     const result = getLiveEloRatingsFoundation();
 
-    expect(result.latestMatchDate).toBe("2022-12-18");
+    expect(result.latestMatchDate).toBe("2024-09-07");
+  });
+
+  it("dataCoverage mentions international supplement competitions", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.dataCoverage).toContain("Copa America 2024");
+    expect(result.dataCoverage).toContain("UEFA Euro 2024");
+  });
+
+  it("warnings include the international supplement warning", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.warnings.some((w) => w.includes("International match supplement"))).toBe(true);
   });
 
   it("known strong teams appear in the top results", () => {
