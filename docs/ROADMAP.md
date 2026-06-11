@@ -40,6 +40,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Done |
 | 6.3 | Tournament Simulation Dashboard | Add a foundation tournament simulation section showing illustrative champion/runner-up probabilities and simulation engine status. | Done |
 | 6.4 | Live Tournament Simulation Integration | Replace static foundation preview with a live local `simulateTournamentFoundation` API handler using `runTournamentRepeatedRuns`. | Done |
+| 6.5 | World Cup 2026 Team Ratings Dashboard | Add a team ratings section showing Elo-based strength ratings, tiers, offense/defense scores, and indicators for the top 10 contenders. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -940,6 +941,27 @@ Exit criteria:
 - All 8 sample tournament teams appear in the probability grid.
 - Static foundation constant and its associated types are removed from the web layer.
 - All tests, typecheck, and build checks pass with no regressions.
+
+## Phase 6.5 - World Cup 2026 Team Ratings Dashboard
+
+Add a team ratings section to the dashboard showing contender strength.
+
+Deliverables:
+
+- `TeamRatingsSection` component with section header, amber foundation warning, five summary stat cards (teams rated, top Elo, average Elo, strongest offense indicator, strongest defense indicator), and a responsive 10-card grid.
+- `TeamRatingCard` component with rank badge, team name, Elo rating, tier pill, offense/defense strength scores, and a short summary.
+- `TeamRatingTier`, `TeamRatingEntry`, and `TeamRatingsFoundation` types in `apps/web/src/lib/api-client.ts`.
+- `FOUNDATION_TEAM_RATINGS` constant with seed ratings for Argentina, France, Spain, England, Brazil, Portugal, Germany, Netherlands, Belgium, and Italy.
+- `teamRatings` field added to `DashboardSnapshot` and populated in `getDashboardSnapshot()`.
+- `docs/dashboard/TEAM_RATINGS_DASHBOARD.md` documenting the section purpose, components, tier system, data, boundaries, and next steps.
+
+Exit criteria:
+
+- The team ratings section renders correctly with all 10 contenders, summary stats, and foundation warning.
+- Strongest offense and defense indicators correctly identify the highest-scoring teams.
+- Component code calls only the API client wrapper — no direct model or data package imports inside components.
+- No charts, auth, database, deployment, or new dependencies are added.
+- All existing tests, typecheck, and build checks pass.
 
 ## Phase 7.0 - QA Automation
 

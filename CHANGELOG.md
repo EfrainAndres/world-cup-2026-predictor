@@ -8,6 +8,13 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.5 team ratings dashboard.
+- `TeamRatingsSection` component with foundation warning, five summary stat cards (teams count, top Elo, average Elo, strongest offense, strongest defense), and a 10-card team grid.
+- `TeamRatingCard` component showing rank, team name, Elo rating, tier pill, offense/defense strength scores, and a short summary.
+- `TeamRatingEntry`, `TeamRatingTier`, and `TeamRatingsFoundation` types added to `apps/web/src/lib/api-client.ts`.
+- `FOUNDATION_TEAM_RATINGS` constant with static seed ratings for top 10 World Cup 2026 contenders.
+- `teamRatings: TeamRatingsFoundation` added to `DashboardSnapshot`.
+- `docs/dashboard/TEAM_RATINGS_DASHBOARD.md` documenting components, data, tier system, boundaries, and next steps.
 - Phase 6.4 live tournament simulation integration.
 - `simulateTournamentFoundation()` pure API handler in `packages/api` using `runTournamentRepeatedRuns` with an 8-team sample tournament (seed 2026, 1000 runs).
 - `TournamentSimulationTeamResult` and `TournamentSimulationSuccessResponse` schema types in `packages/api/src/schemas.ts`.
