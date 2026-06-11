@@ -1,6 +1,14 @@
 # Agent Instructions
 
-These instructions apply to future Codex sessions working in this repository.
+These instructions apply to Codex CLI and Claude Code sessions working in this repository.
+
+## Claude Code
+
+Claude Code sessions must also read `CLAUDE.md` before starting any work.
+`CLAUDE.md` defines the handoff format, git responsibility split, and session rules specific to Claude Code.
+
+For the full collaboration protocol between Codex CLI and Claude Code, see `docs/AI_COLLABORATION_WORKFLOW.md`.
+For token-efficient prompt patterns and examples, see `docs/PROMPTING_GUIDELINES.md`.
 
 ## Required Reading
 
