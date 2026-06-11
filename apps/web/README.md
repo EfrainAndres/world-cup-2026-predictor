@@ -1,0 +1,37 @@
+# Web Dashboard
+
+`apps/web` contains the Phase 6.0 dashboard foundation for World Cup 2026 Predictor.
+
+The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
+
+## Included
+
+- Dashboard home page.
+- Header and navigation.
+- Model status card.
+- Match simulation preview card.
+- Historical replay audit preview card.
+- Historical tournaments preview section.
+- Responsive Tailwind layout.
+- Accessible semantic HTML.
+- Local API client wrapper.
+
+## Boundaries
+
+- No authentication.
+- No database.
+- No payments.
+- No production deployment.
+- No dashboard charts yet.
+- No external UI component library.
+- No public predictive accuracy claim.
+
+## Commands
+
+From the repository root:
+
+```bash
+pnpm test
+pnpm typecheck
+pnpm build
+```
