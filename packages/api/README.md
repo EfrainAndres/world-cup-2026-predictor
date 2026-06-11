@@ -24,6 +24,22 @@ This package exposes pure TypeScript handler functions only. It does not start a
 - No dashboard.
 - No public predictive accuracy claim.
 
+## Validation
+
+The package includes unit-style handler tests and integration-style validation through `apiRoutes`.
+
+Integration validation covers:
+
+- Health and model metadata.
+- Valid and invalid match simulation requests.
+- Optional seeded Monte Carlo simulation.
+- Historical tournament summary success and validation errors.
+- Historical replay audit readiness metadata.
+- Stable success and error response shapes.
+- No server, database, network, or external service requirements.
+
+See `docs/api/API_INTEGRATION_VALIDATION.md` for the validation scope.
+
 ## Commands
 
 From the repository root:
