@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations. Phase 4.0N adds historical tournament bracket reconstruction foundations. Phase 4.0O adds complete historical replay validation foundations.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations. Phase 4.0N adds historical tournament bracket reconstruction foundations. Phase 4.0O adds complete historical replay validation foundations. Phase 4.0P adds historical replay accuracy audit foundations.
 
 ## Current Scope
 
@@ -52,6 +52,7 @@ The package currently includes:
 - Historical Monte Carlo replay helpers for Elo-to-expected-goals mapping, Poisson score matrices, simplified repeated tournament simulation, and replay scoring summaries.
 - Historical bracket reconstruction helpers for 2010, 2014, 2018, and 2022 groups, group standings, qualifiers, knockout rounds, champion, runner-up, third place, and match-count validation.
 - Complete historical replay validation helpers that audit dataset completeness, bracket reconstruction, Elo snapshots, Monte Carlo replay, replay backtesting reports, per-year status, aggregate status, and foundation warnings.
+- Historical replay accuracy audit helpers that summarize metric availability, validation readiness, foundation-only warnings, known gaps, and API readiness recommendations.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -161,6 +162,14 @@ The complete historical replay validation foundation audits whether every suppor
 Per-year and aggregate statuses are reported as `pass`, `warning`, or `fail`. Foundation warnings are expected until full international match history, calibrated Elo-to-goals mapping, and stronger replay calibration are available.
 
 This validation layer is a readiness check for future API or dashboard exposure. It does not create a public predictive accuracy claim.
+
+## Historical Replay Accuracy Audit Scope
+
+The historical replay accuracy audit foundation summarizes the current replay system across 2010, 2014, 2018, and 2022.
+
+It checks metric availability for Brier Score, Log Loss, Top-1, Top-3, and Top-5; validates dataset, bracket, Elo snapshot, Monte Carlo replay, and replay-validation readiness; detects foundation-only warnings; lists known gaps; and returns an API readiness recommendation.
+
+The audit is a release-readiness tool, not a real predictive accuracy claim.
 
 ## Boundaries
 

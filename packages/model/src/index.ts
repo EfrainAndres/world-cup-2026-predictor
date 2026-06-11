@@ -1,4 +1,21 @@
 export type {
+  HistoricalReplayAccuracyAggregateAudit,
+  HistoricalReplayAccuracyApiReadiness,
+  HistoricalReplayAccuracyAuditComponent,
+  HistoricalReplayAccuracyAuditInput,
+  HistoricalReplayAccuracyAuditMetadata,
+  HistoricalReplayAccuracyAuditResult,
+  HistoricalReplayAccuracyAuditStatus,
+  HistoricalReplayAccuracyAuditWarning,
+  HistoricalReplayAccuracyAuditWarningCode,
+  HistoricalReplayAccuracyMetricName,
+  HistoricalReplayAccuracyYearAudit,
+  HistoricalReplayMetricAvailability,
+  HistoricalReplayYearComponentAudit,
+  HistoricalReplayYearMetricAvailability
+} from "./historical-replay-accuracy-audit.js";
+
+export type {
   CompleteHistoricalReplayAggregateValidation,
   CompleteHistoricalReplayComponentStatus,
   CompleteHistoricalReplayValidationComponent,
@@ -309,6 +326,12 @@ export {
   separateHistoricalFixturesByStage,
   validateHistoricalBracketInput
 } from "./historical-brackets.js";
+
+export {
+  HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION,
+  HISTORICAL_REPLAY_ACCURACY_AUDIT_WARNING,
+  auditHistoricalReplayAccuracy
+} from "./historical-replay-accuracy-audit.js";
 
 export {
   COMPLETE_HISTORICAL_REPLAY_EXPECTED_YEARS,
