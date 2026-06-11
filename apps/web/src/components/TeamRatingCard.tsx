@@ -1,4 +1,4 @@
-import type { TeamRatingEntry, TeamRatingTier } from "../lib/api-client";
+import type { TeamRatingFoundationEntry, TeamRatingTier } from "@world-cup-2026-predictor/api";
 import { StatusPill } from "./StatusPill";
 
 const tierTone: Record<TeamRatingTier, "success" | "neutral" | "warning"> = {
@@ -8,7 +8,7 @@ const tierTone: Record<TeamRatingTier, "success" | "neutral" | "warning"> = {
 };
 
 interface TeamRatingCardProps {
-  entry: TeamRatingEntry;
+  entry: TeamRatingFoundationEntry;
 }
 
 export function TeamRatingCard({ entry }: TeamRatingCardProps) {

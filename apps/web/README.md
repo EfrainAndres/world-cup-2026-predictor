@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 6.5).
+`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 6.6).
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 

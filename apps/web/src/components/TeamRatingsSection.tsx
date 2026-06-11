@@ -1,9 +1,9 @@
-import type { TeamRatingsFoundation } from "../lib/api-client";
+import type { TeamRatingsFoundationResponse } from "@world-cup-2026-predictor/api";
 import { SectionHeader } from "./SectionHeader";
 import { TeamRatingCard } from "./TeamRatingCard";
 
 interface TeamRatingsSectionProps {
-  teamRatings: TeamRatingsFoundation;
+  teamRatings: TeamRatingsFoundationResponse;
 }
 
 export function TeamRatingsSection({ teamRatings }: TeamRatingsSectionProps) {
