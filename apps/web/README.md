@@ -9,7 +9,9 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Dashboard home page.
 - Header and navigation.
 - Model status card.
+- Interactive match simulation form.
 - Match simulation preview card.
+- Match simulation result cards.
 - Historical replay audit preview card.
 - Historical tournaments preview section.
 - Responsive Tailwind layout.
@@ -25,6 +27,10 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - No dashboard charts yet.
 - No external UI component library.
 - No public predictive accuracy claim.
+
+## Match Simulation
+
+The match simulation form calls the local API client wrapper. It accepts team names, expected goals, max goals, and an optional simulation count. Results are displayed as baseline probabilities and likely scorelines with the note: `Baseline simulation, not a guarantee.`
 
 ## Commands
 
