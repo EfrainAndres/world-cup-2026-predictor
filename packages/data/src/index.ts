@@ -59,6 +59,7 @@ export type {
   InternationalMatch,
   InternationalMatchDatasetMetadata,
   InternationalMatchDatasetResult,
+  InternationalMatchDatasetWarningCode,
   InternationalMatchFixtureFile,
   InternationalMatchInput,
   InternationalMatchValidationErrorCode,
@@ -69,6 +70,10 @@ export type {
 export {
   INTERNATIONAL_MATCH_DATASET_CREATED_AT,
   INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING,
+  INTERNATIONAL_MATCH_CURATED_SAMPLE_WARNING,
+  INTERNATIONAL_MATCH_EXPANDED_DATASET_ID,
+  INTERNATIONAL_MATCH_NOT_COMPLETE_GLOBAL_HISTORY_WARNING,
+  INTERNATIONAL_MATCH_PARTIAL_HISTORY_WARNING,
   INTERNATIONAL_MATCH_SAMPLE_DATASET_ID,
   INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING,
   loadInternationalMatchDataset,

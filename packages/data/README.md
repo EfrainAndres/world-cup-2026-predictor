@@ -23,6 +23,8 @@ This package currently includes:
 - Historical fixture validation for years, stages, stage order, scores, results, winners, penalties, source notes, duplicate match IDs, and expected match counts.
 - Historical fixture winner, decision method, penalty score, and stage-order metadata.
 - Historical fixture normalization into the existing `NormalizedMatch` contract.
+- International match fixture loading, validation, metadata, warning codes, and normalization.
+- Expanded curated international fixture sample with 56 matches across FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 qualifiers, and friendlies.
 - Deterministic unit tests with local curated fixtures.
 
 ## Out Of Scope
@@ -58,3 +60,5 @@ These commands require `pnpm` and workspace dependencies to be installed.
 The package follows `docs/DATA_DICTIONARY.md` for planned field names and `docs/ARCHITECTURE.md` for layer boundaries. Model logic belongs in `packages/model`, not this package.
 
 The historical World Cup fixtures are curated JSON files for complete 2010, 2014, 2018, and 2022 tournament results. They are useful for fixture-level validation and future backtesting reports, but they are not enough on their own to claim model accuracy.
+
+The expanded international fixture is a lightweight curated sample for validation and live Elo foundation work. It emits `partial_international_history`, `curated_sample_only`, and `not_complete_global_match_history` warning codes and should not be treated as complete global match history.

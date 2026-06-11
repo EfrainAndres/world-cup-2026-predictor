@@ -15,9 +15,9 @@ import {
   LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
   LIVE_ELO_FOUNDATION_MATCH_COUNT,
   LIVE_ELO_FOUNDATION_MATCHES,
-  LIVE_ELO_INTERNATIONAL_SUPPLEMENT,
   LIVE_ELO_INTERNATIONAL_SUPPLEMENT_DATA_SCOPE,
-  LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE
+  LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
+  loadLiveEloInternationalSupplement
 } from "./live-elo-data.js";
 import { LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING, mergeEloMatchSources } from "./international-elo-adapter.js";
 import { getHealth } from "./health.js";
@@ -477,10 +477,11 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
 
 const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-international-supplement";
 const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
-const LIVE_ELO_COMBINED_MATCH_COUNT = LIVE_ELO_FOUNDATION_MATCH_COUNT + 12;
 
 export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse {
-  const mergedMatches = mergeEloMatchSources(LIVE_ELO_FOUNDATION_MATCHES, LIVE_ELO_INTERNATIONAL_SUPPLEMENT);
+  const internationalSupplement = loadLiveEloInternationalSupplement();
+  const mergedMatches = mergeEloMatchSources(LIVE_ELO_FOUNDATION_MATCHES, internationalSupplement.matches);
+  const combinedMatchCount = LIVE_ELO_FOUNDATION_MATCH_COUNT + internationalSupplement.metadata.matchCount;
 
   const pipeline = runLiveEloPipeline({
     pipelineId: LIVE_ELO_PIPELINE_ID,
@@ -508,7 +509,7 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
     matchesProcessed: pipeline.matchesProcessed,
     teamsRatedTotal: pipeline.teamsRated,
     dataCoverage:
-      "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with Copa America 2024, UEFA Euro 2024, World Cup 2026 Qualifiers, and International Friendlies (sample only).",
+      "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample covering FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, World Cup 2026 Qualifiers, and International Friendlies.",
     dataScope: `${LIVE_ELO_FOUNDATION_DATA_SCOPE}+${LIVE_ELO_INTERNATIONAL_SUPPLEMENT_DATA_SCOPE}`,
     pipelineVersion: pipeline.pipelineVersion,
     topEloRating,
@@ -516,12 +517,15 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
     latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
     warnings: [
       ...pipeline.warnings,
+      ...internationalSupplement.loadWarnings,
       LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
+      ...internationalSupplement.metadata.foundationWarnings,
       "Teams are initialized at the default Elo rating (1500) before pipeline processing.",
-      "Only teams that appeared in World Cup 2010–2022 or the international supplement are rated."
+      "Only teams that appeared in World Cup 2010–2022 or the expanded international supplement are rated."
     ],
     metadata: buildApiMetadata([
-      `Live Elo pipeline processes ${LIVE_ELO_COMBINED_MATCH_COUNT} matches: 256 curated World Cup fixtures (2010–2022) plus 12 international supplement matches (Copa America 2024, Euro 2024, WCQ 2026, Friendlies).`,
+      `Live Elo pipeline processes ${combinedMatchCount} matches: 256 curated World Cup fixtures (2010–2022) plus ${internationalSupplement.metadata.matchCount} expanded international supplement matches from ${internationalSupplement.metadata.datasetId}.`,
+      `Supplement warning codes: ${internationalSupplement.metadata.warningCodes.join(", ")}.`,
       "No network calls, database, or external services are used."
     ])
   };

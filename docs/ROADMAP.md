@@ -45,6 +45,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.0A | Live Elo Pipeline Foundation | Build a live Elo pipeline that computes current team ratings from available historical match data. | Done |
 | 7.0B | Historical International Match Dataset Foundation | Create the data infrastructure for loading, validating, and normalizing a broader international match dataset beyond World Cup fixtures. | Done |
 | 7.0C | International Dataset to Live Elo Integration | Wire the international match dataset foundation into the live Elo API flow; supplement World Cup fixtures with Copa, Euro, WCQ, and Friendly matches. | Done |
+| 7.0D | Expanded International Dataset | Expand the curated international fixture sample and mirror it as the preferred live Elo supplement. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1050,6 +1051,26 @@ Exit criteria:
 - `supportedHandlers` count remains at 8.
 - All tests, typecheck, and build pass with no regressions.
 - No web package changes, no database, no external services.
+
+## Phase 7.0D - Expanded International Dataset
+
+Expand the international match dataset foundation from the tiny sample into a larger manually curated fixture set while keeping the data partial, validated, and clearly labeled.
+
+Deliverables:
+
+- `packages/data/fixtures/international/expanded-international-matches.json` with 56 curated matches.
+- International dataset metadata warning codes for partial history, curated sample status, and incomplete global coverage.
+- Data tests covering expanded fixture loading, minimum count, duplicate match IDs, competition metadata, warnings, and normalization.
+- `getLiveEloRatingsFoundation()` updated to use a static Elo-compatible mirror of the expanded fixture as the international supplement while preserving inline fallback behavior.
+- `docs/data-quality/EXPANDED_INTERNATIONAL_DATASET.md` documenting scope, validation, warnings, API use, and limitations.
+
+Exit criteria:
+
+- Expanded fixture remains manually reviewable and between 50 and 100 matches.
+- Dataset validation catches required-field, duplicate, and result consistency issues.
+- Live Elo metadata reflects expanded international coverage without claiming full global history.
+- No downloads, scraping, database, dashboard changes, or external services.
+- All required checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation
 
