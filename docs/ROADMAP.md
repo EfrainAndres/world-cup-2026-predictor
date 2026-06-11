@@ -29,8 +29,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Done |
 | 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Done |
 | 4.0P | Historical Replay Accuracy Audit | Audit replay metrics, validation status, known gaps, and API readiness. | Done |
-| 5.0 | API Foundation | Expose stable model outputs and validation metadata through a small service boundary. | Recommended next |
-| 5.1 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
+| 5.0 | API Foundation | Expose stable model outputs and validation metadata through pure TypeScript handlers. | Done |
+| 5.1 | API Transport Layer | Wrap pure API handlers with an HTTP transport when the project is ready for service deployment. | Recommended next |
+| 5.2 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -709,23 +710,44 @@ Exit criteria:
 
 ## Phase 5.0 - API Foundation
 
-Expose stable model outputs behind a small service boundary.
+Expose stable model outputs behind a small TypeScript service boundary without starting a server.
 
-Potential deliverables:
+Deliverables:
 
-- API package or service scaffold.
-- Read-only prediction and validation endpoints.
-- Response contracts for model version, data cutoff, snapshot type, replay validation status, and warnings.
-- Thin handlers that call model/domain helpers without embedding prediction logic.
-- API tests for response shape and error handling.
+- `packages/api` package with pure handler functions.
+- Health and model information handlers.
+- Match simulation handler using existing Poisson, probability, and optional Monte Carlo helpers.
+- Historical tournament summary and replay audit handlers.
+- Request validation and typed response contracts.
+- API tests for response shape, validation errors, deterministic simulation behavior, and audit warnings.
+- API foundation documentation covering contracts, limits, and next steps.
 
 Exit criteria:
 
 - API outputs preserve model limitations and validation metadata.
 - No endpoint presents foundation replay as final predictive accuracy.
 - The service boundary remains thin and testable.
+- No HTTP server, dashboard, database, or external service is added.
 
-## Phase 5.1 - Web Dashboard
+## Phase 5.1 - API Transport Layer
+
+Wrap the pure API handlers in a real transport only after the contract is stable.
+
+Potential deliverables:
+
+- HTTP framework selection and ADR if needed.
+- Thin route adapters that delegate to `packages/api` handlers.
+- Request/response serialization tests.
+- Error mapping for validation failures.
+- Deployment and environment guidance.
+
+Exit criteria:
+
+- The transport layer does not contain prediction or data logic.
+- Existing pure handler tests remain the source of domain behavior confidence.
+- Service deployment decisions do not require a database, dashboard, or external service.
+
+## Phase 5.2 - Web Dashboard
 
 Build the user-facing experience.
 
