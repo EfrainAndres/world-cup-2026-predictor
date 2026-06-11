@@ -1,4 +1,23 @@
 export type {
+  HistoricalBracketMetadata,
+  HistoricalBracketStage,
+  HistoricalBracketValidationCode,
+  HistoricalBracketValidationIssue,
+  HistoricalBracketValidationResult,
+  HistoricalBracketWarning,
+  HistoricalFixturesByStage,
+  HistoricalGroupName,
+  HistoricalGroupStructure,
+  HistoricalGroupTable,
+  HistoricalGroupTableRow,
+  HistoricalKnockoutFixture,
+  HistoricalKnockoutRounds,
+  HistoricalTournamentBracketFixtureInput,
+  HistoricalTournamentBracketInput,
+  ReconstructedHistoricalBracket
+} from "./historical-brackets.js";
+
+export type {
   EloConfig,
   EloMatch,
   EloMatchRatingHistory,
@@ -256,3 +275,24 @@ export {
   runHistoricalMonteCarloReplay,
   runHistoricalMonteCarloReplayYear
 } from "./historical-monte-carlo-replay.js";
+
+export {
+  EXPECTED_HISTORICAL_BRACKET_MATCHES,
+  EXPECTED_HISTORICAL_FINAL_MATCHES,
+  EXPECTED_HISTORICAL_GROUP_STAGE_MATCHES,
+  EXPECTED_HISTORICAL_KNOCKOUT_AND_PLACEMENT_MATCHES,
+  EXPECTED_HISTORICAL_QUARTER_FINAL_MATCHES,
+  EXPECTED_HISTORICAL_ROUND_OF_16_MATCHES,
+  EXPECTED_HISTORICAL_SEMI_FINAL_MATCHES,
+  EXPECTED_HISTORICAL_THIRD_PLACE_MATCHES,
+  HISTORICAL_32_TEAM_WORLD_CUP_FORMAT,
+  HISTORICAL_BRACKET_GROUP_NAMES,
+  HISTORICAL_BRACKET_RECONSTRUCTION_VERSION,
+  groupHistoricalFixturesByYear,
+  reconstructHistoricalBracket,
+  reconstructHistoricalGroupStandings,
+  reconstructHistoricalGroupStructures,
+  reconstructHistoricalKnockoutProgression,
+  separateHistoricalFixturesByStage,
+  validateHistoricalBracketInput
+} from "./historical-brackets.js";

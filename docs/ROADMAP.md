@@ -26,7 +26,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0K | Historical Tournament Replay Backtesting | Replay historical tournaments with pre-tournament snapshots and compare against outcomes. | Done |
 | 4.0L | Historical Elo Snapshot Replay | Generate cutoff-safe historical Elo foundation snapshots from available match data. | Done |
 | 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Done |
-| 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Recommended next |
+| 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Done |
+| 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Recommended next |
 | 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
@@ -643,14 +644,16 @@ Exit criteria:
 
 Rebuild historical group and knockout structures so Monte Carlo replay can use more realistic tournament paths.
 
-Potential deliverables:
+Deliverables:
 
-- Historical group membership inputs for 2010, 2014, 2018, and 2022.
-- Historical knockout bracket path reconstruction.
-- Tournament-specific fixture builders for replay simulations.
-- Validation tests that reconstructed brackets match curated historical fixture metadata.
-- Integration with historical Monte Carlo replay inputs.
-- Documentation of remaining official tie-breaker limitations.
+- Historical fixture grouping by tournament year.
+- Stage separation for group, Round of 16, quarter-final, semi-final, third-place, and final fixtures.
+- Historical group reconstruction for 2010, 2014, 2018, and 2022.
+- Group standings, winners, and runners-up from actual group-stage results.
+- Knockout progression from recorded historical winners.
+- Champion, runner-up, and third-place extraction.
+- Match-count validation for the historical 32-team format.
+- Documentation of remaining official tie-breaker and result-level reconstruction limitations.
 
 Exit criteria:
 
@@ -658,6 +661,25 @@ Exit criteria:
 - Bracket reconstruction does not use actual match outcomes to generate pre-tournament probabilities.
 - Existing data/model checks remain deterministic.
 - Remaining model calibration gaps are documented before Phase 5.0.
+
+## Phase 4.0O - Complete Historical Replay Validation
+
+Connect reconstructed historical brackets to the historical replay foundations and produce careful validation outputs.
+
+Potential deliverables:
+
+- Historical Monte Carlo replay inputs built from reconstructed brackets.
+- Group qualification and knockout-path comparison summaries.
+- Validation reports that combine Elo snapshots, Monte Carlo replay, and reconstructed bracket outcomes.
+- Clear distinction between foundation validation and calibrated model accuracy.
+- Decision point for whether to continue model validation or begin API foundation work.
+
+Exit criteria:
+
+- Historical replay validation uses reconstructed 2010, 2014, 2018, and 2022 tournament structures.
+- Reports clearly separate data, calibration, and bracket limitations.
+- No public accuracy claims are made without calibrated inputs.
+- The project has enough evidence to choose Phase 5.0 or another model-validation phase.
 
 ## Phase 5.0 - Web Dashboard
 
