@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 4.0P historical replay accuracy audit foundation.
+- TypeScript audit helpers for per-year and aggregate replay status, metric availability, dataset/bracket/Elo/Monte Carlo/replay validation checks, foundation-warning detection, API readiness recommendations, deterministic tests, and model result documentation.
 - Phase 4.0O complete historical replay validation foundation.
 - TypeScript validation helpers that audit dataset completeness, bracket reconstruction, historical Elo snapshots, Monte Carlo replay, replay backtesting reports, per-year status, aggregate status, foundation warnings, deterministic tests, and model result documentation.
 - Phase 4.0N historical tournament bracket reconstruction foundation.

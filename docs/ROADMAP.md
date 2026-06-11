@@ -28,6 +28,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Done |
 | 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Done |
 | 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Done |
+| 4.0P | Historical Replay Accuracy Audit | Audit replay metrics, validation status, known gaps, and API readiness. | Done |
 | 5.0 | API Foundation | Expose stable model outputs and validation metadata through a small service boundary. | Recommended next |
 | 5.1 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
@@ -684,6 +685,27 @@ Exit criteria:
 - Reports clearly separate data, calibration, and bracket limitations.
 - No public accuracy claims are made without calibrated inputs.
 - The project has enough evidence to choose Phase 5.0 or another model-validation phase.
+
+## Phase 4.0P - Historical Replay Accuracy Audit
+
+Summarize the historical replay foundation across metrics, validation status, known gaps, and API readiness.
+
+Deliverables:
+
+- Per-year audit status for 2010, 2014, 2018, and 2022.
+- Aggregate audit summary.
+- Metric availability checks for Brier Score, Log Loss, Top-1, Top-3, and Top-5.
+- Dataset completeness, bracket reconstruction, Elo snapshot, Monte Carlo replay, and replay validation checks.
+- Foundation-only warning detection.
+- API readiness recommendation: `ready`, `ready_with_warnings`, or `not_ready`.
+- Documentation that prevents replay audit outputs from being presented as real predictive accuracy.
+
+Exit criteria:
+
+- Historical replay metrics and validation artifacts can be audited consistently.
+- API readiness is based on validation status and warnings, not accuracy overclaims.
+- Known gaps are surfaced before API exposure.
+- Existing data/model checks remain deterministic.
 
 ## Phase 5.0 - API Foundation
 
