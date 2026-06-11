@@ -2,7 +2,7 @@
 
 `packages/api` contains the Phase 5.0 API foundation for World Cup 2026 Predictor.
 
-This package exposes pure TypeScript handler functions only. It does not start an HTTP server, connect to a database, call external services, or create dashboard UI.
+This package exposes pure TypeScript handler functions and a lightweight HTTP-ready runtime adapter. It does not start an HTTP server, connect to a database, call external services, or create dashboard UI.
 
 ## Handlers
 
@@ -14,6 +14,20 @@ This package exposes pure TypeScript handler functions only. It does not start a
 | `getHistoricalTournamentSummary(year)` | Returns curated historical tournament summary metadata for 2010, 2014, 2018, or 2022. |
 | `getHistoricalReplayAudit()` | Returns historical replay audit readiness metadata and warnings. |
 
+## Runtime
+
+The Phase 5.2 runtime adapter exposes the handlers through local `Request`/`Response` routing:
+
+| Method | Path |
+| --- | --- |
+| `GET` | `/health` |
+| `GET` | `/model-info` |
+| `POST` | `/simulate-match` |
+| `GET` | `/historical/:year` |
+| `GET` | `/historical-replay-audit` |
+
+Use `apiRuntime.fetch(request)` or `createApiRuntime()` in tests and future server adapters. The runtime does not open a network port.
+
 ## Boundaries
 
 - No HTTP server.
@@ -23,6 +37,7 @@ This package exposes pure TypeScript handler functions only. It does not start a
 - No external services.
 - No dashboard.
 - No public predictive accuracy claim.
+- No runtime framework dependency.
 
 ## Validation
 
@@ -39,6 +54,7 @@ Integration validation covers:
 - No server, database, network, or external service requirements.
 
 See `docs/api/API_INTEGRATION_VALIDATION.md` for the validation scope.
+See `docs/api/API_RUNTIME_FOUNDATION.md` for the runtime boundary.
 
 ## Commands
 

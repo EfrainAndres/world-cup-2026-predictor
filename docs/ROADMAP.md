@@ -31,8 +31,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0P | Historical Replay Accuracy Audit | Audit replay metrics, validation status, known gaps, and API readiness. | Done |
 | 5.0 | API Foundation | Expose stable model outputs and validation metadata through pure TypeScript handlers. | Done |
 | 5.1 | API Integration Validation | Validate all pure API handlers together before adding transport or UI. | Done |
-| 5.2 | API Transport Layer | Wrap pure API handlers with an HTTP transport when the project is ready for service deployment. | Recommended next |
-| 5.3 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
+| 5.2 | API Runtime Foundation | Expose pure API handlers through a local HTTP-ready runtime adapter. | Done |
+| 5.3 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Recommended next |
+| 5.4 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -750,25 +751,45 @@ Exit criteria:
 - Error responses are typed and consistent enough for a future transport layer.
 - API metadata continues to expose foundation limitations and no public accuracy claim.
 
-## Phase 5.2 - API Transport Layer
+## Phase 5.2 - API Runtime Foundation
 
-Wrap the pure API handlers in a real transport only after the contract is stable.
+Expose pure API handlers through an HTTP-ready runtime adapter without starting a server.
+
+Deliverables:
+
+- Runtime adapter based on standard `Request` and `Response` primitives.
+- JSON route mapping for health, model info, match simulation, historical summaries, and replay audit metadata.
+- Request body parsing for match simulation.
+- Typed runtime errors for validation failures, unsupported methods, and missing routes.
+- Deterministic runtime tests using local request injection.
+- Runtime documentation that preserves no-server, no-database, and no-external-service boundaries.
+
+Exit criteria:
+
+- Route-shaped behavior can be tested without opening a network port.
+- Runtime responses preserve existing handler metadata and validation errors.
+- The runtime layer remains thin and does not contain prediction logic.
+- No dashboard, database, authentication, external service, or production deployment is added.
+
+## Phase 5.3 - API Server Adapter
+
+Wrap the runtime adapter in a real server process only after the local runtime boundary is stable.
 
 Potential deliverables:
 
 - HTTP framework selection and ADR if needed.
-- Thin route adapters that delegate to `packages/api` handlers.
-- Request/response serialization tests.
+- Thin server entrypoint that delegates to `packages/api` runtime.
+- Request/response serialization tests against the server adapter.
 - Error mapping for validation failures.
 - Deployment and environment guidance.
 
 Exit criteria:
 
-- The transport layer does not contain prediction or data logic.
-- Existing pure handler tests remain the source of domain behavior confidence.
+- The server adapter does not contain prediction or data logic.
+- Existing pure handler and runtime tests remain the source of behavior confidence.
 - Service deployment decisions do not require a database, dashboard, or external service.
 
-## Phase 5.3 - Web Dashboard
+## Phase 5.4 - Web Dashboard
 
 Build the user-facing experience.
 
