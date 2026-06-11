@@ -1,6 +1,6 @@
 import { AppHeader } from "../src/components/AppHeader";
 import { HistoricalReplayAuditPreviewCard } from "../src/components/HistoricalReplayAuditPreviewCard";
-import { HistoricalTournamentsPreview } from "../src/components/HistoricalTournamentsPreview";
+import { HistoricalValidationSection } from "../src/components/HistoricalValidationSection";
 import { MatchSimulationForm } from "../src/components/MatchSimulationForm";
 import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
@@ -69,7 +69,10 @@ export default function DashboardHomePage() {
           </div>
         </section>
 
-        <HistoricalTournamentsPreview tournaments={snapshot.historicalTournaments} />
+        <HistoricalValidationSection
+          tournaments={snapshot.historicalTournaments}
+          audit={snapshot.historicalReplayAudit}
+        />
       </main>
     </div>
   );

@@ -37,7 +37,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 5.4 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Planned |
 | 6.0 | Dashboard Foundation | Create the first minimal Next.js dashboard shell over local API handlers. | Done |
 | 6.1 | Match Simulation Dashboard | Add the first interactive match simulation UI over the local API client. | Done |
-| 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Recommended next |
+| 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |

@@ -8,6 +8,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.2 historical validation dashboard.
+- `HistoricalValidationSection` component with aggregate audit status, component availability summary, audit disclaimer, and per-year tournament card grid.
+- `HistoricalTournamentCard` component showing champion, runner-up, match count, dataset status, replay-supported status, and foundation-only warning for each supported year.
+- `docs/dashboard/HISTORICAL_VALIDATION_DASHBOARD.md` documenting the section purpose, components, data sources, boundaries, accuracy framing, and next steps.
 - Phase 0.8 AI Collaboration Workflow documentation.
 - `CLAUDE.md` with Claude Code session rules, git responsibility split, required reading list, checks, and handoff format.
 - `docs/AI_COLLABORATION_WORKFLOW.md` with tool roles, phase-scoped reading guide, git responsibility split, handoff format, scope rules, and token efficiency guidance.
