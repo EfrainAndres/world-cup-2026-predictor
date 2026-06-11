@@ -8,6 +8,22 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.0C international dataset to live Elo integration.
+- `packages/api/src/international-elo-adapter.ts` — `EloCompatibleMatch` interface, `toEloMatch()`, `mergeEloMatchSources()`, and `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING`.
+- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT` (12 matches) in `packages/api/src/live-elo-data.ts` — Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifiers, and International Friendlies embedded as TypeScript constants.
+- `packages/api/tests/international-elo-adapter.test.ts` — 14 unit tests for adapter functions.
+- `docs/model-results/INTERNATIONAL_DATASET_LIVE_ELO_INTEGRATION.md` documenting the integration architecture, dataset composition, design decisions, and limitations.
+
+### Changed
+
+- `getLiveEloRatingsFoundation()` now merges the World Cup foundation (256 matches) with the international supplement (12 matches) for a combined 268-match pipeline using `dataCoverage: "partial_international_history"`.
+- `matchesProcessed` in `getLiveEloRatingsFoundation()` now uses `pipeline.matchesProcessed` (268) rather than a hardcoded constant.
+- `latestMatchDate` now reflects the international supplement's latest match date ("2024-09-07" vs. "2022-12-18").
+- `dataCoverage` string updated to mention Copa America 2024, UEFA Euro 2024, WCQ 2026, and Friendlies.
+- `dataScope` updated to `world_cup_2010_2014_2018_2022+copa_america_2024_euro_2024_wcq_2026_international_friendly`.
+- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING` added to every `getLiveEloRatingsFoundation()` response.
+- `modelScope` entry in `model-info.ts` updated to describe 268-match combined pipeline.
+
 - Phase 7.0B historical international match dataset foundation.
 - `packages/data/src/international-matches.ts` with `loadInternationalMatchDataset`, `validateInternationalMatchDataset`, `normalizeInternationalMatch`, `normalizeInternationalMatches`, and full type exports for `InternationalMatch`, `InternationalMatchInput`, `InternationalMatchDatasetMetadata`, `InternationalMatchDatasetResult`, and related validation types.
 - `packages/data/fixtures/international/sample-international-matches.json` — 15-match curated sample covering FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifier, and International Friendly.
