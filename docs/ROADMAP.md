@@ -27,8 +27,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0L | Historical Elo Snapshot Replay | Generate cutoff-safe historical Elo foundation snapshots from available match data. | Done |
 | 4.0M | Historical Monte Carlo Replay | Replay historical tournament simulations from pre-tournament model snapshots. | Done |
 | 4.0N | Historical Tournament Bracket Reconstruction | Rebuild historical groups and brackets for more realistic replay simulations. | Done |
-| 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Recommended next |
-| 5.0 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
+| 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Done |
+| 5.0 | API Foundation | Expose stable model outputs and validation metadata through a small service boundary. | Recommended next |
+| 5.1 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -666,13 +667,16 @@ Exit criteria:
 
 Connect reconstructed historical brackets to the historical replay foundations and produce careful validation outputs.
 
-Potential deliverables:
+Deliverables:
 
-- Historical Monte Carlo replay inputs built from reconstructed brackets.
-- Group qualification and knockout-path comparison summaries.
-- Validation reports that combine Elo snapshots, Monte Carlo replay, and reconstructed bracket outcomes.
-- Clear distinction between foundation validation and calibrated model accuracy.
-- Decision point for whether to continue model validation or begin API foundation work.
+- Per-year validation status for 2010, 2014, 2018, and 2022.
+- Dataset completeness availability checks.
+- Historical bracket reconstruction availability checks.
+- Historical Elo snapshot replay availability checks.
+- Historical Monte Carlo replay availability checks.
+- Replay backtesting report availability checks.
+- Aggregate validation status and warning summary.
+- Explicit foundation-only warnings that prevent public accuracy overclaims.
 
 Exit criteria:
 
@@ -681,7 +685,25 @@ Exit criteria:
 - No public accuracy claims are made without calibrated inputs.
 - The project has enough evidence to choose Phase 5.0 or another model-validation phase.
 
-## Phase 5.0 - Web Dashboard
+## Phase 5.0 - API Foundation
+
+Expose stable model outputs behind a small service boundary.
+
+Potential deliverables:
+
+- API package or service scaffold.
+- Read-only prediction and validation endpoints.
+- Response contracts for model version, data cutoff, snapshot type, replay validation status, and warnings.
+- Thin handlers that call model/domain helpers without embedding prediction logic.
+- API tests for response shape and error handling.
+
+Exit criteria:
+
+- API outputs preserve model limitations and validation metadata.
+- No endpoint presents foundation replay as final predictive accuracy.
+- The service boundary remains thin and testable.
+
+## Phase 5.1 - Web Dashboard
 
 Build the user-facing experience.
 
