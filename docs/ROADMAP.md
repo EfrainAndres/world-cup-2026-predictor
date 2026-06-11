@@ -38,6 +38,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.0 | Dashboard Foundation | Create the first minimal Next.js dashboard shell over local API handlers. | Done |
 | 6.1 | Match Simulation Dashboard | Add the first interactive match simulation UI over the local API client. | Done |
 | 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Done |
+| 6.3 | Tournament Simulation Dashboard | Add a foundation tournament simulation section showing illustrative champion/runner-up probabilities and simulation engine status. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -896,6 +897,25 @@ Exit criteria:
 - The dashboard foundation can be changed with confidence.
 - User-facing warnings and limitations remain visible.
 - Validation does not require auth, database, deployment, or external services.
+
+## Phase 6.3 - Tournament Simulation Dashboard
+
+Add a foundation tournament simulation section to the dashboard.
+
+Deliverables:
+
+- `TournamentSimulationSection` component with simulation engine status card, foundation warning, top-5 illustrative probability grid, model limitations summary, and match simulation call-to-action.
+- `TournamentProbabilityCard` component with team rank, champion probability, and runner-up probability.
+- `TournamentSimulationFoundation` and `TournamentProbabilityEntry` types and `FOUNDATION_TOURNAMENT_SIMULATION` constant in `apps/web/src/lib/api-client.ts`.
+- `docs/dashboard/TOURNAMENT_SIMULATION_DASHBOARD.md` documenting the section purpose, components, data sources, static foundation data, accuracy framing, and future API roadmap note.
+
+Exit criteria:
+
+- The tournament simulation section renders clearly labeled foundation estimates without claiming predictive accuracy.
+- Component code calls only the API client wrapper — no direct model or data package imports.
+- Foundation warning and disclaimer are visible before the probability entries.
+- No charts, auth, database, deployment, or new dependencies are added.
+- All existing tests, typecheck, and build checks pass.
 
 ## Phase 7.0 - QA Automation
 
