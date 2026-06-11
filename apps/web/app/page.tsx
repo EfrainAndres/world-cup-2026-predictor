@@ -1,7 +1,7 @@
 import { AppHeader } from "../src/components/AppHeader";
 import { HistoricalReplayAuditPreviewCard } from "../src/components/HistoricalReplayAuditPreviewCard";
 import { HistoricalTournamentsPreview } from "../src/components/HistoricalTournamentsPreview";
-import { MatchSimulationPreviewCard } from "../src/components/MatchSimulationPreviewCard";
+import { MatchSimulationForm } from "../src/components/MatchSimulationForm";
 import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
 import { getDashboardSnapshot } from "../src/lib/api-client";
@@ -61,11 +61,11 @@ export default function DashboardHomePage() {
           <SectionHeader
             eyebrow="Match preview"
             titleId="match-section-title"
-            title="Deterministic simulation sample"
-            description="The preview uses caller-supplied expected goals and seeded simulation output. It is a UI integration sample, not a published forecast."
+            title="Interactive match simulation"
+            description="Enter teams and expected goals to run a local API simulation. The output is a baseline scenario, not a published forecast."
           />
           <div className="mt-6">
-            <MatchSimulationPreviewCard matchPreview={snapshot.matchPreview} />
+            <MatchSimulationForm initialResult={snapshot.matchPreview} />
           </div>
         </section>
 

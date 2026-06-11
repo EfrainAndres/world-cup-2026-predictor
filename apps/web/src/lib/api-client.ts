@@ -10,6 +10,8 @@ import type {
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   ModelInfoResponse,
+  SimulateMatchRequest,
+  SimulateMatchResponse,
   SimulateMatchSuccessResponse,
   SupportedHistoricalTournamentYear
 } from "@world-cup-2026-predictor/api";
@@ -26,6 +28,10 @@ export interface DashboardSnapshot {
 
 export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
+}
+
+export function simulateDashboardMatch(request: SimulateMatchRequest): SimulateMatchResponse {
+  return simulateMatch(request);
 }
 
 export function getDashboardSnapshot(): DashboardSnapshot {

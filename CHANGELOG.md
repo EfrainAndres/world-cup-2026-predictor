@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.1 match simulation dashboard.
+- Interactive dashboard match simulation form with team, expected-goals, max-goals, optional simulation-count inputs, validation messages, result cards, most likely scorelines, baseline warning copy, and dashboard documentation.
 - Phase 6.0 dashboard foundation.
 - Minimal Next.js, TypeScript, and Tailwind web app with dashboard home page, accessible layout, navigation, model status, match simulation preview, historical replay audit preview, historical tournament summaries, local API client wrapper, and dashboard foundation documentation.
 - Phase 5.3 API endpoint validation.

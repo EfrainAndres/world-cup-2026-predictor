@@ -35,7 +35,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 5.3 | API Endpoint Validation | Validate HTTP-shaped runtime endpoints before adding a real server. | Done |
 | 5.4 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Planned |
 | 6.0 | Dashboard Foundation | Create the first minimal Next.js dashboard shell over local API handlers. | Done |
-| 6.1 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Recommended next |
+| 6.1 | Match Simulation Dashboard | Add the first interactive match simulation UI over the local API client. | Done |
+| 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Recommended next |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -834,7 +835,31 @@ Exit criteria:
 - Model limitations and replay warnings remain visible.
 - No auth, database, charts, external UI library, or deployment is added.
 
-## Phase 6.1 - Dashboard Validation
+## Phase 6.1 - Match Simulation Dashboard
+
+Add the first interactive dashboard workflow for match simulation.
+
+Deliverables:
+
+- Match simulation form.
+- Home and away team inputs.
+- Expected-goals inputs.
+- Max-goals input.
+- Optional simulation-count input.
+- Submit control with a basic submitting state.
+- Validation messages.
+- Result cards for home win, draw, and away win probabilities.
+- Most likely scoreline results.
+- Visible baseline simulation warning.
+- Match simulation dashboard documentation.
+
+Exit criteria:
+
+- The UI calls the existing API client wrapper instead of model package internals.
+- Users can run a local baseline simulation without a server, database, auth, charts, or deployment.
+- The UI clearly states that the simulation is not a guarantee.
+
+## Phase 6.2 - Dashboard Validation
 
 Add focused checks around the dashboard foundation before deeper product screens.
 
