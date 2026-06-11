@@ -32,8 +32,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 5.0 | API Foundation | Expose stable model outputs and validation metadata through pure TypeScript handlers. | Done |
 | 5.1 | API Integration Validation | Validate all pure API handlers together before adding transport or UI. | Done |
 | 5.2 | API Runtime Foundation | Expose pure API handlers through a local HTTP-ready runtime adapter. | Done |
-| 5.3 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Recommended next |
-| 5.4 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
+| 5.3 | API Endpoint Validation | Validate HTTP-shaped runtime endpoints before adding a real server. | Done |
+| 5.4 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Recommended next |
+| 5.5 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -771,7 +772,27 @@ Exit criteria:
 - The runtime layer remains thin and does not contain prediction logic.
 - No dashboard, database, authentication, external service, or production deployment is added.
 
-## Phase 5.3 - API Server Adapter
+## Phase 5.3 - API Endpoint Validation
+
+Validate runtime routes like stable HTTP endpoints before adding a server process.
+
+Deliverables:
+
+- Endpoint-level tests for all runtime routes.
+- Status-code checks for success, validation errors, missing routes, and unsupported methods.
+- JSON response shape checks for success and error responses.
+- Historical summary endpoint checks for 2010, 2014, 2018, and 2022.
+- Invalid historical year validation checks.
+- Deterministic response checks for seeded simulation requests.
+- Documentation of endpoint validation scope and boundaries.
+
+Exit criteria:
+
+- Runtime endpoints behave consistently through local `Request` injection.
+- Endpoint validation requires no server, database, network call, dashboard, or external service.
+- Endpoint responses preserve model limitations and do not claim predictive accuracy.
+
+## Phase 5.4 - API Server Adapter
 
 Wrap the runtime adapter in a real server process only after the local runtime boundary is stable.
 
@@ -789,7 +810,7 @@ Exit criteria:
 - Existing pure handler and runtime tests remain the source of behavior confidence.
 - Service deployment decisions do not require a database, dashboard, or external service.
 
-## Phase 5.4 - Web Dashboard
+## Phase 5.5 - Web Dashboard
 
 Build the user-facing experience.
 

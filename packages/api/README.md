@@ -53,8 +53,18 @@ Integration validation covers:
 - Stable success and error response shapes.
 - No server, database, network, or external service requirements.
 
+Endpoint validation covers:
+
+- Runtime status codes.
+- JSON response shapes.
+- Validation error shapes.
+- Supported historical year endpoints.
+- Unsupported route and method errors.
+- Deterministic seeded simulation responses.
+
 See `docs/api/API_INTEGRATION_VALIDATION.md` for the validation scope.
 See `docs/api/API_RUNTIME_FOUNDATION.md` for the runtime boundary.
+See `docs/api/API_ENDPOINT_VALIDATION.md` for endpoint-level runtime validation.
 
 ## Commands
 
