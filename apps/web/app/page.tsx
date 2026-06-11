@@ -4,6 +4,7 @@ import { HistoricalValidationSection } from "../src/components/HistoricalValidat
 import { MatchSimulationForm } from "../src/components/MatchSimulationForm";
 import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
+import { TournamentSimulationSection } from "../src/components/TournamentSimulationSection";
 import { getDashboardSnapshot } from "../src/lib/api-client";
 
 export default function DashboardHomePage() {
@@ -68,6 +69,11 @@ export default function DashboardHomePage() {
             <MatchSimulationForm initialResult={snapshot.matchPreview} />
           </div>
         </section>
+
+        <TournamentSimulationSection
+          simulation={snapshot.tournamentSimulation}
+          modelInfo={snapshot.modelInfo}
+        />
 
         <HistoricalValidationSection
           tournaments={snapshot.historicalTournaments}

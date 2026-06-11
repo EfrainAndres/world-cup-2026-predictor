@@ -13,6 +13,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Match simulation preview card.
 - Match simulation result cards.
 - Historical replay audit preview card.
+- Tournament simulation section with foundation engine status, illustrative champion/runner-up probability cards, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
 - Accessible semantic HTML.

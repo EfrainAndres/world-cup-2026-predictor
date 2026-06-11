@@ -18,12 +18,46 @@ import type {
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
+export interface TournamentProbabilityEntry {
+  rank: number;
+  team: string;
+  championProbability: number;
+  runnerUpProbability: number;
+}
+
+export interface TournamentSimulationFoundation {
+  simulationCount: number;
+  simulationEngine: string;
+  dataScope: string;
+  foundationWarning: string;
+  apiNote: string;
+  entries: TournamentProbabilityEntry[];
+}
+
+export const FOUNDATION_TOURNAMENT_SIMULATION: TournamentSimulationFoundation = {
+  simulationCount: 1000,
+  simulationEngine: "Monte Carlo — Poisson/Dixon-Coles, simplified bracket",
+  dataScope: "Illustrative baseline seed ratings — not calibrated from real pre-tournament data",
+  foundationWarning:
+    "Foundation scenario only. These probabilities are illustrative estimates from uncalibrated seed ratings, not published model predictions.",
+  apiNote:
+    "A tournament simulation API handler is planned. Until then, this section shows a static foundation preview. Use match simulation above for current model output.",
+  entries: [
+    { rank: 1, team: "Brazil", championProbability: 0.142, runnerUpProbability: 0.108 },
+    { rank: 2, team: "France", championProbability: 0.118, runnerUpProbability: 0.096 },
+    { rank: 3, team: "Argentina", championProbability: 0.114, runnerUpProbability: 0.092 },
+    { rank: 4, team: "England", championProbability: 0.098, runnerUpProbability: 0.078 },
+    { rank: 5, team: "Spain", championProbability: 0.094, runnerUpProbability: 0.074 }
+  ]
+};
+
 export interface DashboardSnapshot {
   health: HealthResponse;
   modelInfo: ModelInfoResponse;
   matchPreview: SimulateMatchSuccessResponse;
   historicalReplayAudit: HistoricalReplayAuditResponse;
   historicalTournaments: HistoricalTournamentSummary[];
+  tournamentSimulation: TournamentSimulationFoundation;
 }
 
 export function formatPercent(value: number): string {
@@ -68,6 +102,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     modelInfo: getModelInfo(),
     matchPreview,
     historicalReplayAudit: getHistoricalReplayAudit(),
-    historicalTournaments
+    historicalTournaments,
+    tournamentSimulation: FOUNDATION_TOURNAMENT_SIMULATION
   };
 }

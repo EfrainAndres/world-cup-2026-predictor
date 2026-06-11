@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.3 tournament simulation dashboard.
+- `TournamentSimulationSection` component with simulation engine status, foundation warning, top-5 illustrative probability card grid, model limitations, and match simulation CTA.
+- `TournamentProbabilityCard` component showing team rank, illustrative champion probability, and runner-up probability.
+- `FOUNDATION_TOURNAMENT_SIMULATION` constant and `TournamentSimulationFoundation` / `TournamentProbabilityEntry` types in `api-client.ts`.
+- `docs/dashboard/TOURNAMENT_SIMULATION_DASHBOARD.md` documenting the section purpose, components, data sources, accuracy framing, and future API roadmap note.
 - Phase 6.2 historical validation dashboard.
 - `HistoricalValidationSection` component with aggregate audit status, component availability summary, audit disclaimer, and per-year tournament card grid.
 - `HistoricalTournamentCard` component showing champion, runner-up, match count, dataset status, replay-supported status, and foundation-only warning for each supported year.
