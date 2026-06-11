@@ -30,8 +30,9 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 4.0O | Complete Historical Replay Validation | Connect reconstructed brackets to replay validation and prepare careful model-quality summaries. | Done |
 | 4.0P | Historical Replay Accuracy Audit | Audit replay metrics, validation status, known gaps, and API readiness. | Done |
 | 5.0 | API Foundation | Expose stable model outputs and validation metadata through pure TypeScript handlers. | Done |
-| 5.1 | API Transport Layer | Wrap pure API handlers with an HTTP transport when the project is ready for service deployment. | Recommended next |
-| 5.2 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
+| 5.1 | API Integration Validation | Validate all pure API handlers together before adding transport or UI. | Done |
+| 5.2 | API Transport Layer | Wrap pure API handlers with an HTTP transport when the project is ready for service deployment. | Recommended next |
+| 5.3 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
 | 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -729,7 +730,27 @@ Exit criteria:
 - The service boundary remains thin and testable.
 - No HTTP server, dashboard, database, or external service is added.
 
-## Phase 5.1 - API Transport Layer
+## Phase 5.1 - API Integration Validation
+
+Strengthen the pure API boundary with integration-style tests before adding transport.
+
+Deliverables:
+
+- Integration tests that exercise all pure handlers through the exported route map.
+- Valid and invalid match simulation request coverage.
+- Optional Monte Carlo simulation validation.
+- Historical tournament summary validation for supported and unsupported years.
+- Historical replay audit readiness and metadata validation.
+- Stable response shape checks for success and validation-error responses.
+- Documentation of what the integration validation proves and does not prove.
+
+Exit criteria:
+
+- Pure handlers can be validated together without a server, database, network call, or dashboard.
+- Error responses are typed and consistent enough for a future transport layer.
+- API metadata continues to expose foundation limitations and no public accuracy claim.
+
+## Phase 5.2 - API Transport Layer
 
 Wrap the pure API handlers in a real transport only after the contract is stable.
 
@@ -747,7 +768,7 @@ Exit criteria:
 - Existing pure handler tests remain the source of domain behavior confidence.
 - Service deployment decisions do not require a database, dashboard, or external service.
 
-## Phase 5.2 - Web Dashboard
+## Phase 5.3 - Web Dashboard
 
 Build the user-facing experience.
 

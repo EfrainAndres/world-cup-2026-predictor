@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 5.1 API integration validation.
+- Integration-style API tests for all pure handlers, stable response shapes, validation-error consistency, optional Monte Carlo simulation, historical summary handling, replay audit metadata, and no-server/no-database/no-network boundaries.
 - Phase 5.0 API foundation.
 - Lightweight TypeScript API package with pure handlers for health, model info, match simulation, historical tournament summaries, historical replay audit metadata, deterministic tests, and API documentation.
 - Phase 4.0P historical replay accuracy audit foundation.
