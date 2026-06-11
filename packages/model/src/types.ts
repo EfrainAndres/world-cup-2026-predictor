@@ -841,3 +841,30 @@ export interface HistoricalMonteCarloReplayResult {
   summary: HistoricalMonteCarloReplayAggregateSummary;
   metadata: HistoricalMonteCarloReplayMetadata;
 }
+
+export type LiveEloDataCoverage = "world_cup_fixtures_only" | "partial_international_history" | "complete_international_history";
+
+export interface LiveEloPipelineInput {
+  pipelineId: string;
+  matches: readonly EloMatch[];
+  dataCoverage?: LiveEloDataCoverage;
+  config?: Partial<EloConfig>;
+}
+
+export interface LiveEloRankedEntry {
+  rank: number;
+  team: string;
+  eloRating: number;
+  matchesPlayed: number;
+}
+
+export interface LiveEloPipelineResult {
+  pipelineId: string;
+  pipelineVersion: string;
+  rankedRatings: readonly LiveEloRankedEntry[];
+  matchesProcessed: number;
+  teamsRated: number;
+  latestMatchDate: string | undefined;
+  dataCoverage: LiveEloDataCoverage;
+  warnings: readonly string[];
+}

@@ -8,6 +8,15 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.0A live Elo pipeline foundation.
+- `runLiveEloPipeline()` in `packages/model/src/live-elo-pipeline.ts` — pure pipeline accepting `EloMatch[]`, processing matches chronologically, returning ranked team ratings, match counts, coverage metadata, and warnings.
+- `LiveEloDataCoverage`, `LiveEloPipelineInput`, `LiveEloRankedEntry`, `LiveEloPipelineResult` types in `packages/model/src/types.ts`.
+- `packages/api/src/live-elo-data.ts` with 256 curated World Cup fixture records (2010, 2014, 2018, 2022) as typed `EloMatch` constants.
+- `getLiveEloRatingsFoundation()` pure API handler returning the top 15 Elo-rated teams computed from World Cup fixture history with full metadata and foundation warnings.
+- `LiveEloRatedTeamEntry` and `LiveEloRatingsFoundationResponse` schema types in `packages/api/src/schemas.ts`, exported from `packages/api/src/index.ts`.
+- 17 new tests for `runLiveEloPipeline` in `packages/model/tests/live-elo-pipeline.test.ts`.
+- 10 new tests for `getLiveEloRatingsFoundation` in `packages/api/tests/api.test.ts`.
+- `docs/model-results/LIVE_ELO_PIPELINE_FOUNDATION.md` documenting assumptions, data sources, sample output, limitations, and next steps.
 - Phase 6.6 live team ratings integration.
 - `getTeamRatingsFoundation()` pure API handler in `packages/api` returning `TeamRatingsFoundationResponse` with 10 team entries, derived summary stats, and standard `ApiMetadata`.
 - `TeamRatingTier`, `TeamRatingFoundationEntry`, and `TeamRatingsFoundationResponse` schema types in `packages/api/src/schemas.ts`, exported from `packages/api/src/index.ts`.

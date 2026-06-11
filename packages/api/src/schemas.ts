@@ -175,6 +175,28 @@ export interface TeamRatingsFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface LiveEloRatedTeamEntry {
+  rank: number;
+  team: string;
+  eloRating: number;
+  matchesPlayed: number;
+}
+
+export interface LiveEloRatingsFoundationResponse {
+  status: "success";
+  teams: readonly LiveEloRatedTeamEntry[];
+  matchesProcessed: number;
+  teamsRatedTotal: number;
+  dataCoverage: string;
+  dataScope: string;
+  pipelineVersion: string;
+  topEloRating: number;
+  averageEloRating: number;
+  latestMatchDate: string;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;

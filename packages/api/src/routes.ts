@@ -1,13 +1,21 @@
 import {
+  DEFAULT_ELO_CONFIG,
   DEFAULT_POISSON_CONFIG,
   HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION,
   HISTORICAL_REPLAY_ACCURACY_AUDIT_WARNING,
   aggregateOutcomeProbabilities,
   generateScoreMatrix,
   getMostLikelyScorelines,
+  runLiveEloPipeline,
   runMatchSimulations,
   runTournamentRepeatedRuns
 } from "../../model/src/index.js";
+import {
+  LIVE_ELO_FOUNDATION_DATA_SCOPE,
+  LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
+  LIVE_ELO_FOUNDATION_MATCH_COUNT,
+  LIVE_ELO_FOUNDATION_MATCHES
+} from "./live-elo-data.js";
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { buildApiMetadata } from "./schemas.js";
@@ -17,6 +25,8 @@ import type {
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   HistoricalTournamentSummaryResponse,
+  LiveEloRatedTeamEntry,
+  LiveEloRatingsFoundationResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
   SupportedHistoricalTournamentYear,
@@ -456,6 +466,53 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
     ],
     metadata: buildApiMetadata([
       "Team ratings foundation uses static curated seed data, not a live model or external data service.",
+      "No network calls, database, or external services are used."
+    ])
+  };
+}
+
+const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-foundation";
+const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
+
+export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse {
+  const pipeline = runLiveEloPipeline({
+    pipelineId: LIVE_ELO_PIPELINE_ID,
+    matches: LIVE_ELO_FOUNDATION_MATCHES,
+    dataCoverage: "world_cup_fixtures_only"
+  });
+
+  const topTeams: LiveEloRatedTeamEntry[] = pipeline.rankedRatings.slice(0, LIVE_ELO_TOP_TEAMS_LIMIT).map((entry) => ({
+    rank: entry.rank,
+    team: entry.team,
+    eloRating: entry.eloRating,
+    matchesPlayed: entry.matchesPlayed
+  }));
+
+  const topEloRating = pipeline.rankedRatings[0]?.eloRating ?? DEFAULT_ELO_CONFIG.initialRating;
+
+  const averageEloRating =
+    pipeline.rankedRatings.length > 0
+      ? Math.round((pipeline.rankedRatings.reduce((sum, t) => sum + t.eloRating, 0) / pipeline.rankedRatings.length) * 10) / 10
+      : DEFAULT_ELO_CONFIG.initialRating;
+
+  return {
+    status: "success",
+    teams: topTeams,
+    matchesProcessed: LIVE_ELO_FOUNDATION_MATCH_COUNT,
+    teamsRatedTotal: pipeline.teamsRated,
+    dataCoverage: "World Cup 2010, 2014, 2018, and 2022 curated fixture results.",
+    dataScope: LIVE_ELO_FOUNDATION_DATA_SCOPE,
+    pipelineVersion: pipeline.pipelineVersion,
+    topEloRating,
+    averageEloRating,
+    latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
+    warnings: [
+      ...pipeline.warnings,
+      "Teams are initialized at the default Elo rating (1500) before pipeline processing.",
+      "Only teams that appeared in World Cup 2010–2022 are rated. Teams absent from all four tournaments are unrated."
+    ],
+    metadata: buildApiMetadata([
+      "Live Elo pipeline foundation processes 256 curated World Cup fixtures from 2010, 2014, 2018, and 2022 sequentially.",
       "No network calls, database, or external services are used."
     ])
   };

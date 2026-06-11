@@ -13,7 +13,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Historical tournament summary metadata for 2010, 2014, 2018, and 2022.",
       `Historical replay audit metadata from ${HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION}.`,
       "Seeded deterministic 8-team sample tournament simulation using runTournamentRepeatedRuns.",
-      "Curated seed ratings for top 10 World Cup 2026 contenders with tier and strength classifications."
+      "Curated seed ratings for top 10 World Cup 2026 contenders with tier and strength classifications.",
+      "Live Elo pipeline computing current ratings from 256 curated World Cup fixtures (2010–2022)."
     ],
     supportedHandlers: [
       "getHealth",
@@ -22,7 +23,8 @@ export function getModelInfo(): ModelInfoResponse {
       "getHistoricalTournamentSummary",
       "getHistoricalReplayAudit",
       "simulateTournamentFoundation",
-      "getTeamRatingsFoundation"
+      "getTeamRatingsFoundation",
+      "getLiveEloRatingsFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

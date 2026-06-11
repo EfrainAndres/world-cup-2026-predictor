@@ -4,6 +4,7 @@ import {
   getHealth,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
+  getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
   simulateMatch,
@@ -268,5 +269,95 @@ describe("getTeamRatingsFoundation", () => {
     expect(first.teams).toEqual(second.teams);
     expect(first.strongestOffenseTeam).toBe(second.strongestOffenseTeam);
     expect(first.strongestDefenseTeam).toBe(second.strongestDefenseTeam);
+  });
+});
+
+describe("getLiveEloRatingsFoundation", () => {
+  it("returns a success response with expected shape", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.teams.length).toBeGreaterThan(0);
+    expect(result.matchesProcessed).toBe(256);
+    expect(result.teamsRatedTotal).toBeGreaterThan(0);
+    expect(result.dataCoverage.length).toBeGreaterThan(0);
+    expect(result.pipelineVersion.length).toBeGreaterThan(0);
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.metadata.mode).toBe("pure_handlers");
+    expect(result.metadata.serverEnabled).toBe(false);
+  });
+
+  it("returns exactly 15 top-ranked teams", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.teams).toHaveLength(15);
+  });
+
+  it("teams are sorted by rank ascending (rank === index + 1)", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    result.teams.forEach((entry, index) => {
+      expect(entry.rank).toBe(index + 1);
+    });
+  });
+
+  it("teams are sorted by eloRating descending", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    for (let i = 1; i < result.teams.length; i += 1) {
+      const prev = result.teams[i - 1];
+      const curr = result.teams[i];
+
+      if (prev !== undefined && curr !== undefined) {
+        expect(prev.eloRating).toBeGreaterThanOrEqual(curr.eloRating);
+      }
+    }
+  });
+
+  it("each entry has required fields with valid values", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    result.teams.forEach((entry) => {
+      expect(entry.team.length).toBeGreaterThan(0);
+      expect(entry.eloRating).toBeGreaterThan(0);
+      expect(entry.matchesPlayed).toBeGreaterThan(0);
+      expect(entry.rank).toBeGreaterThan(0);
+    });
+  });
+
+  it("topEloRating matches the first team's eloRating", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.topEloRating).toBe(result.teams[0]?.eloRating);
+  });
+
+  it("latestMatchDate reflects the 2022 World Cup final date", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.latestMatchDate).toBe("2022-12-18");
+  });
+
+  it("known strong teams appear in the top results", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    const teamNames = result.teams.map((t) => t.team);
+
+    expect(teamNames).toContain("France");
+    expect(teamNames).toContain("Argentina");
+  });
+
+  it("teamsRatedTotal is greater than teams returned (more teams rated than displayed)", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.teamsRatedTotal).toBeGreaterThan(result.teams.length);
+  });
+
+  it("returns identical output on repeated calls (deterministic)", () => {
+    const first = getLiveEloRatingsFoundation();
+    const second = getLiveEloRatingsFoundation();
+
+    expect(first.teams).toEqual(second.teams);
+    expect(first.matchesProcessed).toBe(second.matchesProcessed);
+    expect(first.topEloRating).toBe(second.topEloRating);
   });
 });
