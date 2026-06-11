@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations. Phase 4.0N adds historical tournament bracket reconstruction foundations.
 
 ## Current Scope
 
@@ -50,6 +50,7 @@ The package currently includes:
 - Historical Elo replay helpers for cutoff-safe match filtering, Elo rating generation, Elo-derived probabilities, and foundation snapshot metadata.
 - `historical_elo_replay_snapshot_foundation` outputs that can feed replay backtesting helpers.
 - Historical Monte Carlo replay helpers for Elo-to-expected-goals mapping, Poisson score matrices, simplified repeated tournament simulation, and replay scoring summaries.
+- Historical bracket reconstruction helpers for 2010, 2014, 2018, and 2022 groups, group standings, qualifiers, knockout rounds, champion, runner-up, third place, and match-count validation.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -144,11 +145,19 @@ The historical Monte Carlo replay foundation maps Elo snapshot ratings into expe
 
 Current replay simulations use explicit simplified tournament fixtures. Full historical group and bracket reconstruction is still future work, so outputs are foundation evidence and not public model accuracy.
 
+## Historical Bracket Reconstruction Scope
+
+The historical bracket reconstruction foundation rebuilds the 2010, 2014, 2018, and 2022 World Cup structures from complete curated fixture results.
+
+It separates fixtures by stage, reconstructs Groups A through H, calculates group standings, identifies group winners and runners-up, rebuilds knockout rounds from recorded winners, and returns champion, runner-up, third place, metadata, validation results, and documented warnings.
+
+This logic is intentionally separate from the FIFA 2026 48-team format. It uses the historical 32-team format and keeps official tie-breaker limitations visible.
+
 ## Boundaries
 
 This package does not implement:
 
-- Mapping Elo ratings to expected goals.
+- Calibrated Elo ratings to expected goals.
 - Calibrated attack and defense strengths.
 - Full Dixon-Coles parameter optimization.
 - Full FIFA World Cup 2026 tournament format.
@@ -157,7 +166,7 @@ This package does not implement:
 - Official FIFA knockout slot mapping.
 - Historical match replay from complete international results.
 - Calibrated pre-tournament Elo snapshots from full international match history.
-- Historical Monte Carlo replay from reconstructed historical brackets and calibrated pre-tournament match probabilities.
+- Historical Monte Carlo replay from calibrated pre-tournament match probabilities.
 - Public model accuracy claims.
 - Large-scale repeated-run performance optimization.
 - FastAPI service.
