@@ -43,6 +43,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.5 | World Cup 2026 Team Ratings Dashboard | Add a team ratings section showing Elo-based strength ratings, tiers, offense/defense scores, and indicators for the top 10 contenders. | Done |
 | 6.6 | Live Team Ratings Integration | Replace static `FOUNDATION_TEAM_RATINGS` with a live `getTeamRatingsFoundation` API handler; migrate types to the API package. | Done |
 | 7.0A | Live Elo Pipeline Foundation | Build a live Elo pipeline that computes current team ratings from available historical match data. | Done |
+| 7.0B | Historical International Match Dataset Foundation | Create the data infrastructure for loading, validating, and normalizing a broader international match dataset beyond World Cup fixtures. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1007,6 +1008,25 @@ Exit criteria:
 - All tests, typecheck, and build pass with no regressions.
 - Existing `getTeamRatingsFoundation()` handler is preserved.
 - No dashboard UI changes, no new dependencies, no model calibration claims.
+
+## Phase 7.0B - Historical International Match Dataset Foundation
+
+Create the data infrastructure for a broader international match dataset so the live Elo pipeline can eventually use more than World Cup fixtures.
+
+Deliverables:
+
+- `packages/data/src/international-matches.ts` with loading, validation, normalization, and dataset metadata.
+- `packages/data/tests/international-matches.test.ts` with full unit test coverage.
+- `packages/data/fixtures/international/sample-international-matches.json` — 15-match curated sample across 5 competition types.
+- `packages/data/fixtures/international/README.md` documenting the fixture schema.
+- `docs/data-quality/INTERNATIONAL_MATCH_DATASET_FOUNDATION.md` documenting design, validation rules, normalization mapping, limitations, and next steps.
+
+Exit criteria:
+
+- `loadInternationalMatchDataset` loads, validates, and returns matches with full metadata from any fixture file matching the schema.
+- Foundation and sample-only warnings propagate through metadata.
+- All tests, typecheck, and build pass with no regressions.
+- No API changes, no dashboard changes, no model changes.
 
 ## Phase 7.0 - QA Automation
 

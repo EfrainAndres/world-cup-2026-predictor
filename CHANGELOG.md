@@ -8,6 +8,12 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.0B historical international match dataset foundation.
+- `packages/data/src/international-matches.ts` with `loadInternationalMatchDataset`, `validateInternationalMatchDataset`, `normalizeInternationalMatch`, `normalizeInternationalMatches`, and full type exports for `InternationalMatch`, `InternationalMatchInput`, `InternationalMatchDatasetMetadata`, `InternationalMatchDatasetResult`, and related validation types.
+- `packages/data/fixtures/international/sample-international-matches.json` — 15-match curated sample covering FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifier, and International Friendly.
+- `packages/data/fixtures/international/README.md` documenting the fixture schema, field requirements, and guidance for adding real match data.
+- `INTERNATIONAL_MATCH_DATASET_FOUNDATION_WARNING` and `INTERNATIONAL_MATCH_SAMPLE_ONLY_WARNING` constants for downstream metadata propagation.
+- `docs/data-quality/INTERNATIONAL_MATCH_DATASET_FOUNDATION.md` documenting the module design, schema, validation rules, normalization mapping, limitations, and next steps.
 - Phase 7.0A live Elo pipeline foundation.
 - `runLiveEloPipeline()` in `packages/model/src/live-elo-pipeline.ts` — pure pipeline accepting `EloMatch[]`, processing matches chronologically, returning ranked team ratings, match counts, coverage metadata, and warnings.
 - `LiveEloDataCoverage`, `LiveEloPipelineInput`, `LiveEloRankedEntry`, `LiveEloPipelineResult` types in `packages/model/src/types.ts`.
