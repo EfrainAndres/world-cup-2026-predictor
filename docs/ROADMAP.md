@@ -42,6 +42,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.4 | Live Tournament Simulation Integration | Replace static foundation preview with a live local `simulateTournamentFoundation` API handler using `runTournamentRepeatedRuns`. | Done |
 | 6.5 | World Cup 2026 Team Ratings Dashboard | Add a team ratings section showing Elo-based strength ratings, tiers, offense/defense scores, and indicators for the top 10 contenders. | Done |
 | 6.6 | Live Team Ratings Integration | Replace static `FOUNDATION_TEAM_RATINGS` with a live `getTeamRatingsFoundation` API handler; migrate types to the API package. | Done |
+| 7.0A | Live Elo Pipeline Foundation | Build a live Elo pipeline that computes current team ratings from available historical match data. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -984,6 +985,28 @@ Exit criteria:
 - `strongestOffenseScore` and `strongestDefenseScore` are verified to match the actual maximums in the team data.
 - Static constant and its associated web-layer types are fully removed.
 - All tests, typecheck, and build checks pass with no regressions.
+
+## Phase 7.0A - Live Elo Pipeline Foundation
+
+Replace static curated seed ratings with a live pipeline that computes current Elo ratings from available historical match data.
+
+Deliverables:
+
+- `runLiveEloPipeline()` pure pipeline function in `packages/model` accepting `EloMatch[]`.
+- `LiveEloDataCoverage`, `LiveEloPipelineInput`, `LiveEloRankedEntry`, `LiveEloPipelineResult` types.
+- Embedded curated World Cup fixture data (256 matches, 2010–2022) in `packages/api/src/live-elo-data.ts`.
+- `getLiveEloRatingsFoundation()` API handler returning top 15 computed Elo ratings with metadata.
+- `LiveEloRatedTeamEntry` and `LiveEloRatingsFoundationResponse` API schema types.
+- Deterministic pipeline tests and API handler tests.
+- `docs/model-results/LIVE_ELO_PIPELINE_FOUNDATION.md` documenting the pipeline, assumptions, limitations, and next steps.
+
+Exit criteria:
+
+- Pipeline computes deterministic rated team rankings from any `EloMatch[]` input.
+- Handler returns 15 teams ranked by computed Elo rating from World Cup 2010–2022 fixtures.
+- All tests, typecheck, and build pass with no regressions.
+- Existing `getTeamRatingsFoundation()` handler is preserved.
+- No dashboard UI changes, no new dependencies, no model calibration claims.
 
 ## Phase 7.0 - QA Automation
 

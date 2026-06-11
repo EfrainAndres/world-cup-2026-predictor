@@ -1,4 +1,19 @@
 export type {
+  LiveEloDataCoverage,
+  LiveEloPipelineInput,
+  LiveEloPipelineResult,
+  LiveEloRankedEntry
+} from "./types.js";
+
+export {
+  LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
+  LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
+  LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
+  LIVE_ELO_PIPELINE_VERSION,
+  runLiveEloPipeline
+} from "./live-elo-pipeline.js";
+
+export type {
   HistoricalReplayAccuracyAggregateAudit,
   HistoricalReplayAccuracyApiReadiness,
   HistoricalReplayAccuracyAuditComponent,
