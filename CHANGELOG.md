@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.0 dashboard foundation.
+- Minimal Next.js, TypeScript, and Tailwind web app with dashboard home page, accessible layout, navigation, model status, match simulation preview, historical replay audit preview, historical tournament summaries, local API client wrapper, and dashboard foundation documentation.
 - Phase 5.3 API endpoint validation.
 - Endpoint-level runtime tests for health, model info, match simulation, all supported historical summaries, invalid historical years, replay audit metadata, unsupported routes, unsupported methods, deterministic responses, and JSON error shapes.
 - Phase 5.2 API runtime foundation.

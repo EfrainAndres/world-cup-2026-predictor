@@ -33,11 +33,12 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 5.1 | API Integration Validation | Validate all pure API handlers together before adding transport or UI. | Done |
 | 5.2 | API Runtime Foundation | Expose pure API handlers through a local HTTP-ready runtime adapter. | Done |
 | 5.3 | API Endpoint Validation | Validate HTTP-shaped runtime endpoints before adding a real server. | Done |
-| 5.4 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Recommended next |
-| 5.5 | Web Dashboard | Present teams, matches, probabilities, scenarios, and model explanations. | Planned |
-| 6.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
-| 7.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
-| 8.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
+| 5.4 | API Server Adapter | Wrap the runtime adapter with a real server process when deployment is needed. | Planned |
+| 6.0 | Dashboard Foundation | Create the first minimal Next.js dashboard shell over local API handlers. | Done |
+| 6.1 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Recommended next |
+| 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
+| 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
+| 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
 
 ## Phase 0.0 - Project Foundation
 
@@ -810,25 +811,48 @@ Exit criteria:
 - Existing pure handler and runtime tests remain the source of behavior confidence.
 - Service deployment decisions do not require a database, dashboard, or external service.
 
-## Phase 5.5 - Web Dashboard
+## Phase 6.0 - Dashboard Foundation
 
-Build the user-facing experience.
+Create the first minimal user-facing dashboard foundation.
 
-Potential deliverables:
+Deliverables:
 
-- Dashboard app scaffold
-- Match prediction views
-- Team pages
-- Tournament simulation views
-- Explanation and uncertainty UI
-- Responsive design
+- Next.js App Router web app scaffold.
+- TypeScript and Tailwind CSS dashboard foundation.
+- Dashboard home page with basic layout and navigation.
+- Model status card.
+- Match simulation preview card.
+- Historical replay audit preview card.
+- Historical tournaments preview section.
+- Local API client wrapper that calls `packages/api` pure handlers directly.
+- Responsive and semantic HTML structure.
+- Dashboard foundation documentation.
 
 Exit criteria:
 
-- Users can inspect predictions and understand model limitations.
-- The UI is polished, accessible, and tested.
+- The dashboard renders useful API/model foundation context without a deployed server.
+- Model limitations and replay warnings remain visible.
+- No auth, database, charts, external UI library, or deployment is added.
 
-## Phase 6.0 - QA Automation
+## Phase 6.1 - Dashboard Validation
+
+Add focused checks around the dashboard foundation before deeper product screens.
+
+Potential deliverables:
+
+- Component smoke tests.
+- Route rendering checks.
+- Accessibility checks for headings, landmarks, and focus states.
+- Basic responsive layout verification.
+- Documentation of dashboard validation coverage.
+
+Exit criteria:
+
+- The dashboard foundation can be changed with confidence.
+- User-facing warnings and limitations remain visible.
+- Validation does not require auth, database, deployment, or external services.
+
+## Phase 7.0 - QA Automation
 
 Strengthen automated quality coverage.
 
@@ -846,7 +870,7 @@ Exit criteria:
 - Important regressions are caught before merge.
 - Quality checks are documented and repeatable.
 
-## Phase 7.0 - CI/CD
+## Phase 8.0 - CI/CD
 
 Automate checks and deployment paths.
 
@@ -863,7 +887,7 @@ Exit criteria:
 - Pull requests run meaningful automated checks.
 - Deployment steps are repeatable.
 
-## Phase 8.0 - Portfolio Polish
+## Phase 9.0 - Portfolio Polish
 
 Turn the project into a strong portfolio artifact.
 
