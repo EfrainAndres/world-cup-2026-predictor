@@ -5,6 +5,7 @@ import {
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
   getModelInfo,
+  getTeamRatingsFoundation,
   simulateMatch,
   simulateTournamentFoundation
 } from "../src/index.js";
@@ -187,5 +188,85 @@ describe("simulateTournamentFoundation", () => {
 
     expect(first.teamResults).toEqual(second.teamResults);
     expect(first.simulationCount).toBe(second.simulationCount);
+  });
+});
+
+describe("getTeamRatingsFoundation", () => {
+  it("returns a success response with expected shape", () => {
+    const result = getTeamRatingsFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.teams).toHaveLength(10);
+    expect(result.ratingSource.length).toBeGreaterThan(0);
+    expect(result.foundationWarning.length).toBeGreaterThan(0);
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.metadata.mode).toBe("pure_handlers");
+    expect(result.metadata.serverEnabled).toBe(false);
+  });
+
+  it("teams are sorted by rank ascending", () => {
+    const result = getTeamRatingsFoundation();
+
+    result.teams.forEach((entry, index) => {
+      expect(entry.rank).toBe(index + 1);
+    });
+  });
+
+  it("teams are sorted by eloRating descending", () => {
+    const result = getTeamRatingsFoundation();
+
+    for (let i = 1; i < result.teams.length; i += 1) {
+      const prev = result.teams[i - 1];
+      const curr = result.teams[i];
+
+      if (prev !== undefined && curr !== undefined) {
+        expect(prev.eloRating).toBeGreaterThanOrEqual(curr.eloRating);
+      }
+    }
+  });
+
+  it("each entry has required fields with valid values", () => {
+    const result = getTeamRatingsFoundation();
+
+    result.teams.forEach((entry) => {
+      expect(entry.team.length).toBeGreaterThan(0);
+      expect(entry.eloRating).toBeGreaterThan(0);
+      expect(["Elite", "Strong", "Competitive"]).toContain(entry.tier);
+      expect(entry.offenseStrength).toBeGreaterThanOrEqual(0);
+      expect(entry.offenseStrength).toBeLessThanOrEqual(100);
+      expect(entry.defenseStrength).toBeGreaterThanOrEqual(0);
+      expect(entry.defenseStrength).toBeLessThanOrEqual(100);
+      expect(entry.summary.length).toBeGreaterThan(0);
+    });
+  });
+
+  it("strongest offense and defense indicators are consistent with team data", () => {
+    const result = getTeamRatingsFoundation();
+    const maxOffense = Math.max(...result.teams.map((t) => t.offenseStrength));
+    const maxDefense = Math.max(...result.teams.map((t) => t.defenseStrength));
+
+    expect(result.strongestOffenseScore).toBe(maxOffense);
+    expect(result.strongestDefenseScore).toBe(maxDefense);
+
+    const offenseTeam = result.teams.find((t) => t.team === result.strongestOffenseTeam);
+    const defenseTeam = result.teams.find((t) => t.team === result.strongestDefenseTeam);
+
+    expect(offenseTeam?.offenseStrength).toBe(maxOffense);
+    expect(defenseTeam?.defenseStrength).toBe(maxDefense);
+  });
+
+  it("topEloRating matches the first team's eloRating", () => {
+    const result = getTeamRatingsFoundation();
+
+    expect(result.topEloRating).toBe(result.teams[0]?.eloRating);
+  });
+
+  it("returns identical output on repeated calls (deterministic)", () => {
+    const first = getTeamRatingsFoundation();
+    const second = getTeamRatingsFoundation();
+
+    expect(first.teams).toEqual(second.teams);
+    expect(first.strongestOffenseTeam).toBe(second.strongestOffenseTeam);
+    expect(first.strongestDefenseTeam).toBe(second.strongestDefenseTeam);
   });
 });

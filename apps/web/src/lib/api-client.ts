@@ -3,6 +3,7 @@ import {
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
   getModelInfo,
+  getTeamRatingsFoundation,
   simulateMatch,
   simulateTournamentFoundation
 } from "@world-cup-2026-predictor/api";
@@ -15,8 +16,13 @@ import type {
   SimulateMatchResponse,
   SimulateMatchSuccessResponse,
   SupportedHistoricalTournamentYear,
+  TeamRatingFoundationEntry,
+  TeamRatingTier,
+  TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse
 } from "@world-cup-2026-predictor/api";
+
+export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -27,6 +33,7 @@ export interface DashboardSnapshot {
   historicalReplayAudit: HistoricalReplayAuditResponse;
   historicalTournaments: HistoricalTournamentSummary[];
   tournamentSimulation: TournamentSimulationSuccessResponse;
+  teamRatings: TeamRatingsFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -72,6 +79,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     matchPreview,
     historicalReplayAudit: getHistoricalReplayAudit(),
     historicalTournaments,
-    tournamentSimulation: simulateTournamentFoundation()
+    tournamentSimulation: simulateTournamentFoundation(),
+    teamRatings: getTeamRatingsFoundation()
   };
 }

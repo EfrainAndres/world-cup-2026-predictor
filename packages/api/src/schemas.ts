@@ -148,6 +148,33 @@ export interface TournamentSimulationSuccessResponse {
   metadata: ApiMetadata;
 }
 
+export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
+
+export interface TeamRatingFoundationEntry {
+  rank: number;
+  team: string;
+  eloRating: number;
+  tier: TeamRatingTier;
+  offenseStrength: number;
+  defenseStrength: number;
+  summary: string;
+}
+
+export interface TeamRatingsFoundationResponse {
+  status: "success";
+  teams: readonly TeamRatingFoundationEntry[];
+  ratingSource: string;
+  foundationWarning: string;
+  strongestOffenseTeam: string;
+  strongestOffenseScore: number;
+  strongestDefenseTeam: string;
+  strongestDefenseScore: number;
+  averageEloRating: number;
+  topEloRating: number;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;

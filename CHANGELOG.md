@@ -8,6 +8,20 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 6.6 live team ratings integration.
+- `getTeamRatingsFoundation()` pure API handler in `packages/api` returning `TeamRatingsFoundationResponse` with 10 team entries, derived summary stats, and standard `ApiMetadata`.
+- `TeamRatingTier`, `TeamRatingFoundationEntry`, and `TeamRatingsFoundationResponse` schema types in `packages/api/src/schemas.ts`, exported from `packages/api/src/index.ts`.
+- Removed `FOUNDATION_TEAM_RATINGS`, `TeamRatingEntry`, `TeamRatingTier`, and `TeamRatingsFoundation` from `apps/web/src/lib/api-client.ts`; replaced with live handler call and re-exported API types.
+- Updated `TeamRatingCard` to import `TeamRatingFoundationEntry` and `TeamRatingTier` from `@world-cup-2026-predictor/api`.
+- Updated `TeamRatingsSection` to import `TeamRatingsFoundationResponse` from `@world-cup-2026-predictor/api`.
+- `docs/dashboard/LIVE_TEAM_RATINGS_INTEGRATION.md` documenting the handler, type migration, consistency check, and next steps.
+- Phase 6.5 team ratings dashboard.
+- `TeamRatingsSection` component with foundation warning, five summary stat cards (teams count, top Elo, average Elo, strongest offense, strongest defense), and a 10-card team grid.
+- `TeamRatingCard` component showing rank, team name, Elo rating, tier pill, offense/defense strength scores, and a short summary.
+- `TeamRatingEntry`, `TeamRatingTier`, and `TeamRatingsFoundation` types added to `apps/web/src/lib/api-client.ts`.
+- `FOUNDATION_TEAM_RATINGS` constant with static seed ratings for top 10 World Cup 2026 contenders.
+- `teamRatings: TeamRatingsFoundation` added to `DashboardSnapshot`.
+- `docs/dashboard/TEAM_RATINGS_DASHBOARD.md` documenting components, data, tier system, boundaries, and next steps.
 - Phase 6.4 live tournament simulation integration.
 - `simulateTournamentFoundation()` pure API handler in `packages/api` using `runTournamentRepeatedRuns` with an 8-team sample tournament (seed 2026, 1000 runs).
 - `TournamentSimulationTeamResult` and `TournamentSimulationSuccessResponse` schema types in `packages/api/src/schemas.ts`.

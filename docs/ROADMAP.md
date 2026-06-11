@@ -40,6 +40,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 6.2 | Dashboard Validation | Add focused UI, accessibility, and routing checks for the dashboard foundation. | Done |
 | 6.3 | Tournament Simulation Dashboard | Add a foundation tournament simulation section showing illustrative champion/runner-up probabilities and simulation engine status. | Done |
 | 6.4 | Live Tournament Simulation Integration | Replace static foundation preview with a live local `simulateTournamentFoundation` API handler using `runTournamentRepeatedRuns`. | Done |
+| 6.5 | World Cup 2026 Team Ratings Dashboard | Add a team ratings section showing Elo-based strength ratings, tiers, offense/defense scores, and indicators for the top 10 contenders. | Done |
+| 6.6 | Live Team Ratings Integration | Replace static `FOUNDATION_TEAM_RATINGS` with a live `getTeamRatingsFoundation` API handler; migrate types to the API package. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -939,6 +941,48 @@ Exit criteria:
 - Component code calls only the API client wrapper.
 - All 8 sample tournament teams appear in the probability grid.
 - Static foundation constant and its associated types are removed from the web layer.
+- All tests, typecheck, and build checks pass with no regressions.
+
+## Phase 6.5 - World Cup 2026 Team Ratings Dashboard
+
+Add a team ratings section to the dashboard showing contender strength.
+
+Deliverables:
+
+- `TeamRatingsSection` component with section header, amber foundation warning, five summary stat cards (teams rated, top Elo, average Elo, strongest offense indicator, strongest defense indicator), and a responsive 10-card grid.
+- `TeamRatingCard` component with rank badge, team name, Elo rating, tier pill, offense/defense strength scores, and a short summary.
+- `TeamRatingTier`, `TeamRatingEntry`, and `TeamRatingsFoundation` types in `apps/web/src/lib/api-client.ts`.
+- `FOUNDATION_TEAM_RATINGS` constant with seed ratings for Argentina, France, Spain, England, Brazil, Portugal, Germany, Netherlands, Belgium, and Italy.
+- `teamRatings` field added to `DashboardSnapshot` and populated in `getDashboardSnapshot()`.
+- `docs/dashboard/TEAM_RATINGS_DASHBOARD.md` documenting the section purpose, components, tier system, data, boundaries, and next steps.
+
+Exit criteria:
+
+- The team ratings section renders correctly with all 10 contenders, summary stats, and foundation warning.
+- Strongest offense and defense indicators correctly identify the highest-scoring teams.
+- Component code calls only the API client wrapper — no direct model or data package imports inside components.
+- No charts, auth, database, deployment, or new dependencies are added.
+- All existing tests, typecheck, and build checks pass.
+
+## Phase 6.6 - Live Team Ratings Integration
+
+Replace the static web-layer constant with a proper API handler, migrating types to the API package.
+
+Deliverables:
+
+- `getTeamRatingsFoundation()` pure API handler in `packages/api/src/routes.ts`.
+- `TeamRatingTier`, `TeamRatingFoundationEntry`, and `TeamRatingsFoundationResponse` schema types in `packages/api/src/schemas.ts`, exported from `packages/api/src/index.ts`.
+- `getTeamRatingsFoundation` added to `supportedHandlers` and `modelScope` in `model-info.ts`.
+- 7 new tests for `getTeamRatingsFoundation` in `packages/api/tests/api.test.ts`, including consistency checks for offense/defense indicators.
+- Removed `FOUNDATION_TEAM_RATINGS`, `TeamRatingEntry`, `TeamRatingTier`, and `TeamRatingsFoundation` from `apps/web/src/lib/api-client.ts`; live handler wired in.
+- `TeamRatingCard` and `TeamRatingsSection` components updated to import types from `@world-cup-2026-predictor/api`.
+- `docs/dashboard/LIVE_TEAM_RATINGS_INTEGRATION.md` documenting the migration.
+
+Exit criteria:
+
+- `getTeamRatingsFoundation()` returns a valid `TeamRatingsFoundationResponse` with 10 entries.
+- `strongestOffenseScore` and `strongestDefenseScore` are verified to match the actual maximums in the team data.
+- Static constant and its associated web-layer types are fully removed.
 - All tests, typecheck, and build checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation

@@ -12,7 +12,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Optional deterministic match-level Monte Carlo simulation.",
       "Historical tournament summary metadata for 2010, 2014, 2018, and 2022.",
       `Historical replay audit metadata from ${HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION}.`,
-      "Seeded deterministic 8-team sample tournament simulation using runTournamentRepeatedRuns."
+      "Seeded deterministic 8-team sample tournament simulation using runTournamentRepeatedRuns.",
+      "Curated seed ratings for top 10 World Cup 2026 contenders with tier and strength classifications."
     ],
     supportedHandlers: [
       "getHealth",
@@ -20,7 +21,8 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateMatch",
       "getHistoricalTournamentSummary",
       "getHistoricalReplayAudit",
-      "simulateTournamentFoundation"
+      "simulateTournamentFoundation",
+      "getTeamRatingsFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",
