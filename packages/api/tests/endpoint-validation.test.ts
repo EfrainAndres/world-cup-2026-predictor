@@ -95,7 +95,8 @@ describe("api endpoint validation", () => {
       "getModelInfo",
       "simulateMatch",
       "getHistoricalTournamentSummary",
-      "getHistoricalReplayAudit"
+      "getHistoricalReplayAudit",
+      "simulateTournamentFoundation"
     ]);
     expect(body.limitations).toContain("No HTTP server is created in Phase 5.0.");
     expectFoundationMetadata(body.metadata);

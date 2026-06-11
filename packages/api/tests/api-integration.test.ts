@@ -53,7 +53,8 @@ describe("api integration validation", () => {
       "getModelInfo",
       "simulateMatch",
       "getHistoricalTournamentSummary",
-      "getHistoricalReplayAudit"
+      "getHistoricalReplayAudit",
+      "simulateTournamentFoundation"
     ]);
     expect(modelInfo.limitations).toContain("No database or external services are used.");
     expectPureHandlerMetadata(modelInfo.metadata);

@@ -1,7 +1,7 @@
 export { getHealth } from "./health.js";
 export { getModelInfo } from "./model-info.js";
 export { apiRuntime, createApiRuntime, handleApiRuntimeRequest } from "./runtime.js";
-export { apiRoutes, getHistoricalReplayAudit, getHistoricalTournamentSummary, simulateMatch } from "./routes.js";
+export { apiRoutes, getHistoricalReplayAudit, getHistoricalTournamentSummary, simulateMatch, simulateTournamentFoundation } from "./routes.js";
 
 export type { ApiRuntime, ApiRuntimeErrorResponse, ApiRuntimeFailureResponse, ApiRuntimeValidationErrorResponse } from "./runtime.js";
 
@@ -23,5 +23,7 @@ export type {
   SimulateMatchResponse,
   SimulateMatchSuccessResponse,
   SimulateMatchValidationErrorResponse,
-  SupportedHistoricalTournamentYear
+  SupportedHistoricalTournamentYear,
+  TournamentSimulationSuccessResponse,
+  TournamentSimulationTeamResult
 } from "./schemas.js";
