@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 5.0 API foundation.
+- Lightweight TypeScript API package with pure handlers for health, model info, match simulation, historical tournament summaries, historical replay audit metadata, deterministic tests, and API documentation.
 - Phase 4.0P historical replay accuracy audit foundation.
 - TypeScript audit helpers for per-year and aggregate replay status, metric availability, dataset/bracket/Elo/Monte Carlo/replay validation checks, foundation-warning detection, API readiness recommendations, deterministic tests, and model result documentation.
 - Phase 4.0O complete historical replay validation foundation.
