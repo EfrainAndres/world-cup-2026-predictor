@@ -8,6 +8,13 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.8 Elo-to-expected-goals calibration foundation.
+- `eloToExpectedGoals()` model function in `packages/model/src/elo-to-xg.ts` — transparent formula converting Elo ratings to home/away expected goals with optional attack/defense adjustment.
+- `EloToExpectedGoalsInput` and `EloToExpectedGoalsResult` types.
+- Named constants: `ELO_TO_XG_BASE_GOALS`, `ELO_TO_XG_ADJUSTMENT_PER_100`, `ELO_TO_XG_MAX_ELO_ADJUSTMENT`, `ELO_TO_XG_MIN_GOALS`, `ELO_TO_XG_MAX_GOALS`, `ELO_TO_XG_ATTACK_DEFENSE_WEIGHT`.
+- Two warning constants: `ELO_TO_XG_UNCALIBRATED_WARNING` (always emitted) and `ELO_TO_XG_ATTACK_DEFENSE_ADJUSTMENT_WARNING` (opt-in).
+- `packages/model/tests/elo-to-xg.test.ts` — 16 unit tests covering balance, bounds, clamping, symmetry, attack/defense opt-in, determinism, and partial-input behavior.
+- `docs/model-results/ELO_TO_XG_CALIBRATION.md` documenting formulas, constants, return fields, warnings, limitations, and future work.
 - Phase 7.7 attack/defense ratings for the Live Elo pipeline.
 - `LiveEloAttackDefenseConfig` and `LiveEloAttackDefenseMetadata` types for opt-in attack/defense score computation.
 - `resolveAttackDefense()` helper that derives per-team attack and defense scores from available goal data using transparent, bounded formulas relative to the dataset average.
@@ -52,6 +59,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- `predictMatchFromLiveElo()` now delegates expected-goals computation to `eloToExpectedGoals()` from the model package; behavior is numerically identical to the previous inline calculation.
+- `ELO_TO_XG_UNCALIBRATED_WARNING` replaces the previous hardcoded warning string in routes.ts; the warning text is unchanged.
 - Default Live Elo behavior remains home-advantage-neutral unless `homeAdvantage.enabled` is explicitly supplied.
 - Live Elo API responses now include home advantage status metadata.
 - Default Live Elo behavior remains competition-unweighted unless `competitionWeighting.enabled` is explicitly supplied.
