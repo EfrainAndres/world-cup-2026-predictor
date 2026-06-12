@@ -8,7 +8,8 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:data": "pnpm --filter @world-cup-2026-predictor/data test",
-    "test:model": "pnpm --filter @world-cup-2026-predictor/model test"
+    "test:model": "pnpm --filter @world-cup-2026-predictor/model test",
+    "test:e2e": "pnpm --filter @world-cup-2026-predictor/web test:e2e"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
