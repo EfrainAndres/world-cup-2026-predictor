@@ -8,6 +8,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.3 team alias and coverage support.
+- `packages/api/src/team-aliases.ts` with canonical team-name normalization, alias resolution, accent-insensitive matching, available-team coverage, and suggestions.
+- `packages/api/tests/team-aliases.test.ts` covering alias resolution and canonical coverage behavior.
+- `docs/model-results/TEAM_ALIAS_AND_COVERAGE.md` documenting supported aliases, coverage, unavailable-team responses, and limitations.
 - Phase 7.1 live Elo dashboard integration.
 - `LiveEloRatingsSection` and `LiveEloRatingCard` components showing top live Elo teams, ranks, ratings, matches played, matches processed, latest match date, data coverage, and partial-data warnings.
 - `docs/dashboard/LIVE_ELO_DASHBOARD_INTEGRATION.md` documenting the dashboard integration, warnings, boundaries, and next steps.
@@ -23,6 +27,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- `predictMatchFromLiveElo()` now uses team aliases, canonical names, case/spacing/accent normalization, unavailable-team suggestions, and available-team coverage metadata.
+- Auto Predict From Elo mode now displays available live Elo teams and field-level suggestions when a team is unavailable.
 - Dashboard home now includes live Elo ratings from the API client wrapper before the static foundation team ratings section.
 - `DashboardSnapshot` now includes `liveEloRatings` from `getLiveEloRatingsFoundation()`.
 - `getLiveEloRatingsFoundation()` now uses a static Elo-compatible mirror of the expanded 56-match international fixture as its live Elo supplement and preserves the previous inline supplement as fallback behavior.

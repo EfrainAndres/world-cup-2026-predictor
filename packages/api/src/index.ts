@@ -3,6 +3,7 @@ export { getModelInfo } from "./model-info.js";
 export { apiRuntime, createApiRuntime, handleApiRuntimeRequest } from "./runtime.js";
 export {
   apiRoutes,
+  getAvailableLiveEloTeams,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
   getLiveEloRatingsFoundation,

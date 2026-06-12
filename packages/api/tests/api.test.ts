@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   apiRoutes,
+  getAvailableLiveEloTeams,
   getHealth,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
@@ -112,6 +113,22 @@ describe("api foundation handlers", () => {
     expect(result.warnings.some((warning) => warning.includes("Elo difference mapping"))).toBe(true);
   });
 
+  it("predicts a match using team aliases", () => {
+    const result = predictMatchFromLiveElo({
+      homeTeam: "  holland ",
+      awayTeam: "USMNT"
+    });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.request.homeTeam).toBe("Netherlands");
+    expect(result.request.awayTeam).toBe("United States");
+    expect(result.liveElo.homeMatchedBy).toBe("alias");
+    expect(result.liveElo.awayMatchedBy).toBe("alias");
+  });
+
   it("rejects live Elo predictions when a team is not rated", () => {
     const result = predictMatchFromLiveElo({
       homeTeam: "Unknown Team",
@@ -123,6 +140,18 @@ describe("api foundation handlers", () => {
     if (result.status !== "validation_error") return;
 
     expect(result.issues.map((issue) => issue.field)).toContain("homeTeam");
+    expect(result.issues[0]?.suggestions?.length).toBeGreaterThan(0);
+    expect(result.availableTeams).toContain("France");
+  });
+
+  it("exposes available live Elo team coverage", () => {
+    const teams = getAvailableLiveEloTeams();
+
+    expect(teams).toContain("France");
+    expect(teams).toContain("Netherlands");
+    expect(teams).toContain("United States");
+    expect(teams).not.toContain("USA");
+    expect(teams).toEqual([...teams].sort((a, b) => a.localeCompare(b)));
   });
 
   it("rejects invalid match simulation requests", () => {
