@@ -1,4 +1,5 @@
 import {
+  getAvailableLiveEloTeams,
   getHealth,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
@@ -56,6 +57,10 @@ export function simulateDashboardMatch(request: SimulateMatchRequest): SimulateM
 
 export function predictDashboardMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
   return predictMatchFromLiveElo(request);
+}
+
+export function getDashboardAvailableLiveEloTeams(): string[] {
+  return getAvailableLiveEloTeams();
 }
 
 export function getDashboardSnapshot(): DashboardSnapshot {

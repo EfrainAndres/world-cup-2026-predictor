@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 7.1).
+`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 7.3).
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 
@@ -33,7 +33,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 
 ## Match Simulation
 
-The match simulation form calls the local API client wrapper. It accepts team names, expected goals, max goals, and an optional simulation count. Results are displayed as baseline probabilities and likely scorelines with the note: `Baseline simulation, not a guarantee.`
+The match simulation form calls the local API client wrapper. It supports manual expected-goals inputs and Auto Predict From Elo mode. Auto mode accepts team names, resolves common aliases, shows available live Elo teams, and displays suggestions when a team is unavailable. Results remain labeled as baseline or partial-data live Elo outputs, not guarantees.
 
 ## Live Elo Ratings
 

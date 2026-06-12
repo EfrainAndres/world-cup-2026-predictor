@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import type { ApiValidationIssue, SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
-import { predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
+import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 import type { PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
 import { MatchSimulationResults } from "./MatchSimulationResults";
 
@@ -69,11 +69,18 @@ function buildClientValidationIssues(state: MatchSimulationFormState, mode: Pred
 }
 
 function FieldError({ issues, field }: { issues: readonly ApiValidationIssue[]; field: string }) {
-  const message = issues.find((issue) => issue.field === field)?.message;
+  const issue = issues.find((entry) => entry.field === field);
 
-  if (message === undefined) return null;
+  if (issue === undefined) return null;
 
-  return <p className="mt-2 text-sm font-medium text-rose-700">{message}</p>;
+  return (
+    <div className="mt-2 text-sm font-medium text-rose-700">
+      <p>{issue.message}</p>
+      {issue.suggestions !== undefined && issue.suggestions.length > 0 ? (
+        <p className="mt-1 text-xs font-semibold text-rose-800">Suggestions: {issue.suggestions.join(", ")}</p>
+      ) : null}
+    </div>
+  );
 }
 
 export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps) {
@@ -82,6 +89,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
   const [issues, setIssues] = useState<ApiValidationIssue[]>([]);
   const [result, setResult] = useState<MatchSimulationResultState>(initialResult);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableTeams] = useState(() => getDashboardAvailableLiveEloTeams());
 
   function updateField(field: keyof MatchSimulationFormState, value: string): void {
     setFormState((current) => ({ ...current, [field]: value }));
@@ -249,6 +257,10 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
                   <dd className="font-semibold tabular-nums text-teal-950">{formState.expectedAwayGoals}</dd>
                 </div>
               </dl>
+              <div className="mt-4 rounded-md border border-teal-200 bg-white/70 px-3 py-2">
+                <p className="text-xs font-semibold uppercase text-teal-700">Available live Elo teams</p>
+                <p className="mt-1 text-xs leading-5 text-teal-950">{availableTeams.join(", ")}</p>
+              </div>
             </div>
           )}
 

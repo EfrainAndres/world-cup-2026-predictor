@@ -49,6 +49,7 @@ export interface SimulateMatchRequest {
 export interface ApiValidationIssue {
   field: string;
   message: string;
+  suggestions?: readonly string[];
 }
 
 export interface SimulateMatchSuccessResponse {
@@ -114,6 +115,10 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     matchesProcessed: number;
     latestMatchDate: string;
     dataCoverage: string;
+    homeInput: string;
+    awayInput: string;
+    homeMatchedBy: "canonical" | "alias";
+    awayMatchedBy: "canonical" | "alias";
   };
   outcomeProbabilities: OutcomeProbabilities;
   mostLikelyScorelines: ScorelineProbability[];
@@ -125,6 +130,7 @@ export interface PredictMatchFromLiveEloSuccessResponse {
 export interface PredictMatchFromLiveEloValidationErrorResponse {
   status: "validation_error";
   issues: readonly ApiValidationIssue[];
+  availableTeams?: readonly string[];
   metadata: ApiMetadata;
 }
 

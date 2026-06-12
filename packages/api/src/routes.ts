@@ -23,6 +23,7 @@ import { LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING, mergeEloMatchSources } from 
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { buildApiMetadata } from "./schemas.js";
+import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import type {
   ApiRoutes,
   ApiValidationIssue,
@@ -601,7 +602,7 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
 }
 
 function normalizeTeamLookupKey(team: string): string {
-  return team.trim().toLocaleLowerCase();
+  return normalizeTeamSearchText(team);
 }
 
 function calculateExpectedGoalsFromElo(homeEloRating: number, awayEloRating: number): {
@@ -636,25 +637,43 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   }
 
   const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
-  const ratingsByTeam = new Map(pipeline.rankedRatings.map((entry) => [normalizeTeamLookupKey(entry.team), entry]));
+  const availableTeams = getAvailableTeamCoverage(pipeline.rankedRatings);
+  const ratingsByTeam = new Map<string, (typeof pipeline.rankedRatings)[number]>();
+  for (const entry of pipeline.rankedRatings) {
+    ratingsByTeam.set(normalizeTeamLookupKey(entry.team), entry);
+    ratingsByTeam.set(normalizeTeamLookupKey(canonicalizeTeamName(entry.team)), entry);
+  }
   const homeTeam = request.homeTeam.trim();
   const awayTeam = request.awayTeam.trim();
-  const homeEntry = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam));
-  const awayEntry = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam));
+  const homeResolution = resolveTeamAlias(homeTeam, availableTeams);
+  const awayResolution = resolveTeamAlias(awayTeam, availableTeams);
+  const homeEntry =
+    homeResolution.canonicalName === undefined ? undefined : ratingsByTeam.get(normalizeTeamLookupKey(homeResolution.canonicalName));
+  const awayEntry =
+    awayResolution.canonicalName === undefined ? undefined : ratingsByTeam.get(normalizeTeamLookupKey(awayResolution.canonicalName));
   const teamIssues: ApiValidationIssue[] = [];
 
   if (homeEntry === undefined) {
-    teamIssues.push({ field: "homeTeam", message: `${homeTeam} is not available in the current live Elo ratings.` });
+    teamIssues.push({
+      field: "homeTeam",
+      message: `${homeTeam} is not available in the current live Elo ratings.`,
+      suggestions: suggestAvailableTeams(homeTeam, availableTeams)
+    });
   }
 
   if (awayEntry === undefined) {
-    teamIssues.push({ field: "awayTeam", message: `${awayTeam} is not available in the current live Elo ratings.` });
+    teamIssues.push({
+      field: "awayTeam",
+      message: `${awayTeam} is not available in the current live Elo ratings.`,
+      suggestions: suggestAvailableTeams(awayTeam, availableTeams)
+    });
   }
 
   if (homeEntry === undefined || awayEntry === undefined) {
     return {
       status: "validation_error",
       issues: teamIssues,
+      availableTeams,
       metadata: buildApiMetadata([
         "Live Elo prediction requires both teams to appear in the current local Elo pipeline.",
         `Pipeline currently rates ${pipeline.teamsRated} teams from ${pipeline.matchesProcessed} matches.`
@@ -679,8 +698,8 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   const response = {
     status: "success" as const,
     request: {
-      homeTeam,
-      awayTeam,
+      homeTeam: homeResolution.canonicalName ?? homeEntry.team,
+      awayTeam: awayResolution.canonicalName ?? awayEntry.team,
       expectedHomeGoals: expectedGoals.home,
       expectedAwayGoals: expectedGoals.away,
       maxGoals,
@@ -694,8 +713,8 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       goalsAdjustment: expectedGoals.goalsAdjustment
     },
     liveElo: {
-      homeTeam: homeEntry.team,
-      awayTeam: awayEntry.team,
+      homeTeam: homeResolution.canonicalName ?? homeEntry.team,
+      awayTeam: awayResolution.canonicalName ?? awayEntry.team,
       homeEloRating: homeEntry.eloRating,
       awayEloRating: awayEntry.eloRating,
       homeRank: homeEntry.rank,
@@ -705,7 +724,11 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       matchesProcessed: pipeline.matchesProcessed,
       latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
       dataCoverage:
-        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample."
+        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample.",
+      homeInput: homeTeam,
+      awayInput: awayTeam,
+      homeMatchedBy: homeResolution.matchedBy === "none" ? "canonical" : homeResolution.matchedBy,
+      awayMatchedBy: awayResolution.matchedBy === "none" ? "canonical" : awayResolution.matchedBy
     },
     outcomeProbabilities: aggregateOutcomeProbabilities(scoreMatrix),
     mostLikelyScorelines: getMostLikelyScorelines(scoreMatrix, mostLikelyLimit),
@@ -738,6 +761,12 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
         : { mostCommonScorelineLimit: request.monteCarlo.mostCommonScorelineLimit })
     })
   };
+}
+
+export function getAvailableLiveEloTeams(): string[] {
+  const { pipeline } = buildLiveEloPipelineFoundation();
+
+  return getAvailableTeamCoverage(pipeline.rankedRatings);
 }
 
 export const apiRoutes: ApiRoutes = {
