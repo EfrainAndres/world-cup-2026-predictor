@@ -5,6 +5,9 @@ import {
   calculateLiveEloCompetitionWeight,
   calculateLiveEloRecencyWeight,
   classifyLiveEloCompetition,
+  LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING,
+  LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING,
+  LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING,
   LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
   LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING,
@@ -609,5 +612,252 @@ describe("runLiveEloPipeline", () => {
         homeAdvantage: { enabled: true, eloPoints: -1 }
       })
     ).toThrow("homeAdvantage.eloPoints must be a finite number greater than or equal to 0.");
+  });
+});
+
+describe("runLiveEloPipeline — attack/defense ratings", () => {
+  const SCORED_MATCH_A: EloMatch = {
+    match_id: "s-001",
+    match_date: "2023-01-01",
+    home_team: "Alpha",
+    away_team: "Beta",
+    neutral_site: true,
+    result: "home_win",
+    home_score: 3,
+    away_score: 0
+  };
+
+  const SCORED_MATCH_B: EloMatch = {
+    match_id: "s-002",
+    match_date: "2023-01-02",
+    home_team: "Alpha",
+    away_team: "Beta",
+    neutral_site: true,
+    result: "home_win",
+    home_score: 2,
+    away_score: 1
+  };
+
+  const SCORED_MATCH_C: EloMatch = {
+    match_id: "s-003",
+    match_date: "2023-01-03",
+    home_team: "Alpha",
+    away_team: "Beta",
+    neutral_site: true,
+    result: "home_win",
+    home_score: 2,
+    away_score: 0
+  };
+
+  const THREE_SCORED_MATCHES = [SCORED_MATCH_A, SCORED_MATCH_B, SCORED_MATCH_C];
+
+  it("defaults to disabled — no attackScore/defenseScore on entries, metadata.enabled is false", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-default",
+      matches: THREE_SCORED_MATCHES
+    });
+
+    expect(result.attackDefense.enabled).toBe(false);
+    for (const entry of result.rankedRatings) {
+      expect(entry.attackScore).toBeUndefined();
+      expect(entry.defenseScore).toBeUndefined();
+    }
+  });
+
+  it("attaches attackScore and defenseScore to every entry when enabled", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-enabled",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.attackDefense.enabled).toBe(true);
+    for (const entry of result.rankedRatings) {
+      expect(typeof entry.attackScore).toBe("number");
+      expect(typeof entry.defenseScore).toBe("number");
+    }
+  });
+
+  it("scores are finite numbers in [0, 100]", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-bounds",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    for (const entry of result.rankedRatings) {
+      const atk = entry.attackScore;
+      const def = entry.defenseScore;
+      expect(typeof atk).toBe("number");
+      expect(typeof def).toBe("number");
+      if (typeof atk === "number") {
+        expect(isFinite(atk)).toBe(true);
+        expect(atk).toBeGreaterThanOrEqual(0);
+        expect(atk).toBeLessThanOrEqual(100);
+      }
+      if (typeof def === "number") {
+        expect(isFinite(def)).toBe(true);
+        expect(def).toBeGreaterThanOrEqual(0);
+        expect(def).toBeLessThanOrEqual(100);
+      }
+    }
+  });
+
+  it("higher goal scorer has higher attackScore than lower goal scorer", () => {
+    // Alpha scores 3+2+2=7 goals in 3 matches (avg 2.33)
+    // Beta scores 0+1+0=1 goal in 3 matches (avg 0.33)
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-attack-order",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    const alpha = result.rankedRatings.find((e) => e.team === "Alpha");
+    const beta = result.rankedRatings.find((e) => e.team === "Beta");
+
+    expect(alpha?.attackScore).toBeDefined();
+    expect(beta?.attackScore).toBeDefined();
+    expect(alpha!.attackScore!).toBeGreaterThan(beta!.attackScore!);
+  });
+
+  it("lower goals conceded yields higher defenseScore", () => {
+    // Alpha concedes 0+1+0=1 goal in 3 matches (avg 0.33)
+    // Beta concedes 3+2+2=7 goals in 3 matches (avg 2.33)
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-defense-order",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    const alpha = result.rankedRatings.find((e) => e.team === "Alpha");
+    const beta = result.rankedRatings.find((e) => e.team === "Beta");
+
+    expect(alpha?.defenseScore).toBeDefined();
+    expect(beta?.defenseScore).toBeDefined();
+    expect(alpha!.defenseScore!).toBeGreaterThan(beta!.defenseScore!);
+  });
+
+  it("teams with no goal data receive neutral score 50", () => {
+    // MATCH_A_WINS has no home_score/away_score
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-no-goals",
+      matches: [MATCH_A_WINS, MATCH_B_WINS, MATCH_DRAW],
+      attackDefense: { enabled: true }
+    });
+
+    for (const entry of result.rankedRatings) {
+      expect(entry.attackScore).toBe(50);
+      expect(entry.defenseScore).toBe(50);
+    }
+  });
+
+  it("emits no-goal-data warning when no matches have scores", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-no-goal-warn",
+      matches: [MATCH_A_WINS, MATCH_B_WINS, MATCH_DRAW],
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING);
+  });
+
+  it("emits sparse warning when any team has fewer than 3 matches with goal data", () => {
+    // Only one scored match — sparse
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-sparse-warn",
+      matches: [SCORED_MATCH_A],
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING);
+  });
+
+  it("emits general attack/defense warning when enabled", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-general-warn",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING);
+  });
+
+  it("does NOT emit attack/defense warnings when disabled", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-disabled-warn",
+      matches: THREE_SCORED_MATCHES
+    });
+
+    expect(result.warnings).not.toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING);
+    expect(result.warnings).not.toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING);
+    expect(result.warnings).not.toContain(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING);
+  });
+
+  it("Elo rankings are unchanged whether attack/defense is enabled or not", () => {
+    const withoutAD = runLiveEloPipeline({
+      pipelineId: "ad-elo-stable",
+      matches: THREE_SCORED_MATCHES
+    });
+    const withAD = runLiveEloPipeline({
+      pipelineId: "ad-elo-stable",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    const eloWithout = withoutAD.rankedRatings.map((e) => ({ team: e.team, eloRating: e.eloRating, rank: e.rank }));
+    const eloWith = withAD.rankedRatings.map((e) => ({ team: e.team, eloRating: e.eloRating, rank: e.rank }));
+
+    expect(eloWith).toEqual(eloWithout);
+  });
+
+  it("is deterministic — same output on repeated calls when enabled", () => {
+    const first = runLiveEloPipeline({
+      pipelineId: "ad-det",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+    const second = runLiveEloPipeline({
+      pipelineId: "ad-det",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    expect(first).toEqual(second);
+  });
+
+  it("metadata reports dataset averages and sample counts", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-metadata",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    const meta = result.attackDefense;
+    expect(meta.enabled).toBe(true);
+    expect(meta.matchesWithGoalData).toBe(3);
+    expect(meta.teamsWithGoalData).toBe(2);
+    expect(meta.datasetAvgGoalsPerSide).toBeGreaterThan(0);
+    expect(isFinite(meta.datasetAvgGoalsPerSide)).toBe(true);
+  });
+
+  it("reports teamsWithSparseGoalData correctly when sparse", () => {
+    // 1 scored match: both teams have 1 match < SPARSE_THRESHOLD(3) → both sparse
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-sparse-count",
+      matches: [SCORED_MATCH_A],
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.attackDefense.teamsWithSparseGoalData).toBe(2);
+  });
+
+  it("reports teamsWithSparseGoalData as 0 when all teams have 3+ scored matches", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "ad-sparse-none",
+      matches: THREE_SCORED_MATCHES,
+      attackDefense: { enabled: true }
+    });
+
+    expect(result.attackDefense.teamsWithSparseGoalData).toBe(0);
   });
 });

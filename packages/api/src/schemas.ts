@@ -1,4 +1,6 @@
 import type {
+  LiveEloAttackDefenseConfig,
+  LiveEloAttackDefenseMetadata,
   LiveEloCompetitionWeightingConfig,
   LiveEloCompetitionWeightingMetadata,
   LiveEloHomeAdvantageConfig,
@@ -252,6 +254,8 @@ export interface LiveEloRatedTeamEntry {
   team: string;
   eloRating: number;
   matchesPlayed: number;
+  attackScore?: number;
+  defenseScore?: number;
 }
 
 export interface LiveEloRatingsFoundationResponse {
@@ -268,6 +272,7 @@ export interface LiveEloRatingsFoundationResponse {
   recencyWeighting: LiveEloRecencyWeightingMetadata;
   competitionWeighting: LiveEloCompetitionWeightingMetadata;
   homeAdvantage: LiveEloHomeAdvantageMetadata;
+  attackDefense: LiveEloAttackDefenseMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
 }
@@ -276,6 +281,7 @@ export interface LiveEloRatingsFoundationOptions {
   recencyWeighting?: LiveEloRecencyWeightingConfig;
   competitionWeighting?: LiveEloCompetitionWeightingConfig;
   homeAdvantage?: LiveEloHomeAdvantageConfig;
+  attackDefense?: LiveEloAttackDefenseConfig;
 }
 
 export interface ApiRoutes {

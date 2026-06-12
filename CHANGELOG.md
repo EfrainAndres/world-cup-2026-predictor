@@ -8,6 +8,14 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.7 attack/defense ratings for the Live Elo pipeline.
+- `LiveEloAttackDefenseConfig` and `LiveEloAttackDefenseMetadata` types for opt-in attack/defense score computation.
+- `resolveAttackDefense()` helper that derives per-team attack and defense scores from available goal data using transparent, bounded formulas relative to the dataset average.
+- `attackScore` (0–100) and `defenseScore` (0–100) optional fields on `LiveEloRankedEntry` — populated only when `attackDefense.enabled` is true.
+- Attack/defense metadata in `LiveEloPipelineResult` showing whether enabled, dataset average goals per side, matches with goal data, teams with goal data, and teams with sparse goal data.
+- Three new warning constants: `LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING` (calibration disclaimer), `LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING` (sparse sample), `LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING` (no scored matches).
+- API support: `getLiveEloRatingsFoundation()` accepts opt-in `attackDefense` config and returns `attackDefense` metadata plus per-team scores in the response.
+- `docs/model-results/ATTACK_DEFENSE_RATINGS.md` documenting formulas, data coverage, metadata fields, warnings, and limitations.
 - Phase 7.6 home advantage support for the Live Elo pipeline.
 - `getLiveEloMatchLocationContext()` and `calculateEffectiveHomeRating()` helpers for neutral-site-aware Elo expected-score calculation.
 - Opt-in `homeAdvantage` config that applies a fixed home Elo-point adjustment to expected scores without permanently changing ratings.

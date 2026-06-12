@@ -550,7 +550,8 @@ function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions
     dataCoverage: "partial_international_history",
     ...(options.recencyWeighting === undefined ? {} : { recencyWeighting: options.recencyWeighting }),
     ...(options.competitionWeighting === undefined ? {} : { competitionWeighting: options.competitionWeighting }),
-    ...(options.homeAdvantage === undefined ? {} : { homeAdvantage: options.homeAdvantage })
+    ...(options.homeAdvantage === undefined ? {} : { homeAdvantage: options.homeAdvantage }),
+    ...(options.attackDefense === undefined ? {} : { attackDefense: options.attackDefense })
   });
 
   return {
@@ -563,12 +564,24 @@ function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions
 export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOptions = {}): LiveEloRatingsFoundationResponse {
   const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation(options);
 
-  const topTeams: LiveEloRatedTeamEntry[] = pipeline.rankedRatings.slice(0, LIVE_ELO_TOP_TEAMS_LIMIT).map((entry) => ({
-    rank: entry.rank,
-    team: entry.team,
-    eloRating: entry.eloRating,
-    matchesPlayed: entry.matchesPlayed
-  }));
+  const topTeams: LiveEloRatedTeamEntry[] = pipeline.rankedRatings.slice(0, LIVE_ELO_TOP_TEAMS_LIMIT).map((entry) => {
+    const teamEntry: LiveEloRatedTeamEntry = {
+      rank: entry.rank,
+      team: entry.team,
+      eloRating: entry.eloRating,
+      matchesPlayed: entry.matchesPlayed
+    };
+
+    if (entry.attackScore !== undefined) {
+      teamEntry.attackScore = entry.attackScore;
+    }
+
+    if (entry.defenseScore !== undefined) {
+      teamEntry.defenseScore = entry.defenseScore;
+    }
+
+    return teamEntry;
+  });
 
   const topEloRating = pipeline.rankedRatings[0]?.eloRating ?? DEFAULT_ELO_CONFIG.initialRating;
 
@@ -592,6 +605,7 @@ export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOpt
     recencyWeighting: pipeline.recencyWeighting,
     competitionWeighting: pipeline.competitionWeighting,
     homeAdvantage: pipeline.homeAdvantage,
+    attackDefense: pipeline.attackDefense,
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -605,6 +619,7 @@ export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOpt
       `Recency weighting enabled: ${pipeline.recencyWeighting.enabled}.`,
       `Competition weighting enabled: ${pipeline.competitionWeighting.enabled}.`,
       `Home advantage enabled: ${pipeline.homeAdvantage.enabled}.`,
+      `Attack/defense ratings enabled: ${pipeline.attackDefense.enabled}.`,
       `Supplement warning codes: ${internationalSupplement.metadata.warningCodes.join(", ")}.`,
       "No network calls, database, or external services are used."
     ])
