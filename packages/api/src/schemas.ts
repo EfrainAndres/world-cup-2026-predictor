@@ -1,6 +1,8 @@
 import type {
   LiveEloCompetitionWeightingConfig,
   LiveEloCompetitionWeightingMetadata,
+  LiveEloHomeAdvantageConfig,
+  LiveEloHomeAdvantageMetadata,
   LiveEloRecencyWeightingConfig,
   LiveEloRecencyWeightingMetadata,
   MonteCarloMatchSimulationResult,
@@ -265,6 +267,7 @@ export interface LiveEloRatingsFoundationResponse {
   latestMatchDate: string;
   recencyWeighting: LiveEloRecencyWeightingMetadata;
   competitionWeighting: LiveEloCompetitionWeightingMetadata;
+  homeAdvantage: LiveEloHomeAdvantageMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
 }
@@ -272,6 +275,7 @@ export interface LiveEloRatingsFoundationResponse {
 export interface LiveEloRatingsFoundationOptions {
   recencyWeighting?: LiveEloRecencyWeightingConfig;
   competitionWeighting?: LiveEloCompetitionWeightingConfig;
+  homeAdvantage?: LiveEloHomeAdvantageConfig;
 }
 
 export interface ApiRoutes {

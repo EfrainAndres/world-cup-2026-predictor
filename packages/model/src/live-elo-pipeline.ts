@@ -1,4 +1,12 @@
-import { DEFAULT_ELO_CONFIG, getCurrentTeamRatings, processMatches, updateRatingsAfterMatch } from "./elo.js";
+import {
+  DEFAULT_ELO_CONFIG,
+  calculateExpectedScore,
+  deriveEloResult,
+  getCurrentTeamRatings,
+  processMatches,
+  resultToScore,
+  updateRatingsAfterMatch
+} from "./elo.js";
 import type {
   EloConfig,
   EloMatch,
@@ -8,6 +16,8 @@ import type {
   LiveEloCompetitionWeightMap,
   LiveEloCompetitionWeightingMetadata,
   LiveEloDataCoverage,
+  LiveEloHomeAdvantageMetadata,
+  LiveEloMatchLocationContext,
   LiveEloPipelineInput,
   LiveEloPipelineResult,
   LiveEloRankedEntry,
@@ -30,6 +40,10 @@ export const LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING =
   "Some matches are missing explicit competition metadata. Competition weighting used source inference or the unknown fallback for those matches.";
 export const LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING =
   "Some matches have unknown competition metadata. Competition weighting used the unknown fallback weight for those matches.";
+export const LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING =
+  "Home advantage is enabled with a fixed uncalibrated Elo-point adjustment. It changes expected scores but does not prove predictive accuracy.";
+export const LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING =
+  "Some matches are missing neutral-site metadata. Home advantage was not applied to those matches.";
 
 export const LIVE_ELO_RECENCY_WEIGHT_BUCKETS: LiveEloRecencyWeightingBucketConfig = {
   within12Months: 1,
@@ -46,6 +60,8 @@ export const LIVE_ELO_COMPETITION_WEIGHT_BUCKETS: LiveEloCompetitionWeightMap = 
   international_friendly: 1,
   unknown: 1
 };
+
+export const DEFAULT_LIVE_ELO_HOME_ADVANTAGE_POINTS = 60;
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const LIVE_ELO_COMPETITION_WEIGHT_CATEGORIES: readonly LiveEloCompetitionWeightCategory[] = [
@@ -245,10 +261,71 @@ export function calculateLiveEloCompetitionWeight(
   return resolvedWeights[category];
 }
 
+function getNeutralSiteValue(match: EloMatch): boolean | undefined {
+  if (typeof match.neutral_site === "boolean") {
+    return match.neutral_site;
+  }
+
+  if (typeof match.neutralSite === "boolean") {
+    return match.neutralSite;
+  }
+
+  return undefined;
+}
+
+export function getLiveEloMatchLocationContext(match: EloMatch): LiveEloMatchLocationContext {
+  const neutralSite = getNeutralSiteValue(match);
+
+  if (neutralSite === undefined) {
+    return "unknown";
+  }
+
+  return neutralSite ? "neutral_site" : "home_advantage";
+}
+
+export function calculateEffectiveHomeRating(homeRating: number, homeAdvantagePoints: number, match: EloMatch): number {
+  return getLiveEloMatchLocationContext(match) === "home_advantage" ? homeRating + homeAdvantagePoints : homeRating;
+}
+
 function resolveConfig(partial: Partial<EloConfig> | undefined): EloConfig {
   return {
     initialRating: partial?.initialRating ?? DEFAULT_ELO_CONFIG.initialRating,
     kFactor: partial?.kFactor ?? DEFAULT_ELO_CONFIG.kFactor
+  };
+}
+
+function resolveHomeAdvantageMetadata(input: LiveEloPipelineInput): LiveEloHomeAdvantageMetadata {
+  const enabled = input.homeAdvantage?.enabled ?? false;
+  const eloPoints = input.homeAdvantage?.eloPoints ?? DEFAULT_LIVE_ELO_HOME_ADVANTAGE_POINTS;
+  let homeAdvantageAppliedCount = 0;
+  let neutralSiteCount = 0;
+  let missingNeutralSiteMetadataCount = 0;
+
+  if (!Number.isFinite(eloPoints) || eloPoints < 0) {
+    throw new Error("homeAdvantage.eloPoints must be a finite number greater than or equal to 0.");
+  }
+
+  if (enabled) {
+    for (const match of input.matches) {
+      const context = getLiveEloMatchLocationContext(match);
+
+      if (context === "home_advantage") {
+        homeAdvantageAppliedCount += 1;
+      } else if (context === "neutral_site") {
+        neutralSiteCount += 1;
+      } else {
+        missingNeutralSiteMetadataCount += 1;
+      }
+    }
+  }
+
+  return {
+    enabled,
+    eloPoints,
+    matchesEvaluated: enabled ? input.matches.length : 0,
+    homeAdvantageAppliedCount,
+    neutralSiteCount,
+    missingNeutralSiteMetadataCount
   };
 }
 
@@ -307,7 +384,8 @@ function processMatchesWithWeighting(
   matches: readonly EloMatch[],
   config: EloConfig,
   recencyWeighting: LiveEloRecencyWeightingMetadata,
-  competitionWeighting: LiveEloCompetitionWeightingMetadata
+  competitionWeighting: LiveEloCompetitionWeightingMetadata,
+  homeAdvantage: LiveEloHomeAdvantageMetadata
 ): EloProcessResult {
   let ratings = new Map<string, number>();
   const matchHistory: EloMatchRatingHistory[] = [];
@@ -319,10 +397,13 @@ function processMatchesWithWeighting(
         : 1;
     const competitionWeight = competitionWeighting.enabled ? calculateLiveEloCompetitionWeight(match, competitionWeighting.weights) : 1;
     const weight = recencyWeight * competitionWeight;
-    const update = updateRatingsAfterMatch(ratings, match, {
+    const updateConfig = {
       initialRating: config.initialRating,
       kFactor: config.kFactor * weight
-    });
+    };
+    const update = homeAdvantage.enabled
+      ? updateRatingsAfterMatchWithHomeAdvantage(ratings, match, updateConfig, homeAdvantage.eloPoints)
+      : updateRatingsAfterMatch(ratings, match, updateConfig);
 
     ratings = update.ratings;
     matchHistory.push(update.history);
@@ -331,6 +412,47 @@ function processMatchesWithWeighting(
   return {
     ratings,
     matchHistory
+  };
+}
+
+function updateRatingsAfterMatchWithHomeAdvantage(
+  ratings: ReadonlyMap<string, number>,
+  match: EloMatch,
+  config: EloConfig,
+  homeAdvantagePoints: number
+): { ratings: Map<string, number>; history: EloMatchRatingHistory } {
+  const nextRatings = new Map(ratings);
+  const result = deriveEloResult(match);
+  const homeRatingBefore = nextRatings.get(match.home_team) ?? config.initialRating;
+  const awayRatingBefore = nextRatings.get(match.away_team) ?? config.initialRating;
+  const effectiveHomeRating = calculateEffectiveHomeRating(homeRatingBefore, homeAdvantagePoints, match);
+  const homeExpectedScore = calculateExpectedScore(effectiveHomeRating, awayRatingBefore);
+  const awayExpectedScore = calculateExpectedScore(awayRatingBefore, effectiveHomeRating);
+  const homeActualScore = resultToScore(result, "home");
+  const awayActualScore = resultToScore(result, "away");
+  const homeRatingDelta = config.kFactor * (homeActualScore - homeExpectedScore);
+  const awayRatingDelta = config.kFactor * (awayActualScore - awayExpectedScore);
+  const homeRatingAfter = homeRatingBefore + homeRatingDelta;
+  const awayRatingAfter = awayRatingBefore + awayRatingDelta;
+
+  nextRatings.set(match.home_team, homeRatingAfter);
+  nextRatings.set(match.away_team, awayRatingAfter);
+
+  return {
+    ratings: nextRatings,
+    history: {
+      match_id: match.match_id,
+      match_date: match.match_date,
+      home_team: match.home_team,
+      away_team: match.away_team,
+      home_rating_before: homeRatingBefore,
+      away_rating_before: awayRatingBefore,
+      home_rating_after: homeRatingAfter,
+      away_rating_after: awayRatingAfter,
+      home_rating_delta: homeRatingDelta,
+      away_rating_delta: awayRatingDelta,
+      result
+    }
   };
 }
 
@@ -346,10 +468,11 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
   const latestMatchDate = getLatestMatchDate(input.matches);
   const recencyWeighting = resolveRecencyWeightingMetadata(input, latestMatchDate);
   const competitionWeighting = resolveCompetitionWeightingMetadata(input);
+  const homeAdvantage = resolveHomeAdvantageMetadata(input);
 
   const processResult =
-    recencyWeighting.enabled || competitionWeighting.enabled
-      ? processMatchesWithWeighting(sortedMatches, config, recencyWeighting, competitionWeighting)
+    recencyWeighting.enabled || competitionWeighting.enabled || homeAdvantage.enabled
+      ? processMatchesWithWeighting(sortedMatches, config, recencyWeighting, competitionWeighting, homeAdvantage)
       : processMatches(sortedMatches, config);
   const rankedEntries = getCurrentTeamRatings(processResult.ratings);
 
@@ -379,6 +502,14 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
     warnings.push(LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING);
   }
 
+  if (homeAdvantage.enabled) {
+    warnings.push(LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING);
+  }
+
+  if (homeAdvantage.enabled && homeAdvantage.missingNeutralSiteMetadataCount > 0) {
+    warnings.push(LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING);
+  }
+
   const sparseTeamCount = rankedEntries.filter((e) => (matchCounts.get(e.team) ?? 0) < 3).length;
 
   if (sparseTeamCount > 0) {
@@ -402,6 +533,7 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
     dataCoverage,
     recencyWeighting,
     competitionWeighting,
+    homeAdvantage,
     warnings
   };
 }
