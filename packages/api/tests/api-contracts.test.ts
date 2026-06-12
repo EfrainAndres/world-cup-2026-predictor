@@ -1,0 +1,492 @@
+import { describe, expect, it } from "vitest";
+import {
+  apiRoutes,
+  apiRuntime,
+  getHistoricalReplayAudit,
+  getHistoricalTournamentSummary,
+  getLiveEloRatingsFoundation,
+  getTeamRatingsFoundation,
+  predictMatchFromLiveElo,
+  simulateMatch,
+  simulateTournamentFoundation,
+  type ApiMetadata,
+  type ApiRuntimeFailureResponse,
+  type ApiValidationIssue
+} from "../src/index.js";
+
+interface OutcomeProbabilitiesContract {
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  totalProbability: number;
+}
+
+interface ScorelineContract {
+  homeGoals: number;
+  awayGoals: number;
+  probability: number;
+}
+
+interface ValidationErrorContract {
+  status: "validation_error";
+  issues: readonly ApiValidationIssue[];
+  metadata: ApiMetadata;
+}
+
+function expectMetadataContract(metadata: ApiMetadata): void {
+  expect(metadata).toEqual({
+    apiVersion: expect.any(String),
+    mode: "pure_handlers",
+    serverEnabled: false,
+    databaseEnabled: false,
+    externalServicesEnabled: false,
+    notes: expect.any(Array)
+  });
+  expect(metadata.apiVersion.length).toBeGreaterThan(0);
+  expect(metadata.notes.length).toBeGreaterThan(0);
+  for (const note of metadata.notes) {
+    expect(note.length).toBeGreaterThan(0);
+  }
+}
+
+function expectWarningsContract(warnings: readonly string[]): void {
+  expect(Array.isArray(warnings)).toBe(true);
+  expect(warnings.length).toBeGreaterThan(0);
+  for (const warning of warnings) {
+    expect(warning.length).toBeGreaterThan(0);
+  }
+}
+
+function expectProbabilitiesContract(probabilities: OutcomeProbabilitiesContract): void {
+  expect(Object.keys(probabilities).sort()).toEqual([
+    "awayWinProbability",
+    "drawProbability",
+    "homeWinProbability",
+    "totalProbability"
+  ]);
+
+  for (const value of Object.values(probabilities)) {
+    expect(Number.isFinite(value)).toBe(true);
+    expect(value).toBeGreaterThanOrEqual(0);
+    expect(value).toBeLessThanOrEqual(1);
+  }
+
+  expect(
+    probabilities.homeWinProbability + probabilities.drawProbability + probabilities.awayWinProbability
+  ).toBeCloseTo(probabilities.totalProbability, 10);
+  expect(probabilities.totalProbability).toBeCloseTo(1, 10);
+}
+
+function expectScorelinesContract(scorelines: readonly ScorelineContract[]): void {
+  expect(scorelines.length).toBeGreaterThan(0);
+
+  for (const scoreline of scorelines) {
+    expect(Object.keys(scoreline).sort()).toEqual(["awayGoals", "homeGoals", "probability"]);
+    expect(Number.isInteger(scoreline.homeGoals)).toBe(true);
+    expect(Number.isInteger(scoreline.awayGoals)).toBe(true);
+    expect(scoreline.homeGoals).toBeGreaterThanOrEqual(0);
+    expect(scoreline.awayGoals).toBeGreaterThanOrEqual(0);
+    expect(Number.isFinite(scoreline.probability)).toBe(true);
+    expect(scoreline.probability).toBeGreaterThanOrEqual(0);
+    expect(scoreline.probability).toBeLessThanOrEqual(1);
+  }
+}
+
+function expectValidationErrorContract(response: ValidationErrorContract, expectedFields: readonly string[]): void {
+  expect(response.status).toBe("validation_error");
+  expect(response.issues.length).toBeGreaterThan(0);
+  expectMetadataContract(response.metadata);
+
+  const fields = response.issues.map((issue) => issue.field);
+  for (const expectedField of expectedFields) {
+    expect(fields).toContain(expectedField);
+  }
+
+  for (const issue of response.issues) {
+    expect(issue.message.length).toBeGreaterThan(0);
+    if (issue.suggestions !== undefined) {
+      expect(Array.isArray(issue.suggestions)).toBe(true);
+    }
+  }
+}
+
+function endpointRequest(pathname: string, init?: RequestInit): Request {
+  return new Request(`http://api-contracts.test${pathname}`, init);
+}
+
+async function readJson<T>(response: Response): Promise<T> {
+  return (await response.json()) as T;
+}
+
+describe("api contract coverage", () => {
+  it("validates the health contract", () => {
+    const response = apiRoutes.getHealth();
+
+    expect(Object.keys(response).sort()).toEqual(["metadata", "service", "status", "version"]);
+    expect(response).toMatchObject({
+      status: "ok",
+      service: "world-cup-2026-predictor-api",
+      version: expect.any(String)
+    });
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the model-info contract and supported handler consistency", () => {
+    const response = apiRoutes.getModelInfo();
+
+    expect(Object.keys(response).sort()).toEqual(["limitations", "metadata", "modelPackage", "modelScope", "status", "supportedHandlers"]);
+    expect(response.status).toBe("ok");
+    expect(response.modelPackage).toBe("@world-cup-2026-predictor/model");
+    expect(response.supportedHandlers).toEqual([
+      "getHealth",
+      "getModelInfo",
+      "simulateMatch",
+      "getHistoricalTournamentSummary",
+      "getHistoricalReplayAudit",
+      "predictMatchFromLiveElo",
+      "simulateTournamentFoundation",
+      "getTeamRatingsFoundation",
+      "getLiveEloRatingsFoundation"
+    ]);
+
+    for (const routeHandler of Object.keys(apiRoutes)) {
+      expect(response.supportedHandlers).toContain(routeHandler);
+    }
+
+    expect(response.limitations).toContain("No database or external services are used.");
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the simulate-match contract and seeded determinism", () => {
+    const request = {
+      homeTeam: "Team A",
+      awayTeam: "Team B",
+      expectedHomeGoals: 1.45,
+      expectedAwayGoals: 1.05,
+      maxGoals: 6,
+      mostLikelyScorelineLimit: 4,
+      monteCarlo: {
+        simulationCount: 40,
+        seed: 2026,
+        mostCommonScorelineLimit: 3
+      }
+    };
+    const first = simulateMatch(request);
+    const second = simulateMatch(request);
+
+    expect(first).toEqual(second);
+    expect(first.status).toBe("success");
+    if (first.status !== "success") return;
+
+    expect(Object.keys(first).sort()).toEqual([
+      "metadata",
+      "monteCarloSimulation",
+      "mostLikelyScorelines",
+      "outcomeProbabilities",
+      "request",
+      "status",
+      "warnings"
+    ]);
+    expect(first.request).toMatchObject({
+      homeTeam: "Team A",
+      awayTeam: "Team B",
+      expectedHomeGoals: 1.45,
+      expectedAwayGoals: 1.05,
+      maxGoals: 6,
+      normalizeMatrix: true
+    });
+    expectProbabilitiesContract(first.outcomeProbabilities);
+    expectScorelinesContract(first.mostLikelyScorelines);
+    expect(first.monteCarloSimulation?.simulationCount).toBe(40);
+    expectWarningsContract(first.warnings);
+    expectMetadataContract(first.metadata);
+  });
+
+  it("validates the predict-match-from-live-elo contract and seeded determinism", () => {
+    const request = {
+      homeTeam: "France",
+      awayTeam: "Netherlands",
+      maxGoals: 6,
+      mostLikelyScorelineLimit: 4,
+      preset: "balanced" as const,
+      monteCarlo: {
+        simulationCount: 40,
+        seed: 77,
+        mostCommonScorelineLimit: 3
+      }
+    };
+    const first = predictMatchFromLiveElo(request);
+    const second = predictMatchFromLiveElo(request);
+
+    expect(first).toEqual(second);
+    expect(first.status).toBe("success");
+    if (first.status !== "success") return;
+
+    expect(Object.keys(first).sort()).toEqual([
+      "expectedGoals",
+      "liveElo",
+      "metadata",
+      "monteCarloSimulation",
+      "mostLikelyScorelines",
+      "outcomeProbabilities",
+      "request",
+      "status",
+      "warnings"
+    ]);
+    expect(first.request.homeTeam).toBe("France");
+    expect(first.request.awayTeam).toBe("Netherlands");
+    expect(first.expectedGoals).toEqual({
+      home: expect.any(Number),
+      away: expect.any(Number),
+      eloDifference: expect.any(Number),
+      baseExpectedGoals: expect.any(Number),
+      goalsAdjustment: expect.any(Number),
+      preset: "balanced",
+      presetDescription: expect.any(String)
+    });
+    expect(first.liveElo).toMatchObject({
+      homeTeam: "France",
+      awayTeam: "Netherlands",
+      homeEloRating: expect.any(Number),
+      awayEloRating: expect.any(Number),
+      homeRank: expect.any(Number),
+      awayRank: expect.any(Number),
+      matchesProcessed: expect.any(Number),
+      latestMatchDate: expect.any(String),
+      dataCoverage: expect.any(String),
+      homeMatchedBy: expect.any(String),
+      awayMatchedBy: expect.any(String)
+    });
+    expectProbabilitiesContract(first.outcomeProbabilities);
+    expectScorelinesContract(first.mostLikelyScorelines);
+    expect(first.monteCarloSimulation?.simulationCount).toBe(40);
+    expectWarningsContract(first.warnings);
+    expectMetadataContract(first.metadata);
+  });
+
+  it("validates the live Elo ratings contract", () => {
+    const response = getLiveEloRatingsFoundation({ attackDefense: { enabled: true } });
+
+    expect(Object.keys(response).sort()).toEqual([
+      "attackDefense",
+      "averageEloRating",
+      "competitionWeighting",
+      "dataCoverage",
+      "dataScope",
+      "homeAdvantage",
+      "latestMatchDate",
+      "matchesProcessed",
+      "metadata",
+      "pipelineVersion",
+      "recencyWeighting",
+      "status",
+      "teams",
+      "teamsRatedTotal",
+      "topEloRating",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.teams.length).toBeGreaterThan(0);
+    expect(response.matchesProcessed).toBeGreaterThan(0);
+    expect(response.teamsRatedTotal).toBeGreaterThanOrEqual(response.teams.length);
+    expect(response.attackDefense.enabled).toBe(true);
+    expect(response.attackDefense.datasetAvgGoalsPerSide).toBeGreaterThan(0);
+    expect(response.attackDefense.matchesWithGoalData).toBeGreaterThan(0);
+    expect(response.attackDefense.teamsWithGoalData).toBeGreaterThan(0);
+
+    const topTeam = response.teams[0];
+    expect(topTeam).toEqual({
+      rank: expect.any(Number),
+      team: expect.any(String),
+      eloRating: expect.any(Number),
+      matchesPlayed: expect.any(Number),
+      attackScore: expect.any(Number),
+      defenseScore: expect.any(Number)
+    });
+    expect(topTeam?.attackScore).toBeGreaterThanOrEqual(0);
+    expect(topTeam?.attackScore).toBeLessThanOrEqual(100);
+    expect(topTeam?.defenseScore).toBeGreaterThanOrEqual(0);
+    expect(topTeam?.defenseScore).toBeLessThanOrEqual(100);
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the team ratings contract", () => {
+    const response = getTeamRatingsFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "averageEloRating",
+      "foundationWarning",
+      "metadata",
+      "ratingSource",
+      "status",
+      "strongestDefenseScore",
+      "strongestDefenseTeam",
+      "strongestOffenseScore",
+      "strongestOffenseTeam",
+      "teams",
+      "topEloRating",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.teams).toHaveLength(10);
+    expect(response.teams[0]).toEqual({
+      rank: expect.any(Number),
+      team: expect.any(String),
+      eloRating: expect.any(Number),
+      tier: expect.stringMatching(/Elite|Strong|Competitive/),
+      offenseStrength: expect.any(Number),
+      defenseStrength: expect.any(Number),
+      summary: expect.any(String)
+    });
+    expect(response.foundationWarning).toContain("static foundation");
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the tournament simulation contract", () => {
+    const response = simulateTournamentFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "dataScope",
+      "metadata",
+      "simulationCount",
+      "status",
+      "teamResults",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.simulationCount).toBe(1000);
+    expect(response.teamResults).toHaveLength(8);
+    expect(response.teamResults[0]).toEqual({
+      rank: expect.any(Number),
+      team: expect.any(String),
+      championProbability: expect.any(Number),
+      runnerUpProbability: expect.any(Number)
+    });
+    expect(response.teamResults.reduce((sum, team) => sum + team.championProbability, 0)).toBeCloseTo(1, 10);
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the historical tournament summary contract", () => {
+    const supported = getHistoricalTournamentSummary(2022);
+    const unsupported = getHistoricalTournamentSummary(9999);
+
+    expect(supported.status).toBe("success");
+    if (supported.status !== "success") return;
+
+    expect(Object.keys(supported).sort()).toEqual(["metadata", "status", "summary"]);
+    expect(supported.summary).toEqual({
+      year: 2022,
+      tournamentName: "FIFA World Cup 2022",
+      matchCount: 64,
+      expectedMatchCount: 64,
+      groupStageMatchCount: 48,
+      knockoutAndPlacementMatchCount: 16,
+      champion: "Argentina",
+      runnerUp: "France",
+      thirdPlace: "Croatia",
+      datasetStatus: "complete_curated_fixture_foundation",
+      warnings: expect.any(Array)
+    });
+    expectWarningsContract(supported.summary.warnings);
+    expectMetadataContract(supported.metadata);
+
+    expect(unsupported.status).toBe("validation_error");
+    if (unsupported.status !== "validation_error") return;
+
+    expect(unsupported.supportedYears).toEqual([2010, 2014, 2018, 2022]);
+    expectValidationErrorContract(unsupported, ["year"]);
+  });
+
+  it("validates the historical replay audit contract", () => {
+    const response = getHistoricalReplayAudit();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "apiReadiness",
+      "auditVersion",
+      "componentAvailability",
+      "knownGaps",
+      "metadata",
+      "metricAvailability",
+      "status",
+      "supportedYears",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.apiReadiness).toBe("ready_with_warnings");
+    expect(response.supportedYears).toEqual([2010, 2014, 2018, 2022]);
+    expect(response.metricAvailability).toEqual({
+      brierScore: true,
+      logLoss: true,
+      top1Hit: true,
+      top3Hit: true,
+      top5Hit: true
+    });
+    expect(response.componentAvailability).toEqual({
+      datasetCompleteness: true,
+      bracketReconstruction: true,
+      eloSnapshotReplay: true,
+      monteCarloReplay: true,
+      replayValidation: true
+    });
+    expectWarningsContract(response.warnings);
+    expect(response.knownGaps.length).toBeGreaterThan(0);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates typed validation error contracts", () => {
+    const invalidSimulation = simulateMatch({
+      homeTeam: "Team A",
+      awayTeam: "Team A",
+      expectedHomeGoals: -1,
+      expectedAwayGoals: Number.NaN,
+      maxGoals: 0
+    });
+    const unavailableLiveEloTeam = predictMatchFromLiveElo({
+      homeTeam: "Atlantis",
+      awayTeam: "France"
+    });
+
+    expect(invalidSimulation.status).toBe("validation_error");
+    if (invalidSimulation.status !== "validation_error") return;
+    expectValidationErrorContract(invalidSimulation, ["awayTeam", "expectedHomeGoals", "expectedAwayGoals", "maxGoals"]);
+
+    expect(unavailableLiveEloTeam.status).toBe("validation_error");
+    if (unavailableLiveEloTeam.status !== "validation_error") return;
+    expectValidationErrorContract(unavailableLiveEloTeam, ["homeTeam"]);
+    expect(unavailableLiveEloTeam.availableTeams).toContain("France");
+    expect(unavailableLiveEloTeam.issues[0]?.suggestions).toEqual(expect.any(Array));
+  });
+
+  it("validates runtime unsupported route and method error contracts", async () => {
+    const unsupportedRoute = await apiRuntime.fetch(endpointRequest("/unsupported"));
+    const unsupportedMethod = await apiRuntime.fetch(endpointRequest("/health", { method: "POST" }));
+    const unsupportedRouteBody = await readJson<ApiRuntimeFailureResponse>(unsupportedRoute);
+    const unsupportedMethodBody = await readJson<ApiRuntimeFailureResponse>(unsupportedMethod);
+
+    expect(unsupportedRoute.status).toBe(404);
+    expect(unsupportedRoute.headers.get("content-type")).toContain("application/json");
+    expect(unsupportedRouteBody).toMatchObject({
+      status: "error",
+      error: {
+        code: "not_found",
+        message: expect.any(String)
+      }
+    });
+    expectMetadataContract(unsupportedRouteBody.metadata);
+
+    expect(unsupportedMethod.status).toBe(405);
+    expect(unsupportedMethod.headers.get("content-type")).toContain("application/json");
+    expect(unsupportedMethodBody).toMatchObject({
+      status: "error",
+      error: {
+        code: "method_not_allowed",
+        message: expect.any(String)
+      }
+    });
+    expectMetadataContract(unsupportedMethodBody.metadata);
+  });
+});
