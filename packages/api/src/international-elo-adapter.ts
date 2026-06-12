@@ -9,6 +9,8 @@ export interface EloCompatibleMatch {
   home_team: string;
   away_team: string;
   neutral_site: boolean;
+  competition?: string;
+  source?: string;
   home_score?: number;
   away_score?: number;
   result?: EloResult;
@@ -22,6 +24,14 @@ export function toEloMatch(match: EloCompatibleMatch): EloMatch {
     away_team: match.away_team,
     neutral_site: match.neutral_site
   };
+
+  if (match.competition !== undefined) {
+    elo.competition = match.competition;
+  }
+
+  if (match.source !== undefined) {
+    elo.source = match.source;
+  }
 
   if (match.home_score !== undefined) {
     elo.home_score = match.home_score;

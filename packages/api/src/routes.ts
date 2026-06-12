@@ -548,7 +548,8 @@ function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions
     pipelineId: LIVE_ELO_PIPELINE_ID,
     matches: mergedMatches,
     dataCoverage: "partial_international_history",
-    ...(options.recencyWeighting === undefined ? {} : { recencyWeighting: options.recencyWeighting })
+    ...(options.recencyWeighting === undefined ? {} : { recencyWeighting: options.recencyWeighting }),
+    ...(options.competitionWeighting === undefined ? {} : { competitionWeighting: options.competitionWeighting })
   });
 
   return {
@@ -588,6 +589,7 @@ export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOpt
     averageEloRating,
     latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
     recencyWeighting: pipeline.recencyWeighting,
+    competitionWeighting: pipeline.competitionWeighting,
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -599,6 +601,7 @@ export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOpt
     metadata: buildApiMetadata([
       `Live Elo pipeline processes ${combinedMatchCount} matches: 256 curated World Cup fixtures (2010–2022) plus ${internationalSupplement.metadata.matchCount} expanded international supplement matches from ${internationalSupplement.metadata.datasetId}.`,
       `Recency weighting enabled: ${pipeline.recencyWeighting.enabled}.`,
+      `Competition weighting enabled: ${pipeline.competitionWeighting.enabled}.`,
       `Supplement warning codes: ${internationalSupplement.metadata.warningCodes.join(", ")}.`,
       "No network calls, database, or external services are used."
     ])

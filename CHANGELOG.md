@@ -8,6 +8,12 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.5 competition weighting for the Live Elo pipeline.
+- `calculateLiveEloCompetitionWeight()` and `classifyLiveEloCompetition()` helpers with fixed transparent competition buckets.
+- Opt-in `competitionWeighting` config for scaling Elo update impact by competition category.
+- Live Elo competition weighting metadata showing whether weighting was enabled, matches weighted, fixed weights, missing metadata count, and unknown competition count.
+- API support for opt-in competition-weighted `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/COMPETITION_WEIGHTING.md` documenting competition buckets, metadata, warnings, and limitations.
 - Phase 7.4 recency weighting for the Live Elo pipeline.
 - `calculateLiveEloRecencyWeight()` and opt-in `recencyWeighting` config for scaling Elo update impact by match age.
 - Live Elo recency weighting metadata showing whether weighting was enabled, the reference date, matches weighted, and fixed bucket weights.
@@ -32,6 +38,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- Default Live Elo behavior remains competition-unweighted unless `competitionWeighting.enabled` is explicitly supplied.
+- Live Elo API responses now include competition weighting status metadata.
 - Default Live Elo behavior remains unweighted unless `recencyWeighting.enabled` is explicitly supplied.
 - Live Elo API responses now include recency weighting status metadata.
 - `predictMatchFromLiveElo()` now uses team aliases, canonical names, case/spacing/accent normalization, unavailable-team suggestions, and available-team coverage metadata.

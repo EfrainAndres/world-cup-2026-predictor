@@ -49,6 +49,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.1 | Live Elo Dashboard Integration | Show live Elo ratings from the API in the dashboard with partial-data warnings. | Done |
 | 7.3 | Team Alias & Coverage | Improve live Elo prediction team-name matching and coverage visibility. | Done |
 | 7.4 | Recency Weighting | Add opt-in recency weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
+| 7.5 | Competition Weighting | Add opt-in competition weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1131,6 +1132,27 @@ Exit criteria:
 - Default Live Elo output remains unweighted unless recency weighting is explicitly enabled.
 - Recent matches receive full Elo update impact, while older matches receive reduced impact.
 - Tests cover deterministic reference dates, invalid config handling, and API metadata.
+- No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
+- Required checks pass with no regressions.
+
+## Phase 7.5 - Competition Weighting
+
+Add opt-in competition weighting to the Live Elo pipeline so matches from different competition categories can scale Elo update impact differently while preserving the existing baseline mode.
+
+Deliverables:
+
+- Competition weighting config in `runLiveEloPipeline()`.
+- `classifyLiveEloCompetition()` and `calculateLiveEloCompetitionWeight()` helpers with fixed deterministic buckets.
+- Live Elo metadata showing whether weighting was enabled, matches weighted, weight table, missing metadata count, and unknown competition count.
+- API support for opt-in competition-weighted `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/COMPETITION_WEIGHTING.md` documenting behavior, warnings, and limitations.
+
+Exit criteria:
+
+- Default Live Elo output remains competition-unweighted unless competition weighting is explicitly enabled.
+- World Cup, continental championship, qualifier, Nations League, friendly, and unknown categories have deterministic weights.
+- Recency and competition weighting combine through one Elo K-factor multiplier.
+- Missing or unknown competition metadata is reported clearly.
 - No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
 - Required checks pass with no regressions.
 
