@@ -1,7 +1,16 @@
 export { getHealth } from "./health.js";
 export { getModelInfo } from "./model-info.js";
 export { apiRuntime, createApiRuntime, handleApiRuntimeRequest } from "./runtime.js";
-export { apiRoutes, getHistoricalReplayAudit, getHistoricalTournamentSummary, getLiveEloRatingsFoundation, getTeamRatingsFoundation, simulateMatch, simulateTournamentFoundation } from "./routes.js";
+export {
+  apiRoutes,
+  getHistoricalReplayAudit,
+  getHistoricalTournamentSummary,
+  getLiveEloRatingsFoundation,
+  getTeamRatingsFoundation,
+  predictMatchFromLiveElo,
+  simulateMatch,
+  simulateTournamentFoundation
+} from "./routes.js";
 
 export type { ApiRuntime, ApiRuntimeErrorResponse, ApiRuntimeFailureResponse, ApiRuntimeValidationErrorResponse } from "./runtime.js";
 
@@ -20,6 +29,10 @@ export type {
   HistoricalTournamentSummarySuccessResponse,
   HistoricalTournamentSummaryValidationErrorResponse,
   ModelInfoResponse,
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
+  PredictMatchFromLiveEloSuccessResponse,
+  PredictMatchFromLiveEloValidationErrorResponse,
   SimulateMatchMonteCarloRequest,
   SimulateMatchRequest,
   SimulateMatchResponse,

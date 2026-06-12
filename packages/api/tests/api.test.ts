@@ -7,6 +7,7 @@ import {
   getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
+  predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
 } from "../src/index.js";
@@ -83,6 +84,47 @@ describe("api foundation handlers", () => {
     expect(first.monteCarloSimulation?.mostCommonScorelines).toHaveLength(2);
   });
 
+  it("predicts a match automatically from live Elo team names", () => {
+    const result = predictMatchFromLiveElo({
+      homeTeam: "Argentina",
+      awayTeam: "France",
+      maxGoals: 6,
+      mostLikelyScorelineLimit: 4,
+      monteCarlo: {
+        simulationCount: 25,
+        seed: 2026,
+        mostCommonScorelineLimit: 2
+      }
+    });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.request.homeTeam).toBe("Argentina");
+    expect(result.request.awayTeam).toBe("France");
+    expect(result.request.expectedHomeGoals).toBe(result.expectedGoals.home);
+    expect(result.request.expectedAwayGoals).toBe(result.expectedGoals.away);
+    expect(result.expectedGoals.eloDifference).toBeCloseTo(result.liveElo.homeEloRating - result.liveElo.awayEloRating, 2);
+    expect(result.outcomeProbabilities.totalProbability).toBeCloseTo(1, 10);
+    expect(result.mostLikelyScorelines).toHaveLength(4);
+    expect(result.monteCarloSimulation?.simulationCount).toBe(25);
+    expect(result.warnings.some((warning) => warning.includes("Elo difference mapping"))).toBe(true);
+  });
+
+  it("rejects live Elo predictions when a team is not rated", () => {
+    const result = predictMatchFromLiveElo({
+      homeTeam: "Unknown Team",
+      awayTeam: "France"
+    });
+
+    expect(result.status).toBe("validation_error");
+
+    if (result.status !== "validation_error") return;
+
+    expect(result.issues.map((issue) => issue.field)).toContain("homeTeam");
+  });
+
   it("rejects invalid match simulation requests", () => {
     const result = simulateMatch({
       homeTeam: "Team A",
@@ -135,6 +177,9 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getHealth()).toEqual(getHealth());
     expect(apiRoutes.getModelInfo()).toEqual(getModelInfo());
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
+    expect(apiRoutes.predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })).toEqual(
+      predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })
+    );
   });
 });
 

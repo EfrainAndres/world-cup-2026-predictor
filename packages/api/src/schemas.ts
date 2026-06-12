@@ -76,6 +76,62 @@ export interface SimulateMatchValidationErrorResponse {
 
 export type SimulateMatchResponse = SimulateMatchSuccessResponse | SimulateMatchValidationErrorResponse;
 
+export interface PredictMatchFromLiveEloRequest {
+  homeTeam: string;
+  awayTeam: string;
+  maxGoals?: number;
+  normalizeMatrix?: boolean;
+  mostLikelyScorelineLimit?: number;
+  monteCarlo?: SimulateMatchMonteCarloRequest;
+}
+
+export interface PredictMatchFromLiveEloSuccessResponse {
+  status: "success";
+  request: {
+    homeTeam: string;
+    awayTeam: string;
+    expectedHomeGoals: number;
+    expectedAwayGoals: number;
+    maxGoals: number;
+    normalizeMatrix: boolean;
+  };
+  expectedGoals: {
+    home: number;
+    away: number;
+    eloDifference: number;
+    baseExpectedGoals: number;
+    goalsAdjustment: number;
+  };
+  liveElo: {
+    homeTeam: string;
+    awayTeam: string;
+    homeEloRating: number;
+    awayEloRating: number;
+    homeRank: number;
+    awayRank: number;
+    homeMatchesPlayed: number;
+    awayMatchesPlayed: number;
+    matchesProcessed: number;
+    latestMatchDate: string;
+    dataCoverage: string;
+  };
+  outcomeProbabilities: OutcomeProbabilities;
+  mostLikelyScorelines: ScorelineProbability[];
+  monteCarloSimulation?: MonteCarloMatchSimulationResult;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
+export interface PredictMatchFromLiveEloValidationErrorResponse {
+  status: "validation_error";
+  issues: readonly ApiValidationIssue[];
+  metadata: ApiMetadata;
+}
+
+export type PredictMatchFromLiveEloResponse =
+  | PredictMatchFromLiveEloSuccessResponse
+  | PredictMatchFromLiveEloValidationErrorResponse;
+
 export interface HistoricalTournamentSummary {
   year: SupportedHistoricalTournamentYear;
   tournamentName: string;
@@ -201,6 +257,7 @@ export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
   simulateMatch: (request: SimulateMatchRequest) => SimulateMatchResponse;
+  predictMatchFromLiveElo: (request: PredictMatchFromLiveEloRequest) => PredictMatchFromLiveEloResponse;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
 }
