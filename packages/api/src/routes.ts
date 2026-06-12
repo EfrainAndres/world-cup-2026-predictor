@@ -4,6 +4,7 @@ import {
   HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION,
   HISTORICAL_REPLAY_ACCURACY_AUDIT_WARNING,
   aggregateOutcomeProbabilities,
+  eloToExpectedGoals,
   generateScoreMatrix,
   getMostLikelyScorelines,
   runLiveEloPipeline,
@@ -527,18 +528,6 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
 
 const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-international-supplement";
 const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
-const ELO_EXPECTED_GOALS_BASE = 1.25;
-const ELO_EXPECTED_GOALS_ADJUSTMENT_PER_100 = 0.1;
-const ELO_EXPECTED_GOALS_MAX_ADJUSTMENT = 0.45;
-const ELO_EXPECTED_GOALS_MIN = 0.2;
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
-}
 
 function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions = {}) {
   const internationalSupplement = loadLiveEloInternationalSupplement();
@@ -630,26 +619,6 @@ function normalizeTeamLookupKey(team: string): string {
   return normalizeTeamSearchText(team);
 }
 
-function calculateExpectedGoalsFromElo(homeEloRating: number, awayEloRating: number): {
-  home: number;
-  away: number;
-  eloDifference: number;
-  goalsAdjustment: number;
-} {
-  const eloDifference = roundToTwoDecimals(homeEloRating - awayEloRating);
-  const rawAdjustment = (eloDifference / 100) * ELO_EXPECTED_GOALS_ADJUSTMENT_PER_100;
-  const goalsAdjustment = roundToTwoDecimals(clamp(rawAdjustment, -ELO_EXPECTED_GOALS_MAX_ADJUSTMENT, ELO_EXPECTED_GOALS_MAX_ADJUSTMENT));
-  const home = roundToTwoDecimals(Math.max(ELO_EXPECTED_GOALS_MIN, ELO_EXPECTED_GOALS_BASE + goalsAdjustment));
-  const away = roundToTwoDecimals(Math.max(ELO_EXPECTED_GOALS_MIN, ELO_EXPECTED_GOALS_BASE - goalsAdjustment));
-
-  return {
-    home,
-    away,
-    eloDifference,
-    goalsAdjustment
-  };
-}
-
 export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
 
@@ -706,13 +675,13 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     };
   }
 
-  const expectedGoals = calculateExpectedGoalsFromElo(homeEntry.eloRating, awayEntry.eloRating);
+  const xgResult = eloToExpectedGoals({ homeEloRating: homeEntry.eloRating, awayEloRating: awayEntry.eloRating });
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
   const normalizeMatrix = request.normalizeMatrix ?? DEFAULT_POISSON_CONFIG.normalizeMatrix;
   const scoreMatrix = generateScoreMatrix(
     {
-      expectedHomeGoals: expectedGoals.home,
-      expectedAwayGoals: expectedGoals.away
+      expectedHomeGoals: xgResult.homeExpectedGoals,
+      expectedAwayGoals: xgResult.awayExpectedGoals
     },
     {
       maxGoals,
@@ -725,17 +694,17 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     request: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
       awayTeam: awayResolution.canonicalName ?? awayEntry.team,
-      expectedHomeGoals: expectedGoals.home,
-      expectedAwayGoals: expectedGoals.away,
+      expectedHomeGoals: xgResult.homeExpectedGoals,
+      expectedAwayGoals: xgResult.awayExpectedGoals,
       maxGoals,
       normalizeMatrix
     },
     expectedGoals: {
-      home: expectedGoals.home,
-      away: expectedGoals.away,
-      eloDifference: expectedGoals.eloDifference,
-      baseExpectedGoals: ELO_EXPECTED_GOALS_BASE,
-      goalsAdjustment: expectedGoals.goalsAdjustment
+      home: xgResult.homeExpectedGoals,
+      away: xgResult.awayExpectedGoals,
+      eloDifference: xgResult.eloDifference,
+      baseExpectedGoals: xgResult.baseGoals,
+      goalsAdjustment: xgResult.eloAdjustment
     },
     liveElo: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
@@ -762,7 +731,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       ...internationalSupplement.loadWarnings,
       LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
       ...internationalSupplement.metadata.foundationWarnings,
-      "Expected goals are generated from a simple deterministic Elo difference mapping, not a calibrated goals model.",
+      ...xgResult.warnings,
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([

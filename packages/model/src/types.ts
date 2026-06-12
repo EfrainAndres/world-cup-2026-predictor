@@ -951,3 +951,24 @@ export interface LiveEloPipelineResult {
   attackDefense: LiveEloAttackDefenseMetadata;
   warnings: readonly string[];
 }
+
+export interface EloToExpectedGoalsInput {
+  homeEloRating: number;
+  awayEloRating: number;
+  homeAttackScore?: number;
+  homeDefenseScore?: number;
+  awayAttackScore?: number;
+  awayDefenseScore?: number;
+  applyAttackDefense?: boolean;
+}
+
+export interface EloToExpectedGoalsResult {
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  eloDifference: number;
+  baseGoals: number;
+  eloAdjustment: number;
+  attackDefenseAdjustmentHome: number;
+  attackDefenseAdjustmentAway: number;
+  warnings: readonly string[];
+}

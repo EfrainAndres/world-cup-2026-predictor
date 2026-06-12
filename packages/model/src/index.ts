@@ -1,4 +1,6 @@
 export type {
+  EloToExpectedGoalsInput,
+  EloToExpectedGoalsResult,
   LiveEloAttackDefenseConfig,
   LiveEloAttackDefenseMetadata,
   LiveEloCompetitionWeightCategory,
@@ -16,6 +18,18 @@ export type {
   LiveEloRecencyWeightingConfig,
   LiveEloRecencyWeightingMetadata
 } from "./types.js";
+
+export {
+  ELO_TO_XG_ADJUSTMENT_PER_100,
+  ELO_TO_XG_ATTACK_DEFENSE_ADJUSTMENT_WARNING,
+  ELO_TO_XG_ATTACK_DEFENSE_WEIGHT,
+  ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_MAX_ELO_ADJUSTMENT,
+  ELO_TO_XG_MAX_GOALS,
+  ELO_TO_XG_MIN_GOALS,
+  ELO_TO_XG_UNCALIBRATED_WARNING,
+  eloToExpectedGoals
+} from "./elo-to-xg.js";
 
 export {
   DEFAULT_LIVE_ELO_HOME_ADVANTAGE_POINTS,

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_MAX_GOALS,
+  ELO_TO_XG_MIN_GOALS,
+  ELO_TO_XG_UNCALIBRATED_WARNING,
+  eloToExpectedGoals
+} from "../../model/src/elo-to-xg.js";
+import {
   apiRoutes,
   getAvailableLiveEloTeams,
   getHealth,
@@ -567,5 +574,91 @@ describe("getLiveEloRatingsFoundation", () => {
     const withADRanks = withAD.teams.map((t) => ({ team: t.team, eloRating: t.eloRating, rank: t.rank }));
 
     expect(withADRanks).toEqual(baseRanks);
+  });
+});
+
+describe("predictMatchFromLiveElo — xG calibration behavior", () => {
+  it("prediction includes uncalibrated xG warning", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "Argentina" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.warnings.some((w) => w.includes("Elo difference mapping"))).toBe(true);
+  });
+
+  it("expected goals are finite and within valid bounds", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Brazil", awayTeam: "Germany" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(isFinite(result.expectedGoals.home)).toBe(true);
+    expect(isFinite(result.expectedGoals.away)).toBe(true);
+    expect(result.expectedGoals.home).toBeGreaterThanOrEqual(ELO_TO_XG_MIN_GOALS);
+    expect(result.expectedGoals.home).toBeLessThanOrEqual(ELO_TO_XG_MAX_GOALS);
+    expect(result.expectedGoals.away).toBeGreaterThanOrEqual(ELO_TO_XG_MIN_GOALS);
+    expect(result.expectedGoals.away).toBeLessThanOrEqual(ELO_TO_XG_MAX_GOALS);
+  });
+
+  it("baseExpectedGoals matches the configured base value", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Spain", awayTeam: "England" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.expectedGoals.baseExpectedGoals).toBe(ELO_TO_XG_BASE_GOALS);
+  });
+
+  it("elo difference is consistent with the team ratings", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.expectedGoals.eloDifference).toBeCloseTo(
+      result.liveElo.homeEloRating - result.liveElo.awayEloRating,
+      2
+    );
+  });
+
+  it("eloToExpectedGoals model helper produces same values as predictMatchFromLiveElo", () => {
+    const apiResult = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "Brazil" });
+
+    expect(apiResult.status).toBe("success");
+
+    if (apiResult.status !== "success") return;
+
+    const modelResult = eloToExpectedGoals({
+      homeEloRating: apiResult.liveElo.homeEloRating,
+      awayEloRating: apiResult.liveElo.awayEloRating
+    });
+
+    expect(apiResult.expectedGoals.home).toBe(modelResult.homeExpectedGoals);
+    expect(apiResult.expectedGoals.away).toBe(modelResult.awayExpectedGoals);
+    expect(apiResult.expectedGoals.eloDifference).toBe(modelResult.eloDifference);
+    expect(apiResult.expectedGoals.baseExpectedGoals).toBe(modelResult.baseGoals);
+    expect(apiResult.expectedGoals.goalsAdjustment).toBe(modelResult.eloAdjustment);
+  });
+
+  it("prediction output is deterministic across repeated calls", () => {
+    const first = predictMatchFromLiveElo({ homeTeam: "Netherlands", awayTeam: "Portugal" });
+    const second = predictMatchFromLiveElo({ homeTeam: "Netherlands", awayTeam: "Portugal" });
+
+    expect(first).toEqual(second);
+  });
+
+  it("the uncalibrated warning constant matches the API warning string", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Germany", awayTeam: "Spain" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.warnings).toContain(ELO_TO_XG_UNCALIBRATED_WARNING);
   });
 });

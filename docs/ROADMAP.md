@@ -52,6 +52,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.5 | Competition Weighting | Add opt-in competition weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.6 | Home Advantage | Add opt-in home advantage expected-score adjustment to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.7 | Attack / Defense Ratings | Add opt-in attack and defense scores derived from goal data to the Live Elo pipeline as a foundation for expected-goals generation. | Done |
+| 7.8 | Elo-to-xG Calibration | Create a transparent Elo-to-expected-goals model function with optional attack/defense adjustment, replacing the inline API calculation. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1202,6 +1203,29 @@ Exit criteria:
 - Elo rankings are identical whether attack/defense is enabled or disabled.
 - No new handler added; `supportedHandlers` count remains 9.
 - No data downloads, dependencies, dashboard changes, database, or unrelated refactors.
+- Required checks pass with no regressions.
+
+## Phase 7.8 - Elo-to-xG Calibration
+
+Create a transparent, tested Elo-to-expected-goals model function that replaces the inline API calculation and serves as the foundation for future xG improvements.
+
+Deliverables:
+
+- `packages/model/src/elo-to-xg.ts` — `eloToExpectedGoals()` function with named constants, optional attack/defense adjustment, and deterministic output.
+- `EloToExpectedGoalsInput` and `EloToExpectedGoalsResult` types in `types.ts`.
+- Model package exports for all constants, types, and the function.
+- `packages/model/tests/elo-to-xg.test.ts` — 16 unit tests.
+- `predictMatchFromLiveElo()` updated to call the model function (numerically identical behavior).
+- `packages/api/tests/api.test.ts` — 7 new API tests verifying xG behavior, warning propagation, and model/API consistency.
+- `docs/model-results/ELO_TO_XG_CALIBRATION.md` documenting formulas, constants, limitations, and future work.
+
+Exit criteria:
+
+- `eloToExpectedGoals` produces the same values as the old inline calculation for identical inputs.
+- All existing `predictMatchFromLiveElo` tests pass without modification.
+- xG values are bounded, finite, and deterministic.
+- Uncalibrated warning is always emitted.
+- No data downloads, dependencies, dashboard changes, database, or new API handlers.
 - Required checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation
