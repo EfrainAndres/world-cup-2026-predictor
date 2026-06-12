@@ -50,10 +50,16 @@ export function MatchSimulationResults({ result }: MatchSimulationResultsProps) 
       </dl>
 
       {isLiveEloPrediction ? (
-        <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-3 py-2 text-sm leading-6 text-teal-950">
-          Live Elo: {result.liveElo.homeTeam} rank {result.liveElo.homeRank} ({result.liveElo.homeEloRating}) vs{" "}
-          {result.liveElo.awayTeam} rank {result.liveElo.awayRank} ({result.liveElo.awayEloRating}). Elo difference:{" "}
-          {result.expectedGoals.eloDifference.toFixed(2)}.
+        <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-3 py-3 text-sm leading-6 text-teal-950">
+          <p>
+            Live Elo: {result.liveElo.homeTeam} rank {result.liveElo.homeRank} ({result.liveElo.homeEloRating}) vs{" "}
+            {result.liveElo.awayTeam} rank {result.liveElo.awayRank} ({result.liveElo.awayEloRating}). Elo difference:{" "}
+            {result.expectedGoals.eloDifference.toFixed(2)}.
+          </p>
+          <p className="mt-1 text-xs text-teal-800">
+            <span className="font-semibold capitalize">{result.expectedGoals.preset}</span> preset —{" "}
+            {result.expectedGoals.presetDescription}
+          </p>
         </div>
       ) : null}
 

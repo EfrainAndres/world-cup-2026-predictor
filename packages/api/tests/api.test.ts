@@ -662,3 +662,86 @@ describe("predictMatchFromLiveElo — xG calibration behavior", () => {
     expect(result.warnings).toContain(ELO_TO_XG_UNCALIBRATED_WARNING);
   });
 });
+
+describe("predictMatchFromLiveElo — prediction presets", () => {
+  it("default response includes preset and presetDescription fields", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "Brazil" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.expectedGoals.preset).toBe("balanced");
+    expect(result.expectedGoals.presetDescription.length).toBeGreaterThan(0);
+  });
+
+  it("explicit balanced preset produces same xG as omitting preset", () => {
+    const defaultResult = predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "Germany" });
+    const balancedResult = predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "Germany", preset: "balanced" });
+
+    expect(defaultResult.status).toBe("success");
+    expect(balancedResult.status).toBe("success");
+
+    if (defaultResult.status !== "success" || balancedResult.status !== "success") return;
+
+    expect(defaultResult.expectedGoals.home).toBe(balancedResult.expectedGoals.home);
+    expect(defaultResult.expectedGoals.away).toBe(balancedResult.expectedGoals.away);
+  });
+
+  it("conservative preset produces a smaller xG gap than balanced", () => {
+    const balanced = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "United States", preset: "balanced" });
+    const conservative = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "United States", preset: "conservative" });
+
+    expect(balanced.status).toBe("success");
+    expect(conservative.status).toBe("success");
+
+    if (balanced.status !== "success" || conservative.status !== "success") return;
+
+    const balancedGap = balanced.expectedGoals.home - balanced.expectedGoals.away;
+    const conservativeGap = conservative.expectedGoals.home - conservative.expectedGoals.away;
+
+    expect(conservativeGap).toBeLessThan(balancedGap);
+    expect(conservative.expectedGoals.preset).toBe("conservative");
+  });
+
+  it("aggressive preset produces a larger xG gap than balanced", () => {
+    const balanced = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "United States", preset: "balanced" });
+    const aggressive = predictMatchFromLiveElo({ homeTeam: "France", awayTeam: "United States", preset: "aggressive" });
+
+    expect(balanced.status).toBe("success");
+    expect(aggressive.status).toBe("success");
+
+    if (balanced.status !== "success" || aggressive.status !== "success") return;
+
+    const balancedGap = balanced.expectedGoals.home - balanced.expectedGoals.away;
+    const aggressiveGap = aggressive.expectedGoals.home - aggressive.expectedGoals.away;
+
+    expect(aggressiveGap).toBeGreaterThan(balancedGap);
+    expect(aggressive.expectedGoals.preset).toBe("aggressive");
+  });
+
+  it("invalid preset is rejected with a validation error", () => {
+    const result = predictMatchFromLiveElo({
+      homeTeam: "France",
+      awayTeam: "Brazil",
+      preset: "invalid_preset" as "balanced"
+    });
+
+    expect(result.status).toBe("validation_error");
+
+    if (result.status !== "validation_error") return;
+
+    expect(result.issues.map((issue) => issue.field)).toContain("preset");
+  });
+
+  it("metadata notes include the active preset", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Spain", awayTeam: "England", preset: "aggressive" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.metadata.notes.some((note) => note.includes("Prediction preset:"))).toBe(true);
+    expect(result.metadata.notes.some((note) => note.includes("aggressive"))).toBe(true);
+  });
+});

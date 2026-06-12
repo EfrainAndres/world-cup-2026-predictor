@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import type { ApiValidationIssue, SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
-import type { PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
 import { MatchSimulationResults } from "./MatchSimulationResults";
 
 interface MatchSimulationFormProps {
@@ -83,8 +83,15 @@ function FieldError({ issues, field }: { issues: readonly ApiValidationIssue[]; 
   );
 }
 
+const PRESET_LABELS: Record<EloXgPreset, string> = {
+  conservative: "Conservative",
+  balanced: "Balanced",
+  aggressive: "Aggressive"
+};
+
 export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps) {
   const [mode, setMode] = useState<PredictionMode>("manual");
+  const [preset, setPreset] = useState<EloXgPreset>("balanced");
   const [formState, setFormState] = useState<MatchSimulationFormState>(initialFormState);
   const [issues, setIssues] = useState<ApiValidationIssue[]>([]);
   const [result, setResult] = useState<MatchSimulationResultState>(initialResult);
@@ -123,6 +130,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
             awayTeam: formState.awayTeam,
             maxGoals: parseNumber(formState.maxGoals),
             mostLikelyScorelineLimit: 5,
+            preset,
             ...(monteCarlo === undefined ? {} : { monteCarlo })
           })
         : simulateDashboardMatch({
@@ -247,6 +255,27 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
               <p className="mt-1 text-sm leading-6 text-teal-900">
                 Enter team names only. The API looks up both teams in the live Elo pipeline and generates expected goals automatically.
               </p>
+
+              <fieldset className="mt-3">
+                <legend className="text-xs font-semibold uppercase text-teal-700">Prediction preset</legend>
+                <div className="mt-2 grid grid-cols-3 gap-2">
+                  {(["conservative", "balanced", "aggressive"] as const).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      className={`rounded-md border px-2 py-1.5 text-xs font-semibold ${
+                        preset === p
+                          ? "border-teal-700 bg-teal-100 text-teal-950"
+                          : "border-teal-200 bg-white/70 text-teal-800"
+                      }`}
+                      onClick={() => setPreset(p)}
+                    >
+                      {PRESET_LABELS[p]}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
               <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <dt className="text-teal-700">Home xG</dt>

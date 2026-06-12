@@ -1,6 +1,8 @@
 export type {
   EloToExpectedGoalsInput,
   EloToExpectedGoalsResult,
+  EloXgPreset,
+  EloXgPresetConfig,
   LiveEloAttackDefenseConfig,
   LiveEloAttackDefenseMetadata,
   LiveEloCompetitionWeightCategory,
@@ -27,7 +29,9 @@ export {
   ELO_TO_XG_MAX_ELO_ADJUSTMENT,
   ELO_TO_XG_MAX_GOALS,
   ELO_TO_XG_MIN_GOALS,
+  ELO_TO_XG_PRESET_WARNING,
   ELO_TO_XG_UNCALIBRATED_WARNING,
+  ELO_XG_PRESETS,
   eloToExpectedGoals
 } from "./elo-to-xg.js";
 

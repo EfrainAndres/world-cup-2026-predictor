@@ -952,6 +952,15 @@ export interface LiveEloPipelineResult {
   warnings: readonly string[];
 }
 
+export type EloXgPreset = "conservative" | "balanced" | "aggressive";
+
+export interface EloXgPresetConfig {
+  name: EloXgPreset;
+  description: string;
+  adjustmentPer100: number;
+  maxAdjustment: number;
+}
+
 export interface EloToExpectedGoalsInput {
   homeEloRating: number;
   awayEloRating: number;
@@ -960,6 +969,7 @@ export interface EloToExpectedGoalsInput {
   awayAttackScore?: number;
   awayDefenseScore?: number;
   applyAttackDefense?: boolean;
+  preset?: EloXgPreset;
 }
 
 export interface EloToExpectedGoalsResult {
@@ -970,5 +980,7 @@ export interface EloToExpectedGoalsResult {
   eloAdjustment: number;
   attackDefenseAdjustmentHome: number;
   attackDefenseAdjustmentAway: number;
+  preset: EloXgPreset;
+  presetDescription: string;
   warnings: readonly string[];
 }

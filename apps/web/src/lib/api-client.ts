@@ -11,6 +11,7 @@ import {
   simulateTournamentFoundation
 } from "@world-cup-2026-predictor/api";
 import type {
+  EloXgPreset,
   HealthResponse,
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
@@ -30,6 +31,7 @@ import type {
   TournamentSimulationSuccessResponse
 } from "@world-cup-2026-predictor/api";
 
+export type { EloXgPreset };
 export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
 export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };

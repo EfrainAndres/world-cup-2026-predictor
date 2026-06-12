@@ -1,4 +1,4 @@
-import type { EloToExpectedGoalsInput, EloToExpectedGoalsResult } from "./types.js";
+import type { EloToExpectedGoalsInput, EloToExpectedGoalsResult, EloXgPreset, EloXgPresetConfig } from "./types.js";
 
 export const ELO_TO_XG_BASE_GOALS = 1.25;
 export const ELO_TO_XG_ADJUSTMENT_PER_100 = 0.1;
@@ -11,6 +11,29 @@ export const ELO_TO_XG_UNCALIBRATED_WARNING =
   "Expected goals are generated from a simple deterministic Elo difference mapping, not a calibrated goals model.";
 export const ELO_TO_XG_ATTACK_DEFENSE_ADJUSTMENT_WARNING =
   "Attack/defense scores were used to adjust expected goals. These adjustments are experimental and not calibrated.";
+export const ELO_TO_XG_PRESET_WARNING =
+  "A non-default prediction preset is active. xG sensitivity to Elo differences is adjusted from the baseline.";
+
+export const ELO_XG_PRESETS: Record<EloXgPreset, EloXgPresetConfig> = {
+  conservative: {
+    name: "conservative",
+    description: "Smaller xG gap — closer outcomes, suits low-scoring expectations.",
+    adjustmentPer100: 0.07,
+    maxAdjustment: 0.30
+  },
+  balanced: {
+    name: "balanced",
+    description: "Default xG mapping. Matches the baseline pipeline behavior.",
+    adjustmentPer100: ELO_TO_XG_ADJUSTMENT_PER_100,
+    maxAdjustment: ELO_TO_XG_MAX_ELO_ADJUSTMENT
+  },
+  aggressive: {
+    name: "aggressive",
+    description: "Larger xG gap — stronger teams are favored more heavily.",
+    adjustmentPer100: 0.14,
+    maxAdjustment: 0.65
+  }
+};
 
 const ATTACK_DEFENSE_NEUTRAL = 50;
 const ATTACK_DEFENSE_RANGE = 50;
@@ -30,9 +53,16 @@ function normalizeScore(score: number): number {
 export function eloToExpectedGoals(input: EloToExpectedGoalsInput): EloToExpectedGoalsResult {
   const warnings: string[] = [ELO_TO_XG_UNCALIBRATED_WARNING];
 
+  const presetName: EloXgPreset = input.preset ?? "balanced";
+  const resolvedPreset = ELO_XG_PRESETS[presetName];
+
+  if (presetName !== "balanced") {
+    warnings.push(ELO_TO_XG_PRESET_WARNING);
+  }
+
   const eloDifference = roundToTwoDecimals(input.homeEloRating - input.awayEloRating);
-  const rawEloAdj = (eloDifference / 100) * ELO_TO_XG_ADJUSTMENT_PER_100;
-  const eloAdjustment = roundToTwoDecimals(clamp(rawEloAdj, -ELO_TO_XG_MAX_ELO_ADJUSTMENT, ELO_TO_XG_MAX_ELO_ADJUSTMENT));
+  const rawEloAdj = (eloDifference / 100) * resolvedPreset.adjustmentPer100;
+  const eloAdjustment = roundToTwoDecimals(clamp(rawEloAdj, -resolvedPreset.maxAdjustment, resolvedPreset.maxAdjustment));
 
   let attackDefenseAdjustmentHome = 0;
   let attackDefenseAdjustmentAway = 0;
@@ -72,6 +102,8 @@ export function eloToExpectedGoals(input: EloToExpectedGoalsInput): EloToExpecte
     eloAdjustment,
     attackDefenseAdjustmentHome,
     attackDefenseAdjustmentAway,
+    preset: presetName,
+    presetDescription: resolvedPreset.description,
     warnings
   };
 }

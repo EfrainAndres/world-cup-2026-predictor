@@ -1,4 +1,5 @@
 import type {
+  EloXgPreset,
   LiveEloAttackDefenseConfig,
   LiveEloAttackDefenseMetadata,
   LiveEloCompetitionWeightingConfig,
@@ -11,6 +12,8 @@ import type {
   OutcomeProbabilities,
   ScorelineProbability
 } from "../../model/src/index.js";
+
+export type { EloXgPreset };
 
 export type ApiStatus = "ok" | "error";
 export type ApiFoundationResponseStatus = "success" | "validation_error";
@@ -96,6 +99,7 @@ export interface PredictMatchFromLiveEloRequest {
   normalizeMatrix?: boolean;
   mostLikelyScorelineLimit?: number;
   monteCarlo?: SimulateMatchMonteCarloRequest;
+  preset?: EloXgPreset;
 }
 
 export interface PredictMatchFromLiveEloSuccessResponse {
@@ -114,6 +118,8 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     eloDifference: number;
     baseExpectedGoals: number;
     goalsAdjustment: number;
+    preset: EloXgPreset;
+    presetDescription: string;
   };
   liveElo: {
     homeTeam: string;

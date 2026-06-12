@@ -53,6 +53,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.6 | Home Advantage | Add opt-in home advantage expected-score adjustment to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.7 | Attack / Defense Ratings | Add opt-in attack and defense scores derived from goal data to the Live Elo pipeline as a foundation for expected-goals generation. | Done |
 | 7.8 | Elo-to-xG Calibration | Create a transparent Elo-to-expected-goals model function with optional attack/defense adjustment, replacing the inline API calculation. | Done |
+| 7.9 | Elo Prediction Presets | Add conservative/balanced/aggressive prediction presets to the Elo-to-xG pipeline with dashboard preset selector and metadata in API responses. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1227,6 +1228,32 @@ Exit criteria:
 - Uncalibrated warning is always emitted.
 - No data downloads, dependencies, dashboard changes, database, or new API handlers.
 - Required checks pass with no regressions.
+
+## Phase 7.9 - Elo Prediction Presets
+
+Add conservative, balanced, and aggressive prediction presets to the Elo-to-xG pipeline so users can tune xG sensitivity from the dashboard.
+
+Deliverables:
+
+- `EloXgPreset` type and `EloXgPresetConfig` interface in `packages/model/src/types.ts`.
+- `ELO_XG_PRESETS` constant in `packages/model/src/elo-to-xg.ts` — conservative, balanced, aggressive configs; balanced equals prior default behavior.
+- `ELO_TO_XG_PRESET_WARNING` constant emitted for non-balanced presets.
+- `preset` optional input on `EloToExpectedGoalsInput`; `preset` and `presetDescription` on `EloToExpectedGoalsResult`.
+- `preset` field on `PredictMatchFromLiveEloRequest`; `preset` and `presetDescription` on `PredictMatchFromLiveEloSuccessResponse.expectedGoals`.
+- Runtime preset validation — invalid preset returns a `validation_error`.
+- 8 new model unit tests in `packages/model/tests/elo-to-xg.test.ts`.
+- 6 new API tests in `packages/api/tests/api.test.ts`.
+- Preset selector UI (3-button row) in the Auto Predict From Elo panel of `MatchSimulationForm`.
+- Active preset shown in `MatchSimulationResults` for Live Elo predictions.
+- `docs/model-results/ELO_PREDICTION_PRESETS.md`.
+
+Exit criteria:
+
+- Balanced preset is numerically identical to omitting preset.
+- Conservative gap < balanced gap < aggressive gap for unequal Elo inputs.
+- Invalid preset is rejected with a `validation_error`.
+- Uncalibrated and preset warnings are emitted correctly per preset.
+- All checks pass: `pnpm test`, `pnpm typecheck`, `pnpm build`, `git diff --check`.
 
 ## Phase 7.0 - QA Automation
 
