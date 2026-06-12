@@ -48,6 +48,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.0D | Expanded International Dataset | Expand the curated international fixture sample and mirror it as the preferred live Elo supplement. | Done |
 | 7.1 | Live Elo Dashboard Integration | Show live Elo ratings from the API in the dashboard with partial-data warnings. | Done |
 | 7.3 | Team Alias & Coverage | Improve live Elo prediction team-name matching and coverage visibility. | Done |
+| 7.4 | Recency Weighting | Add opt-in recency weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1111,6 +1112,26 @@ Exit criteria:
 - Matching is case-insensitive, trims extra spaces, and supports simple accent-insensitive matching.
 - Unavailable teams return clear validation errors with suggestions.
 - No data downloads, dependencies, database, charts, or unrelated refactors.
+- Required checks pass with no regressions.
+
+## Phase 7.4 - Recency Weighting
+
+Add opt-in recency weighting to the Live Elo pipeline so recent matches can influence ratings more than older matches while preserving the existing baseline mode.
+
+Deliverables:
+
+- Recency weighting config in `runLiveEloPipeline()`.
+- `calculateLiveEloRecencyWeight()` helper with fixed deterministic age buckets.
+- Live Elo metadata showing whether weighting was enabled, reference date, matches weighted, and bucket weights.
+- API support for opt-in recency-weighted `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/RECENCY_WEIGHTING.md` documenting behavior, warnings, and limitations.
+
+Exit criteria:
+
+- Default Live Elo output remains unweighted unless recency weighting is explicitly enabled.
+- Recent matches receive full Elo update impact, while older matches receive reduced impact.
+- Tests cover deterministic reference dates, invalid config handling, and API metadata.
+- No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
 - Required checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation

@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.4 recency weighting for the Live Elo pipeline.
+- `calculateLiveEloRecencyWeight()` and opt-in `recencyWeighting` config for scaling Elo update impact by match age.
+- Live Elo recency weighting metadata showing whether weighting was enabled, the reference date, matches weighted, and fixed bucket weights.
+- API support for opt-in recency-weighted `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/RECENCY_WEIGHTING.md` documenting weighting buckets, metadata, warnings, and limitations.
 - Phase 7.3 team alias and coverage support.
 - `packages/api/src/team-aliases.ts` with canonical team-name normalization, alias resolution, accent-insensitive matching, available-team coverage, and suggestions.
 - `packages/api/tests/team-aliases.test.ts` covering alias resolution and canonical coverage behavior.
@@ -27,6 +32,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- Default Live Elo behavior remains unweighted unless `recencyWeighting.enabled` is explicitly supplied.
+- Live Elo API responses now include recency weighting status metadata.
 - `predictMatchFromLiveElo()` now uses team aliases, canonical names, case/spacing/accent normalization, unavailable-team suggestions, and available-team coverage metadata.
 - Auto Predict From Elo mode now displays available live Elo teams and field-level suggestions when a team is unavailable.
 - Dashboard home now includes live Elo ratings from the API client wrapper before the static foundation team ratings section.

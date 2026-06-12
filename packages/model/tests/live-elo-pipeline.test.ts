@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { getCurrentTeamRatings, processMatches } from "../src/elo.js";
 import {
+  calculateLiveEloRecencyWeight,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
+  LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
   LIVE_ELO_PIPELINE_VERSION,
   runLiveEloPipeline
@@ -222,5 +225,122 @@ describe("runLiveEloPipeline", () => {
     expect(wc.dataCoverage).toBe("world_cup_fixtures_only");
     expect(partial.dataCoverage).toBe("partial_international_history");
     expect(complete.dataCoverage).toBe("complete_international_history");
+  });
+
+  it("keeps default pipeline ratings unchanged when recency weighting is not enabled", () => {
+    const result = runLiveEloPipeline({ pipelineId: "default-recency-off", matches: THREE_MATCH_SET });
+    const baseline = getCurrentTeamRatings(processMatches(THREE_MATCH_SET).ratings).map((entry, index) => ({
+      rank: index + 1,
+      team: entry.team,
+      eloRating: entry.rating,
+      matchesPlayed: THREE_MATCH_SET.filter((match) => match.home_team === entry.team || match.away_team === entry.team).length
+    }));
+
+    expect(result.rankedRatings).toEqual(baseline);
+    expect(result.recencyWeighting).toEqual({
+      enabled: false,
+      referenceDate: undefined,
+      matchesWeighted: 0,
+      bucketWeights: {
+        within12Months: 1,
+        months12To24: 0.75,
+        months24To48: 0.5,
+        olderThan48Months: 0.25
+      }
+    });
+  });
+
+  it("assigns full recency weight to matches within 12 months", () => {
+    expect(calculateLiveEloRecencyWeight("2024-07-01", "2025-06-30")).toBe(1);
+  });
+
+  it("assigns reduced recency weight to matches between 12 and 24 months old", () => {
+    expect(calculateLiveEloRecencyWeight("2023-05-31", "2025-06-30")).toBe(0.75);
+  });
+
+  it("assigns reduced recency weight to matches between 24 and 48 months old", () => {
+    expect(calculateLiveEloRecencyWeight("2021-06-30", "2025-06-30")).toBe(0.5);
+  });
+
+  it("assigns minimum recency weight to matches older than 48 months", () => {
+    expect(calculateLiveEloRecencyWeight("2020-06-29", "2025-06-30")).toBe(0.25);
+  });
+
+  it("changes ratings when recency weighting is enabled", () => {
+    const matches: EloMatch[] = [
+      {
+        match_id: "old-001",
+        match_date: "2020-01-01",
+        home_team: "Alpha",
+        away_team: "Beta",
+        neutral_site: true,
+        result: "home_win"
+      },
+      {
+        match_id: "recent-001",
+        match_date: "2024-06-01",
+        home_team: "Beta",
+        away_team: "Alpha",
+        neutral_site: true,
+        result: "home_win"
+      }
+    ];
+    const defaultResult = runLiveEloPipeline({ pipelineId: "unweighted", matches });
+    const weightedResult = runLiveEloPipeline({
+      pipelineId: "weighted",
+      matches,
+      recencyWeighting: { enabled: true, referenceDate: "2024-07-01" }
+    });
+
+    expect(weightedResult.rankedRatings).not.toEqual(defaultResult.rankedRatings);
+    expect(weightedResult.recencyWeighting.enabled).toBe(true);
+    expect(weightedResult.recencyWeighting.matchesWeighted).toBe(2);
+    expect(weightedResult.warnings).toContain(LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING);
+  });
+
+  it("is deterministic when recency weighting uses a fixed reference date", () => {
+    const first = runLiveEloPipeline({
+      pipelineId: "weighted-det",
+      matches: THREE_MATCH_SET,
+      recencyWeighting: { enabled: true, referenceDate: "2024-07-01" }
+    });
+    const second = runLiveEloPipeline({
+      pipelineId: "weighted-det",
+      matches: THREE_MATCH_SET,
+      recencyWeighting: { enabled: true, referenceDate: "2024-07-01" }
+    });
+
+    expect(first).toEqual(second);
+  });
+
+  it("uses latest match date as deterministic reference date when enabled without an explicit reference date", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "weighted-latest-date",
+      matches: THREE_MATCH_SET,
+      recencyWeighting: { enabled: true }
+    });
+
+    expect(result.recencyWeighting.referenceDate).toBe("2020-01-03");
+    expect(result.recencyWeighting.matchesWeighted).toBe(3);
+  });
+
+  it("rejects invalid recency weighting reference dates", () => {
+    expect(() =>
+      runLiveEloPipeline({
+        pipelineId: "invalid-reference-date",
+        matches: THREE_MATCH_SET,
+        recencyWeighting: { enabled: true, referenceDate: "2024-99-01" }
+      })
+    ).toThrow("referenceDate must be a valid ISO date in YYYY-MM-DD format.");
+  });
+
+  it("rejects enabled recency weighting without matches or a reference date", () => {
+    expect(() =>
+      runLiveEloPipeline({
+        pipelineId: "empty-weighted",
+        matches: [],
+        recencyWeighting: { enabled: true }
+      })
+    ).toThrow("referenceDate is required when recency weighting is enabled and no matches are available.");
   });
 });
