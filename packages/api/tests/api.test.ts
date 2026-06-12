@@ -358,6 +358,8 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(result.pipelineVersion.length).toBeGreaterThan(0);
     expect(result.recencyWeighting.enabled).toBe(false);
     expect(result.recencyWeighting.matchesWeighted).toBe(0);
+    expect(result.competitionWeighting.enabled).toBe(false);
+    expect(result.competitionWeighting.matchesWeighted).toBe(0);
     expect(result.warnings.length).toBeGreaterThan(0);
     expect(result.metadata.mode).toBe("pure_handlers");
     expect(result.metadata.serverEnabled).toBe(false);
@@ -434,6 +436,7 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(result.metadata.notes.some((note) => note.includes("international-matches-expanded-v1"))).toBe(true);
     expect(result.metadata.notes.some((note) => note.includes("56 expanded international supplement matches"))).toBe(true);
     expect(result.metadata.notes).toContain("Recency weighting enabled: false.");
+    expect(result.metadata.notes).toContain("Competition weighting enabled: false.");
   });
 
   it("supports an opt-in recency-weighted Live Elo response", () => {
@@ -452,6 +455,31 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(weightedResult.teams).not.toEqual(defaultResult.teams);
     expect(weightedResult.metadata.notes).toContain("Recency weighting enabled: true.");
     expect(weightedResult.warnings.some((warning) => warning.includes("Recency weighting is enabled"))).toBe(true);
+  });
+
+  it("supports an opt-in competition-weighted Live Elo response", () => {
+    const defaultResult = getLiveEloRatingsFoundation();
+    const weightedResult = getLiveEloRatingsFoundation({
+      competitionWeighting: { enabled: true }
+    });
+
+    expect(weightedResult.status).toBe("success");
+    expect(weightedResult.matchesProcessed).toBe(defaultResult.matchesProcessed);
+    expect(weightedResult.competitionWeighting).toMatchObject({
+      enabled: true,
+      matchesWeighted: 312,
+      weights: {
+        fifa_world_cup: 4,
+        continental_championship: 3,
+        world_cup_qualifier: 2,
+        nations_league: 1.5,
+        international_friendly: 1,
+        unknown: 1
+      }
+    });
+    expect(weightedResult.teams).not.toEqual(defaultResult.teams);
+    expect(weightedResult.metadata.notes).toContain("Competition weighting enabled: true.");
+    expect(weightedResult.warnings.some((warning) => warning.includes("Competition weighting is enabled"))).toBe(true);
   });
 
   it("known strong teams appear in the top results", () => {

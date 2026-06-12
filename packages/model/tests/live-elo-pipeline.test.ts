@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { getCurrentTeamRatings, processMatches } from "../src/elo.js";
 import {
+  calculateLiveEloCompetitionWeight,
   calculateLiveEloRecencyWeight,
+  classifyLiveEloCompetition,
+  LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
+  LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
   LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
+  LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING,
   LIVE_ELO_PIPELINE_VERSION,
   runLiveEloPipeline
 } from "../src/live-elo-pipeline.js";
@@ -248,6 +253,20 @@ describe("runLiveEloPipeline", () => {
         olderThan48Months: 0.25
       }
     });
+    expect(result.competitionWeighting).toEqual({
+      enabled: false,
+      matchesWeighted: 0,
+      weights: {
+        fifa_world_cup: 4,
+        continental_championship: 3,
+        world_cup_qualifier: 2,
+        nations_league: 1.5,
+        international_friendly: 1,
+        unknown: 1
+      },
+      missingCompetitionMetadataCount: 0,
+      unknownCompetitionCount: 0
+    });
   });
 
   it("assigns full recency weight to matches within 12 months", () => {
@@ -342,5 +361,108 @@ describe("runLiveEloPipeline", () => {
         recencyWeighting: { enabled: true }
       })
     ).toThrow("referenceDate is required when recency weighting is enabled and no matches are available.");
+  });
+
+  it("assigns higher competition weight to World Cup matches than friendlies", () => {
+    const worldCupMatch: EloMatch = { ...MATCH_A_WINS, competition: "FIFA World Cup 2022" };
+    const friendlyMatch: EloMatch = { ...MATCH_A_WINS, competition: "International Friendly" };
+
+    expect(classifyLiveEloCompetition(worldCupMatch)).toBe("fifa_world_cup");
+    expect(calculateLiveEloCompetitionWeight(worldCupMatch)).toBe(4);
+    expect(calculateLiveEloCompetitionWeight(worldCupMatch)).toBeGreaterThan(calculateLiveEloCompetitionWeight(friendlyMatch));
+  });
+
+  it("assigns continental championship competition weight", () => {
+    const match: EloMatch = { ...MATCH_A_WINS, competition: "UEFA Euro 2024" };
+
+    expect(classifyLiveEloCompetition(match)).toBe("continental_championship");
+    expect(calculateLiveEloCompetitionWeight(match)).toBe(3);
+  });
+
+  it("assigns World Cup qualifier competition weight", () => {
+    const match: EloMatch = { ...MATCH_A_WINS, competition: "FIFA World Cup 2026 Qualifier" };
+
+    expect(classifyLiveEloCompetition(match)).toBe("world_cup_qualifier");
+    expect(calculateLiveEloCompetitionWeight(match)).toBe(2);
+  });
+
+  it("uses unknown fallback weight for unknown competition metadata", () => {
+    const match: EloMatch = { ...MATCH_A_WINS, competition: "Test Invitational" };
+
+    expect(classifyLiveEloCompetition(match)).toBe("unknown");
+    expect(calculateLiveEloCompetitionWeight(match)).toBe(1);
+  });
+
+  it("warns when competition metadata is missing while weighting is enabled", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "missing-competition-metadata",
+      matches: [MATCH_A_WINS],
+      competitionWeighting: { enabled: true }
+    });
+
+    expect(result.competitionWeighting.enabled).toBe(true);
+    expect(result.competitionWeighting.matchesWeighted).toBe(1);
+    expect(result.competitionWeighting.missingCompetitionMetadataCount).toBe(1);
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING);
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING);
+  });
+
+  it("warns when competition metadata is unknown while weighting is enabled", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "unknown-competition-metadata",
+      matches: [{ ...MATCH_A_WINS, competition: "Test Invitational" }],
+      competitionWeighting: { enabled: true }
+    });
+
+    expect(result.competitionWeighting.unknownCompetitionCount).toBe(1);
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING);
+  });
+
+  it("combines recency and competition weighting into one Elo update multiplier", () => {
+    const match: EloMatch = {
+      ...MATCH_A_WINS,
+      match_date: "2021-06-30",
+      competition: "FIFA World Cup 2022"
+    };
+    const result = runLiveEloPipeline({
+      pipelineId: "combined-weighting",
+      matches: [match],
+      recencyWeighting: { enabled: true, referenceDate: "2025-06-30" },
+      competitionWeighting: { enabled: true }
+    });
+    const alpha = result.rankedRatings.find((entry) => entry.team === "Alpha");
+    const beta = result.rankedRatings.find((entry) => entry.team === "Beta");
+
+    expect(alpha?.eloRating).toBe(1520);
+    expect(beta?.eloRating).toBe(1480);
+  });
+
+  it("changes ratings when competition weighting is enabled", () => {
+    const matches: EloMatch[] = [
+      { ...MATCH_A_WINS, competition: "FIFA World Cup 2022" },
+      { ...MATCH_B_WINS, competition: "International Friendly" }
+    ];
+    const defaultResult = runLiveEloPipeline({ pipelineId: "competition-unweighted", matches });
+    const weightedResult = runLiveEloPipeline({
+      pipelineId: "competition-weighted",
+      matches,
+      competitionWeighting: { enabled: true }
+    });
+
+    expect(weightedResult.rankedRatings).not.toEqual(defaultResult.rankedRatings);
+    expect(weightedResult.competitionWeighting.enabled).toBe(true);
+    expect(weightedResult.competitionWeighting.matchesWeighted).toBe(2);
+  });
+
+  it("is deterministic when competition weighting is enabled", () => {
+    const matches: EloMatch[] = [
+      { ...MATCH_A_WINS, competition: "FIFA World Cup 2022" },
+      { ...MATCH_B_WINS, competition: "FIFA World Cup 2026 Qualifier" },
+      { ...MATCH_DRAW, competition: "International Friendly" }
+    ];
+    const first = runLiveEloPipeline({ pipelineId: "competition-det", matches, competitionWeighting: { enabled: true } });
+    const second = runLiveEloPipeline({ pipelineId: "competition-det", matches, competitionWeighting: { enabled: true } });
+
+    expect(first).toEqual(second);
   });
 });

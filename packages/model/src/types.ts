@@ -11,6 +11,8 @@ export interface EloMatch {
   home_team: string;
   away_team: string;
   neutral_site: boolean;
+  competition?: string;
+  source?: string;
   home_score?: number;
   away_score?: number;
   result?: EloResult;
@@ -863,12 +865,36 @@ export interface LiveEloRecencyWeightingMetadata {
   bucketWeights: LiveEloRecencyWeightingBucketConfig;
 }
 
+export type LiveEloCompetitionWeightCategory =
+  | "fifa_world_cup"
+  | "continental_championship"
+  | "world_cup_qualifier"
+  | "nations_league"
+  | "international_friendly"
+  | "unknown";
+
+export type LiveEloCompetitionWeightMap = Record<LiveEloCompetitionWeightCategory, number>;
+
+export interface LiveEloCompetitionWeightingConfig {
+  enabled: boolean;
+  weights?: Partial<LiveEloCompetitionWeightMap>;
+}
+
+export interface LiveEloCompetitionWeightingMetadata {
+  enabled: boolean;
+  matchesWeighted: number;
+  weights: LiveEloCompetitionWeightMap;
+  missingCompetitionMetadataCount: number;
+  unknownCompetitionCount: number;
+}
+
 export interface LiveEloPipelineInput {
   pipelineId: string;
   matches: readonly EloMatch[];
   dataCoverage?: LiveEloDataCoverage;
   config?: Partial<EloConfig>;
   recencyWeighting?: LiveEloRecencyWeightingConfig;
+  competitionWeighting?: LiveEloCompetitionWeightingConfig;
 }
 
 export interface LiveEloRankedEntry {
@@ -887,5 +913,6 @@ export interface LiveEloPipelineResult {
   latestMatchDate: string | undefined;
   dataCoverage: LiveEloDataCoverage;
   recencyWeighting: LiveEloRecencyWeightingMetadata;
+  competitionWeighting: LiveEloCompetitionWeightingMetadata;
   warnings: readonly string[];
 }

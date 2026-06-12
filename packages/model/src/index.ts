@@ -1,4 +1,8 @@
 export type {
+  LiveEloCompetitionWeightCategory,
+  LiveEloCompetitionWeightMap,
+  LiveEloCompetitionWeightingConfig,
+  LiveEloCompetitionWeightingMetadata,
   LiveEloDataCoverage,
   LiveEloPipelineInput,
   LiveEloPipelineResult,
@@ -9,13 +13,19 @@ export type {
 } from "./types.js";
 
 export {
+  LIVE_ELO_COMPETITION_WEIGHT_BUCKETS,
+  LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
+  LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
   LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
+  LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING,
   LIVE_ELO_RECENCY_WEIGHT_BUCKETS,
   LIVE_ELO_PIPELINE_VERSION,
+  calculateLiveEloCompetitionWeight,
   calculateLiveEloRecencyWeight,
+  classifyLiveEloCompetition,
   runLiveEloPipeline
 } from "./live-elo-pipeline.js";
 
