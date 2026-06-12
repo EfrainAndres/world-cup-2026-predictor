@@ -1,6 +1,7 @@
 import { AppHeader } from "../src/components/AppHeader";
 import { HistoricalReplayAuditPreviewCard } from "../src/components/HistoricalReplayAuditPreviewCard";
 import { HistoricalValidationSection } from "../src/components/HistoricalValidationSection";
+import { LiveEloRatingsSection } from "../src/components/LiveEloRatingsSection";
 import { MatchSimulationForm } from "../src/components/MatchSimulationForm";
 import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
@@ -24,7 +25,8 @@ export default function DashboardHomePage() {
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
                 This first dashboard surface connects directly to the local API foundation. It previews model status, a deterministic
-                match simulation, historical replay readiness, and curated historical tournament summaries.
+                match simulation, live Elo ratings from partial curated data, historical replay readiness, and curated historical
+                tournament summaries.
               </p>
             </div>
             <aside aria-label="Dashboard boundary summary" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
@@ -70,6 +72,8 @@ export default function DashboardHomePage() {
             <MatchSimulationForm initialResult={snapshot.matchPreview} />
           </div>
         </section>
+
+        <LiveEloRatingsSection liveEloRatings={snapshot.liveEloRatings} />
 
         <TeamRatingsSection teamRatings={snapshot.teamRatings} />
 
