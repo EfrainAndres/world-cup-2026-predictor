@@ -2,14 +2,20 @@ export type {
   LiveEloDataCoverage,
   LiveEloPipelineInput,
   LiveEloPipelineResult,
-  LiveEloRankedEntry
+  LiveEloRankedEntry,
+  LiveEloRecencyWeightingBucketConfig,
+  LiveEloRecencyWeightingConfig,
+  LiveEloRecencyWeightingMetadata
 } from "./types.js";
 
 export {
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
+  LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
+  LIVE_ELO_RECENCY_WEIGHT_BUCKETS,
   LIVE_ELO_PIPELINE_VERSION,
+  calculateLiveEloRecencyWeight,
   runLiveEloPipeline
 } from "./live-elo-pipeline.js";
 

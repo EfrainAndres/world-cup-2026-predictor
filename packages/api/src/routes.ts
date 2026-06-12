@@ -30,6 +30,7 @@ import type {
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   HistoricalTournamentSummaryResponse,
+  LiveEloRatingsFoundationOptions,
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,
   PredictMatchFromLiveEloRequest,
@@ -539,14 +540,15 @@ function roundToTwoDecimals(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-function buildLiveEloPipelineFoundation() {
+function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions = {}) {
   const internationalSupplement = loadLiveEloInternationalSupplement();
   const mergedMatches = mergeEloMatchSources(LIVE_ELO_FOUNDATION_MATCHES, internationalSupplement.matches);
   const combinedMatchCount = LIVE_ELO_FOUNDATION_MATCH_COUNT + internationalSupplement.metadata.matchCount;
   const pipeline = runLiveEloPipeline({
     pipelineId: LIVE_ELO_PIPELINE_ID,
     matches: mergedMatches,
-    dataCoverage: "partial_international_history"
+    dataCoverage: "partial_international_history",
+    ...(options.recencyWeighting === undefined ? {} : { recencyWeighting: options.recencyWeighting })
   });
 
   return {
@@ -556,8 +558,8 @@ function buildLiveEloPipelineFoundation() {
   };
 }
 
-export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse {
-  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOptions = {}): LiveEloRatingsFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation(options);
 
   const topTeams: LiveEloRatedTeamEntry[] = pipeline.rankedRatings.slice(0, LIVE_ELO_TOP_TEAMS_LIMIT).map((entry) => ({
     rank: entry.rank,
@@ -585,6 +587,7 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
     topEloRating,
     averageEloRating,
     latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_INTERNATIONAL_SUPPLEMENT_LATEST_MATCH_DATE,
+    recencyWeighting: pipeline.recencyWeighting,
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -595,6 +598,7 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
     ],
     metadata: buildApiMetadata([
       `Live Elo pipeline processes ${combinedMatchCount} matches: 256 curated World Cup fixtures (2010–2022) plus ${internationalSupplement.metadata.matchCount} expanded international supplement matches from ${internationalSupplement.metadata.datasetId}.`,
+      `Recency weighting enabled: ${pipeline.recencyWeighting.enabled}.`,
       `Supplement warning codes: ${internationalSupplement.metadata.warningCodes.join(", ")}.`,
       "No network calls, database, or external services are used."
     ])

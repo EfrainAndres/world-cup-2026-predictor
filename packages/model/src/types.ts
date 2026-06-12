@@ -844,11 +844,31 @@ export interface HistoricalMonteCarloReplayResult {
 
 export type LiveEloDataCoverage = "world_cup_fixtures_only" | "partial_international_history" | "complete_international_history";
 
+export interface LiveEloRecencyWeightingConfig {
+  enabled: boolean;
+  referenceDate?: string;
+}
+
+export interface LiveEloRecencyWeightingBucketConfig {
+  within12Months: number;
+  months12To24: number;
+  months24To48: number;
+  olderThan48Months: number;
+}
+
+export interface LiveEloRecencyWeightingMetadata {
+  enabled: boolean;
+  referenceDate: string | undefined;
+  matchesWeighted: number;
+  bucketWeights: LiveEloRecencyWeightingBucketConfig;
+}
+
 export interface LiveEloPipelineInput {
   pipelineId: string;
   matches: readonly EloMatch[];
   dataCoverage?: LiveEloDataCoverage;
   config?: Partial<EloConfig>;
+  recencyWeighting?: LiveEloRecencyWeightingConfig;
 }
 
 export interface LiveEloRankedEntry {
@@ -866,5 +886,6 @@ export interface LiveEloPipelineResult {
   teamsRated: number;
   latestMatchDate: string | undefined;
   dataCoverage: LiveEloDataCoverage;
+  recencyWeighting: LiveEloRecencyWeightingMetadata;
   warnings: readonly string[];
 }

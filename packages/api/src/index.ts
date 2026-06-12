@@ -29,6 +29,7 @@ export type {
   HistoricalTournamentSummaryResponse,
   HistoricalTournamentSummarySuccessResponse,
   HistoricalTournamentSummaryValidationErrorResponse,
+  LiveEloRatingsFoundationOptions,
   ModelInfoResponse,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,

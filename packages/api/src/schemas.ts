@@ -1,4 +1,10 @@
-import type { MonteCarloMatchSimulationResult, OutcomeProbabilities, ScorelineProbability } from "../../model/src/index.js";
+import type {
+  LiveEloRecencyWeightingConfig,
+  LiveEloRecencyWeightingMetadata,
+  MonteCarloMatchSimulationResult,
+  OutcomeProbabilities,
+  ScorelineProbability
+} from "../../model/src/index.js";
 
 export type ApiStatus = "ok" | "error";
 export type ApiFoundationResponseStatus = "success" | "validation_error";
@@ -255,8 +261,13 @@ export interface LiveEloRatingsFoundationResponse {
   topEloRating: number;
   averageEloRating: number;
   latestMatchDate: string;
+  recencyWeighting: LiveEloRecencyWeightingMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
+}
+
+export interface LiveEloRatingsFoundationOptions {
+  recencyWeighting?: LiveEloRecencyWeightingConfig;
 }
 
 export interface ApiRoutes {
