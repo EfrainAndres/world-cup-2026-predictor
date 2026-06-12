@@ -111,6 +111,35 @@ test("manual simulation result shows three probability cards", async ({ page }) 
   await expect(resultsSection.getByRole("article")).toHaveCount(3);
 });
 
+// ── Result output sections ────────────────────────────────────────────────────
+
+test("manual simulation result includes win draw loss labels, expected goals, scorelines, and baseline note", async ({
+  page
+}) => {
+  await page.goto("/");
+
+  const resultsSection = page.getByRole("region", { name: "Canada vs Mexico" });
+
+  // Win/draw/loss probability card labels use home and away team names
+  await expect(resultsSection.getByText("Canada win")).toBeVisible();
+  await expect(resultsSection.getByText("Draw")).toBeVisible();
+  await expect(resultsSection.getByText("Mexico win")).toBeVisible();
+
+  // Expected goals metadata terms
+  await expect(resultsSection.getByText("Expected home goals")).toBeVisible();
+  await expect(resultsSection.getByText("Expected away goals")).toBeVisible();
+
+  // Most likely scorelines section heading
+  await expect(
+    resultsSection.getByRole("heading", { name: "Most likely scorelines" })
+  ).toBeVisible();
+
+  // Baseline simulation disclaimer
+  await expect(
+    resultsSection.getByText("Baseline simulation, not a guarantee.")
+  ).toBeVisible();
+});
+
 // ── Auto Predict From Elo mode ────────────────────────────────────────────────
 
 test("switching to Auto Predict From Elo mode shows Elo info panel", async ({ page }) => {
@@ -133,6 +162,127 @@ test("Elo mode preset selector shows all three preset buttons", async ({ page })
   await expect(page.getByRole("button", { name: "Aggressive" })).toBeVisible();
 });
 
+test("Auto Predict From Elo with valid teams returns Live Elo prediction result", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
+
+  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
+  await expect(resultsSection.getByText("Live Elo auto prediction")).toBeVisible();
+  await expect(
+    resultsSection.getByText(
+      "Live Elo is based on partial curated data and is not a public accuracy claim."
+    )
+  ).toBeVisible();
+});
+
+// ── Elo prediction presets ────────────────────────────────────────────────────
+
+test("conservative preset result shows conservative preset metadata", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Conservative" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
+  await expect(resultsSection.getByText(/conservative preset/)).toBeVisible();
+});
+
+test("balanced preset result shows balanced preset metadata", async ({ page }) => {
+  await page.goto("/");
+
+  // Balanced is the default preset — no preset button click needed
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
+  await expect(resultsSection.getByText(/balanced preset/)).toBeVisible();
+});
+
+test("aggressive preset result shows aggressive preset metadata", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Aggressive" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
+  await expect(resultsSection.getByText(/aggressive preset/)).toBeVisible();
+});
+
+test("switching preset from conservative to aggressive updates preset metadata in result", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Conservative" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
+  await expect(resultsSection.getByText(/conservative preset/)).toBeVisible();
+
+  // Switch to aggressive and re-submit with the same teams
+  await page.getByRole("button", { name: "Aggressive" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(resultsSection.getByText(/aggressive preset/)).toBeVisible();
+  await expect(resultsSection.getByText(/conservative preset/)).not.toBeVisible();
+});
+
+// ── Team aliases ──────────────────────────────────────────────────────────────
+
+test("entering Korea Republic in Elo mode resolves to South Korea in result heading", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("Korea Republic");
+  await page.getByLabel("Away team").fill("France");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "South Korea vs France" })
+  ).toBeVisible();
+});
+
+test("entering Czech Republic in Elo mode resolves to Czechia in result heading", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("Czech Republic");
+  await page.getByLabel("Away team").fill("France");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "Czechia vs France" })
+  ).toBeVisible();
+});
+
+test("entering USA in Elo mode resolves to United States in result heading", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("USA");
+  await page.getByLabel("Away team").fill("France");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "United States vs France" })
+  ).toBeVisible();
+});
+
 // ── Elo mode validation ───────────────────────────────────────────────────────
 
 test("submitting unknown team in Elo mode shows validation alert", async ({ page }) => {
@@ -147,5 +297,31 @@ test("submitting unknown team in Elo mode shows validation alert", async ({ page
 
   await expect(
     page.getByRole("alert").filter({ hasText: "Fix the highlighted fields" })
+  ).toBeVisible();
+});
+
+test("unavailable team in Elo mode shows field error with suggestions", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  // "Franc" is close to "France" — the suggestion engine should surface it
+  await page.getByLabel("Home team").fill("Franc");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(page.getByText(/Suggestions:/)).toBeVisible();
+});
+
+// ── Manual mode validation ────────────────────────────────────────────────────
+
+test("invalid xG value in manual mode shows field-level validation error", async ({ page }) => {
+  await page.goto("/");
+
+  // Negative xG is invalid — client requires 0 or greater
+  await page.getByLabel("Expected home goals").fill("-1");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(
+    page.getByText("Expected home goals must be 0 or greater.")
   ).toBeVisible();
 });
