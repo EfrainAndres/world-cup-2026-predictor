@@ -12,6 +12,8 @@ import type {
   EloMatch,
   EloMatchRatingHistory,
   EloProcessResult,
+  LiveEloAttackDefenseConfig,
+  LiveEloAttackDefenseMetadata,
   LiveEloCompetitionWeightCategory,
   LiveEloCompetitionWeightMap,
   LiveEloCompetitionWeightingMetadata,
@@ -44,6 +46,12 @@ export const LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING =
   "Home advantage is enabled with a fixed uncalibrated Elo-point adjustment. It changes expected scores but does not prove predictive accuracy.";
 export const LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING =
   "Some matches are missing neutral-site metadata. Home advantage was not applied to those matches.";
+export const LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING =
+  "Attack/defense scores are derived from average goals scored/conceded relative to the dataset average. They are not calibrated and do not claim predictive accuracy improvement.";
+export const LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING =
+  "Some teams have fewer than 3 matches with available goal data. Their attack/defense scores may be unreliable.";
+export const LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING =
+  "No matches with available goal data were found. Attack/defense scores default to neutral (50).";
 
 export const LIVE_ELO_RECENCY_WEIGHT_BUCKETS: LiveEloRecencyWeightingBucketConfig = {
   within12Months: 1,
@@ -62,6 +70,146 @@ export const LIVE_ELO_COMPETITION_WEIGHT_BUCKETS: LiveEloCompetitionWeightMap = 
 };
 
 export const DEFAULT_LIVE_ELO_HOME_ADVANTAGE_POINTS = 60;
+
+const ATTACK_DEFENSE_SPARSE_THRESHOLD = 3;
+const ATTACK_DEFENSE_NEUTRAL_SCORE = 50;
+const ATTACK_DEFENSE_SCORE_SCALE = 50;
+const ATTACK_DEFENSE_MAX_RATIO = 2;
+
+interface TeamGoalStats {
+  goalsScored: number;
+  goalsConceded: number;
+  matchesWithGoalData: number;
+}
+
+function collectTeamGoalStats(matches: readonly EloMatch[]): Map<string, TeamGoalStats> {
+  const stats = new Map<string, TeamGoalStats>();
+
+  for (const match of matches) {
+    const homeScore = match.home_score;
+    const awayScore = match.away_score;
+
+    if (homeScore === undefined || awayScore === undefined) {
+      continue;
+    }
+
+    const homeStats = stats.get(match.home_team) ?? { goalsScored: 0, goalsConceded: 0, matchesWithGoalData: 0 };
+    const awayStats = stats.get(match.away_team) ?? { goalsScored: 0, goalsConceded: 0, matchesWithGoalData: 0 };
+
+    stats.set(match.home_team, {
+      goalsScored: homeStats.goalsScored + homeScore,
+      goalsConceded: homeStats.goalsConceded + awayScore,
+      matchesWithGoalData: homeStats.matchesWithGoalData + 1
+    });
+
+    stats.set(match.away_team, {
+      goalsScored: awayStats.goalsScored + awayScore,
+      goalsConceded: awayStats.goalsConceded + homeScore,
+      matchesWithGoalData: awayStats.matchesWithGoalData + 1
+    });
+  }
+
+  return stats;
+}
+
+function computeDatasetAvgGoalsPerSide(stats: Map<string, TeamGoalStats>): number {
+  let totalGoals = 0;
+  let totalMatchAppearances = 0;
+
+  for (const teamStats of stats.values()) {
+    totalGoals += teamStats.goalsScored;
+    totalMatchAppearances += teamStats.matchesWithGoalData;
+  }
+
+  return totalMatchAppearances > 0 ? totalGoals / totalMatchAppearances : 0;
+}
+
+function normalizeAttackScore(teamAvgGoalsScored: number, datasetAvg: number): number {
+  if (datasetAvg === 0) {
+    return ATTACK_DEFENSE_NEUTRAL_SCORE;
+  }
+
+  const ratio = teamAvgGoalsScored / datasetAvg;
+
+  return Math.min(100, Math.max(0, Math.round(ratio * ATTACK_DEFENSE_SCORE_SCALE)));
+}
+
+function normalizeDefenseScore(teamAvgGoalsConceded: number, datasetAvg: number): number {
+  if (datasetAvg === 0) {
+    return ATTACK_DEFENSE_NEUTRAL_SCORE;
+  }
+
+  const ratio = teamAvgGoalsConceded / datasetAvg;
+
+  return Math.min(100, Math.max(0, Math.round((ATTACK_DEFENSE_MAX_RATIO - ratio) * ATTACK_DEFENSE_SCORE_SCALE)));
+}
+
+function resolveAttackDefense(
+  matches: readonly EloMatch[],
+  config: LiveEloAttackDefenseConfig | undefined
+): {
+  ratings: Map<string, { attackScore: number; defenseScore: number }>;
+  metadata: LiveEloAttackDefenseMetadata;
+} {
+  const enabled = config?.enabled ?? false;
+
+  if (!enabled) {
+    return {
+      ratings: new Map(),
+      metadata: {
+        enabled: false,
+        datasetAvgGoalsPerSide: 0,
+        matchesWithGoalData: 0,
+        teamsWithGoalData: 0,
+        teamsWithSparseGoalData: 0
+      }
+    };
+  }
+
+  const stats = collectTeamGoalStats(matches);
+  const datasetAvg = computeDatasetAvgGoalsPerSide(stats);
+
+  let matchesWithGoalData = 0;
+
+  for (const match of matches) {
+    if (match.home_score !== undefined && match.away_score !== undefined) {
+      matchesWithGoalData += 1;
+    }
+  }
+
+  let teamsWithGoalData = 0;
+  let teamsWithSparseGoalData = 0;
+  const ratings = new Map<string, { attackScore: number; defenseScore: number }>();
+
+  for (const [team, teamStats] of stats.entries()) {
+    if (teamStats.matchesWithGoalData > 0) {
+      teamsWithGoalData += 1;
+
+      if (teamStats.matchesWithGoalData < ATTACK_DEFENSE_SPARSE_THRESHOLD) {
+        teamsWithSparseGoalData += 1;
+      }
+
+      const teamAvgScored = teamStats.goalsScored / teamStats.matchesWithGoalData;
+      const teamAvgConceded = teamStats.goalsConceded / teamStats.matchesWithGoalData;
+
+      ratings.set(team, {
+        attackScore: normalizeAttackScore(teamAvgScored, datasetAvg),
+        defenseScore: normalizeDefenseScore(teamAvgConceded, datasetAvg)
+      });
+    }
+  }
+
+  return {
+    ratings,
+    metadata: {
+      enabled: true,
+      datasetAvgGoalsPerSide: Math.round(datasetAvg * 100) / 100,
+      matchesWithGoalData,
+      teamsWithGoalData,
+      teamsWithSparseGoalData
+    }
+  };
+}
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const LIVE_ELO_COMPETITION_WEIGHT_CATEGORIES: readonly LiveEloCompetitionWeightCategory[] = [
@@ -469,6 +617,7 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
   const recencyWeighting = resolveRecencyWeightingMetadata(input, latestMatchDate);
   const competitionWeighting = resolveCompetitionWeightingMetadata(input);
   const homeAdvantage = resolveHomeAdvantageMetadata(input);
+  const { ratings: attackDefenseRatings, metadata: attackDefense } = resolveAttackDefense(input.matches, input.attackDefense);
 
   const processResult =
     recencyWeighting.enabled || competitionWeighting.enabled || homeAdvantage.enabled
@@ -510,18 +659,40 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
     warnings.push(LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING);
   }
 
+  if (attackDefense.enabled) {
+    warnings.push(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_WARNING);
+  }
+
+  if (attackDefense.enabled && attackDefense.matchesWithGoalData === 0) {
+    warnings.push(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_NO_GOAL_DATA_WARNING);
+  }
+
+  if (attackDefense.enabled && attackDefense.teamsWithSparseGoalData > 0) {
+    warnings.push(LIVE_ELO_PIPELINE_ATTACK_DEFENSE_SPARSE_WARNING);
+  }
+
   const sparseTeamCount = rankedEntries.filter((e) => (matchCounts.get(e.team) ?? 0) < 3).length;
 
   if (sparseTeamCount > 0) {
     warnings.push(LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING);
   }
 
-  const rankedRatings: LiveEloRankedEntry[] = rankedEntries.map((entry, index) => ({
-    rank: index + 1,
-    team: entry.team,
-    eloRating: entry.rating,
-    matchesPlayed: matchCounts.get(entry.team) ?? 0
-  }));
+  const rankedRatings: LiveEloRankedEntry[] = rankedEntries.map((entry, index) => {
+    const rankedEntry: LiveEloRankedEntry = {
+      rank: index + 1,
+      team: entry.team,
+      eloRating: entry.rating,
+      matchesPlayed: matchCounts.get(entry.team) ?? 0
+    };
+
+    if (attackDefense.enabled) {
+      const adRatings = attackDefenseRatings.get(entry.team);
+      rankedEntry.attackScore = adRatings?.attackScore ?? ATTACK_DEFENSE_NEUTRAL_SCORE;
+      rankedEntry.defenseScore = adRatings?.defenseScore ?? ATTACK_DEFENSE_NEUTRAL_SCORE;
+    }
+
+    return rankedEntry;
+  });
 
   return {
     pipelineId: input.pipelineId,
@@ -534,6 +705,7 @@ export function runLiveEloPipeline(input: LiveEloPipelineInput): LiveEloPipeline
     recencyWeighting,
     competitionWeighting,
     homeAdvantage,
+    attackDefense,
     warnings
   };
 }

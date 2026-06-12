@@ -526,4 +526,46 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(first.matchesProcessed).toBe(second.matchesProcessed);
     expect(first.topEloRating).toBe(second.topEloRating);
   });
+
+  it("result includes attackDefense metadata field", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.attackDefense).toBeDefined();
+    expect(typeof result.attackDefense.enabled).toBe("boolean");
+  });
+
+  it("attackDefense.enabled is false by default", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    expect(result.attackDefense.enabled).toBe(false);
+  });
+
+  it("team entries have no attackScore/defenseScore when attackDefense is disabled", () => {
+    const result = getLiveEloRatingsFoundation();
+
+    for (const team of result.teams) {
+      expect(team.attackScore).toBeUndefined();
+      expect(team.defenseScore).toBeUndefined();
+    }
+  });
+
+  it("team entries carry attackScore and defenseScore when attackDefense is enabled", () => {
+    const result = getLiveEloRatingsFoundation({ attackDefense: { enabled: true } });
+
+    expect(result.attackDefense.enabled).toBe(true);
+    for (const team of result.teams) {
+      expect(typeof team.attackScore).toBe("number");
+      expect(typeof team.defenseScore).toBe("number");
+    }
+  });
+
+  it("Elo rankings are the same whether attackDefense is enabled or not", () => {
+    const base = getLiveEloRatingsFoundation();
+    const withAD = getLiveEloRatingsFoundation({ attackDefense: { enabled: true } });
+
+    const baseRanks = base.teams.map((t) => ({ team: t.team, eloRating: t.eloRating, rank: t.rank }));
+    const withADRanks = withAD.teams.map((t) => ({ team: t.team, eloRating: t.eloRating, rank: t.rank }));
+
+    expect(withADRanks).toEqual(baseRanks);
+  });
 });

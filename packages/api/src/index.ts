@@ -15,6 +15,8 @@ export {
 
 export type { ApiRuntime, ApiRuntimeErrorResponse, ApiRuntimeFailureResponse, ApiRuntimeValidationErrorResponse } from "./runtime.js";
 
+export type { LiveEloAttackDefenseConfig, LiveEloAttackDefenseMetadata } from "../../model/src/index.js";
+
 export type {
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,

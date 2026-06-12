@@ -905,6 +905,18 @@ export interface LiveEloHomeAdvantageMetadata {
   missingNeutralSiteMetadataCount: number;
 }
 
+export interface LiveEloAttackDefenseConfig {
+  enabled: boolean;
+}
+
+export interface LiveEloAttackDefenseMetadata {
+  enabled: boolean;
+  datasetAvgGoalsPerSide: number;
+  matchesWithGoalData: number;
+  teamsWithGoalData: number;
+  teamsWithSparseGoalData: number;
+}
+
 export interface LiveEloPipelineInput {
   pipelineId: string;
   matches: readonly EloMatch[];
@@ -913,6 +925,7 @@ export interface LiveEloPipelineInput {
   recencyWeighting?: LiveEloRecencyWeightingConfig;
   competitionWeighting?: LiveEloCompetitionWeightingConfig;
   homeAdvantage?: LiveEloHomeAdvantageConfig;
+  attackDefense?: LiveEloAttackDefenseConfig;
 }
 
 export interface LiveEloRankedEntry {
@@ -920,6 +933,8 @@ export interface LiveEloRankedEntry {
   team: string;
   eloRating: number;
   matchesPlayed: number;
+  attackScore?: number;
+  defenseScore?: number;
 }
 
 export interface LiveEloPipelineResult {
@@ -933,5 +948,6 @@ export interface LiveEloPipelineResult {
   recencyWeighting: LiveEloRecencyWeightingMetadata;
   competitionWeighting: LiveEloCompetitionWeightingMetadata;
   homeAdvantage: LiveEloHomeAdvantageMetadata;
+  attackDefense: LiveEloAttackDefenseMetadata;
   warnings: readonly string[];
 }

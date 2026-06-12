@@ -51,6 +51,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.4 | Recency Weighting | Add opt-in recency weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.5 | Competition Weighting | Add opt-in competition weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.6 | Home Advantage | Add opt-in home advantage expected-score adjustment to the Live Elo pipeline while preserving baseline behavior. | Done |
+| 7.7 | Attack / Defense Ratings | Add opt-in attack and defense scores derived from goal data to the Live Elo pipeline as a foundation for expected-goals generation. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1177,6 +1178,30 @@ Exit criteria:
 - Recency and competition weighting continue to scale K-factor safely when home advantage is enabled.
 - Missing neutral-site metadata is reported clearly.
 - No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
+- Required checks pass with no regressions.
+
+## Phase 7.7 - Attack / Defense Ratings
+
+Add opt-in attack and defense scores to the Live Elo pipeline, derived from historical goal data, as a foundation layer for future expected-goals generation.
+
+Deliverables:
+
+- `LiveEloAttackDefenseConfig` and `LiveEloAttackDefenseMetadata` types.
+- `resolveAttackDefense()` helper computing per-team attack and defense scores relative to the dataset average.
+- `attackScore` and `defenseScore` optional fields on `LiveEloRankedEntry` — populated only when enabled.
+- Three warning constants: general calibration disclaimer, sparse-data warning, no-goal-data warning.
+- API support: `getLiveEloRatingsFoundation()` accepts and forwards the config and returns the metadata plus per-team scores.
+- `docs/model-results/ATTACK_DEFENSE_RATINGS.md` documenting formulas, data coverage, metadata, and limitations.
+
+Exit criteria:
+
+- Default Live Elo output unchanged unless `attackDefense.enabled: true` is explicitly supplied.
+- Attack and defense scores are in the range [0, 100] and deterministic.
+- Teams with no goal data receive neutral scores of 50.
+- Sparse and no-goal-data warnings emitted appropriately.
+- Elo rankings are identical whether attack/defense is enabled or disabled.
+- No new handler added; `supportedHandlers` count remains 9.
+- No data downloads, dependencies, dashboard changes, database, or unrelated refactors.
 - Required checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation
