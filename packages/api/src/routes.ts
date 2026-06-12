@@ -1,6 +1,7 @@
 import {
   DEFAULT_ELO_CONFIG,
   DEFAULT_POISSON_CONFIG,
+  ELO_XG_PRESETS,
   HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION,
   HISTORICAL_REPLAY_ACCURACY_AUDIT_WARNING,
   aggregateOutcomeProbabilities,
@@ -213,6 +214,13 @@ function validatePredictMatchFromLiveEloRequest(request: PredictMatchFromLiveElo
     if (request.monteCarlo.mostCommonScorelineLimit !== undefined) {
       issues.push(...validatePositiveInteger(request.monteCarlo.mostCommonScorelineLimit, "monteCarlo.mostCommonScorelineLimit"));
     }
+  }
+
+  if (request.preset !== undefined && !VALID_PREDICTION_PRESETS.has(request.preset)) {
+    issues.push({
+      field: "preset",
+      message: `preset must be one of: ${[...VALID_PREDICTION_PRESETS].join(", ")}.`
+    });
   }
 
   return issues;
@@ -528,6 +536,7 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
 
 const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-international-supplement";
 const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
+const VALID_PREDICTION_PRESETS = new Set<string>(Object.keys(ELO_XG_PRESETS));
 
 function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions = {}) {
   const internationalSupplement = loadLiveEloInternationalSupplement();
@@ -675,7 +684,11 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     };
   }
 
-  const xgResult = eloToExpectedGoals({ homeEloRating: homeEntry.eloRating, awayEloRating: awayEntry.eloRating });
+  const xgResult = eloToExpectedGoals({
+    homeEloRating: homeEntry.eloRating,
+    awayEloRating: awayEntry.eloRating,
+    ...(request.preset === undefined ? {} : { preset: request.preset })
+  });
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
   const normalizeMatrix = request.normalizeMatrix ?? DEFAULT_POISSON_CONFIG.normalizeMatrix;
   const scoreMatrix = generateScoreMatrix(
@@ -704,7 +717,9 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       away: xgResult.awayExpectedGoals,
       eloDifference: xgResult.eloDifference,
       baseExpectedGoals: xgResult.baseGoals,
-      goalsAdjustment: xgResult.eloAdjustment
+      goalsAdjustment: xgResult.eloAdjustment,
+      preset: xgResult.preset,
+      presetDescription: xgResult.presetDescription
     },
     liveElo: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
@@ -736,6 +751,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     ],
     metadata: buildApiMetadata([
       "Match prediction loaded live Elo ratings, converted Elo difference to expected goals, then reused Poisson scoreline probabilities.",
+      `Prediction preset: ${xgResult.preset}.`,
       "Optional Monte Carlo output is deterministic when a seed is supplied.",
       "No network calls, database, or external services are used."
     ])

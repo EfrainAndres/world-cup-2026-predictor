@@ -4,7 +4,9 @@ import {
   ELO_TO_XG_BASE_GOALS,
   ELO_TO_XG_MAX_GOALS,
   ELO_TO_XG_MIN_GOALS,
+  ELO_TO_XG_PRESET_WARNING,
   ELO_TO_XG_UNCALIBRATED_WARNING,
+  ELO_XG_PRESETS,
   eloToExpectedGoals
 } from "../src/elo-to-xg.js";
 
@@ -186,5 +188,78 @@ describe("eloToExpectedGoals", () => {
 
     expect(result.attackDefenseAdjustmentHome).toBe(0);
     expect(result.attackDefenseAdjustmentAway).toBe(0);
+  });
+});
+
+describe("eloToExpectedGoals — prediction presets", () => {
+  it("default (no preset) and explicit balanced produce identical results", () => {
+    const input = { homeEloRating: 1700, awayEloRating: 1500 };
+    const defaultResult = eloToExpectedGoals(input);
+    const balancedResult = eloToExpectedGoals({ ...input, preset: "balanced" });
+
+    expect(defaultResult.homeExpectedGoals).toBe(balancedResult.homeExpectedGoals);
+    expect(defaultResult.awayExpectedGoals).toBe(balancedResult.awayExpectedGoals);
+    expect(defaultResult.eloAdjustment).toBe(balancedResult.eloAdjustment);
+    expect(defaultResult.preset).toBe("balanced");
+    expect(balancedResult.preset).toBe("balanced");
+  });
+
+  it("conservative preset produces a smaller xG gap than balanced", () => {
+    const input = { homeEloRating: 1700, awayEloRating: 1500 };
+    const balanced = eloToExpectedGoals({ ...input, preset: "balanced" });
+    const conservative = eloToExpectedGoals({ ...input, preset: "conservative" });
+
+    const balancedGap = balanced.homeExpectedGoals - balanced.awayExpectedGoals;
+    const conservativeGap = conservative.homeExpectedGoals - conservative.awayExpectedGoals;
+
+    expect(conservativeGap).toBeLessThan(balancedGap);
+  });
+
+  it("aggressive preset produces a larger xG gap than balanced", () => {
+    const input = { homeEloRating: 1700, awayEloRating: 1500 };
+    const balanced = eloToExpectedGoals({ ...input, preset: "balanced" });
+    const aggressive = eloToExpectedGoals({ ...input, preset: "aggressive" });
+
+    const balancedGap = balanced.homeExpectedGoals - balanced.awayExpectedGoals;
+    const aggressiveGap = aggressive.homeExpectedGoals - aggressive.awayExpectedGoals;
+
+    expect(aggressiveGap).toBeGreaterThan(balancedGap);
+  });
+
+  it("preset config values match declared presets", () => {
+    expect(ELO_XG_PRESETS.conservative.adjustmentPer100).toBeLessThan(ELO_XG_PRESETS.balanced.adjustmentPer100);
+    expect(ELO_XG_PRESETS.aggressive.adjustmentPer100).toBeGreaterThan(ELO_XG_PRESETS.balanced.adjustmentPer100);
+    expect(ELO_XG_PRESETS.conservative.maxAdjustment).toBeLessThan(ELO_XG_PRESETS.balanced.maxAdjustment);
+    expect(ELO_XG_PRESETS.aggressive.maxAdjustment).toBeGreaterThan(ELO_XG_PRESETS.balanced.maxAdjustment);
+  });
+
+  it("result includes preset name and description", () => {
+    const result = eloToExpectedGoals({ homeEloRating: 1600, awayEloRating: 1500, preset: "conservative" });
+
+    expect(result.preset).toBe("conservative");
+    expect(result.presetDescription.length).toBeGreaterThan(0);
+    expect(result.presetDescription).toBe(ELO_XG_PRESETS.conservative.description);
+  });
+
+  it("non-balanced preset emits the preset warning", () => {
+    const conservative = eloToExpectedGoals({ homeEloRating: 1500, awayEloRating: 1500, preset: "conservative" });
+    const aggressive = eloToExpectedGoals({ homeEloRating: 1500, awayEloRating: 1500, preset: "aggressive" });
+
+    expect(conservative.warnings).toContain(ELO_TO_XG_PRESET_WARNING);
+    expect(aggressive.warnings).toContain(ELO_TO_XG_PRESET_WARNING);
+  });
+
+  it("balanced preset does NOT emit the preset warning", () => {
+    const result = eloToExpectedGoals({ homeEloRating: 1500, awayEloRating: 1500, preset: "balanced" });
+
+    expect(result.warnings).not.toContain(ELO_TO_XG_PRESET_WARNING);
+  });
+
+  it("equal Elo with any preset produces identical home and away xG", () => {
+    for (const preset of ["conservative", "balanced", "aggressive"] as const) {
+      const result = eloToExpectedGoals({ homeEloRating: 1500, awayEloRating: 1500, preset });
+
+      expect(result.homeExpectedGoals).toBe(result.awayExpectedGoals);
+    }
   });
 });

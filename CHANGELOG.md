@@ -8,6 +8,20 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.9 Elo prediction presets and scenario tuning.
+- `EloXgPreset` type (`"conservative" | "balanced" | "aggressive"`) and `EloXgPresetConfig` interface in `packages/model/src/types.ts`.
+- `ELO_XG_PRESETS: Record<EloXgPreset, EloXgPresetConfig>` constant in `packages/model/src/elo-to-xg.ts` — each preset declares `adjustmentPer100` and `maxAdjustment`; balanced equals the prior default behavior.
+- `ELO_TO_XG_PRESET_WARNING` constant emitted when a non-balanced preset is active.
+- `preset` input field on `EloToExpectedGoalsInput` — optional, defaults to `"balanced"`.
+- `preset` and `presetDescription` output fields on `EloToExpectedGoalsResult`.
+- `preset` request field on `PredictMatchFromLiveEloRequest`.
+- `preset` and `presetDescription` fields on `PredictMatchFromLiveEloSuccessResponse.expectedGoals`.
+- Runtime preset validation in `validatePredictMatchFromLiveEloRequest`; invalid preset returns a `validation_error` on the `preset` field.
+- 8 new preset unit tests in `packages/model/tests/elo-to-xg.test.ts` covering default-vs-balanced equivalence, gap direction by preset, preset config ordering, warnings, and equal-Elo symmetry across all presets.
+- 6 new preset API tests in `packages/api/tests/api.test.ts` covering response fields, balanced equivalence, gap direction by preset, invalid preset rejection, and metadata notes.
+- Preset selector UI (3-button row) in `apps/web/src/components/MatchSimulationForm.tsx` — visible only in Auto Predict From Elo mode.
+- Active preset name and description shown in `apps/web/src/components/MatchSimulationResults.tsx` below the Live Elo summary.
+- `docs/model-results/ELO_PREDICTION_PRESETS.md` documenting presets, config values, response fields, warnings, dashboard behavior, and limitations.
 - Phase 7.8 Elo-to-expected-goals calibration foundation.
 - `eloToExpectedGoals()` model function in `packages/model/src/elo-to-xg.ts` — transparent formula converting Elo ratings to home/away expected goals with optional attack/defense adjustment.
 - `EloToExpectedGoalsInput` and `EloToExpectedGoalsResult` types.
