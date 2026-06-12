@@ -46,6 +46,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.0B | Historical International Match Dataset Foundation | Create the data infrastructure for loading, validating, and normalizing a broader international match dataset beyond World Cup fixtures. | Done |
 | 7.0C | International Dataset to Live Elo Integration | Wire the international match dataset foundation into the live Elo API flow; supplement World Cup fixtures with Copa, Euro, WCQ, and Friendly matches. | Done |
 | 7.0D | Expanded International Dataset | Expand the curated international fixture sample and mirror it as the preferred live Elo supplement. | Done |
+| 7.1 | Live Elo Dashboard Integration | Show live Elo ratings from the API in the dashboard with partial-data warnings. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1071,6 +1072,25 @@ Exit criteria:
 - Live Elo metadata reflects expanded international coverage without claiming full global history.
 - No downloads, scraping, database, dashboard changes, or external services.
 - All required checks pass with no regressions.
+
+## Phase 7.1 - Live Elo Dashboard Integration
+
+Show the live Elo API foundation in the dashboard instead of leaving the UI limited to static foundation team ratings.
+
+Deliverables:
+
+- `LiveEloRatingsSection` dashboard component with summary cards, data coverage, warnings, and top-team grid.
+- `LiveEloRatingCard` dashboard component showing rank, team, Elo rating, and matches played.
+- Dashboard snapshot updated to include `getLiveEloRatingsFoundation()` from the API client wrapper.
+- `docs/dashboard/LIVE_ELO_DASHBOARD_INTEGRATION.md` documenting UI scope, warnings, boundaries, and next steps.
+
+Exit criteria:
+
+- Dashboard shows top live Elo teams, Elo rating, rank, matches processed, data coverage, latest match date, and partial-data warnings.
+- UI clearly states: “Live Elo is based on partial curated data and is not a public accuracy claim.”
+- Components do not call model or data packages directly.
+- No charts, dependencies, database, deployment, or API/model/data refactor.
+- Required checks pass with no regressions.
 
 ## Phase 7.0 - QA Automation
 

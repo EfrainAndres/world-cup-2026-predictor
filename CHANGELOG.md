@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.1 live Elo dashboard integration.
+- `LiveEloRatingsSection` and `LiveEloRatingCard` components showing top live Elo teams, ranks, ratings, matches played, matches processed, latest match date, data coverage, and partial-data warnings.
+- `docs/dashboard/LIVE_ELO_DASHBOARD_INTEGRATION.md` documenting the dashboard integration, warnings, boundaries, and next steps.
 - Phase 7.0D expanded international dataset foundation.
 - `packages/data/fixtures/international/expanded-international-matches.json` — 56-match curated partial sample covering FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifiers, and International Friendlies.
 - International dataset warning codes for `partial_international_history`, `curated_sample_only`, and `not_complete_global_match_history`.
@@ -20,6 +23,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- Dashboard home now includes live Elo ratings from the API client wrapper before the static foundation team ratings section.
+- `DashboardSnapshot` now includes `liveEloRatings` from `getLiveEloRatingsFoundation()`.
 - `getLiveEloRatingsFoundation()` now uses a static Elo-compatible mirror of the expanded 56-match international fixture as its live Elo supplement and preserves the previous inline supplement as fallback behavior.
 - Live Elo metadata now reports the expanded dataset ID, supplement match count, warning codes, and partial-history limitations.
 - `getLiveEloRatingsFoundation()` now merges the World Cup foundation (256 matches) with the preferred expanded international supplement (56 matches) for a combined 312-match pipeline using `dataCoverage: "partial_international_history"`.

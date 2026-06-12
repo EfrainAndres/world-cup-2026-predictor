@@ -2,6 +2,7 @@ import {
   getHealth,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
+  getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
   simulateMatch,
@@ -11,6 +12,8 @@ import type {
   HealthResponse,
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
+  LiveEloRatedTeamEntry,
+  LiveEloRatingsFoundationResponse,
   ModelInfoResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
@@ -23,6 +26,7 @@ import type {
 } from "@world-cup-2026-predictor/api";
 
 export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
+export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -34,6 +38,7 @@ export interface DashboardSnapshot {
   historicalTournaments: HistoricalTournamentSummary[];
   tournamentSimulation: TournamentSimulationSuccessResponse;
   teamRatings: TeamRatingsFoundationResponse;
+  liveEloRatings: LiveEloRatingsFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -80,6 +85,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     historicalReplayAudit: getHistoricalReplayAudit(),
     historicalTournaments,
     tournamentSimulation: simulateTournamentFoundation(),
-    teamRatings: getTeamRatingsFoundation()
+    teamRatings: getTeamRatingsFoundation(),
+    liveEloRatings: getLiveEloRatingsFoundation()
   };
 }

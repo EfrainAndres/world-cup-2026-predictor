@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 6.6).
+`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 7.1).
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 
@@ -13,6 +13,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Match simulation preview card.
 - Match simulation result cards.
 - Historical replay audit preview card.
+- Live Elo ratings section showing top computed teams, ranks, Elo ratings, matches processed, data coverage, latest match date, and partial-data warnings.
 - Team ratings section with foundation Elo seed ratings for top 10 World Cup 2026 contenders, tier pills (Elite/Strong/Competitive), offense/defense scores, strongest offense/defense indicators, and summary stats.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
@@ -33,6 +34,10 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 ## Match Simulation
 
 The match simulation form calls the local API client wrapper. It accepts team names, expected goals, max goals, and an optional simulation count. Results are displayed as baseline probabilities and likely scorelines with the note: `Baseline simulation, not a guarantee.`
+
+## Live Elo Ratings
+
+The live Elo ratings section calls the local API client wrapper for `getLiveEloRatingsFoundation()`. It shows computed ratings from curated World Cup fixtures plus the expanded partial international supplement, with the note: `Live Elo is based on partial curated data and is not a public accuracy claim.`
 
 ## Commands
 
