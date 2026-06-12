@@ -4,6 +4,9 @@ export type {
   LiveEloCompetitionWeightingConfig,
   LiveEloCompetitionWeightingMetadata,
   LiveEloDataCoverage,
+  LiveEloHomeAdvantageConfig,
+  LiveEloHomeAdvantageMetadata,
+  LiveEloMatchLocationContext,
   LiveEloPipelineInput,
   LiveEloPipelineResult,
   LiveEloRankedEntry,
@@ -13,19 +16,24 @@ export type {
 } from "./types.js";
 
 export {
+  DEFAULT_LIVE_ELO_HOME_ADVANTAGE_POINTS,
   LIVE_ELO_COMPETITION_WEIGHT_BUCKETS,
+  LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING,
   LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
   LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING,
+  LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
   LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
   LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING,
   LIVE_ELO_RECENCY_WEIGHT_BUCKETS,
   LIVE_ELO_PIPELINE_VERSION,
+  calculateEffectiveHomeRating,
   calculateLiveEloCompetitionWeight,
   calculateLiveEloRecencyWeight,
   classifyLiveEloCompetition,
+  getLiveEloMatchLocationContext,
   runLiveEloPipeline
 } from "./live-elo-pipeline.js";
 

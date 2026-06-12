@@ -1,6 +1,6 @@
 # Model Package
 
-`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 7.0A added a live Elo pipeline that computes current team ratings from available historical match data. Phase 7.4 adds opt-in recency weighting for Live Elo updates while preserving the default unweighted baseline mode. Phase 7.5 adds opt-in competition weighting for Live Elo updates while preserving the default competition-unweighted baseline mode. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations. Phase 4.0N adds historical tournament bracket reconstruction foundations. Phase 4.0O adds complete historical replay validation foundations. Phase 4.0P adds historical replay accuracy audit foundations.
+`packages/model` contains prediction model logic. Phase 2.0 started with a deterministic Elo baseline. Phase 7.0A added a live Elo pipeline that computes current team ratings from available historical match data. Phase 7.4 adds opt-in recency weighting for Live Elo updates while preserving the default unweighted baseline mode. Phase 7.5 adds opt-in competition weighting for Live Elo updates while preserving the default competition-unweighted baseline mode. Phase 7.6 adds opt-in home advantage for Live Elo expected-score calculations while preserving the default home-advantage-neutral baseline mode. Phase 3.0 added a Poisson goal-modeling foundation and a simple Dixon-Coles low-score adjustment foundation. Phase 4.0A added a match-level Monte Carlo simulation engine. Phase 4.0B added simplified group-stage, knockout, and tournament simulation foundations. Phase 4.0C added repeated tournament runs and probability summaries. Phase 4.0D added FIFA 2026 format and fixture modeling foundations. Phase 4.0E added historical tournament validation foundations. Phase 4.0G added historical backtesting and calibration foundations. Phase 4.0H expanded the data package with complete 2010, 2014, 2018, and 2022 fixture results for future reports. Phase 4.0I added historical backtesting report helpers over those fixtures. Phase 4.0J adds baseline pre-tournament snapshot generation and look-ahead guardrails. Phase 4.0K adds historical tournament replay backtesting with pre-tournament snapshots. Phase 4.0L adds cutoff-safe historical Elo snapshot replay foundations. Phase 4.0M adds historical Monte Carlo replay foundations. Phase 4.0N adds historical tournament bracket reconstruction foundations. Phase 4.0O adds complete historical replay validation foundations. Phase 4.0P adds historical replay accuracy audit foundations.
 
 ## Current Scope
 
@@ -56,6 +56,7 @@ The package currently includes:
 - Live Elo pipeline (`runLiveEloPipeline`) that processes any `EloMatch[]` chronologically, returns ranked team ratings, match counts, coverage metadata, and foundation warnings.
 - Opt-in Live Elo recency weighting that scales each match's Elo K-factor by fixed deterministic age buckets and reports weighting metadata.
 - Opt-in Live Elo competition weighting that scales each match's Elo K-factor by fixed deterministic competition buckets and reports missing or unknown competition metadata.
+- Opt-in Live Elo home advantage that adjusts expected-score calculation for non-neutral matches without permanently adding points to stored ratings.
 - Deterministic Vitest unit tests.
 
 ## Defaults
@@ -182,9 +183,11 @@ By default, the pipeline remains unweighted. When `recencyWeighting.enabled` is 
 
 When `competitionWeighting.enabled` is supplied, competition category scales the Elo K-factor with fixed buckets: `4.0` for FIFA World Cup, `3.0` for continental championships, `2.0` for World Cup qualifiers, `1.5` for Nations League, `1.0` for international friendlies, and `1.0` for unknown competitions. Missing and unknown competition metadata is reported in the result.
 
-If both recency and competition weighting are enabled, both weights are multiplied and applied once to the Elo K-factor.
+When `homeAdvantage.enabled` is supplied, non-neutral matches add `60` Elo points to the home team for expected-score calculation only. Neutral-site matches receive no adjustment. Missing neutral-site metadata is reported and does not receive home advantage.
 
-The pipeline does not include home advantage adjustments or calibrated K-factor tuning. Recency and competition weighting are uncalibrated and opt-in. They are foundations for future calibration work, not final predictive model settings.
+If recency and competition weighting are enabled, both weights are multiplied and applied once to the Elo K-factor. Home advantage affects expected score only and does not scale K-factor.
+
+The pipeline does not include calibrated K-factor tuning. Recency weighting, competition weighting, and home advantage are uncalibrated and opt-in. They are foundations for future calibration work, not final predictive model settings.
 
 ## Boundaries
 

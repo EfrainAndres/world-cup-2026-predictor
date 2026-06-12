@@ -1,17 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { getCurrentTeamRatings, processMatches } from "../src/elo.js";
 import {
+  calculateEffectiveHomeRating,
   calculateLiveEloCompetitionWeight,
   calculateLiveEloRecencyWeight,
   classifyLiveEloCompetition,
   LIVE_ELO_PIPELINE_COMPETITION_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_FOUNDATION_WARNING,
+  LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING,
   LIVE_ELO_PIPELINE_MISSING_COMPETITION_METADATA_WARNING,
+  LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING,
   LIVE_ELO_PIPELINE_NO_MATCHES_WARNING,
   LIVE_ELO_PIPELINE_RECENCY_WEIGHTING_WARNING,
   LIVE_ELO_PIPELINE_SPARSE_DATA_WARNING,
   LIVE_ELO_PIPELINE_UNKNOWN_COMPETITION_WARNING,
   LIVE_ELO_PIPELINE_VERSION,
+  getLiveEloMatchLocationContext,
   runLiveEloPipeline
 } from "../src/live-elo-pipeline.js";
 import type { EloMatch } from "../src/index.js";
@@ -267,6 +271,14 @@ describe("runLiveEloPipeline", () => {
       missingCompetitionMetadataCount: 0,
       unknownCompetitionCount: 0
     });
+    expect(result.homeAdvantage).toEqual({
+      enabled: false,
+      eloPoints: 60,
+      matchesEvaluated: 0,
+      homeAdvantageAppliedCount: 0,
+      neutralSiteCount: 0,
+      missingNeutralSiteMetadataCount: 0
+    });
   });
 
   it("assigns full recency weight to matches within 12 months", () => {
@@ -464,5 +476,138 @@ describe("runLiveEloPipeline", () => {
     const second = runLiveEloPipeline({ pipelineId: "competition-det", matches, competitionWeighting: { enabled: true } });
 
     expect(first).toEqual(second);
+  });
+
+  it("classifies match location context for home advantage", () => {
+    const missingNeutralSiteMatch: EloMatch = {
+      match_id: "missing-neutral-context",
+      match_date: "2020-01-01",
+      home_team: "Alpha",
+      away_team: "Beta",
+      result: "home_win"
+    };
+
+    expect(getLiveEloMatchLocationContext({ ...MATCH_A_WINS, neutral_site: false })).toBe("home_advantage");
+    expect(getLiveEloMatchLocationContext({ ...MATCH_A_WINS, neutral_site: true })).toBe("neutral_site");
+    expect(getLiveEloMatchLocationContext(missingNeutralSiteMatch)).toBe("unknown");
+  });
+
+  it("calculates effective home rating only for non-neutral matches", () => {
+    expect(calculateEffectiveHomeRating(1500, 60, { ...MATCH_A_WINS, neutral_site: false })).toBe(1560);
+    expect(calculateEffectiveHomeRating(1500, 60, { ...MATCH_A_WINS, neutral_site: true })).toBe(1500);
+  });
+
+  it("home advantage affects expected score and rating update size", () => {
+    const homeMatch: EloMatch = {
+      ...MATCH_A_WINS,
+      neutral_site: false
+    };
+    const defaultResult = runLiveEloPipeline({ pipelineId: "home-adv-default", matches: [homeMatch] });
+    const homeAdvantageResult = runLiveEloPipeline({
+      pipelineId: "home-adv-enabled",
+      matches: [homeMatch],
+      homeAdvantage: { enabled: true }
+    });
+    const defaultAlpha = defaultResult.rankedRatings.find((entry) => entry.team === "Alpha");
+    const homeAdvantageAlpha = homeAdvantageResult.rankedRatings.find((entry) => entry.team === "Alpha");
+
+    expect(homeAdvantageAlpha?.eloRating).toBeGreaterThan(1500);
+    expect(homeAdvantageAlpha?.eloRating).toBeLessThan(defaultAlpha?.eloRating ?? Number.POSITIVE_INFINITY);
+    expect(homeAdvantageResult.homeAdvantage.homeAdvantageAppliedCount).toBe(1);
+    expect(homeAdvantageResult.warnings).toContain(LIVE_ELO_PIPELINE_HOME_ADVANTAGE_WARNING);
+  });
+
+  it("neutral-site match does not apply home advantage", () => {
+    const neutralMatch: EloMatch = {
+      ...MATCH_A_WINS,
+      neutral_site: true
+    };
+    const defaultResult = runLiveEloPipeline({ pipelineId: "neutral-default", matches: [neutralMatch] });
+    const homeAdvantageResult = runLiveEloPipeline({
+      pipelineId: "neutral-home-adv",
+      matches: [neutralMatch],
+      homeAdvantage: { enabled: true }
+    });
+
+    expect(homeAdvantageResult.rankedRatings).toEqual(defaultResult.rankedRatings);
+    expect(homeAdvantageResult.homeAdvantage.neutralSiteCount).toBe(1);
+    expect(homeAdvantageResult.homeAdvantage.homeAdvantageAppliedCount).toBe(0);
+  });
+
+  it("warns when neutral-site metadata is missing while home advantage is enabled", () => {
+    const missingNeutralSiteMatch: EloMatch = {
+      match_id: "missing-neutral-site",
+      match_date: "2020-01-01",
+      home_team: "Alpha",
+      away_team: "Beta",
+      result: "home_win"
+    };
+    const result = runLiveEloPipeline({
+      pipelineId: "missing-neutral-site",
+      matches: [missingNeutralSiteMatch],
+      homeAdvantage: { enabled: true }
+    });
+
+    expect(result.homeAdvantage.missingNeutralSiteMetadataCount).toBe(1);
+    expect(result.homeAdvantage.homeAdvantageAppliedCount).toBe(0);
+    expect(result.warnings).toContain(LIVE_ELO_PIPELINE_MISSING_NEUTRAL_SITE_METADATA_WARNING);
+  });
+
+  it("home advantage does not permanently add points to team rating", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "home-adv-not-permanent",
+      matches: [{ ...MATCH_A_WINS, neutral_site: false }],
+      homeAdvantage: { enabled: true }
+    });
+    const alpha = result.rankedRatings.find((entry) => entry.team === "Alpha");
+
+    expect(alpha?.eloRating).toBeGreaterThan(1500);
+    expect(alpha?.eloRating).toBeLessThan(1560);
+  });
+
+  it("combines recency and competition weighting safely with home advantage", () => {
+    const result = runLiveEloPipeline({
+      pipelineId: "combined-home-adv",
+      matches: [
+        {
+          ...MATCH_A_WINS,
+          match_date: "2021-06-30",
+          neutral_site: false,
+          competition: "FIFA World Cup 2022"
+        }
+      ],
+      recencyWeighting: { enabled: true, referenceDate: "2025-06-30" },
+      competitionWeighting: { enabled: true },
+      homeAdvantage: { enabled: true }
+    });
+    const alpha = result.rankedRatings.find((entry) => entry.team === "Alpha");
+
+    expect(alpha?.eloRating).toBeGreaterThan(1500);
+    expect(alpha?.eloRating).toBeLessThan(1520);
+    expect(result.recencyWeighting.enabled).toBe(true);
+    expect(result.competitionWeighting.enabled).toBe(true);
+    expect(result.homeAdvantage.enabled).toBe(true);
+  });
+
+  it("is deterministic when home advantage is enabled", () => {
+    const matches: EloMatch[] = [
+      { ...MATCH_A_WINS, neutral_site: false },
+      { ...MATCH_B_WINS, neutral_site: false },
+      { ...MATCH_DRAW, neutral_site: true }
+    ];
+    const first = runLiveEloPipeline({ pipelineId: "home-adv-det", matches, homeAdvantage: { enabled: true } });
+    const second = runLiveEloPipeline({ pipelineId: "home-adv-det", matches, homeAdvantage: { enabled: true } });
+
+    expect(first).toEqual(second);
+  });
+
+  it("rejects invalid home advantage config", () => {
+    expect(() =>
+      runLiveEloPipeline({
+        pipelineId: "invalid-home-adv",
+        matches: THREE_MATCH_SET,
+        homeAdvantage: { enabled: true, eloPoints: -1 }
+      })
+    ).toThrow("homeAdvantage.eloPoints must be a finite number greater than or equal to 0.");
   });
 });

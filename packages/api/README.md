@@ -13,7 +13,7 @@ This package exposes pure TypeScript handler functions and a lightweight HTTP-re
 | `simulateMatch(request)` | Generates Poisson outcome probabilities and optional seeded Monte Carlo match simulation from caller-supplied expected goals. |
 | `getHistoricalTournamentSummary(year)` | Returns curated historical tournament summary metadata for 2010, 2014, 2018, or 2022. |
 | `getHistoricalReplayAudit()` | Returns historical replay audit readiness metadata and warnings. |
-| `getLiveEloRatingsFoundation()` | Computes live foundation Elo ratings from curated World Cup fixtures plus the expanded partial international supplement, with optional recency and competition weighting metadata. |
+| `getLiveEloRatingsFoundation()` | Computes live foundation Elo ratings from curated World Cup fixtures plus the expanded partial international supplement, with optional recency, competition, and home-advantage metadata. |
 
 ## Runtime
 
@@ -46,7 +46,7 @@ The live Elo foundation processes 256 curated World Cup fixtures and uses an Elo
 
 The API preserves the previous inline international supplement as fallback behavior. No network, filesystem access during dashboard bundling, database, or external services are used.
 
-`getLiveEloRatingsFoundation()` defaults to unweighted Elo processing. Callers may pass `recencyWeighting: { enabled: true, referenceDate }` to request opt-in fixed-bucket recency weighting, or `competitionWeighting: { enabled: true }` to request opt-in fixed-bucket competition weighting. Responses include `recencyWeighting` and `competitionWeighting` metadata so consumers can audit whether baseline or weighted ratings were used.
+`getLiveEloRatingsFoundation()` defaults to unweighted Elo processing with no home advantage adjustment. Callers may pass `recencyWeighting: { enabled: true, referenceDate }` to request opt-in fixed-bucket recency weighting, `competitionWeighting: { enabled: true }` to request opt-in fixed-bucket competition weighting, or `homeAdvantage: { enabled: true }` to request opt-in non-neutral home advantage. Responses include `recencyWeighting`, `competitionWeighting`, and `homeAdvantage` metadata so consumers can audit whether baseline or adjusted ratings were used.
 
 ## Validation
 

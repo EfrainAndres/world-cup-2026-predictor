@@ -360,6 +360,8 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(result.recencyWeighting.matchesWeighted).toBe(0);
     expect(result.competitionWeighting.enabled).toBe(false);
     expect(result.competitionWeighting.matchesWeighted).toBe(0);
+    expect(result.homeAdvantage.enabled).toBe(false);
+    expect(result.homeAdvantage.matchesEvaluated).toBe(0);
     expect(result.warnings.length).toBeGreaterThan(0);
     expect(result.metadata.mode).toBe("pure_handlers");
     expect(result.metadata.serverEnabled).toBe(false);
@@ -437,6 +439,7 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(result.metadata.notes.some((note) => note.includes("56 expanded international supplement matches"))).toBe(true);
     expect(result.metadata.notes).toContain("Recency weighting enabled: false.");
     expect(result.metadata.notes).toContain("Competition weighting enabled: false.");
+    expect(result.metadata.notes).toContain("Home advantage enabled: false.");
   });
 
   it("supports an opt-in recency-weighted Live Elo response", () => {
@@ -480,6 +483,24 @@ describe("getLiveEloRatingsFoundation", () => {
     expect(weightedResult.teams).not.toEqual(defaultResult.teams);
     expect(weightedResult.metadata.notes).toContain("Competition weighting enabled: true.");
     expect(weightedResult.warnings.some((warning) => warning.includes("Competition weighting is enabled"))).toBe(true);
+  });
+
+  it("supports an opt-in home-advantage Live Elo response", () => {
+    const defaultResult = getLiveEloRatingsFoundation();
+    const homeAdvantageResult = getLiveEloRatingsFoundation({
+      homeAdvantage: { enabled: true }
+    });
+
+    expect(homeAdvantageResult.status).toBe("success");
+    expect(homeAdvantageResult.matchesProcessed).toBe(defaultResult.matchesProcessed);
+    expect(homeAdvantageResult.homeAdvantage).toMatchObject({
+      enabled: true,
+      eloPoints: 60,
+      matchesEvaluated: 312
+    });
+    expect(homeAdvantageResult.teams).not.toEqual(defaultResult.teams);
+    expect(homeAdvantageResult.metadata.notes).toContain("Home advantage enabled: true.");
+    expect(homeAdvantageResult.warnings.some((warning) => warning.includes("Home advantage is enabled"))).toBe(true);
   });
 
   it("known strong teams appear in the top results", () => {

@@ -50,6 +50,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.3 | Team Alias & Coverage | Improve live Elo prediction team-name matching and coverage visibility. | Done |
 | 7.4 | Recency Weighting | Add opt-in recency weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.5 | Competition Weighting | Add opt-in competition weighting to the Live Elo pipeline while preserving baseline behavior. | Done |
+| 7.6 | Home Advantage | Add opt-in home advantage expected-score adjustment to the Live Elo pipeline while preserving baseline behavior. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
@@ -1153,6 +1154,28 @@ Exit criteria:
 - World Cup, continental championship, qualifier, Nations League, friendly, and unknown categories have deterministic weights.
 - Recency and competition weighting combine through one Elo K-factor multiplier.
 - Missing or unknown competition metadata is reported clearly.
+- No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
+- Required checks pass with no regressions.
+
+## Phase 7.6 - Home Advantage
+
+Add opt-in home advantage support to the Live Elo pipeline so non-neutral matches can adjust expected-score calculations while preserving the existing baseline mode.
+
+Deliverables:
+
+- Home advantage config in `runLiveEloPipeline()`.
+- `getLiveEloMatchLocationContext()` and `calculateEffectiveHomeRating()` helpers.
+- Live Elo metadata showing whether home advantage was enabled, Elo points used, matches evaluated, applied count, neutral-site count, and missing neutral-site metadata count.
+- API support for opt-in home-advantage `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/HOME_ADVANTAGE.md` documenting behavior, warnings, interactions with other weighting, and limitations.
+
+Exit criteria:
+
+- Default Live Elo output remains unchanged unless home advantage is explicitly enabled.
+- Home advantage affects expected score only and does not permanently add Elo points to stored ratings.
+- Neutral-site matches do not receive home advantage.
+- Recency and competition weighting continue to scale K-factor safely when home advantage is enabled.
+- Missing neutral-site metadata is reported clearly.
 - No data downloads, dependencies, dashboard changes, database, charts, or unrelated refactors.
 - Required checks pass with no regressions.
 

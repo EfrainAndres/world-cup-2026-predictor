@@ -10,7 +10,8 @@ export interface EloMatch {
   match_date: string;
   home_team: string;
   away_team: string;
-  neutral_site: boolean;
+  neutral_site?: boolean;
+  neutralSite?: boolean;
   competition?: string;
   source?: string;
   home_score?: number;
@@ -888,6 +889,22 @@ export interface LiveEloCompetitionWeightingMetadata {
   unknownCompetitionCount: number;
 }
 
+export interface LiveEloHomeAdvantageConfig {
+  enabled: boolean;
+  eloPoints?: number;
+}
+
+export type LiveEloMatchLocationContext = "home_advantage" | "neutral_site" | "unknown";
+
+export interface LiveEloHomeAdvantageMetadata {
+  enabled: boolean;
+  eloPoints: number;
+  matchesEvaluated: number;
+  homeAdvantageAppliedCount: number;
+  neutralSiteCount: number;
+  missingNeutralSiteMetadataCount: number;
+}
+
 export interface LiveEloPipelineInput {
   pipelineId: string;
   matches: readonly EloMatch[];
@@ -895,6 +912,7 @@ export interface LiveEloPipelineInput {
   config?: Partial<EloConfig>;
   recencyWeighting?: LiveEloRecencyWeightingConfig;
   competitionWeighting?: LiveEloCompetitionWeightingConfig;
+  homeAdvantage?: LiveEloHomeAdvantageConfig;
 }
 
 export interface LiveEloRankedEntry {
@@ -914,5 +932,6 @@ export interface LiveEloPipelineResult {
   dataCoverage: LiveEloDataCoverage;
   recencyWeighting: LiveEloRecencyWeightingMetadata;
   competitionWeighting: LiveEloCompetitionWeightingMetadata;
+  homeAdvantage: LiveEloHomeAdvantageMetadata;
   warnings: readonly string[];
 }

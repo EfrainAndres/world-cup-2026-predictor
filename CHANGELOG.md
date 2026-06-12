@@ -8,6 +8,12 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 7.6 home advantage support for the Live Elo pipeline.
+- `getLiveEloMatchLocationContext()` and `calculateEffectiveHomeRating()` helpers for neutral-site-aware Elo expected-score calculation.
+- Opt-in `homeAdvantage` config that applies a fixed home Elo-point adjustment to expected scores without permanently changing ratings.
+- Live Elo home advantage metadata showing whether home advantage was enabled, Elo points used, matches evaluated, applied count, neutral-site count, and missing neutral-site metadata count.
+- API support for opt-in home-advantage `getLiveEloRatingsFoundation()` responses.
+- `docs/model-results/HOME_ADVANTAGE.md` documenting behavior, metadata, warnings, interactions with recency/competition weighting, and limitations.
 - Phase 7.5 competition weighting for the Live Elo pipeline.
 - `calculateLiveEloCompetitionWeight()` and `classifyLiveEloCompetition()` helpers with fixed transparent competition buckets.
 - Opt-in `competitionWeighting` config for scaling Elo update impact by competition category.
@@ -38,6 +44,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- Default Live Elo behavior remains home-advantage-neutral unless `homeAdvantage.enabled` is explicitly supplied.
+- Live Elo API responses now include home advantage status metadata.
 - Default Live Elo behavior remains competition-unweighted unless `competitionWeighting.enabled` is explicitly supplied.
 - Live Elo API responses now include competition weighting status metadata.
 - Default Live Elo behavior remains unweighted unless `recencyWeighting.enabled` is explicitly supplied.
