@@ -54,6 +54,7 @@ describe("api integration validation", () => {
       "simulateMatch",
       "getHistoricalTournamentSummary",
       "getHistoricalReplayAudit",
+      "predictMatchFromLiveElo",
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation"

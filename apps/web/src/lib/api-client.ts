@@ -5,6 +5,7 @@ import {
   getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
+  predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
 } from "@world-cup-2026-predictor/api";
@@ -15,6 +16,9 @@ import type {
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,
   ModelInfoResponse,
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
+  PredictMatchFromLiveEloSuccessResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
   SimulateMatchSuccessResponse,
@@ -27,6 +31,7 @@ import type {
 
 export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
 export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
+export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -47,6 +52,10 @@ export function formatPercent(value: number): string {
 
 export function simulateDashboardMatch(request: SimulateMatchRequest): SimulateMatchResponse {
   return simulateMatch(request);
+}
+
+export function predictDashboardMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
+  return predictMatchFromLiveElo(request);
 }
 
 export function getDashboardSnapshot(): DashboardSnapshot {

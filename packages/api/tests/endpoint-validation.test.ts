@@ -96,6 +96,7 @@ describe("api endpoint validation", () => {
       "simulateMatch",
       "getHistoricalTournamentSummary",
       "getHistoricalReplayAudit",
+      "predictMatchFromLiveElo",
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation"

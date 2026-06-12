@@ -31,6 +31,8 @@ import type {
   HistoricalTournamentSummaryResponse,
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
   SupportedHistoricalTournamentYear,
@@ -137,12 +139,58 @@ function validateSimulateMatchRequest(request: SimulateMatchRequest): ApiValidat
     issues.push({ field: "awayTeam", message: "awayTeam is required." });
   }
 
-  if (isNonEmptyText(request.homeTeam) && isNonEmptyText(request.awayTeam) && request.homeTeam.trim() === request.awayTeam.trim()) {
+  if (
+    isNonEmptyText(request.homeTeam) &&
+    isNonEmptyText(request.awayTeam) &&
+    request.homeTeam.trim().toLocaleLowerCase() === request.awayTeam.trim().toLocaleLowerCase()
+  ) {
     issues.push({ field: "awayTeam", message: "awayTeam must be different from homeTeam." });
   }
 
   issues.push(...validateFiniteNonNegativeNumber(request.expectedHomeGoals, "expectedHomeGoals"));
   issues.push(...validateFiniteNonNegativeNumber(request.expectedAwayGoals, "expectedAwayGoals"));
+
+  if (request.maxGoals !== undefined) {
+    issues.push(...validatePositiveInteger(request.maxGoals, "maxGoals", 20));
+  }
+
+  if (request.mostLikelyScorelineLimit !== undefined) {
+    issues.push(...validatePositiveInteger(request.mostLikelyScorelineLimit, "mostLikelyScorelineLimit"));
+  }
+
+  if (request.monteCarlo !== undefined) {
+    issues.push(...validatePositiveInteger(request.monteCarlo.simulationCount, "monteCarlo.simulationCount", MAX_API_MONTE_CARLO_SIMULATIONS));
+
+    if (request.monteCarlo.seed !== undefined && (!Number.isFinite(request.monteCarlo.seed) || !Number.isInteger(request.monteCarlo.seed))) {
+      issues.push({ field: "monteCarlo.seed", message: "monteCarlo.seed must be a finite integer." });
+    }
+
+    if (request.monteCarlo.mostCommonScorelineLimit !== undefined) {
+      issues.push(...validatePositiveInteger(request.monteCarlo.mostCommonScorelineLimit, "monteCarlo.mostCommonScorelineLimit"));
+    }
+  }
+
+  return issues;
+}
+
+function validatePredictMatchFromLiveEloRequest(request: PredictMatchFromLiveEloRequest): ApiValidationIssue[] {
+  const issues: ApiValidationIssue[] = [];
+
+  if (!isNonEmptyText(request.homeTeam)) {
+    issues.push({ field: "homeTeam", message: "homeTeam is required." });
+  }
+
+  if (!isNonEmptyText(request.awayTeam)) {
+    issues.push({ field: "awayTeam", message: "awayTeam is required." });
+  }
+
+  if (
+    isNonEmptyText(request.homeTeam) &&
+    isNonEmptyText(request.awayTeam) &&
+    request.homeTeam.trim().toLocaleLowerCase() === request.awayTeam.trim().toLocaleLowerCase()
+  ) {
+    issues.push({ field: "awayTeam", message: "awayTeam must be different from homeTeam." });
+  }
 
   if (request.maxGoals !== undefined) {
     issues.push(...validatePositiveInteger(request.maxGoals, "maxGoals", 20));
@@ -477,17 +525,38 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
 
 const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-international-supplement";
 const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
+const ELO_EXPECTED_GOALS_BASE = 1.25;
+const ELO_EXPECTED_GOALS_ADJUSTMENT_PER_100 = 0.1;
+const ELO_EXPECTED_GOALS_MAX_ADJUSTMENT = 0.45;
+const ELO_EXPECTED_GOALS_MIN = 0.2;
 
-export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse {
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+function roundToTwoDecimals(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function buildLiveEloPipelineFoundation() {
   const internationalSupplement = loadLiveEloInternationalSupplement();
   const mergedMatches = mergeEloMatchSources(LIVE_ELO_FOUNDATION_MATCHES, internationalSupplement.matches);
   const combinedMatchCount = LIVE_ELO_FOUNDATION_MATCH_COUNT + internationalSupplement.metadata.matchCount;
-
   const pipeline = runLiveEloPipeline({
     pipelineId: LIVE_ELO_PIPELINE_ID,
     matches: mergedMatches,
     dataCoverage: "partial_international_history"
   });
+
+  return {
+    internationalSupplement,
+    combinedMatchCount,
+    pipeline
+  };
+}
+
+export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
 
   const topTeams: LiveEloRatedTeamEntry[] = pipeline.rankedRatings.slice(0, LIVE_ELO_TOP_TEAMS_LIMIT).map((entry) => ({
     rank: entry.rank,
@@ -531,10 +600,151 @@ export function getLiveEloRatingsFoundation(): LiveEloRatingsFoundationResponse 
   };
 }
 
+function normalizeTeamLookupKey(team: string): string {
+  return team.trim().toLocaleLowerCase();
+}
+
+function calculateExpectedGoalsFromElo(homeEloRating: number, awayEloRating: number): {
+  home: number;
+  away: number;
+  eloDifference: number;
+  goalsAdjustment: number;
+} {
+  const eloDifference = roundToTwoDecimals(homeEloRating - awayEloRating);
+  const rawAdjustment = (eloDifference / 100) * ELO_EXPECTED_GOALS_ADJUSTMENT_PER_100;
+  const goalsAdjustment = roundToTwoDecimals(clamp(rawAdjustment, -ELO_EXPECTED_GOALS_MAX_ADJUSTMENT, ELO_EXPECTED_GOALS_MAX_ADJUSTMENT));
+  const home = roundToTwoDecimals(Math.max(ELO_EXPECTED_GOALS_MIN, ELO_EXPECTED_GOALS_BASE + goalsAdjustment));
+  const away = roundToTwoDecimals(Math.max(ELO_EXPECTED_GOALS_MIN, ELO_EXPECTED_GOALS_BASE - goalsAdjustment));
+
+  return {
+    home,
+    away,
+    eloDifference,
+    goalsAdjustment
+  };
+}
+
+export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
+  const issues = validatePredictMatchFromLiveEloRequest(request);
+
+  if (issues.length > 0) {
+    return {
+      status: "validation_error",
+      issues,
+      metadata: buildApiMetadata(["Request failed validation before live Elo ratings were loaded."])
+    };
+  }
+
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const ratingsByTeam = new Map(pipeline.rankedRatings.map((entry) => [normalizeTeamLookupKey(entry.team), entry]));
+  const homeTeam = request.homeTeam.trim();
+  const awayTeam = request.awayTeam.trim();
+  const homeEntry = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam));
+  const awayEntry = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam));
+  const teamIssues: ApiValidationIssue[] = [];
+
+  if (homeEntry === undefined) {
+    teamIssues.push({ field: "homeTeam", message: `${homeTeam} is not available in the current live Elo ratings.` });
+  }
+
+  if (awayEntry === undefined) {
+    teamIssues.push({ field: "awayTeam", message: `${awayTeam} is not available in the current live Elo ratings.` });
+  }
+
+  if (homeEntry === undefined || awayEntry === undefined) {
+    return {
+      status: "validation_error",
+      issues: teamIssues,
+      metadata: buildApiMetadata([
+        "Live Elo prediction requires both teams to appear in the current local Elo pipeline.",
+        `Pipeline currently rates ${pipeline.teamsRated} teams from ${pipeline.matchesProcessed} matches.`
+      ])
+    };
+  }
+
+  const expectedGoals = calculateExpectedGoalsFromElo(homeEntry.eloRating, awayEntry.eloRating);
+  const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
+  const normalizeMatrix = request.normalizeMatrix ?? DEFAULT_POISSON_CONFIG.normalizeMatrix;
+  const scoreMatrix = generateScoreMatrix(
+    {
+      expectedHomeGoals: expectedGoals.home,
+      expectedAwayGoals: expectedGoals.away
+    },
+    {
+      maxGoals,
+      normalizeMatrix
+    }
+  );
+  const mostLikelyLimit = request.mostLikelyScorelineLimit ?? 5;
+  const response = {
+    status: "success" as const,
+    request: {
+      homeTeam,
+      awayTeam,
+      expectedHomeGoals: expectedGoals.home,
+      expectedAwayGoals: expectedGoals.away,
+      maxGoals,
+      normalizeMatrix
+    },
+    expectedGoals: {
+      home: expectedGoals.home,
+      away: expectedGoals.away,
+      eloDifference: expectedGoals.eloDifference,
+      baseExpectedGoals: ELO_EXPECTED_GOALS_BASE,
+      goalsAdjustment: expectedGoals.goalsAdjustment
+    },
+    liveElo: {
+      homeTeam: homeEntry.team,
+      awayTeam: awayEntry.team,
+      homeEloRating: homeEntry.eloRating,
+      awayEloRating: awayEntry.eloRating,
+      homeRank: homeEntry.rank,
+      awayRank: awayEntry.rank,
+      homeMatchesPlayed: homeEntry.matchesPlayed,
+      awayMatchesPlayed: awayEntry.matchesPlayed,
+      matchesProcessed: pipeline.matchesProcessed,
+      latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
+      dataCoverage:
+        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample."
+    },
+    outcomeProbabilities: aggregateOutcomeProbabilities(scoreMatrix),
+    mostLikelyScorelines: getMostLikelyScorelines(scoreMatrix, mostLikelyLimit),
+    warnings: [
+      ...pipeline.warnings,
+      ...internationalSupplement.loadWarnings,
+      LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
+      ...internationalSupplement.metadata.foundationWarnings,
+      "Expected goals are generated from a simple deterministic Elo difference mapping, not a calibrated goals model.",
+      `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
+    ],
+    metadata: buildApiMetadata([
+      "Match prediction loaded live Elo ratings, converted Elo difference to expected goals, then reused Poisson scoreline probabilities.",
+      "Optional Monte Carlo output is deterministic when a seed is supplied.",
+      "No network calls, database, or external services are used."
+    ])
+  };
+
+  if (request.monteCarlo === undefined) {
+    return response;
+  }
+
+  return {
+    ...response,
+    monteCarloSimulation: runMatchSimulations(scoreMatrix, {
+      simulationCount: request.monteCarlo.simulationCount,
+      ...(request.monteCarlo.seed === undefined ? {} : { seed: request.monteCarlo.seed }),
+      ...(request.monteCarlo.mostCommonScorelineLimit === undefined
+        ? {}
+        : { mostCommonScorelineLimit: request.monteCarlo.mostCommonScorelineLimit })
+    })
+  };
+}
+
 export const apiRoutes: ApiRoutes = {
   getHealth,
   getModelInfo,
   simulateMatch,
+  predictMatchFromLiveElo,
   getHistoricalTournamentSummary,
   getHistoricalReplayAudit
 };
