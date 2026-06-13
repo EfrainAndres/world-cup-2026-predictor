@@ -62,6 +62,25 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 9.2 | Architecture Diagrams | Add Mermaid architecture, data flow, API flow, QA strategy, and interview-story diagrams for portfolio presentation. | Done |
 | 9.3 | Portfolio Release Preparation | Add final release checklist, demo scripts, PR checklist, portfolio summary text, and release limitations. | Done |
 | 9.4 | Final Release Tag & Portfolio QA Review | Add final portfolio QA review, release readiness template, manual tag instructions, and tag rollback guidance. | Done |
+| 10.1 | Bugfix: Stale Results on Validation Error | Clear stale prediction results when the form returns a validation error so users never see old results alongside new validation messages. | Done |
+
+## Phase 10.1 - Bugfix: Stale Results on Validation Error
+
+Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.
+
+Deliverables:
+
+- `MatchSimulationForm` result state changed to `MatchSimulationResultState | null`.
+- `setResult(null)` called on both client-side and API-side validation failures.
+- Empty state panel rendered when result is null: "Prediction unavailable / Fix validation errors and run a new simulation."
+- New E2E test: stale-result-cleared sequence (valid predict → invalid submit → assert heading gone and empty state visible).
+
+Exit criteria:
+
+- After any validation failure, the previous result heading and probability cards are no longer visible.
+- The empty state panel is visible in the results column when validation has failed.
+- All 30 E2E tests pass.
+- All unit, integration, typecheck, and build checks pass with no regressions.
 
 ## Phase 0.0 - Project Foundation
 
