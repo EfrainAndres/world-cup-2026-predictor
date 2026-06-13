@@ -57,7 +57,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.5 | CI/CD Pipeline Foundation | Add the first GitHub Actions workflow for PR and main-branch validation. | Done |
-| 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
+| 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Done |
 
 ## Phase 0.0 - Project Foundation
 
@@ -1324,14 +1324,20 @@ Exit criteria:
 
 Turn the project into a strong portfolio artifact.
 
-Potential deliverables:
+Deliverables:
 
-- Final README polish
-- Case study writeup
-- Screenshots and demo assets
-- Architecture diagram
-- Model evaluation summary
-- Lessons learned
+- Portfolio-focused README.
+- Interview presentation guide in `docs/portfolio/PORTFOLIO_PRESENTATION.md`.
+- Clear explanation of architecture, data pipeline, modeling, simulation, validation, dashboard, QA, and CI/CD work.
+- Recruiter-friendly and SDET-friendly project highlights.
+- Screenshot placeholder plan for future visual assets.
+
+Deferred to future phases:
+
+- Final screenshots.
+- Demo video or hosted walkthrough.
+- Deployment.
+- Additional model calibration reports.
 
 Exit criteria:
 
