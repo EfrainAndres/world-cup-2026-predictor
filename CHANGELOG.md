@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 9.0 portfolio polish.
+- Full portfolio README covering project overview, architecture, data/modeling foundations, dashboard features, QA strategy, CI/CD, local setup, test commands, roadmap, screenshot placeholders, and portfolio highlights.
+- `docs/portfolio/PORTFOLIO_PRESENTATION.md` with interview presentation guidance for QA Engineer, Senior QA, and SDET conversations.
 - Phase 8.5 CI/CD pipeline foundation.
 - `.github/workflows/ci.yml` GitHub Actions workflow running frozen pnpm install, tests, type checks, build, and Chromium Playwright E2E checks on pull requests and pushes to `main`.
 - `docs/qa/CI_CD_PIPELINE_FOUNDATION.md` documenting workflow triggers, commands, Playwright setup, scope exclusions, failure expectations, and future CI/CD work.
