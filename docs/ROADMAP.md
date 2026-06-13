@@ -58,6 +58,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
 | 8.5 | CI/CD Pipeline Foundation | Add the first GitHub Actions workflow for PR and main-branch validation. | Done |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Done |
+| 9.1 | Screenshots & Demo Assets | Define the manual screenshot checklist, filenames, capture guidance, and demo scripts for portfolio presentation. | Done |
 
 ## Phase 0.0 - Project Foundation
 
@@ -1343,3 +1344,27 @@ Exit criteria:
 
 - The project is understandable to recruiters, engineers, and data practitioners.
 - The repository demonstrates both engineering and modeling judgment.
+
+## Phase 9.1 - Screenshots & Demo Assets
+
+Define the visual asset plan for portfolio presentation without adding binary screenshots.
+
+Deliverables:
+
+- Screenshot checklist for dashboard overview, manual match simulation, Auto Predict From Elo, prediction presets, Live Elo ratings, historical validation, tournament simulation, team ratings, Playwright E2E passing, and GitHub Actions CI passing.
+- Suggested screenshot filenames.
+- Capture guidance for what to highlight in each screenshot.
+- Demo scripts for a 2-minute walkthrough, 5-minute technical walkthrough, and Senior SDET interview walkthrough.
+- `docs/portfolio/assets/README.md` documenting the future manual asset directory.
+
+Deferred to future phases:
+
+- Captured binary screenshots.
+- Demo video files.
+- Hosted media or public portfolio page.
+
+Exit criteria:
+
+- Portfolio screenshots can be captured consistently later.
+- Demo walkthroughs have clear talking points for recruiters, engineers, and SDET interviewers.
+- No application, model, API, test, dependency, or CI behavior changes are introduced.

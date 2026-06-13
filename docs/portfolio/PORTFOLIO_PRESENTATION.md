@@ -22,6 +22,8 @@ Start with the product problem, then move into the engineering system:
 
 Keep the message practical: the project demonstrates how to make a data/model product testable, auditable, and safe to change.
 
+Use `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md` when preparing visual material. The planned screenshots are manual portfolio assets and should not be committed until captured and reviewed.
+
 ## Talking Points For QA Engineer
 
 - The project includes both product-facing and technical quality checks.
@@ -123,7 +125,7 @@ The next useful improvements are:
 - Add accessibility automation with axe or a similar Playwright integration.
 - Add CI artifacts for Playwright traces and model validation reports.
 - Add deployment only after the dashboard release path is stable.
-- Add portfolio screenshots and a short demo walkthrough.
+- Capture the planned portfolio screenshots and record a short demo walkthrough.
 - Add observability for future runtime API routes if the system gets deployed.
 
 Avoid claiming the project is finished as a production predictor. Present it as a strong foundation with clear next steps and honest limits.

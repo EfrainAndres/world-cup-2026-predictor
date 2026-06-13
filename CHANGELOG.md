@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 9.1 screenshots and demo assets documentation.
+- `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md` with screenshot checklist, suggested filenames, capture guidance, and 2-minute, 5-minute, and Senior SDET demo scripts.
+- `docs/portfolio/assets/README.md` documenting the future manual screenshot asset directory and planned filenames without adding binary images.
 - Phase 9.0 portfolio polish.
 - Full portfolio README covering project overview, architecture, data/modeling foundations, dashboard features, QA strategy, CI/CD, local setup, test commands, roadmap, screenshot placeholders, and portfolio highlights.
 - `docs/portfolio/PORTFOLIO_PRESENTATION.md` with interview presentation guidance for QA Engineer, Senior QA, and SDET conversations.
