@@ -7,6 +7,8 @@ import {
   eloToExpectedGoals
 } from "../../model/src/elo-to-xg.js";
 import {
+  WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_TEAM_NAMES,
   apiRoutes,
   getAvailableLiveEloTeams,
   getHealth,
@@ -154,11 +156,59 @@ describe("api foundation handlers", () => {
   it("exposes available live Elo team coverage", () => {
     const teams = getAvailableLiveEloTeams();
 
+    expect(teams).toHaveLength(48);
+    expect(teams).toEqual([...WORLD_CUP_2026_TEAM_NAMES].sort((a, b) => a.localeCompare(b)));
     expect(teams).toContain("France");
     expect(teams).toContain("Netherlands");
     expect(teams).toContain("United States");
+    expect(teams).toContain("Haiti");
+    expect(teams).toContain("Curacao");
+    expect(teams).toContain("DR Congo");
+    expect(teams).toContain("Cape Verde");
+    expect(teams).toContain("Turkey");
+    expect(teams).toContain("Ivory Coast");
+    expect(teams).toContain("South Korea");
+    expect(teams).toContain("Czechia");
     expect(teams).not.toContain("USA");
+    expect(teams).not.toContain("Curaçao");
     expect(teams).toEqual([...teams].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it.each([
+    ["Haiti", "Scotland"],
+    ["Australia", "Turkey"],
+    ["Germany", "Curacao"],
+    ["Portugal", "DR Congo"]
+  ])("predicts a World Cup 2026 coverage match for %s vs %s", (homeTeam, awayTeam) => {
+    const result = predictMatchFromLiveElo({ homeTeam, awayTeam });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.request.homeTeam).toBe(homeTeam);
+    expect(result.request.awayTeam).toBe(awayTeam);
+    expect(result.outcomeProbabilities.totalProbability).toBeCloseTo(1, 10);
+    expect(result.liveElo.homeGroup.length).toBeGreaterThan(0);
+    expect(result.liveElo.awayGroup.length).toBeGreaterThan(0);
+    expect(["live_elo_pipeline", "fallback_seed"]).toContain(result.liveElo.homeRatingSource);
+    expect(["live_elo_pipeline", "fallback_seed"]).toContain(result.liveElo.awayRatingSource);
+  });
+
+  it("marks fallback seed ratings in live Elo metadata and warnings", () => {
+    const result = predictMatchFromLiveElo({ homeTeam: "Haiti", awayTeam: "Scotland" });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    expect(result.liveElo.homeTeam).toBe("Haiti");
+    expect(result.liveElo.homeRatingSource).toBe("fallback_seed");
+    expect(result.liveElo.homeEloRating).toBe(WORLD_CUP_2026_FALLBACK_SEED_RATING);
+    expect(result.liveElo.homeMatchesPlayed).toBe(0);
+    expect(result.liveElo.fallbackSeedRating).toBe(WORLD_CUP_2026_FALLBACK_SEED_RATING);
+    expect(result.warnings.some((warning) => warning.includes("Fallback teams in this prediction"))).toBe(true);
+    expect(result.metadata.notes).toContain("Fallback seed ratings used: Haiti.");
   });
 
   it("rejects invalid match simulation requests", () => {

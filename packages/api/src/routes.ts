@@ -26,6 +26,13 @@ import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
+import {
+  WORLD_CUP_2026_FALLBACK_RATING_WARNING,
+  WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_TEAM_NAMES,
+  buildWorldCup2026CoverageEntries
+} from "./world-cup-2026-teams.js";
+import type { WorldCup2026CoverageEntry } from "./world-cup-2026-teams.js";
 import type {
   ApiRoutes,
   ApiValidationIssue,
@@ -537,6 +544,7 @@ export function getTeamRatingsFoundation(): TeamRatingsFoundationResponse {
 const LIVE_ELO_PIPELINE_ID = "world-cup-2010-2022-international-supplement";
 const LIVE_ELO_TOP_TEAMS_LIMIT = 15;
 const VALID_PREDICTION_PRESETS = new Set<string>(Object.keys(ELO_XG_PRESETS));
+const WORLD_CUP_2026_AUTO_PREDICT_COVERAGE_NOTE = `Auto Predict From Elo supports all ${WORLD_CUP_2026_TEAM_NAMES.length} expected World Cup 2026 teams across Groups A-L.`;
 
 function buildLiveEloPipelineFoundation(options: LiveEloRatingsFoundationOptions = {}) {
   const internationalSupplement = loadLiveEloInternationalSupplement();
@@ -610,10 +618,12 @@ export function getLiveEloRatingsFoundation(options: LiveEloRatingsFoundationOpt
       LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
       ...internationalSupplement.metadata.foundationWarnings,
       "Teams are initialized at the default Elo rating (1500) before pipeline processing.",
-      "Only teams that appeared in World Cup 2010–2022 or the expanded international supplement are rated."
+      "Only teams that appeared in World Cup 2010–2022 or the expanded international supplement are rated.",
+      WORLD_CUP_2026_FALLBACK_RATING_WARNING
     ],
     metadata: buildApiMetadata([
       `Live Elo pipeline processes ${combinedMatchCount} matches: 256 curated World Cup fixtures (2010–2022) plus ${internationalSupplement.metadata.matchCount} expanded international supplement matches from ${internationalSupplement.metadata.datasetId}.`,
+      WORLD_CUP_2026_AUTO_PREDICT_COVERAGE_NOTE,
       `Recency weighting enabled: ${pipeline.recencyWeighting.enabled}.`,
       `Competition weighting enabled: ${pipeline.competitionWeighting.enabled}.`,
       `Home advantage enabled: ${pipeline.homeAdvantage.enabled}.`,
@@ -628,6 +638,21 @@ function normalizeTeamLookupKey(team: string): string {
   return normalizeTeamSearchText(team);
 }
 
+function buildCoverageLookup(coverageEntries: readonly WorldCup2026CoverageEntry[]): Map<string, WorldCup2026CoverageEntry> {
+  const ratingsByTeam = new Map<string, WorldCup2026CoverageEntry>();
+
+  for (const entry of coverageEntries) {
+    ratingsByTeam.set(normalizeTeamLookupKey(entry.team), entry);
+    ratingsByTeam.set(normalizeTeamLookupKey(canonicalizeTeamName(entry.team)), entry);
+  }
+
+  return ratingsByTeam;
+}
+
+function getFallbackTeamsUsed(entries: readonly WorldCup2026CoverageEntry[]): string[] {
+  return entries.filter((entry) => entry.ratingSource === "fallback_seed").map((entry) => entry.team);
+}
+
 export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
 
@@ -640,12 +665,9 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   }
 
   const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
-  const availableTeams = getAvailableTeamCoverage(pipeline.rankedRatings);
-  const ratingsByTeam = new Map<string, (typeof pipeline.rankedRatings)[number]>();
-  for (const entry of pipeline.rankedRatings) {
-    ratingsByTeam.set(normalizeTeamLookupKey(entry.team), entry);
-    ratingsByTeam.set(normalizeTeamLookupKey(canonicalizeTeamName(entry.team)), entry);
-  }
+  const worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const availableTeams = getAvailableTeamCoverage(worldCupCoverageEntries);
+  const ratingsByTeam = buildCoverageLookup(worldCupCoverageEntries);
   const homeTeam = request.homeTeam.trim();
   const awayTeam = request.awayTeam.trim();
   const homeResolution = resolveTeamAlias(homeTeam, availableTeams);
@@ -659,7 +681,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   if (homeEntry === undefined) {
     teamIssues.push({
       field: "homeTeam",
-      message: `${homeTeam} is not available in the current live Elo ratings.`,
+      message: `${homeTeam} is not available in the World Cup 2026 Auto Predict coverage list.`,
       suggestions: suggestAvailableTeams(homeTeam, availableTeams)
     });
   }
@@ -667,7 +689,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   if (awayEntry === undefined) {
     teamIssues.push({
       field: "awayTeam",
-      message: `${awayTeam} is not available in the current live Elo ratings.`,
+      message: `${awayTeam} is not available in the World Cup 2026 Auto Predict coverage list.`,
       suggestions: suggestAvailableTeams(awayTeam, availableTeams)
     });
   }
@@ -678,11 +700,22 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       issues: teamIssues,
       availableTeams,
       metadata: buildApiMetadata([
-        "Live Elo prediction requires both teams to appear in the current local Elo pipeline.",
-        `Pipeline currently rates ${pipeline.teamsRated} teams from ${pipeline.matchesProcessed} matches.`
+        "Live Elo prediction requires both teams to appear in the World Cup 2026 Auto Predict coverage list.",
+        WORLD_CUP_2026_AUTO_PREDICT_COVERAGE_NOTE,
+        `Pipeline currently rates ${pipeline.teamsRated} teams from ${pipeline.matchesProcessed} matches before fallback coverage is applied.`
       ])
     };
   }
+
+  const fallbackTeamsUsed = getFallbackTeamsUsed([homeEntry, awayEntry]);
+  const fallbackWarnings =
+    fallbackTeamsUsed.length === 0
+      ? []
+      : [
+          `${WORLD_CUP_2026_FALLBACK_RATING_WARNING} Fallback teams in this prediction: ${fallbackTeamsUsed.join(
+            ", "
+          )}.`
+        ];
 
   const xgResult = eloToExpectedGoals({
     homeEloRating: homeEntry.eloRating,
@@ -730,10 +763,15 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       awayRank: awayEntry.rank,
       homeMatchesPlayed: homeEntry.matchesPlayed,
       awayMatchesPlayed: awayEntry.matchesPlayed,
+      homeGroup: homeEntry.group,
+      awayGroup: awayEntry.group,
+      homeRatingSource: homeEntry.ratingSource,
+      awayRatingSource: awayEntry.ratingSource,
+      fallbackSeedRating: WORLD_CUP_2026_FALLBACK_SEED_RATING,
       matchesProcessed: pipeline.matchesProcessed,
       latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
       dataCoverage:
-        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample.",
+        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample and World Cup 2026 fallback coverage.",
       homeInput: homeTeam,
       awayInput: awayTeam,
       homeMatchedBy: homeResolution.matchedBy === "none" ? "canonical" : homeResolution.matchedBy,
@@ -746,11 +784,14 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       ...internationalSupplement.loadWarnings,
       LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
       ...internationalSupplement.metadata.foundationWarnings,
+      ...fallbackWarnings,
       ...xgResult.warnings,
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([
       "Match prediction loaded live Elo ratings, converted Elo difference to expected goals, then reused Poisson scoreline probabilities.",
+      WORLD_CUP_2026_AUTO_PREDICT_COVERAGE_NOTE,
+      `Fallback seed ratings used: ${fallbackTeamsUsed.length === 0 ? "none" : fallbackTeamsUsed.join(", ")}.`,
       `Prediction preset: ${xgResult.preset}.`,
       "Optional Monte Carlo output is deterministic when a seed is supplied.",
       "No network calls, database, or external services are used."
@@ -776,7 +817,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
 export function getAvailableLiveEloTeams(): string[] {
   const { pipeline } = buildLiveEloPipelineFoundation();
 
-  return getAvailableTeamCoverage(pipeline.rankedRatings);
+  return getAvailableTeamCoverage(buildWorldCup2026CoverageEntries(pipeline.rankedRatings));
 }
 
 export const apiRoutes: ApiRoutes = {

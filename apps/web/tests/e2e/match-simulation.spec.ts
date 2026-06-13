@@ -181,6 +181,25 @@ test("Auto Predict From Elo with valid teams returns Live Elo prediction result"
   ).toBeVisible();
 });
 
+test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("Haiti");
+  await page.getByLabel("Away team").fill("Scotland");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Haiti vs Scotland" });
+
+  await expect(page.getByRole("heading", { name: "Haiti vs Scotland" })).toBeVisible();
+  await expect(resultsSection.getByText("Live Elo auto prediction")).toBeVisible();
+  await expect(
+    resultsSection.getByText(
+      "Live Elo is based on partial curated data and is not a public accuracy claim."
+    )
+  ).toBeVisible();
+});
+
 // ── Elo prediction presets ────────────────────────────────────────────────────
 
 test("conservative preset result shows conservative preset metadata", async ({ page }) => {

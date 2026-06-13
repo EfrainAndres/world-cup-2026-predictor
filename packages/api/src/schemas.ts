@@ -18,6 +18,7 @@ export type { EloXgPreset };
 export type ApiStatus = "ok" | "error";
 export type ApiFoundationResponseStatus = "success" | "validation_error";
 export type SupportedHistoricalTournamentYear = 2010 | 2014 | 2018 | 2022;
+export type LiveEloRatingSource = "live_elo_pipeline" | "fallback_seed";
 
 export interface ApiMetadata {
   apiVersion: string;
@@ -130,6 +131,11 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     awayRank: number;
     homeMatchesPlayed: number;
     awayMatchesPlayed: number;
+    homeGroup: string;
+    awayGroup: string;
+    homeRatingSource: LiveEloRatingSource;
+    awayRatingSource: LiveEloRatingSource;
+    fallbackSeedRating: number;
     matchesProcessed: number;
     latestMatchDate: string;
     dataCoverage: string;
