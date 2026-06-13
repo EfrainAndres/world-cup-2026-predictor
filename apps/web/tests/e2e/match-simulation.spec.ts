@@ -312,6 +312,36 @@ test("unavailable team in Elo mode shows field error with suggestions", async ({
   await expect(page.getByText(/Suggestions:/)).toBeVisible();
 });
 
+// ── Stale result clearing ─────────────────────────────────────────────────────
+
+test("stale result is cleared and empty state is shown when validation fails after a valid prediction", async ({
+  page
+}) => {
+  await page.goto("/");
+
+  // Run a valid Auto Predict From Elo prediction first
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  // Confirm result heading appears
+  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
+
+  // Change to an unavailable team and re-submit
+  await page.getByLabel("Home team").fill("Unknown Team XYZ");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  // Validation alert must appear
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Fix the highlighted fields" })
+  ).toBeVisible();
+
+  // Stale result heading must be gone and empty state must be visible
+  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
 // ── Manual mode validation ────────────────────────────────────────────────────
 
 test("invalid xG value in manual mode shows field-level validation error", async ({ page }) => {

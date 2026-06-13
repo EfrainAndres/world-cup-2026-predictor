@@ -94,7 +94,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
   const [preset, setPreset] = useState<EloXgPreset>("balanced");
   const [formState, setFormState] = useState<MatchSimulationFormState>(initialFormState);
   const [issues, setIssues] = useState<ApiValidationIssue[]>([]);
-  const [result, setResult] = useState<MatchSimulationResultState>(initialResult);
+  const [result, setResult] = useState<MatchSimulationResultState | null>(initialResult);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTeams] = useState(() => getDashboardAvailableLiveEloTeams());
 
@@ -110,6 +110,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
 
     if (clientIssues.length > 0) {
       setIssues(clientIssues);
+      setResult(null);
       setIsSubmitting(false);
       return;
     }
@@ -145,6 +146,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
 
     if (response.status === "validation_error") {
       setIssues([...response.issues]);
+      setResult(null);
       setIsSubmitting(false);
       return;
     }
@@ -347,7 +349,20 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
         </p>
       </form>
 
-      <MatchSimulationResults result={result} />
+      {result !== null ? (
+        <MatchSimulationResults result={result} />
+      ) : (
+        <section
+          aria-label="Simulation results"
+          className="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <div className="text-center">
+            <p className="text-sm font-semibold text-slate-500">Simulation results</p>
+            <p className="mt-3 text-base font-semibold text-slate-700">Prediction unavailable</p>
+            <p className="mt-1 text-sm leading-6 text-slate-500">Fix validation errors and run a new simulation.</p>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-22 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1).
+23 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1).
 
 ## Test List
 
@@ -32,6 +32,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 20 | Submitting unknown team in Elo mode shows validation alert | Elo validation |
 | 21 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
 | 22 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
+| 23 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
 
 ## Coverage by Area
 
@@ -85,6 +86,10 @@ All tests use accessible selectors:
 - `getByText(/regex/)` for partial text matches on preset metadata and suggestions
 
 No CSS class selectors are used.
+
+### Stale result clearing
+
+Test 23 verifies the Phase 10.1 bugfix: after a valid Auto Predict From Elo submission produces a result, submitting the same form with an unavailable team must clear the stale result. The test asserts that the old result heading ("France vs Netherlands") is no longer visible and that the "Prediction unavailable" empty state is shown.
 
 ## Known Limitations
 

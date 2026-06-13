@@ -6,6 +6,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ## [Unreleased]
 
+### Fixed
+
+- Phase 10.1: Stale prediction results no longer remain visible after a validation error. When any form submission fails validation (client-side or API-side), the previous result is cleared and an explicit "Prediction unavailable" empty state is shown in the results panel, preventing users from confusing old results with the current invalid input.
+
 ### Added
 
 - Phase 9.4 final release tag and portfolio QA review documentation.
