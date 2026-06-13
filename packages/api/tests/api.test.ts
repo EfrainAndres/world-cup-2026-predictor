@@ -17,6 +17,7 @@ import {
   getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
+  getWorldCup2026FixtureFoundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -263,9 +264,104 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getHealth()).toEqual(getHealth());
     expect(apiRoutes.getModelInfo()).toEqual(getModelInfo());
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
+    expect(apiRoutes.getWorldCup2026FixtureFoundation()).toEqual(getWorldCup2026FixtureFoundation());
     expect(apiRoutes.predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })).toEqual(
       predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })
     );
+  });
+});
+
+describe("getWorldCup2026FixtureFoundation", () => {
+  it("returns 12 groups, 48 teams, and 72 fixtures", () => {
+    const result = getWorldCup2026FixtureFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.groupCount).toBe(12);
+    expect(result.teamCount).toBe(48);
+    expect(result.fixtureCount).toBe(72);
+    expect(result.groups).toHaveLength(12);
+    expect(result.fixtures).toHaveLength(72);
+    expect(result.fixturesPerGroup).toBe(6);
+    expect(result.matchesPerTeam).toBe(3);
+    expect(result.warnings.some((warning) => warning.includes("local curated tournament structure data"))).toBe(true);
+  });
+
+  it("returns the expected Group C teams", () => {
+    const result = getWorldCup2026FixtureFoundation();
+    const groupC = result.groups.find((group) => group.group === "C");
+
+    expect(groupC).toEqual({
+      group: "C",
+      groupName: "Group C",
+      teams: ["Brazil", "Morocco", "Haiti", "Scotland"],
+      fixtureCount: 6
+    });
+  });
+
+  it("has 6 fixtures per group", () => {
+    const result = getWorldCup2026FixtureFoundation();
+
+    for (const group of result.groups) {
+      const fixtures = result.fixtures.filter((fixture) => fixture.group === group.group);
+
+      expect(fixtures).toHaveLength(6);
+      expect(fixtures.map((fixture) => fixture.groupFixtureOrder)).toEqual([1, 2, 3, 4, 5, 6]);
+    }
+  });
+
+  it("gives each team exactly 3 group fixtures", () => {
+    const result = getWorldCup2026FixtureFoundation();
+    const fixtureCountsByTeam = new Map<string, number>();
+
+    for (const fixture of result.fixtures) {
+      fixtureCountsByTeam.set(fixture.homeTeam, (fixtureCountsByTeam.get(fixture.homeTeam) ?? 0) + 1);
+      fixtureCountsByTeam.set(fixture.awayTeam, (fixtureCountsByTeam.get(fixture.awayTeam) ?? 0) + 1);
+    }
+
+    expect(fixtureCountsByTeam.size).toBe(48);
+    for (const team of WORLD_CUP_2026_TEAM_NAMES) {
+      expect(fixtureCountsByTeam.get(team)).toBe(3);
+    }
+  });
+
+  it("has no duplicate team pairs within a group", () => {
+    const result = getWorldCup2026FixtureFoundation();
+
+    for (const group of result.groups) {
+      const pairKeys = result.fixtures
+        .filter((fixture) => fixture.group === group.group)
+        .map((fixture) => [fixture.homeTeam, fixture.awayTeam].sort().join("::"));
+
+      expect(new Set(pairKeys).size).toBe(6);
+    }
+  });
+
+  it("uses only teams from the 48-team World Cup coverage list", () => {
+    const result = getWorldCup2026FixtureFoundation();
+    const coverageTeams = new Set(WORLD_CUP_2026_TEAM_NAMES);
+
+    for (const fixture of result.fixtures) {
+      expect(coverageTeams.has(fixture.homeTeam)).toBe(true);
+      expect(coverageTeams.has(fixture.awayTeam)).toBe(true);
+    }
+  });
+
+  it("uses deterministic human-readable fixture IDs", () => {
+    const first = getWorldCup2026FixtureFoundation();
+    const second = getWorldCup2026FixtureFoundation();
+
+    expect(first).toEqual(second);
+    expect(first.fixtures[0]).toMatchObject({
+      id: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+      group: "A",
+      matchday: 1,
+      order: 1,
+      groupFixtureOrder: 1,
+      homeTeam: "Mexico",
+      awayTeam: "South Africa",
+      dateStatus: "deferred",
+      venueStatus: "deferred"
+    });
   });
 });
 

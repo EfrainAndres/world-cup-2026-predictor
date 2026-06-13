@@ -65,6 +65,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.1 | Bugfix: Stale Results on Validation Error | Clear stale prediction results when the form returns a validation error so users never see old results alongside new validation messages. | Done |
 | 10.2 | World Cup 2026 Full Team Coverage | Make Auto Predict From Elo available for all expected 48 teams with explicit fallback seed metadata for teams missing from the partial Live Elo pipeline. | Done |
 | 10.2A | UI Polish & Consistency | Format Elo values as whole numbers, add fallback seed indicator in match simulation results, clarify Live Elo dataset count vs WC 2026 coverage, and distinguish static contender ratings from the Live Elo pipeline. | Done |
+| 10.3 | World Cup 2026 Fixtures & Groups | Add static Groups A-L and all 72 group-stage fixtures to the API and dashboard as tournament structure foundation data. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -129,6 +130,33 @@ Exit criteria:
 - Live Elo section clearly distinguishes curated dataset count from 48-team Auto Predict coverage.
 - Team Ratings section clearly states these are static ratings separate from the Live Elo pipeline.
 - All existing tests pass; no logic, model, or API changes made.
+
+## Phase 10.3 - World Cup 2026 Fixtures & Groups
+
+Add World Cup 2026 group and fixture foundation data so users can inspect the tournament structure before standings and full tournament simulation are implemented.
+
+Deliverables:
+
+- Static Groups A-L with 48 expected teams.
+- Deterministic 72-fixture group-stage foundation, with 6 fixtures per group and 3 fixtures per team.
+- `getWorldCup2026FixtureFoundation()` pure API handler.
+- Schema types for World Cup 2026 groups, fixtures, and fixture foundation response.
+- Dashboard section showing all groups, four teams per group, six fixtures per group, summary counts, and foundation warnings.
+- API tests for group/team/fixture counts, per-group fixture counts, per-team fixture counts, duplicate-pair prevention, fixture-team coverage, and deterministic response.
+- Contract test for response shape.
+- E2E smoke test for the dashboard groups section and Group C.
+- `docs/dashboard/WORLD_CUP_2026_FIXTURES_GROUPS.md`.
+
+Exit criteria:
+
+- API returns 12 groups, 48 teams, and 72 group fixtures.
+- Each group contains each unique team pair exactly once.
+- Each team has exactly 3 group fixtures.
+- Fixture IDs are deterministic and human-readable.
+- Dates and venues remain deferred metadata.
+- Dashboard labels this as local curated tournament structure data.
+- No standings simulation, full tournament simulation, real-time scores, external APIs, dependencies, prediction formula changes, or Elo rating changes are introduced.
+- Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
 
 ## Phase 0.0 - Project Foundation
 

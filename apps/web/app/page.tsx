@@ -7,6 +7,7 @@ import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
 import { TeamRatingsSection } from "../src/components/TeamRatingsSection";
 import { TournamentSimulationSection } from "../src/components/TournamentSimulationSection";
+import { WorldCupGroupsSection } from "../src/components/WorldCupGroupsSection";
 import { getDashboardSnapshot } from "../src/lib/api-client";
 
 export default function DashboardHomePage() {
@@ -76,6 +77,8 @@ export default function DashboardHomePage() {
         <LiveEloRatingsSection liveEloRatings={snapshot.liveEloRatings} />
 
         <TeamRatingsSection teamRatings={snapshot.teamRatings} />
+
+        <WorldCupGroupsSection fixtureFoundation={snapshot.worldCup2026Fixtures} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}

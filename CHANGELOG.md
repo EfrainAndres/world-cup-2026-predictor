@@ -26,6 +26,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.3 World Cup 2026 fixtures and groups foundation.
+- `getWorldCup2026FixtureFoundation()` API handler exposing Groups A-L, 48 teams, 72 deterministic group-stage fixtures, deferred date/venue metadata, and structure-data warnings.
+- `WorldCupGroupsSection` and `WorldCupGroupCard` dashboard components showing all groups, teams, fixture counts, and group-stage pairings before full tournament simulation is added.
+- `docs/dashboard/WORLD_CUP_2026_FIXTURES_GROUPS.md` documenting fixture generation, dashboard behavior, boundaries, and next steps.
 - Phase 10.2 World Cup 2026 full-team Auto Predict coverage.
 - `packages/api/src/world-cup-2026-teams.ts` with the grouped 48-team World Cup 2026 coverage list and deterministic fallback seed metadata.
 - `docs/model-results/WORLD_CUP_2026_FULL_TEAM_COVERAGE.md` documenting group coverage, fallback behavior, aliases, validation, and limitations.

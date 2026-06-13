@@ -25,6 +25,24 @@ test("main dashboard sections are visible on load", async ({ page }) => {
   ).toBeVisible();
 });
 
+test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { level: 2, name: "World Cup 2026 Groups & Fixtures" })
+  ).toBeVisible();
+  await expect(page.getByText("Foundation tournament structure")).toBeVisible();
+  await expect(page.getByText("72 group fixtures")).toBeVisible();
+  await expect(page.getByText("12 groups")).toBeVisible();
+
+  const groupC = page.getByRole("article", { name: "Group C" });
+  await expect(groupC).toBeVisible();
+  await expect(groupC.getByText("Brazil", { exact: true })).toBeVisible();
+  await expect(groupC.getByText("Morocco", { exact: true })).toBeVisible();
+  await expect(groupC.getByText("Haiti", { exact: true })).toBeVisible();
+  await expect(groupC.getByText("Scotland", { exact: true })).toBeVisible();
+});
+
 // ── Match simulation form ─────────────────────────────────────────────────────
 
 test("match simulation form renders with required inputs and submit button", async ({ page }) => {
