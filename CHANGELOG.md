@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 9.4 final release tag and portfolio QA review documentation.
+- `docs/portfolio/FINAL_PORTFOLIO_QA_REVIEW.md` with final QA checklist, portfolio acceptance criteria, readiness status template, final LinkedIn/GitHub summaries, interview evidence list, and claims to avoid.
+- `docs/portfolio/RELEASE_TAGGING_GUIDE.md` with manual `v0.1.0-portfolio` tag commands, verification notes, rollback guidance, and release meaning.
 - Phase 9.3 portfolio release preparation.
 - `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` with final release checklist, recommended `v0.1.0-portfolio` tag, local validation commands, GitHub PR checklist, portfolio summary text, release notes draft, and limitations.
 - `docs/portfolio/DEMO_SCRIPT.md` with 2-minute, 5-minute, and Senior SDET walkthrough scripts plus QA Engineer, Senior QA, and SDET talking points.

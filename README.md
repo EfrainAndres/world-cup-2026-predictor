@@ -76,7 +76,7 @@ Core boundaries:
 
 Portfolio architecture diagrams are available in `docs/architecture/ARCHITECTURE_DIAGRAMS.md`.
 
-Portfolio release preparation docs are available in `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` and `docs/portfolio/DEMO_SCRIPT.md`.
+Portfolio release preparation docs are available in `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md`, `docs/portfolio/FINAL_PORTFOLIO_QA_REVIEW.md`, `docs/portfolio/RELEASE_TAGGING_GUIDE.md`, and `docs/portfolio/DEMO_SCRIPT.md`.
 
 ## Data Pipeline
 
@@ -259,6 +259,10 @@ v0.1.0-portfolio
 ```
 
 Before tagging a release, use `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` to confirm the README, architecture diagrams, screenshots, demo script, local checks, Playwright E2E, GitHub Actions, PR merge, and release tag are complete.
+
+Use `docs/portfolio/FINAL_PORTFOLIO_QA_REVIEW.md` for final acceptance criteria and release readiness status.
+
+Use `docs/portfolio/RELEASE_TAGGING_GUIDE.md` for manual tag commands and rollback guidance after the release PR is merged to `main`.
 
 Use `docs/portfolio/DEMO_SCRIPT.md` for 2-minute, 5-minute, and Senior SDET walkthroughs.
 
