@@ -10,10 +10,10 @@ export function TeamRatingsSection({ teamRatings }: TeamRatingsSectionProps) {
   return (
     <section id="team-ratings" aria-labelledby="team-ratings-title" className="py-8">
       <SectionHeader
-        eyebrow="Team ratings"
+        eyebrow="Static contender ratings"
         titleId="team-ratings-title"
         title="World Cup 2026 contender strength overview"
-        description="Foundation Elo-based ratings for the top World Cup 2026 contenders. These are approximate seed ratings for dashboard preview — not derived from a live model or official FIFA rankings."
+        description="Static seed ratings for top World Cup 2026 contenders — not derived from match history or official FIFA rankings. These are separate from the Live Elo pipeline above."
       />
 
       <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-4">
@@ -62,6 +62,9 @@ export function TeamRatingsSection({ teamRatings }: TeamRatingsSectionProps) {
       <div className="mt-5 rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
         <p className="text-xs leading-5 text-slate-500">
           <span className="font-semibold text-slate-700">Rating source:</span> {teamRatings.ratingSource}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          <span className="font-semibold text-slate-700">Note:</span> These are static contender ratings and are not updated by the Live Elo pipeline. See the Live Elo section for computed match-history ratings.
         </p>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import type { LiveEloRatedTeamEntry } from "../lib/api-client";
+import { formatElo } from "../lib/api-client";
 
 interface LiveEloRatingCardProps {
   entry: LiveEloRatedTeamEntry;
@@ -16,7 +17,7 @@ export function LiveEloRatingCard({ entry }: LiveEloRatingCardProps) {
 
       <h3 className="mt-3 text-base font-semibold text-slate-950">{entry.team}</h3>
 
-      <p className="mt-2 text-3xl font-bold tabular-nums text-slate-950">{entry.eloRating}</p>
+      <p className="mt-2 text-3xl font-bold tabular-nums text-slate-950">{formatElo(entry.eloRating)}</p>
       <p className="text-xs text-slate-400">Live foundation Elo rating</p>
     </article>
   );

@@ -64,6 +64,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 9.4 | Final Release Tag & Portfolio QA Review | Add final portfolio QA review, release readiness template, manual tag instructions, and tag rollback guidance. | Done |
 | 10.1 | Bugfix: Stale Results on Validation Error | Clear stale prediction results when the form returns a validation error so users never see old results alongside new validation messages. | Done |
 | 10.2 | World Cup 2026 Full Team Coverage | Make Auto Predict From Elo available for all expected 48 teams with explicit fallback seed metadata for teams missing from the partial Live Elo pipeline. | Done |
+| 10.2A | UI Polish & Consistency | Format Elo values as whole numbers, add fallback seed indicator in match simulation results, clarify Live Elo dataset count vs WC 2026 coverage, and distinguish static contender ratings from the Live Elo pipeline. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -106,6 +107,28 @@ Exit criteria:
 - Suggestions still work for typo or unavailable input.
 - No external API calls, dependencies, database, deployment, or unrelated app/model refactors are introduced.
 - All unit, typecheck, build, and Playwright E2E checks pass.
+
+## Phase 10.2A - UI Polish & Consistency
+
+Polish the dashboard UI after Phase 10.2 so Live Elo, fallback seed ratings, and static foundation ratings are easier to understand and do not look inconsistent.
+
+Deliverables:
+
+- `formatElo` helper in `apps/web/src/lib/api-client.ts` — rounds Elo floats to whole numbers for display.
+- `LiveEloRatingCard` updated to show formatted whole-number Elo ratings.
+- `LiveEloRatingsSection` updated to format top Elo rating, rename "Teams rated" to "Teams in dataset", and add a WC 2026 coverage note.
+- `MatchSimulationResults` updated to format Elo values, suppress rank for fallback teams, and show fallback seed indicator when any team is uncalibrated.
+- `TeamRatingsSection` updated with "Static contender ratings" eyebrow, clarified description, and footer note distinguishing from Live Elo pipeline.
+- E2E test 13 (Haiti vs Scotland) extended to assert fallback seed indicator is visible.
+- `docs/dashboard/UI_ELO_CONSISTENCY_POLISH.md`.
+
+Exit criteria:
+
+- All Elo values displayed as whole numbers in the Live Elo section and match simulation results.
+- Fallback seed teams show a visible amber note and no uncalibrated rank in match simulation.
+- Live Elo section clearly distinguishes curated dataset count from 48-team Auto Predict coverage.
+- Team Ratings section clearly states these are static ratings separate from the Live Elo pipeline.
+- All existing tests pass; no logic, model, or API changes made.
 
 ## Phase 0.0 - Project Foundation
 

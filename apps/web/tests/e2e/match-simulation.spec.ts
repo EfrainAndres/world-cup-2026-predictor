@@ -198,6 +198,9 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
       "Live Elo is based on partial curated data and is not a public accuracy claim."
     )
   ).toBeVisible();
+  await expect(
+    resultsSection.getByText(/Fallback seed rating/)
+  ).toBeVisible();
 });
 
 // ── Elo prediction presets ────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-24 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2).
+24 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2). Test 13 updated in Phase 10.2A to also assert the fallback seed indicator.
 
 ## Test List
 
@@ -55,7 +55,7 @@ Test 17 verifies that re-submitting with a different preset replaces the previou
 
 ### World Cup 2026 full-team coverage
 
-Test 13 verifies the Phase 10.2 coverage expansion: Haiti vs Scotland can be submitted through Auto Predict From Elo even though Haiti depends on fallback seed coverage rather than a calibrated Live Elo rating.
+Test 13 verifies the Phase 10.2 coverage expansion: Haiti vs Scotland can be submitted through Auto Predict From Elo even though Haiti depends on fallback seed coverage rather than a calibrated Live Elo rating. Updated in Phase 10.2A to also assert that the fallback seed indicator ("Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only.") is visible in the results section when fallback teams are used.
 
 ### Team aliases
 

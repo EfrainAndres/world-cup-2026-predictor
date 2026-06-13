@@ -1,4 +1,5 @@
 import type { LiveEloRatingsFoundationResponse } from "../lib/api-client";
+import { formatElo } from "../lib/api-client";
 import { LiveEloRatingCard } from "./LiveEloRatingCard";
 import { SectionHeader } from "./SectionHeader";
 import { StatusPill } from "./StatusPill";
@@ -41,6 +42,9 @@ export function LiveEloRatingsSection({ liveEloRatings }: LiveEloRatingsSectionP
         <p className="mt-1 text-sm leading-6 text-amber-950">
           Use this section to inspect current pipeline coverage and warnings before treating ratings as model evidence.
         </p>
+        <p className="mt-1 text-sm leading-6 text-amber-950">
+          Auto Predict covers all 48 expected World Cup 2026 teams. Teams not in this dataset use a fallback seed rating of 1500 — not calibrated from match data.
+        </p>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -51,14 +55,14 @@ export function LiveEloRatingsSection({ liveEloRatings }: LiveEloRatingsSectionP
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm text-slate-500">Teams rated</p>
+          <p className="text-sm text-slate-500">Teams in dataset</p>
           <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">{liveEloRatings.teamsRatedTotal}</p>
-          <p className="mt-1 text-xs text-slate-400">Top {liveEloRatings.teams.length} shown</p>
+          <p className="mt-1 text-xs text-slate-400">Curated dataset · {liveEloRatings.teams.length} shown</p>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <p className="text-sm text-slate-500">Top Elo rating</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">{liveEloRatings.topEloRating}</p>
+          <p className="mt-1 text-2xl font-bold tabular-nums text-slate-950">{formatElo(liveEloRatings.topEloRating)}</p>
           <p className="mt-1 text-xs text-slate-400">{liveEloRatings.teams[0]?.team ?? "No teams"}</p>
         </div>
 
