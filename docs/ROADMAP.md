@@ -63,6 +63,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 9.3 | Portfolio Release Preparation | Add final release checklist, demo scripts, PR checklist, portfolio summary text, and release limitations. | Done |
 | 9.4 | Final Release Tag & Portfolio QA Review | Add final portfolio QA review, release readiness template, manual tag instructions, and tag rollback guidance. | Done |
 | 10.1 | Bugfix: Stale Results on Validation Error | Clear stale prediction results when the form returns a validation error so users never see old results alongside new validation messages. | Done |
+| 10.2 | World Cup 2026 Full Team Coverage | Make Auto Predict From Elo available for all expected 48 teams with explicit fallback seed metadata for teams missing from the partial Live Elo pipeline. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -81,6 +82,30 @@ Exit criteria:
 - The empty state panel is visible in the results column when validation has failed.
 - All 30 E2E tests pass.
 - All unit, integration, typecheck, and build checks pass with no regressions.
+
+## Phase 10.2 - World Cup 2026 Full Team Coverage
+
+Ensure Auto Predict From Elo works for every expected World Cup 2026 team, including teams with limited or missing current Live Elo data.
+
+Deliverables:
+
+- Grouped 48-team World Cup 2026 coverage list for Groups A-L.
+- Full available-team list returned from `getAvailableLiveEloTeams()`.
+- Fallback seed rating behavior for teams missing from the current Live Elo pipeline.
+- Response metadata and warnings that mark fallback ratings as uncalibrated.
+- Expanded team aliases for common names, FIFA names, accents, and abbreviations.
+- API tests covering all 48 canonical teams, key aliases, and fallback-enabled predictions.
+- Dashboard E2E coverage for Haiti vs Scotland in Auto Predict From Elo mode.
+- `docs/model-results/WORLD_CUP_2026_FULL_TEAM_COVERAGE.md`.
+
+Exit criteria:
+
+- Auto Predict From Elo works for all expected 48 World Cup 2026 teams.
+- Pipeline-rated teams keep their existing Live Elo ratings and ranks.
+- Fallback teams use the deterministic `1500` seed rating and are clearly marked.
+- Suggestions still work for typo or unavailable input.
+- No external API calls, dependencies, database, deployment, or unrelated app/model refactors are introduced.
+- All unit, typecheck, build, and Playwright E2E checks pass.
 
 ## Phase 0.0 - Project Foundation
 

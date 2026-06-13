@@ -12,6 +12,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.2 World Cup 2026 full-team Auto Predict coverage.
+- `packages/api/src/world-cup-2026-teams.ts` with the grouped 48-team World Cup 2026 coverage list and deterministic fallback seed metadata.
+- `docs/model-results/WORLD_CUP_2026_FULL_TEAM_COVERAGE.md` documenting group coverage, fallback behavior, aliases, validation, and limitations.
+- API and E2E coverage for previously unavailable or alias-sensitive teams including Haiti, Curacao, DR Congo, Cape Verde, Turkey, Bosnia-Herzegovina, Ivory Coast, South Korea, Czechia, and United States variants.
 - Phase 9.4 final release tag and portfolio QA review documentation.
 - `docs/portfolio/FINAL_PORTFOLIO_QA_REVIEW.md` with final QA checklist, portfolio acceptance criteria, readiness status template, final LinkedIn/GitHub summaries, interview evidence list, and claims to avoid.
 - `docs/portfolio/RELEASE_TAGGING_GUIDE.md` with manual `v0.1.0-portfolio` tag commands, verification notes, rollback guidance, and release meaning.
@@ -94,6 +98,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- Auto Predict From Elo now accepts all 48 expected World Cup 2026 teams. Teams already present in the Live Elo pipeline keep their computed ratings, while missing teams receive an uncalibrated `1500` fallback seed rating marked in response metadata and warnings.
+- `getAvailableLiveEloTeams()` now returns the full sorted World Cup 2026 coverage list instead of only teams present in the current partial Live Elo pipeline.
+- Team alias resolution now includes common names, FIFA names, accents, and abbreviations for Phase 10.2 coverage.
 - `predictMatchFromLiveElo()` now delegates expected-goals computation to `eloToExpectedGoals()` from the model package; behavior is numerically identical to the previous inline calculation.
 - `ELO_TO_XG_UNCALIBRATED_WARNING` replaces the previous hardcoded warning string in routes.ts; the warning text is unchanged.
 - Default Live Elo behavior remains home-advantage-neutral unless `homeAdvantage.enabled` is explicitly supplied.

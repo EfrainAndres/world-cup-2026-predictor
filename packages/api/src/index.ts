@@ -12,6 +12,14 @@ export {
   simulateMatch,
   simulateTournamentFoundation
 } from "./routes.js";
+export {
+  WORLD_CUP_2026_FALLBACK_RATING_WARNING,
+  WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_GROUPS,
+  WORLD_CUP_2026_TEAM_NAMES,
+  WORLD_CUP_2026_TEAMS,
+  buildWorldCup2026CoverageEntries
+} from "./world-cup-2026-teams.js";
 
 export type { ApiRuntime, ApiRuntimeErrorResponse, ApiRuntimeFailureResponse, ApiRuntimeValidationErrorResponse } from "./runtime.js";
 
@@ -19,6 +27,7 @@ export type { EloXgPreset, EloXgPresetConfig, LiveEloAttackDefenseConfig, LiveEl
 
 export type {
   LiveEloRatedTeamEntry,
+  LiveEloRatingSource,
   LiveEloRatingsFoundationResponse,
   ApiFoundationResponseStatus,
   ApiMetadata,
@@ -49,3 +58,10 @@ export type {
   TournamentSimulationSuccessResponse,
   TournamentSimulationTeamResult
 } from "./schemas.js";
+
+export type {
+  WorldCup2026CoverageEntry,
+  WorldCup2026GroupName,
+  WorldCup2026RatingSource,
+  WorldCup2026TeamEntry
+} from "./world-cup-2026-teams.js";

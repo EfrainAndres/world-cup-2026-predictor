@@ -13,16 +13,29 @@ export interface TeamCoverageEntry {
 }
 
 export const TEAM_ALIASES: Readonly<Record<string, string>> = {
+  "bosnia and herzegovina": "Bosnia-Herzegovina",
+  "bosnia herzegovina": "Bosnia-Herzegovina",
+  bosnia: "Bosnia-Herzegovina",
+  "cape verde islands": "Cape Verde",
+  "congo dr": "DR Congo",
+  "cote d'ivoire": "Ivory Coast",
   "czech republic": "Czechia",
+  "democratic republic of the congo": "DR Congo",
+  "dr congo": "DR Congo",
+  drc: "DR Congo",
+  "ivory coast": "Ivory Coast",
+  "ir iran": "Iran",
   "korea republic": "South Korea",
+  ksa: "Saudi Arabia",
   "south korea": "South Korea",
+  holland: "Netherlands",
+  netherlands: "Netherlands",
+  turkiye: "Turkey",
+  "u.s.": "United States",
+  "u.s.a.": "United States",
+  us: "United States",
   usa: "United States",
   usmnt: "United States",
-  "ir iran": "Iran",
-  "ivory coast": "Côte d'Ivoire",
-  "cote d'ivoire": "Côte d'Ivoire",
-  netherlands: "Netherlands",
-  holland: "Netherlands"
 };
 
 export function normalizeTeamSearchText(value: string): string {

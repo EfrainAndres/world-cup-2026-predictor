@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-23 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1).
+24 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2).
 
 ## Test List
 
@@ -22,17 +22,18 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 10 | Switching to Auto Predict From Elo mode shows Elo info panel | Elo mode |
 | 11 | Elo mode preset selector shows all three preset buttons | Elo mode |
 | 12 | Auto Predict From Elo with valid teams returns Live Elo prediction result | Elo mode |
-| 13 | Conservative preset result shows conservative preset metadata | Presets |
-| 14 | Balanced preset result shows balanced preset metadata | Presets |
-| 15 | Aggressive preset result shows aggressive preset metadata | Presets |
-| 16 | Switching preset from conservative to aggressive updates preset metadata in result | Presets |
-| 17 | Entering Korea Republic in Elo mode resolves to South Korea in result heading | Team aliases |
-| 18 | Entering Czech Republic in Elo mode resolves to Czechia in result heading | Team aliases |
-| 19 | Entering USA in Elo mode resolves to United States in result heading | Team aliases |
-| 20 | Submitting unknown team in Elo mode shows validation alert | Elo validation |
-| 21 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
-| 22 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
-| 23 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
+| 13 | Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage | Elo mode / full coverage |
+| 14 | Conservative preset result shows conservative preset metadata | Presets |
+| 15 | Balanced preset result shows balanced preset metadata | Presets |
+| 16 | Aggressive preset result shows aggressive preset metadata | Presets |
+| 17 | Switching preset from conservative to aggressive updates preset metadata in result | Presets |
+| 18 | Entering Korea Republic in Elo mode resolves to South Korea in result heading | Team aliases |
+| 19 | Entering Czech Republic in Elo mode resolves to Czechia in result heading | Team aliases |
+| 20 | Entering USA in Elo mode resolves to United States in result heading | Team aliases |
+| 21 | Submitting unknown team in Elo mode shows validation alert | Elo validation |
+| 22 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
+| 23 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
+| 24 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
 
 ## Coverage by Area
 
@@ -40,7 +41,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 Tests 7, 8, and 9 together verify that submitting a manual simulation produces an updated result heading, three probability cards (home win, draw, away win), expected goals terms, a scorelines list, and the "Baseline simulation, not a guarantee." disclaimer.
 
-Test 22 verifies that a negative xG value triggers the field-level validation message "Expected home goals must be 0 or greater." using the client-side validation path in `buildClientValidationIssues`.
+Test 23 verifies that a negative xG value triggers the field-level validation message "Expected home goals must be 0 or greater." using the client-side validation path in `buildClientValidationIssues`.
 
 ### Auto Predict From Elo
 
@@ -48,13 +49,17 @@ Test 12 verifies the full round trip: entering two valid live Elo teams (France,
 
 ### Prediction presets
 
-Tests 13–15 verify that each preset (conservative, balanced, aggressive) surfaces the correct lowercase preset name in the result metadata block after submission. The DOM renders the preset as lowercase even though CSS capitalizes it visually.
+Tests 14–16 verify that each preset (conservative, balanced, aggressive) surfaces the correct lowercase preset name in the result metadata block after submission. The DOM renders the preset as lowercase even though CSS capitalizes it visually.
 
-Test 16 verifies that re-submitting with a different preset replaces the previous preset label in the result section. It confirms "aggressive preset" is visible and "conservative preset" is no longer visible after switching.
+Test 17 verifies that re-submitting with a different preset replaces the previous preset label in the result section. It confirms "aggressive preset" is visible and "conservative preset" is no longer visible after switching.
+
+### World Cup 2026 full-team coverage
+
+Test 13 verifies the Phase 10.2 coverage expansion: Haiti vs Scotland can be submitted through Auto Predict From Elo even though Haiti depends on fallback seed coverage rather than a calibrated Live Elo rating.
 
 ### Team aliases
 
-Tests 17–19 cover the three aliases required by Phase 7.3:
+Tests 18–20 cover the three aliases required by Phase 7.3:
 
 | Input | Canonical name | Confirmed by |
 | --- | --- | --- |
@@ -66,11 +71,11 @@ Each alias test submits the alias as the home team and "France" as the away team
 
 ### Validation
 
-Test 20 (existing) verifies the `role="alert"` summary banner appears when an unknown team is submitted in Elo mode.
+Test 21 (existing) verifies the `role="alert"` summary banner appears when an unknown team is submitted in Elo mode.
 
-Test 21 verifies the field-level `FieldError` component shows "Suggestions:" text when a near-miss team name is submitted. The input "Franc" starts with the normalized form of "France", so `suggestAvailableTeams` surfaces "France" in the suggestions list.
+Test 22 verifies the field-level `FieldError` component shows "Suggestions:" text when a near-miss team name is submitted. The input "Franc" starts with the normalized form of "France", so `suggestAvailableTeams` surfaces "France" in the suggestions list.
 
-Test 22 verifies that a negative xG value in manual mode shows the field error message via client-side validation before any API call is made.
+Test 23 verifies that a negative xG value in manual mode shows the field error message via client-side validation before any API call is made.
 
 ## Selectors
 
@@ -89,11 +94,11 @@ No CSS class selectors are used.
 
 ### Stale result clearing
 
-Test 23 verifies the Phase 10.1 bugfix: after a valid Auto Predict From Elo submission produces a result, submitting the same form with an unavailable team must clear the stale result. The test asserts that the old result heading ("France vs Netherlands") is no longer visible and that the "Prediction unavailable" empty state is shown.
+Test 24 verifies the Phase 10.1 bugfix: after a valid Auto Predict From Elo submission produces a result, submitting the same form with an unavailable team must clear the stale result. The test asserts that the old result heading ("France vs Netherlands") is no longer visible and that the "Prediction unavailable" empty state is shown.
 
 ## Known Limitations
 
 - Chromium only. Firefox and WebKit deferred.
 - Preset descriptions are not asserted verbatim — only the presence of the preset name in the metadata block is checked, since descriptions may be updated when the model is recalibrated.
-- Alias resolution depends on the live Elo pipeline having the aliased team in its available team list. If a team is removed from the fixture data, the alias test would fail with a validation error instead of a result heading.
+- Alias resolution depends on the World Cup 2026 Auto Predict coverage list. Pipeline-rated teams keep Live Elo values, while missing teams can resolve through fallback seed coverage.
 - The suggestions test uses "Franc" as a near-miss for "France". If the available teams list changes significantly, the specific suggestion surfaced may differ, though "Suggestions:" should still appear for any near-miss input.
