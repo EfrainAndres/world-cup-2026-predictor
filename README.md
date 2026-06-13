@@ -242,20 +242,25 @@ Planned next steps include:
 - Add deeper model calibration and accuracy reports.
 - Add accessibility automation.
 - Add deployment once the dashboard and release path are stable.
-- Add richer portfolio visuals, screenshots, and demo walkthroughs.
+- Capture and review the planned portfolio screenshots and demo assets.
 - Introduce production data storage only when the use case requires it.
 
 ## Screenshots Placeholder Section
 
-Screenshots should be added before portfolio publication:
+Screenshots are planned manual portfolio assets and should not be committed until they are captured, reviewed, and intentionally selected for publication. The screenshot plan and demo scripts live in `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md`.
 
 | Screenshot | Purpose |
 | --- | --- |
 | Dashboard overview | Show the full product surface and evidence-first layout. |
-| Match prediction workflow | Show manual xG and Auto Predict From Elo modes. |
+| Manual match simulation | Show manual xG inputs, probabilities, scorelines, and baseline framing. |
+| Auto Predict From Elo | Show Live Elo prediction flow, metadata, and partial-data warnings. |
+| Prediction presets | Show conservative, balanced, and aggressive preset controls. |
 | Live Elo ratings | Show model metadata and data coverage warnings. |
 | Historical validation | Show replay evidence and known limitations. |
-| CI run | Show automated checks passing on GitHub Actions. |
+| Tournament simulation | Show champion and runner-up probability output. |
+| Team ratings | Show Elo tiers, offense/defense scores, and summary stats. |
+| Playwright E2E passing | Show dashboard workflow automation passing. |
+| GitHub Actions CI passing | Show automated checks passing on GitHub Actions. |
 
 ## Portfolio Highlights
 
