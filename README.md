@@ -74,6 +74,8 @@ Core boundaries:
 - Data code owns validation and normalization.
 - Tests cover deterministic behavior before behavior is exposed through the dashboard.
 
+Portfolio architecture diagrams are available in `docs/architecture/ARCHITECTURE_DIAGRAMS.md`.
+
 ## Data Pipeline
 
 The data package defines typed match records, validation rules, normalization helpers, and fixture-based datasets. Historical World Cup fixtures and curated international samples provide a controlled foundation for model and API development.
@@ -252,6 +254,7 @@ Screenshots are planned manual portfolio assets and should not be committed unti
 | Screenshot | Purpose |
 | --- | --- |
 | Dashboard overview | Show the full product surface and evidence-first layout. |
+| Architecture diagrams | Show monorepo structure, prediction flow, API flow, QA strategy, and interview story. |
 | Manual match simulation | Show manual xG inputs, probabilities, scorelines, and baseline framing. |
 | Auto Predict From Elo | Show Live Elo prediction flow, metadata, and partial-data warnings. |
 | Prediction presets | Show conservative, balanced, and aggressive preset controls. |
