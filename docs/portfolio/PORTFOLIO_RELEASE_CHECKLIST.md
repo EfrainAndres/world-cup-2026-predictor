@@ -16,6 +16,7 @@ Complete these items before publishing the portfolio release:
 - [ ] Architecture diagrams reviewed.
 - [ ] Screenshots captured and reviewed.
 - [ ] Demo script tested.
+- [ ] Final QA review completed.
 - [ ] `pnpm test` passing.
 - [ ] `pnpm typecheck` passing.
 - [ ] `pnpm build` passing.
@@ -50,6 +51,7 @@ Use this checklist in the release pull request description:
 - [ ] Architecture diagrams render in GitHub Markdown.
 - [ ] Screenshot and demo asset plan is current.
 - [ ] Release checklist and demo script are included.
+- [ ] Final QA review and release tagging guide are included.
 - [ ] No binary screenshots or videos were added unintentionally.
 - [ ] No deployment, Docker, cloud provider, database, or secret configuration was added.
 - [ ] No app, API, model, data, test, or CI behavior was modified.
@@ -73,6 +75,12 @@ Portfolio-ready World Cup 2026 prediction system built with TypeScript, pnpm wor
 `v0.1.0-portfolio` is the first portfolio-ready release of World Cup 2026 Predictor. It includes the dashboard foundation, Live Elo prediction flow, Poisson and Monte Carlo simulation foundations, historical validation documentation, API contracts, regression snapshots, Playwright E2E coverage, CI foundation, architecture diagrams, screenshot planning, and interview-ready demo scripts.
 
 Known limitations remain explicit: the dataset is partial, the model is a foundation model, outputs are not betting advice, and the project does not make a public predictive accuracy claim.
+
+## Final QA And Tagging
+
+Before tagging, complete `FINAL_PORTFOLIO_QA_REVIEW.md`.
+
+After the release PR is merged to `main` and GitHub Actions passes, follow `RELEASE_TAGGING_GUIDE.md` for the manual tag commands and rollback guidance.
 
 ## Limitations
 

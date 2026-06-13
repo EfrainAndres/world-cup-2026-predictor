@@ -61,6 +61,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 9.1 | Screenshots & Demo Assets | Define the manual screenshot checklist, filenames, capture guidance, and demo scripts for portfolio presentation. | Done |
 | 9.2 | Architecture Diagrams | Add Mermaid architecture, data flow, API flow, QA strategy, and interview-story diagrams for portfolio presentation. | Done |
 | 9.3 | Portfolio Release Preparation | Add final release checklist, demo scripts, PR checklist, portfolio summary text, and release limitations. | Done |
+| 9.4 | Final Release Tag & Portfolio QA Review | Add final portfolio QA review, release readiness template, manual tag instructions, and tag rollback guidance. | Done |
 
 ## Phase 0.0 - Project Foundation
 
@@ -1424,3 +1425,33 @@ Exit criteria:
 - Portfolio release readiness can be reviewed from documentation alone.
 - Final validation, PR review, and tagging expectations are clear.
 - Documentation remains honest about limitations and non-goals.
+
+## Phase 9.4 - Final Release Tag & Portfolio QA Review
+
+Prepare final portfolio QA review documentation and release tag instructions.
+
+Deliverables:
+
+- `docs/portfolio/FINAL_PORTFOLIO_QA_REVIEW.md`.
+- `docs/portfolio/RELEASE_TAGGING_GUIDE.md`.
+- Final QA review checklist covering local tests, typecheck, build, Playwright E2E, GitHub Actions, README review, architecture diagrams review, demo script review, and known limitations.
+- Portfolio acceptance criteria.
+- Final release readiness status template.
+- Manual release tag commands for `v0.1.0-portfolio`.
+- Tag rollback guidance.
+- Final LinkedIn and GitHub summary text.
+- Interview guidance for what to show and what not to claim.
+
+Deferred to future phases:
+
+- Running git tag commands.
+- Deployment.
+- Dependency changes.
+- Binary images or videos.
+- App, API, model, data, test, or CI behavior changes.
+
+Exit criteria:
+
+- Final release review can be completed from documentation alone.
+- Manual tag creation and rollback steps are clear for the user.
+- The portfolio release remains honest about partial data, foundation modeling, no betting advice, and no public accuracy claim.
