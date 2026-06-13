@@ -57,7 +57,8 @@ describe("api integration validation", () => {
       "predictMatchFromLiveElo",
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
-      "getLiveEloRatingsFoundation"
+      "getLiveEloRatingsFoundation",
+      "getWorldCup2026FixtureFoundation"
     ]);
     expect(modelInfo.limitations).toContain("No database or external services are used.");
     expectPureHandlerMetadata(modelInfo.metadata);

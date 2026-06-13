@@ -234,6 +234,40 @@ export interface TournamentSimulationSuccessResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026Group {
+  group: string;
+  groupName: string;
+  teams: readonly string[];
+  fixtureCount: number;
+}
+
+export interface WorldCup2026Fixture {
+  id: string;
+  group: string;
+  matchday: number;
+  order: number;
+  groupFixtureOrder: number;
+  homeTeam: string;
+  awayTeam: string;
+  dateStatus: "deferred";
+  venueStatus: "deferred";
+}
+
+export interface WorldCup2026FixtureFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_group_stage_fixture_foundation";
+  groupCount: number;
+  teamCount: number;
+  fixtureCount: number;
+  fixturesPerGroup: number;
+  matchesPerTeam: number;
+  groups: readonly WorldCup2026Group[];
+  fixtures: readonly WorldCup2026Fixture[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
 
 export interface TeamRatingFoundationEntry {
@@ -303,6 +337,7 @@ export interface ApiRoutes {
   predictMatchFromLiveElo: (request: PredictMatchFromLiveEloRequest) => PredictMatchFromLiveEloResponse;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
+  getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

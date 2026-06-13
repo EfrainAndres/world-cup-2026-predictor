@@ -27,8 +27,10 @@ import { getModelInfo } from "./model-info.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
+  WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_TEAM_NAMES,
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
@@ -50,7 +52,8 @@ import type {
   TeamRatingFoundationEntry,
   TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse,
-  TournamentSimulationTeamResult
+  TournamentSimulationTeamResult,
+  WorldCup2026FixtureFoundationResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -420,6 +423,31 @@ export function simulateTournamentFoundation(): TournamentSimulationSuccessRespo
     metadata: buildApiMetadata([
       "Tournament simulation uses runTournamentRepeatedRuns with a seeded deterministic 8-team sample input.",
       "No network calls, database, or external services are used."
+    ])
+  };
+}
+
+export function getWorldCup2026FixtureFoundation(): WorldCup2026FixtureFoundationResponse {
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_group_stage_fixture_foundation",
+    groupCount: WORLD_CUP_2026_FIXTURE_GROUPS.length,
+    teamCount: WORLD_CUP_2026_TEAM_NAMES.length,
+    fixtureCount: WORLD_CUP_2026_GROUP_STAGE_FIXTURES.length,
+    fixturesPerGroup: 6,
+    matchesPerTeam: 3,
+    groups: WORLD_CUP_2026_FIXTURE_GROUPS,
+    fixtures: WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+    warnings: [
+      "This section shows local curated tournament structure data. Standings and full tournament simulation are planned next.",
+      "Group-stage fixture dates and venues are deferred in this foundation response.",
+      "Fixture data is static local structure data, not real-time scores or an external feed."
+    ],
+    metadata: buildApiMetadata([
+      "World Cup 2026 fixture foundation exposes Groups A-L and deterministic group-stage pairings only.",
+      "Each group contains 4 teams, 6 fixtures, and 3 fixtures per team.",
+      "No standings, knockout bracket simulation, real-time scores, network calls, database, or external services are used."
     ])
   };
 }
@@ -826,5 +854,6 @@ export const apiRoutes: ApiRoutes = {
   simulateMatch,
   predictMatchFromLiveElo,
   getHistoricalTournamentSummary,
-  getHistoricalReplayAudit
+  getHistoricalReplayAudit,
+  getWorldCup2026FixtureFoundation
 };
