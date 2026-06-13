@@ -24,6 +24,8 @@ Keep the message practical: the project demonstrates how to make a data/model pr
 
 Use `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md` when preparing visual material. The planned screenshots are manual portfolio assets and should not be committed until captured and reviewed.
 
+Use `docs/architecture/ARCHITECTURE_DIAGRAMS.md` when an interviewer asks for system diagrams, data flow, API flow, QA strategy, or a concise interview story.
+
 ## Talking Points For QA Engineer
 
 - The project includes both product-facing and technical quality checks.
@@ -93,6 +95,8 @@ Key decisions to highlight:
 The main architectural message:
 
 > The app is organized so model logic can be tested without React, API contracts can be tested without a server, and UI workflows can be tested through the browser only where that adds value.
+
+For visual support, start with the Monorepo Architecture diagram, then move to API Flow or Data-To-Prediction Flow depending on the interviewer's focus.
 
 ## Validation Strategy
 

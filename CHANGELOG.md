@@ -8,6 +8,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 9.2 architecture diagrams documentation.
+- `docs/architecture/ARCHITECTURE_DIAGRAMS.md` with Mermaid diagrams for monorepo architecture, data-to-prediction flow, API flow, QA strategy, and interview story.
 - Phase 9.1 screenshots and demo assets documentation.
 - `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md` with screenshot checklist, suggested filenames, capture guidance, and 2-minute, 5-minute, and Senior SDET demo scripts.
 - `docs/portfolio/assets/README.md` documenting the future manual screenshot asset directory and planned filenames without adding binary images.

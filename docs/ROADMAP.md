@@ -59,6 +59,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 8.5 | CI/CD Pipeline Foundation | Add the first GitHub Actions workflow for PR and main-branch validation. | Done |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Done |
 | 9.1 | Screenshots & Demo Assets | Define the manual screenshot checklist, filenames, capture guidance, and demo scripts for portfolio presentation. | Done |
+| 9.2 | Architecture Diagrams | Add Mermaid architecture, data flow, API flow, QA strategy, and interview-story diagrams for portfolio presentation. | Done |
 
 ## Phase 0.0 - Project Foundation
 
@@ -1368,3 +1369,28 @@ Exit criteria:
 - Portfolio screenshots can be captured consistently later.
 - Demo walkthroughs have clear talking points for recruiters, engineers, and SDET interviewers.
 - No application, model, API, test, dependency, or CI behavior changes are introduced.
+
+## Phase 9.2 - Architecture Diagrams
+
+Add documentation-only Mermaid diagrams for portfolio and interview presentation.
+
+Deliverables:
+
+- Monorepo architecture diagram.
+- Data-to-prediction flow diagram.
+- API flow diagram.
+- QA strategy diagram.
+- Interview story diagram.
+- README and portfolio presentation references to the diagram pack.
+
+Deferred to future phases:
+
+- Binary diagram exports.
+- Hosted architecture visuals.
+- Production deployment architecture diagrams.
+
+Exit criteria:
+
+- Diagrams render in GitHub Markdown.
+- Diagrams explain current architecture and validation strategy without claiming undeployed infrastructure.
+- No application, model, API, data, test, dependency, CI, or image-file changes are introduced.
