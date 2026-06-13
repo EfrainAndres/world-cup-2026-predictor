@@ -56,6 +56,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 7.9 | Elo Prediction Presets | Add conservative/balanced/aggressive prediction presets to the Elo-to-xG pipeline with dashboard preset selector and metadata in API responses. | Done |
 | 7.0 | QA Automation | Expand automated checks for code, data, models, and dashboard flows. | Planned |
 | 8.0 | CI/CD | Add repeatable GitHub Actions workflows and deployment automation. | Planned |
+| 8.5 | CI/CD Pipeline Foundation | Add the first GitHub Actions workflow for PR and main-branch validation. | Done |
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Planned |
 
 ## Phase 0.0 - Project Foundation
@@ -1289,6 +1290,35 @@ Exit criteria:
 
 - Pull requests run meaningful automated checks.
 - Deployment steps are repeatable.
+
+## Phase 8.5 - CI/CD Pipeline Foundation
+
+Add the first repeatable GitHub Actions validation workflow.
+
+Deliverables:
+
+- `.github/workflows/ci.yml`.
+- Pull request and `main` push triggers.
+- Node 20 setup with pnpm and pnpm dependency caching.
+- Frozen lockfile installation.
+- Unit/integration tests, type checks, build validation, and Chromium Playwright E2E checks.
+- CI/CD foundation documentation in `docs/qa/CI_CD_PIPELINE_FOUNDATION.md`.
+
+Deferred to future phases:
+
+- Deployment.
+- Docker.
+- Cloud provider configuration.
+- Secrets.
+- Databases or service containers.
+- Separate release workflows.
+
+Exit criteria:
+
+- Pull requests and pushes to `main` run the same core checks required locally.
+- CI uses the committed pnpm lockfile.
+- Chromium browser dependencies are installed before E2E tests.
+- No deployment, Docker, cloud provider, database, or secret configuration is introduced.
 
 ## Phase 9.0 - Portfolio Polish
 
