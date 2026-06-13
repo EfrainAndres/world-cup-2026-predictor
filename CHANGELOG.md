@@ -8,6 +8,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 8.5 CI/CD pipeline foundation.
+- `.github/workflows/ci.yml` GitHub Actions workflow running frozen pnpm install, tests, type checks, build, and Chromium Playwright E2E checks on pull requests and pushes to `main`.
+- `docs/qa/CI_CD_PIPELINE_FOUNDATION.md` documenting workflow triggers, commands, Playwright setup, scope exclusions, failure expectations, and future CI/CD work.
 - Phase 7.9 Elo prediction presets and scenario tuning.
 - `EloXgPreset` type (`"conservative" | "balanced" | "aggressive"`) and `EloXgPresetConfig` interface in `packages/model/src/types.ts`.
 - `ELO_XG_PRESETS: Record<EloXgPreset, EloXgPresetConfig>` constant in `packages/model/src/elo-to-xg.ts` — each preset declares `adjustmentPer100` and `maxAdjustment`; balanced equals the prior default behavior.
