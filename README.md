@@ -76,6 +76,8 @@ Core boundaries:
 
 Portfolio architecture diagrams are available in `docs/architecture/ARCHITECTURE_DIAGRAMS.md`.
 
+Portfolio release preparation docs are available in `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` and `docs/portfolio/DEMO_SCRIPT.md`.
+
 ## Data Pipeline
 
 The data package defines typed match records, validation rules, normalization helpers, and fixture-based datasets. Historical World Cup fixtures and curated international samples provide a controlled foundation for model and API development.
@@ -245,7 +247,20 @@ Planned next steps include:
 - Add accessibility automation.
 - Add deployment once the dashboard and release path are stable.
 - Capture and review the planned portfolio screenshots and demo assets.
+- Complete the `v0.1.0-portfolio` release checklist before tagging a portfolio release.
 - Introduce production data storage only when the use case requires it.
+
+## Portfolio Release
+
+Recommended portfolio release tag:
+
+```text
+v0.1.0-portfolio
+```
+
+Before tagging a release, use `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` to confirm the README, architecture diagrams, screenshots, demo script, local checks, Playwright E2E, GitHub Actions, PR merge, and release tag are complete.
+
+Use `docs/portfolio/DEMO_SCRIPT.md` for 2-minute, 5-minute, and Senior SDET walkthroughs.
 
 ## Screenshots Placeholder Section
 
