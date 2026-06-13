@@ -2,7 +2,7 @@
 
 import type { SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
 import type { PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
-import { formatPercent } from "../lib/api-client";
+import { formatElo, formatPercent } from "../lib/api-client";
 import { StatusPill } from "./StatusPill";
 
 interface MatchSimulationResultsProps {
@@ -52,10 +52,19 @@ export function MatchSimulationResults({ result }: MatchSimulationResultsProps) 
       {isLiveEloPrediction ? (
         <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-3 py-3 text-sm leading-6 text-teal-950">
           <p>
-            Live Elo: {result.liveElo.homeTeam} rank {result.liveElo.homeRank} ({result.liveElo.homeEloRating}) vs{" "}
-            {result.liveElo.awayTeam} rank {result.liveElo.awayRank} ({result.liveElo.awayEloRating}). Elo difference:{" "}
+            Live Elo: {result.liveElo.homeTeam}{" "}
+            {result.liveElo.homeRatingSource !== "fallback_seed" ? `rank ${result.liveElo.homeRank} ` : null}
+            ({formatElo(result.liveElo.homeEloRating)}) vs{" "}
+            {result.liveElo.awayTeam}{" "}
+            {result.liveElo.awayRatingSource !== "fallback_seed" ? `rank ${result.liveElo.awayRank} ` : null}
+            ({formatElo(result.liveElo.awayEloRating)}). Elo difference:{" "}
             {result.expectedGoals.eloDifference.toFixed(2)}.
           </p>
+          {(result.liveElo.homeRatingSource === "fallback_seed" || result.liveElo.awayRatingSource === "fallback_seed") ? (
+            <p className="mt-1 text-xs font-semibold text-amber-700">
+              Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only.
+            </p>
+          ) : null}
           <p className="mt-1 text-xs text-teal-800">
             <span className="font-semibold capitalize">{result.expectedGoals.preset}</span> preset —{" "}
             {result.expectedGoals.presetDescription}

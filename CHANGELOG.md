@@ -6,6 +6,20 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ## [Unreleased]
 
+### Added
+
+- Phase 10.2A: `formatElo` helper in `apps/web/src/lib/api-client.ts` — rounds Elo values to whole numbers for display without changing underlying API values.
+- Phase 10.2A: Fallback seed indicator in match simulation results — when a team uses a fallback seed rating, the Live Elo block now shows "Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only." and hides the uncalibrated rank number.
+- Phase 10.2A: WC 2026 coverage note in the Live Elo section amber banner — explains that Auto Predict covers all 48 expected teams and that missing teams use a fallback seed rating of 1500.
+- Phase 10.2A: `docs/dashboard/UI_ELO_CONSISTENCY_POLISH.md` documenting all UI consistency changes.
+
+### Changed
+
+- Phase 10.2A: Live Elo rating cards and summary stat now display rounded whole numbers instead of raw floats (e.g. `1621` instead of `1620.8566951497519`).
+- Phase 10.2A: "Teams rated" stat card in the Live Elo section relabeled to "Teams in dataset" with caption "Curated dataset · N shown" to distinguish from the 48-team Auto Predict coverage.
+- Phase 10.2A: Team Ratings section eyebrow updated to "Static contender ratings" and description updated to explicitly state these are static seed ratings separate from the Live Elo pipeline.
+- Phase 10.2A: E2E test 13 (Haiti vs Scotland) updated to also assert the fallback seed indicator is visible.
+
 ### Fixed
 
 - Phase 10.1: Stale prediction results no longer remain visible after a validation error. When any form submission fails validation (client-side or API-side), the previous result is cleared and an explicit "Prediction unavailable" empty state is shown in the results panel, preventing users from confusing old results with the current invalid input.

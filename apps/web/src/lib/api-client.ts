@@ -57,6 +57,10 @@ export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
 
+export function formatElo(value: number): string {
+  return Math.round(value).toString();
+}
+
 export function simulateDashboardMatch(request: SimulateMatchRequest): SimulateMatchResponse {
   return simulateMatch(request);
 }
