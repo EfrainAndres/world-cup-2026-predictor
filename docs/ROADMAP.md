@@ -60,6 +60,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 9.0 | Portfolio Polish | Refine documentation, case study, visuals, and final presentation. | Done |
 | 9.1 | Screenshots & Demo Assets | Define the manual screenshot checklist, filenames, capture guidance, and demo scripts for portfolio presentation. | Done |
 | 9.2 | Architecture Diagrams | Add Mermaid architecture, data flow, API flow, QA strategy, and interview-story diagrams for portfolio presentation. | Done |
+| 9.3 | Portfolio Release Preparation | Add final release checklist, demo scripts, PR checklist, portfolio summary text, and release limitations. | Done |
 
 ## Phase 0.0 - Project Foundation
 
@@ -1394,3 +1395,32 @@ Exit criteria:
 - Diagrams render in GitHub Markdown.
 - Diagrams explain current architecture and validation strategy without claiming undeployed infrastructure.
 - No application, model, API, data, test, dependency, CI, or image-file changes are introduced.
+
+## Phase 9.3 - Portfolio Release Preparation
+
+Prepare the repository for a polished portfolio release.
+
+Deliverables:
+
+- `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md`.
+- `docs/portfolio/DEMO_SCRIPT.md`.
+- Recommended release tag: `v0.1.0-portfolio`.
+- Local final validation command list.
+- GitHub PR checklist.
+- LinkedIn and GitHub portfolio summary text.
+- 2-minute, 5-minute, and Senior SDET demo scripts.
+- QA Engineer, Senior QA, and SDET interview talking points.
+- Limitations section covering partial dataset, foundation model, not betting advice, and no public accuracy claim.
+
+Deferred to future phases:
+
+- Deployment.
+- Dependency changes.
+- Binary screenshots or videos.
+- App, API, model, data, test, or CI behavior changes.
+
+Exit criteria:
+
+- Portfolio release readiness can be reviewed from documentation alone.
+- Final validation, PR review, and tagging expectations are clear.
+- Documentation remains honest about limitations and non-goals.

@@ -26,6 +26,8 @@ Use `docs/portfolio/SCREENSHOTS_AND_DEMO_ASSETS.md` when preparing visual materi
 
 Use `docs/architecture/ARCHITECTURE_DIAGRAMS.md` when an interviewer asks for system diagrams, data flow, API flow, QA strategy, or a concise interview story.
 
+Use `docs/portfolio/DEMO_SCRIPT.md` for final 2-minute, 5-minute, and Senior SDET walkthrough scripts. Use `docs/portfolio/PORTFOLIO_RELEASE_CHECKLIST.md` before publishing or tagging the portfolio release.
+
 ## Talking Points For QA Engineer
 
 - The project includes both product-facing and technical quality checks.
@@ -133,3 +135,13 @@ The next useful improvements are:
 - Add observability for future runtime API routes if the system gets deployed.
 
 Avoid claiming the project is finished as a production predictor. Present it as a strong foundation with clear next steps and honest limits.
+
+## Portfolio Release Preparation
+
+Recommended release tag:
+
+```text
+v0.1.0-portfolio
+```
+
+Before presenting this project publicly, confirm the release checklist is complete: README reviewed, architecture diagrams reviewed, screenshots captured, demo script tested, local checks passing, Playwright E2E passing, GitHub Actions passing, PR merged to `main`, and release tag created.
