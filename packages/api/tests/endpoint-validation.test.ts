@@ -99,7 +99,8 @@ describe("api endpoint validation", () => {
       "predictMatchFromLiveElo",
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
-      "getLiveEloRatingsFoundation"
+      "getLiveEloRatingsFoundation",
+      "getWorldCup2026FixtureFoundation"
     ]);
     expect(body.limitations).toContain("No HTTP server is created in Phase 5.0.");
     expectFoundationMetadata(body.metadata);

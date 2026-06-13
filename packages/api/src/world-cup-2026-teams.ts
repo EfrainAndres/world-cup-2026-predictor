@@ -1,5 +1,6 @@
 import { canonicalizeTeamName, normalizeTeamSearchText } from "./team-aliases.js";
 import type { TeamCoverageEntry } from "./team-aliases.js";
+import type { WorldCup2026Fixture, WorldCup2026Group } from "./schemas.js";
 
 export type WorldCup2026GroupName =
   | "A"
@@ -56,6 +57,62 @@ export const WORLD_CUP_2026_TEAMS: readonly WorldCup2026TeamEntry[] = WORLD_CUP_
 
 export const WORLD_CUP_2026_TEAM_NAMES: readonly string[] = WORLD_CUP_2026_TEAMS.map((entry) => entry.team);
 
+const WORLD_CUP_2026_GROUP_FIXTURE_PAIR_INDICES = [
+  [0, 1],
+  [2, 3],
+  [0, 2],
+  [1, 3],
+  [0, 3],
+  [1, 2]
+] as const;
+
+function slugifyFixtureTeam(team: string): string {
+  return normalizeTeamSearchText(team).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function buildWorldCup2026FixtureGroups(): WorldCup2026Group[] {
+  return WORLD_CUP_2026_GROUPS.map((group) => ({
+    group: group.group,
+    groupName: `Group ${group.group}`,
+    teams: group.teams,
+    fixtureCount: WORLD_CUP_2026_GROUP_FIXTURE_PAIR_INDICES.length
+  }));
+}
+
+export function buildWorldCup2026GroupFixtures(): WorldCup2026Fixture[] {
+  return WORLD_CUP_2026_GROUPS.flatMap((group, groupIndex) =>
+    WORLD_CUP_2026_GROUP_FIXTURE_PAIR_INDICES.map(([homeIndex, awayIndex], pairIndex) => {
+      const homeTeam = group.teams[homeIndex];
+      const awayTeam = group.teams[awayIndex];
+      const groupFixtureOrder = pairIndex + 1;
+      const matchday = Math.floor(pairIndex / 2) + 1;
+      const order = groupIndex * WORLD_CUP_2026_GROUP_FIXTURE_PAIR_INDICES.length + groupFixtureOrder;
+
+      if (homeTeam === undefined || awayTeam === undefined) {
+        throw new Error(`World Cup 2026 Group ${group.group} fixture template references a missing team.`);
+      }
+
+      return {
+        id: `wc2026-group-${group.group.toLowerCase()}-md${matchday}-${String(groupFixtureOrder).padStart(
+          2,
+          "0"
+        )}-${slugifyFixtureTeam(homeTeam)}-vs-${slugifyFixtureTeam(awayTeam)}`,
+        group: group.group,
+        matchday,
+        order,
+        groupFixtureOrder,
+        homeTeam,
+        awayTeam,
+        dateStatus: "deferred" as const,
+        venueStatus: "deferred" as const
+      };
+    })
+  );
+}
+
+export const WORLD_CUP_2026_FIXTURE_GROUPS: readonly WorldCup2026Group[] = buildWorldCup2026FixtureGroups();
+export const WORLD_CUP_2026_GROUP_STAGE_FIXTURES: readonly WorldCup2026Fixture[] = buildWorldCup2026GroupFixtures();
+
 function buildLiveRatingLookup(rankedRatings: readonly TeamCoverageEntry[]): Map<string, TeamCoverageEntry> {
   const ratingsByCanonicalTeam = new Map<string, TeamCoverageEntry>();
 
@@ -106,4 +163,3 @@ export function buildWorldCup2026CoverageEntries(
     return fallbackEntry;
   });
 }
-
