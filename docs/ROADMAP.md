@@ -68,6 +68,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.3 | World Cup 2026 Fixtures & Groups | Add static Groups A-L and all 72 group-stage fixtures to the API and dashboard as tournament structure foundation data. | Done |
 | 10.4 | Group Standings Engine | Calculate deterministic World Cup 2026 group standings from local completed fixture results while ignoring scheduled fixtures. | Done |
 | 10.4A | Results Provider Strategy | Route World Cup 2026 standings through normalized local result provider records with source metadata and external providers disabled. | Done |
+| 10.6 | Round of 32 Bracket Foundation | Derive 32 projected knockout qualifiers from current standings and create 16 deterministic Round of 32 foundation fixtures. | Done |
+| 10.7 | Knockout Bracket Progression Foundation | Build complete placeholder bracket structure from Round of 32 through the Final. No winner simulation. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -212,6 +214,33 @@ Exit criteria:
 - Scheduled result records and scheduled fixtures are ignored.
 - API response exposes provider metadata and local-data warnings.
 - No external API calls, live score service, secrets, database, dependencies, Elo formula changes, prediction formula changes, or deployment changes are introduced.
+- Unit, typecheck, build, Playwright E2E, and whitespace checks pass.
+
+## Phase 10.6 - Round of 32 Bracket Foundation
+
+Add a projected Round of 32 foundation for World Cup 2026 using current group standings and best third-place ranking logic.
+
+Deliverables:
+
+- Derive 12 group winners, 12 group runners-up, and 8 best third-place teams from current standings.
+- Build 32 qualified-team entries with group and qualification source metadata.
+- Generate 16 deterministic `round_of_32` projected fixtures.
+- Add `getWorldCup2026RoundOf32Foundation()` pure API handler.
+- Add schema types for qualification sources, qualified teams, Round of 32 fixtures, and response.
+- Dashboard section showing "Projected Round of 32", 32 qualified teams, 16 fixtures, and qualification source labels.
+- API tests for counts, fixture shape, duplicate-team prevention, qualified-team linkage, deterministic response, and projected warning.
+- Contract test for response shape.
+- E2E smoke test for the projected Round of 32 dashboard section.
+- `docs/dashboard/WORLD_CUP_2026_ROUND_OF_32_FOUNDATION.md`.
+
+Exit criteria:
+
+- API returns 32 qualified teams and 16 projected fixtures.
+- Qualified team counts are 12 group winners, 12 runners-up, and 8 best third-place teams.
+- Every projected fixture has two unique teams and every fixture team comes from qualified teams.
+- Dashboard labels the section as projected/foundation only.
+- Warning states official third-place pairing rules may differ and pending fixtures can change qualification.
+- No Round of 16, knockout winner simulation, champion probabilities, external API calls, dependencies, Elo formula changes, xG formula changes, or test weakening are introduced.
 - Unit, typecheck, build, Playwright E2E, and whitespace checks pass.
 
 ## Phase 0.0 - Project Foundation

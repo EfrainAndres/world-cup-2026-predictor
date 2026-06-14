@@ -27,12 +27,16 @@ import { getModelInfo } from "./model-info.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
+  WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
   WORLD_CUP_2026_GROUP_STANDINGS,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+  WORLD_CUP_2026_KNOCKOUT_BRACKET,
   WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER,
+  WORLD_CUP_2026_QUALIFIED_TEAMS,
+  WORLD_CUP_2026_ROUND_OF_32_FIXTURES,
   WORLD_CUP_2026_TEAM_NAMES,
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
@@ -56,7 +60,9 @@ import type {
   TournamentSimulationSuccessResponse,
   TournamentSimulationTeamResult,
   WorldCup2026FixtureFoundationResponse,
-  WorldCup2026GroupStandingsFoundationResponse
+  WorldCup2026GroupStandingsFoundationResponse,
+  WorldCup2026KnockoutBracketFoundationResponse,
+  WorldCup2026RoundOf32FoundationResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -484,6 +490,55 @@ export function getWorldCup2026GroupStandingsFoundation(): WorldCup2026GroupStan
   };
 }
 
+export function getWorldCup2026RoundOf32Foundation(): WorldCup2026RoundOf32FoundationResponse {
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_round_of_32_foundation",
+    totalQualifiedTeams: WORLD_CUP_2026_QUALIFIED_TEAMS.length,
+    groupWinners: WORLD_CUP_2026_QUALIFIED_TEAMS.filter((entry) => entry.qualificationSource === "group_winner").length,
+    groupRunnersUp: WORLD_CUP_2026_QUALIFIED_TEAMS.filter((entry) => entry.qualificationSource === "group_runner_up").length,
+    bestThirdPlaceTeams: WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING.slice(0, 8).length,
+    fixturesCount: WORLD_CUP_2026_ROUND_OF_32_FIXTURES.length,
+    source: "current_local_standings_foundation",
+    qualifiedTeams: WORLD_CUP_2026_QUALIFIED_TEAMS,
+    fixtures: WORLD_CUP_2026_ROUND_OF_32_FIXTURES,
+    warnings: [
+      "Projected Round of 32 foundation based on current local standings. Official third-place pairing rules may differ and pending fixtures can change qualification.",
+      "This phase does not simulate knockout winners, generate the Round of 16, or add champion probabilities."
+    ],
+    metadata: buildApiMetadata([
+      "World Cup 2026 Round of 32 foundation derives 12 group winners, 12 runners-up, and 8 best third-place teams from current local standings.",
+      "Round of 32 fixtures are deterministic projected foundation slots, not an official knockout bracket.",
+      "No external API calls, live score service, knockout simulation, or prediction formula changes are used."
+    ])
+  };
+}
+
+export function getWorldCup2026KnockoutBracketFoundation(): WorldCup2026KnockoutBracketFoundationResponse {
+  const { roundOf32, roundOf16, quarterfinals, semifinals, thirdPlaceMatch, final } = WORLD_CUP_2026_KNOCKOUT_BRACKET;
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_knockout_bracket_foundation",
+    roundOf32,
+    roundOf16,
+    quarterfinals,
+    semifinals,
+    thirdPlaceMatch,
+    final,
+    warnings: [
+      "Projected bracket only. Round of 32 is derived from current local standings; rounds beyond R32 use placeholder progression slots.",
+      "Winners are not simulated. No champion probabilities. No external API calls. No prediction formula changes."
+    ],
+    metadata: buildApiMetadata([
+      "Knockout bracket foundation: R32 from local standings, R16 through Final are deterministic placeholder slots.",
+      "Placeholder team names (Winner R32-01, Winner R16-1, etc.) do not represent predictions or simulations.",
+      "This phase is bracket structure only — no bracket auto-advancement, no winner logic, no Elo or xG formula changes."
+    ])
+  };
+}
+
 const TEAM_RATINGS_FOUNDATION_DATA: readonly TeamRatingFoundationEntry[] = [
   {
     rank: 1,
@@ -888,5 +943,7 @@ export const apiRoutes: ApiRoutes = {
   getHistoricalTournamentSummary,
   getHistoricalReplayAudit,
   getWorldCup2026FixtureFoundation,
-  getWorldCup2026GroupStandingsFoundation
+  getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026RoundOf32Foundation,
+  getWorldCup2026KnockoutBracketFoundation
 };

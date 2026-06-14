@@ -8,6 +8,8 @@ import { SectionHeader } from "../src/components/SectionHeader";
 import { TeamRatingsSection } from "../src/components/TeamRatingsSection";
 import { TournamentSimulationSection } from "../src/components/TournamentSimulationSection";
 import { WorldCupGroupsSection } from "../src/components/WorldCupGroupsSection";
+import { WorldCupKnockoutBracketSection } from "../src/components/WorldCupKnockoutBracketSection";
+import { WorldCupRoundOf32Section } from "../src/components/WorldCupRoundOf32Section";
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
 import { getDashboardSnapshot } from "../src/lib/api-client";
 
@@ -82,6 +84,10 @@ export default function DashboardHomePage() {
         <WorldCupGroupsSection fixtureFoundation={snapshot.worldCup2026Fixtures} />
 
         <WorldCupStandingsSection standingsFoundation={snapshot.worldCup2026Standings} />
+
+        <WorldCupRoundOf32Section roundOf32Foundation={snapshot.worldCup2026RoundOf32} />
+
+        <WorldCupKnockoutBracketSection knockoutBracket={snapshot.worldCup2026KnockoutBracket} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}

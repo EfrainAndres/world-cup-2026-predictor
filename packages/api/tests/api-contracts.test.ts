@@ -8,6 +8,7 @@ import {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation,
@@ -150,7 +151,9 @@ describe("api contract coverage", () => {
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
-      "getWorldCup2026GroupStandingsFoundation"
+      "getWorldCup2026GroupStandingsFoundation",
+      "getWorldCup2026RoundOf32Foundation",
+      "getWorldCup2026KnockoutBracketFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
@@ -475,6 +478,62 @@ describe("api contract coverage", () => {
       goalsAgainst: expect.any(Number),
       goalDifference: expect.any(Number),
       points: expect.any(Number)
+    });
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the World Cup 2026 Round of 32 foundation contract", () => {
+    const response = getWorldCup2026RoundOf32Foundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "bestThirdPlaceTeams",
+      "dataScope",
+      "fixtures",
+      "fixturesCount",
+      "groupRunnersUp",
+      "groupWinners",
+      "metadata",
+      "qualifiedTeams",
+      "source",
+      "status",
+      "totalQualifiedTeams",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.tournamentName).toBe("FIFA World Cup 2026");
+    expect(response.dataScope).toBe("world_cup_2026_round_of_32_foundation");
+    expect(response.totalQualifiedTeams).toBe(32);
+    expect(response.groupWinners).toBe(12);
+    expect(response.groupRunnersUp).toBe(12);
+    expect(response.bestThirdPlaceTeams).toBe(8);
+    expect(response.fixturesCount).toBe(16);
+    expect(response.source).toBe("current_local_standings_foundation");
+    expect(response.qualifiedTeams[0]).toEqual({
+      group: expect.any(String),
+      groupName: expect.any(String),
+      qualificationSource: expect.stringMatching(/group_winner|group_runner_up|best_third_place/),
+      qualificationRank: expect.any(Number),
+      team: expect.any(String),
+      played: expect.any(Number),
+      wins: expect.any(Number),
+      draws: expect.any(Number),
+      losses: expect.any(Number),
+      goalsFor: expect.any(Number),
+      goalsAgainst: expect.any(Number),
+      goalDifference: expect.any(Number),
+      points: expect.any(Number)
+    });
+    expect(response.fixtures[0]).toEqual({
+      fixtureId: expect.any(String),
+      round: "round_of_32",
+      slot: expect.any(Number),
+      homeTeam: expect.any(String),
+      awayTeam: expect.any(String),
+      homeQualificationSource: expect.stringMatching(/group_winner|group_runner_up|best_third_place/),
+      awayQualificationSource: expect.stringMatching(/group_winner|group_runner_up|best_third_place/),
+      status: "projected"
     });
     expectWarningsContract(response.warnings);
     expectMetadataContract(response.metadata);
