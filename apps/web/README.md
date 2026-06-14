@@ -17,6 +17,8 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Team ratings section with foundation Elo seed ratings for top 10 World Cup 2026 contenders, tier pills (Elite/Strong/Competitive), offense/defense scores, strongest offense/defense indicators, and summary stats.
 - World Cup 2026 groups and fixtures section showing Groups A-L, 48 teams, 72 local group-stage fixtures, deferred date/venue metadata, and foundation warnings.
 - World Cup 2026 group standings section showing local standings tables for Groups A-L with points, record, goals for/against, and goal difference.
+- Projected World Cup 2026 Round of 32 section showing 32 qualified teams, 16 projected fixtures, and qualification source labels.
+- Projected knockout bracket section showing the complete placeholder bracket structure from Round of 32 through the Final with Projected and Placeholder badges.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -48,6 +50,14 @@ The groups and fixtures section calls `getWorldCup2026FixtureFoundation()` throu
 ## World Cup 2026 Group Standings
 
 The standings section calls `getWorldCup2026GroupStandingsFoundation()` through the local API client wrapper. It calculates standings from normalized local result provider records, shows the active result source, and ignores scheduled matches without completed results. The current provider is local static data with external providers disabled.
+
+## World Cup 2026 Round of 32
+
+The Round of 32 section calls `getWorldCup2026RoundOf32Foundation()` through the local API client wrapper. It derives 12 group winners, 12 runners-up, and 8 best third-place teams from current local standings, then displays 16 deterministic projected fixtures. It is a foundation view only, not the final official knockout bracket.
+
+## World Cup 2026 Knockout Bracket
+
+The knockout bracket section calls `getWorldCup2026KnockoutBracketFoundation()` through the local API client wrapper. It builds a complete bracket structure from Round of 32 through the Final. R32 uses the actual projected team names; R16, QF, SF, Third Place, and Final use deterministic placeholder slots (Winner R32-01, Winner R16-1, etc.). No winners are simulated and no champion probabilities are calculated.
 
 ## Commands
 

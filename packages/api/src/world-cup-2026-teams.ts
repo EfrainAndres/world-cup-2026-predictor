@@ -6,6 +6,10 @@ import type {
   WorldCup2026Group,
   WorldCup2026GroupStandingEntry,
   WorldCup2026GroupStandings,
+  WorldCup2026KnockoutBracketFixture,
+  WorldCup2026QualificationSource,
+  WorldCup2026QualifiedTeamEntry,
+  WorldCup2026RoundOf32Fixture,
   WorldCup2026ResultProviderMetadata
 } from "./schemas.js";
 
@@ -288,14 +292,12 @@ function applyCompletedFixtureResult(
   awayStanding.points += 1;
 }
 
+function compareStandingStats(a: WorldCup2026GroupStandingEntry, b: WorldCup2026GroupStandingEntry): number {
+  return b.points - a.points || b.goalDifference - a.goalDifference || b.goalsFor - a.goalsFor || a.team.localeCompare(b.team);
+}
+
 function sortStandings(standings: readonly WorldCup2026GroupStandingEntry[]): WorldCup2026GroupStandingEntry[] {
-  return [...standings].sort(
-    (a, b) =>
-      b.points - a.points ||
-      b.goalDifference - a.goalDifference ||
-      b.goalsFor - a.goalsFor ||
-      a.team.localeCompare(b.team)
-  );
+  return [...standings].sort(compareStandingStats);
 }
 
 export function buildWorldCup2026GroupStandings(
@@ -326,6 +328,103 @@ export function buildWorldCup2026GroupStandings(
 }
 
 export const WORLD_CUP_2026_GROUP_STANDINGS: readonly WorldCup2026GroupStandings[] = buildWorldCup2026GroupStandings();
+
+function toQualifiedTeamEntry(
+  entry: WorldCup2026GroupStandingEntry,
+  group: WorldCup2026GroupStandings,
+  qualificationSource: WorldCup2026QualificationSource,
+  qualificationRank: number
+): WorldCup2026QualifiedTeamEntry {
+  return {
+    ...entry,
+    group: group.group,
+    groupName: group.groupName,
+    qualificationSource,
+    qualificationRank
+  };
+}
+
+export function buildWorldCup2026BestThirdPlaceRanking(
+  groupStandings: readonly WorldCup2026GroupStandings[] = WORLD_CUP_2026_GROUP_STANDINGS
+): WorldCup2026QualifiedTeamEntry[] {
+  const thirdPlaceTeams = groupStandings.flatMap((group) => {
+    const thirdPlace = group.standings[2];
+
+    if (thirdPlace === undefined) {
+      return [];
+    }
+
+    return [toQualifiedTeamEntry(thirdPlace, group, "best_third_place", 0)];
+  });
+
+  return thirdPlaceTeams.sort(compareStandingStats).map((entry, index) => ({
+    ...entry,
+    qualificationRank: index + 1
+  }));
+}
+
+export const WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING: readonly WorldCup2026QualifiedTeamEntry[] =
+  buildWorldCup2026BestThirdPlaceRanking();
+
+export function buildWorldCup2026QualifiedTeams(
+  groupStandings: readonly WorldCup2026GroupStandings[] = WORLD_CUP_2026_GROUP_STANDINGS,
+  bestThirdPlaceRanking: readonly WorldCup2026QualifiedTeamEntry[] = buildWorldCup2026BestThirdPlaceRanking(groupStandings)
+): WorldCup2026QualifiedTeamEntry[] {
+  const groupWinners = groupStandings.flatMap((group) => {
+    const winner = group.standings[0];
+
+    return winner === undefined ? [] : [toQualifiedTeamEntry(winner, group, "group_winner", 1)];
+  });
+  const groupRunnersUp = groupStandings.flatMap((group) => {
+    const runnerUp = group.standings[1];
+
+    return runnerUp === undefined ? [] : [toQualifiedTeamEntry(runnerUp, group, "group_runner_up", 2)];
+  });
+  const bestThirdPlaceTeams = bestThirdPlaceRanking.slice(0, 8);
+
+  return [...groupWinners, ...groupRunnersUp, ...bestThirdPlaceTeams];
+}
+
+function slugifyFixtureSlotText(text: string): string {
+  return normalizeTeamSearchText(text).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+export function buildWorldCup2026RoundOf32Fixtures(
+  qualifiedTeams: readonly WorldCup2026QualifiedTeamEntry[] = buildWorldCup2026QualifiedTeams()
+): WorldCup2026RoundOf32Fixture[] {
+  const groupWinners = qualifiedTeams.filter((entry) => entry.qualificationSource === "group_winner");
+  const groupRunnersUp = qualifiedTeams.filter((entry) => entry.qualificationSource === "group_runner_up");
+  const bestThirdPlaceTeams = qualifiedTeams.filter((entry) => entry.qualificationSource === "best_third_place");
+  const homePool = [...groupWinners, ...groupRunnersUp.slice(0, 4)];
+  const awayPool = [...bestThirdPlaceTeams.slice().reverse(), ...groupRunnersUp.slice(4)];
+
+  return homePool.map((homeTeam, index) => {
+    const awayTeam = awayPool[index];
+
+    if (awayTeam === undefined) {
+      throw new Error("World Cup 2026 Round of 32 foundation requires 32 qualified teams.");
+    }
+
+    const slot = index + 1;
+
+    return {
+      fixtureId: `wc2026-r32-${String(slot).padStart(2, "0")}-${slugifyFixtureSlotText(homeTeam.team)}-vs-${slugifyFixtureSlotText(
+        awayTeam.team
+      )}`,
+      round: "round_of_32" as const,
+      slot,
+      homeTeam: homeTeam.team,
+      awayTeam: awayTeam.team,
+      homeQualificationSource: homeTeam.qualificationSource,
+      awayQualificationSource: awayTeam.qualificationSource,
+      status: "projected" as const
+    };
+  });
+}
+
+export const WORLD_CUP_2026_QUALIFIED_TEAMS: readonly WorldCup2026QualifiedTeamEntry[] = buildWorldCup2026QualifiedTeams();
+export const WORLD_CUP_2026_ROUND_OF_32_FIXTURES: readonly WorldCup2026RoundOf32Fixture[] =
+  buildWorldCup2026RoundOf32Fixtures(WORLD_CUP_2026_QUALIFIED_TEAMS);
 
 function buildLiveRatingLookup(rankedRatings: readonly TeamCoverageEntry[]): Map<string, TeamCoverageEntry> {
   const ratingsByCanonicalTeam = new Map<string, TeamCoverageEntry>();
@@ -377,3 +476,87 @@ export function buildWorldCup2026CoverageEntries(
     return fallbackEntry;
   });
 }
+
+export function buildWorldCup2026KnockoutBracket(): {
+  roundOf32: WorldCup2026KnockoutBracketFixture[];
+  roundOf16: WorldCup2026KnockoutBracketFixture[];
+  quarterfinals: WorldCup2026KnockoutBracketFixture[];
+  semifinals: WorldCup2026KnockoutBracketFixture[];
+  thirdPlaceMatch: WorldCup2026KnockoutBracketFixture;
+  final: WorldCup2026KnockoutBracketFixture;
+} {
+  const roundOf32: WorldCup2026KnockoutBracketFixture[] = WORLD_CUP_2026_ROUND_OF_32_FIXTURES.map((f) => ({
+    fixtureId: f.fixtureId,
+    round: "round_of_32" as const,
+    slot: f.slot,
+    homeTeam: f.homeTeam,
+    awayTeam: f.awayTeam,
+    source: "current_local_standings_foundation",
+    status: "projected" as const
+  }));
+
+  const roundOf16: WorldCup2026KnockoutBracketFixture[] = Array.from({ length: 8 }, (_, i) => {
+    const slot = i + 1;
+    const r32Home = (i * 2 + 1).toString().padStart(2, "0");
+    const r32Away = (i * 2 + 2).toString().padStart(2, "0");
+    return {
+      fixtureId: `wc2026-r16-${slot.toString().padStart(2, "0")}`,
+      round: "round_of_16" as const,
+      slot,
+      homeTeam: `Winner R32-${r32Home}`,
+      awayTeam: `Winner R32-${r32Away}`,
+      source: "placeholder_progression",
+      status: "projected" as const
+    };
+  });
+
+  const quarterfinals: WorldCup2026KnockoutBracketFixture[] = Array.from({ length: 4 }, (_, i) => {
+    const slot = i + 1;
+    return {
+      fixtureId: `wc2026-qf-${slot.toString().padStart(2, "0")}`,
+      round: "quarterfinals" as const,
+      slot,
+      homeTeam: `Winner R16-${i * 2 + 1}`,
+      awayTeam: `Winner R16-${i * 2 + 2}`,
+      source: "placeholder_progression",
+      status: "projected" as const
+    };
+  });
+
+  const semifinals: WorldCup2026KnockoutBracketFixture[] = Array.from({ length: 2 }, (_, i) => {
+    const slot = i + 1;
+    return {
+      fixtureId: `wc2026-sf-${slot.toString().padStart(2, "0")}`,
+      round: "semifinals" as const,
+      slot,
+      homeTeam: `Winner QF-${i * 2 + 1}`,
+      awayTeam: `Winner QF-${i * 2 + 2}`,
+      source: "placeholder_progression",
+      status: "projected" as const
+    };
+  });
+
+  const thirdPlaceMatch: WorldCup2026KnockoutBracketFixture = {
+    fixtureId: "wc2026-3rd-01",
+    round: "third_place" as const,
+    slot: 1,
+    homeTeam: "Loser SF-1",
+    awayTeam: "Loser SF-2",
+    source: "placeholder_progression",
+    status: "projected" as const
+  };
+
+  const final: WorldCup2026KnockoutBracketFixture = {
+    fixtureId: "wc2026-final-01",
+    round: "final" as const,
+    slot: 1,
+    homeTeam: "Winner SF-1",
+    awayTeam: "Winner SF-2",
+    source: "placeholder_progression",
+    status: "projected" as const
+  };
+
+  return { roundOf32, roundOf16, quarterfinals, semifinals, thirdPlaceMatch, final };
+}
+
+export const WORLD_CUP_2026_KNOCKOUT_BRACKET = buildWorldCup2026KnockoutBracket();

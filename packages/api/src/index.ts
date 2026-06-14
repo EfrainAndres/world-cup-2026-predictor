@@ -10,24 +10,34 @@ export {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026KnockoutBracketFoundation,
+  getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
 } from "./routes.js";
 export {
+  WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
   WORLD_CUP_2026_GROUP_STANDINGS,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_GROUPS,
+  WORLD_CUP_2026_KNOCKOUT_BRACKET,
   WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER,
   WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER_METADATA,
   WORLD_CUP_2026_LOCAL_STATIC_RESULTS,
   WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT,
+  WORLD_CUP_2026_QUALIFIED_TEAMS,
+  WORLD_CUP_2026_ROUND_OF_32_FIXTURES,
   WORLD_CUP_2026_TEAM_NAMES,
   WORLD_CUP_2026_TEAMS,
+  buildWorldCup2026BestThirdPlaceRanking,
   buildWorldCup2026GroupStandings,
+  buildWorldCup2026KnockoutBracket,
+  buildWorldCup2026QualifiedTeams,
+  buildWorldCup2026RoundOf32Fixtures,
   buildWorldCup2026FixtureGroups,
   buildWorldCup2026GroupFixtures,
   buildWorldCup2026CoverageEntries
@@ -77,8 +87,15 @@ export type {
   WorldCup2026GroupStandingEntry,
   WorldCup2026GroupStandings,
   WorldCup2026GroupStandingsFoundationResponse,
+  WorldCup2026QualificationSource,
+  WorldCup2026QualifiedTeamEntry,
   WorldCup2026ResultProviderMetadata,
-  WorldCup2026ResultSource
+  WorldCup2026ResultSource,
+  WorldCup2026KnockoutBracketFixture,
+  WorldCup2026KnockoutBracketFoundationResponse,
+  WorldCup2026KnockoutRound,
+  WorldCup2026RoundOf32Fixture,
+  WorldCup2026RoundOf32FoundationResponse
 } from "./schemas.js";
 
 export type {

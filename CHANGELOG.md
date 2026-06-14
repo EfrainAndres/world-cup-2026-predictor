@@ -8,6 +8,12 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.7 projected knockout bracket foundation for World Cup 2026 — complete bracket structure from Round of 32 through the Final.
+- `getWorldCup2026KnockoutBracketFoundation()` API handler consuming the existing Round of 32 foundation and generating deterministic placeholder progression for R16, QF, SF, Third Place, and Final.
+- `WorldCup2026KnockoutBracketFixture` and `WorldCup2026KnockoutBracketFoundationResponse` typed schemas; `WorldCup2026KnockoutRound` union type.
+- `buildWorldCup2026KnockoutBracket()` builder and `WORLD_CUP_2026_KNOCKOUT_BRACKET` constant in `world-cup-2026-teams.ts`.
+- `WorldCupKnockoutBracketSection` dashboard component showing all six rounds with Projected and Placeholder badges and a projected-bracket-only warning banner.
+- `docs/dashboard/WORLD_CUP_2026_KNOCKOUT_BRACKET_FOUNDATION.md` documenting placeholder naming, API schema, response structure, and boundaries.
 - Phase 10.6 projected Round of 32 bracket foundation for World Cup 2026.
 - `getWorldCup2026RoundOf32Foundation()` API handler deriving 32 qualified teams and 16 projected fixtures from current local standings.
 - `WorldCupRoundOf32Section` and `WorldCupRoundOf32FixtureCard` dashboard components showing projected Round of 32 slots with qualification source labels.

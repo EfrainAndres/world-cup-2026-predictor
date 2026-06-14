@@ -64,6 +64,35 @@ test("dashboard renders World Cup 2026 group standings tables", async ({ page })
   await expect(groupC.getByRole("row", { name: /Scotland/ })).toContainText("3");
 });
 
+test("dashboard renders projected World Cup 2026 Round of 32 foundation", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 32" })).toBeVisible();
+  const roundOf32Section = page.getByRole("region", { name: "Projected Round of 32" });
+  await expect(roundOf32Section.getByText("Round of 32 foundation", { exact: true })).toBeVisible();
+  await expect(roundOf32Section.getByText("Qualified teams")).toBeVisible();
+  await expect(roundOf32Section.getByText("32", { exact: true })).toBeVisible();
+  await expect(roundOf32Section.getByText("Fixtures", { exact: true })).toBeVisible();
+  await expect(roundOf32Section.getByText("16", { exact: true })).toBeVisible();
+  await expect(roundOf32Section.getByRole("article", { name: "Round of 32 fixture 1", exact: true })).toBeVisible();
+  await expect(roundOf32Section.getByText("Projected Round of 32 foundation based on current local standings.")).toBeVisible();
+});
+
+test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected knockout bracket" })).toBeVisible();
+  const bracketSection = page.getByRole("region", { name: "Projected knockout bracket" });
+  await expect(bracketSection.getByText("Projected bracket only")).toBeVisible();
+  await expect(bracketSection.getByText("Round of 32", { exact: true })).toBeVisible();
+  await expect(bracketSection.getByText("Round of 16", { exact: true })).toBeVisible();
+  await expect(bracketSection.getByText("Quarterfinals", { exact: true })).toBeVisible();
+  await expect(bracketSection.getByText("Semifinals", { exact: true })).toBeVisible();
+  await expect(bracketSection.getByText("Third Place", { exact: true })).toBeVisible();
+  await expect(bracketSection.getByText("Final", { exact: true })).toBeVisible();
+  await expect(page.getByText("Winner R32-01").first()).toBeVisible();
+});
+
 // ── Match simulation form ─────────────────────────────────────────────────────
 
 test("match simulation form renders with required inputs and submit button", async ({ page }) => {

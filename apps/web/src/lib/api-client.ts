@@ -8,6 +8,8 @@ import {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026KnockoutBracketFoundation,
+  getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -32,7 +34,9 @@ import type {
   TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse,
   WorldCup2026FixtureFoundationResponse,
-  WorldCup2026GroupStandingsFoundationResponse
+  WorldCup2026GroupStandingsFoundationResponse,
+  WorldCup2026KnockoutBracketFoundationResponse,
+  WorldCup2026RoundOf32FoundationResponse
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -41,6 +45,8 @@ export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };
 export type { WorldCup2026FixtureFoundationResponse };
 export type { WorldCup2026GroupStandingsFoundationResponse };
+export type { WorldCup2026RoundOf32FoundationResponse };
+export type { WorldCup2026KnockoutBracketFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -55,6 +61,8 @@ export interface DashboardSnapshot {
   liveEloRatings: LiveEloRatingsFoundationResponse;
   worldCup2026Fixtures: WorldCup2026FixtureFoundationResponse;
   worldCup2026Standings: WorldCup2026GroupStandingsFoundationResponse;
+  worldCup2026RoundOf32: WorldCup2026RoundOf32FoundationResponse;
+  worldCup2026KnockoutBracket: WorldCup2026KnockoutBracketFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -116,6 +124,8 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     teamRatings: getTeamRatingsFoundation(),
     liveEloRatings: getLiveEloRatingsFoundation(),
     worldCup2026Fixtures: getWorldCup2026FixtureFoundation(),
-    worldCup2026Standings: getWorldCup2026GroupStandingsFoundation()
+    worldCup2026Standings: getWorldCup2026GroupStandingsFoundation(),
+    worldCup2026RoundOf32: getWorldCup2026RoundOf32Foundation(),
+    worldCup2026KnockoutBracket: getWorldCup2026KnockoutBracketFoundation()
   };
 }

@@ -22,6 +22,8 @@ import {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026KnockoutBracketFoundation,
+  getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -270,6 +272,8 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
     expect(apiRoutes.getWorldCup2026FixtureFoundation()).toEqual(getWorldCup2026FixtureFoundation());
     expect(apiRoutes.getWorldCup2026GroupStandingsFoundation()).toEqual(getWorldCup2026GroupStandingsFoundation());
+    expect(apiRoutes.getWorldCup2026RoundOf32Foundation()).toEqual(getWorldCup2026RoundOf32Foundation());
+    expect(apiRoutes.getWorldCup2026KnockoutBracketFoundation()).toEqual(getWorldCup2026KnockoutBracketFoundation());
     expect(apiRoutes.predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })).toEqual(
       predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })
     );
@@ -574,6 +578,151 @@ describe("getWorldCup2026GroupStandingsFoundation", () => {
       "Czechia",
       "South Africa"
     ]);
+  });
+});
+
+describe("getWorldCup2026RoundOf32Foundation", () => {
+  it("returns 32 qualified teams with expected qualification source counts", () => {
+    const result = getWorldCup2026RoundOf32Foundation();
+
+    expect(result.status).toBe("success");
+    expect(result.totalQualifiedTeams).toBe(32);
+    expect(result.groupWinners).toBe(12);
+    expect(result.groupRunnersUp).toBe(12);
+    expect(result.bestThirdPlaceTeams).toBe(8);
+    expect(result.qualifiedTeams).toHaveLength(32);
+    expect(result.qualifiedTeams.filter((entry) => entry.qualificationSource === "group_winner")).toHaveLength(12);
+    expect(result.qualifiedTeams.filter((entry) => entry.qualificationSource === "group_runner_up")).toHaveLength(12);
+    expect(result.qualifiedTeams.filter((entry) => entry.qualificationSource === "best_third_place")).toHaveLength(8);
+  });
+
+  it("returns 16 projected Round of 32 fixtures with two teams each", () => {
+    const result = getWorldCup2026RoundOf32Foundation();
+
+    expect(result.fixturesCount).toBe(16);
+    expect(result.fixtures).toHaveLength(16);
+    for (const fixture of result.fixtures) {
+      expect(fixture.round).toBe("round_of_32");
+      expect(fixture.status).toBe("projected");
+      expect(fixture.homeTeam.length).toBeGreaterThan(0);
+      expect(fixture.awayTeam.length).toBeGreaterThan(0);
+      expect(fixture.homeTeam).not.toBe(fixture.awayTeam);
+      expect(["group_winner", "group_runner_up", "best_third_place"]).toContain(fixture.homeQualificationSource);
+      expect(["group_winner", "group_runner_up", "best_third_place"]).toContain(fixture.awayQualificationSource);
+    }
+  });
+
+  it("uses every qualified team exactly once across projected fixtures", () => {
+    const result = getWorldCup2026RoundOf32Foundation();
+    const qualifiedTeams = new Set(result.qualifiedTeams.map((entry) => entry.team));
+    const fixtureTeams = result.fixtures.flatMap((fixture) => [fixture.homeTeam, fixture.awayTeam]);
+
+    expect(fixtureTeams).toHaveLength(32);
+    expect(new Set(fixtureTeams).size).toBe(32);
+    for (const team of fixtureTeams) {
+      expect(qualifiedTeams.has(team)).toBe(true);
+    }
+  });
+
+  it("returns a deterministic projected bracket response", () => {
+    const first = getWorldCup2026RoundOf32Foundation();
+    const second = getWorldCup2026RoundOf32Foundation();
+
+    expect(first).toEqual(second);
+    expect(first.fixtures.map((fixture) => fixture.slot)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+  });
+
+  it("exposes projected-bracket source and warning metadata", () => {
+    const result = getWorldCup2026RoundOf32Foundation();
+
+    expect(result.source).toBe("current_local_standings_foundation");
+    expect(result.warnings).toContain(
+      "Projected Round of 32 foundation based on current local standings. Official third-place pairing rules may differ and pending fixtures can change qualification."
+    );
+    expect(result.metadata.notes.some((note) => note.includes("not an official knockout bracket"))).toBe(true);
+  });
+});
+
+describe("getWorldCup2026KnockoutBracketFoundation", () => {
+  it("returns a success response with all six round fields", () => {
+    const result = getWorldCup2026KnockoutBracketFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.tournamentName).toBe("FIFA World Cup 2026");
+    expect(result.dataScope).toBe("world_cup_2026_knockout_bracket_foundation");
+    expect(Array.isArray(result.roundOf32)).toBe(true);
+    expect(Array.isArray(result.roundOf16)).toBe(true);
+    expect(Array.isArray(result.quarterfinals)).toBe(true);
+    expect(Array.isArray(result.semifinals)).toBe(true);
+    expect(typeof result.thirdPlaceMatch).toBe("object");
+    expect(typeof result.final).toBe("object");
+  });
+
+  it("returns correct fixture counts for each round", () => {
+    const result = getWorldCup2026KnockoutBracketFoundation();
+
+    expect(result.roundOf32).toHaveLength(16);
+    expect(result.roundOf16).toHaveLength(8);
+    expect(result.quarterfinals).toHaveLength(4);
+    expect(result.semifinals).toHaveLength(2);
+  });
+
+  it("uses correct round labels for each collection", () => {
+    const result = getWorldCup2026KnockoutBracketFoundation();
+
+    for (const fixture of result.roundOf32) {
+      expect(fixture.round).toBe("round_of_32");
+      expect(fixture.status).toBe("projected");
+    }
+    for (const fixture of result.roundOf16) {
+      expect(fixture.round).toBe("round_of_16");
+    }
+    for (const fixture of result.quarterfinals) {
+      expect(fixture.round).toBe("quarterfinals");
+    }
+    for (const fixture of result.semifinals) {
+      expect(fixture.round).toBe("semifinals");
+    }
+    expect(result.thirdPlaceMatch.round).toBe("third_place");
+    expect(result.final.round).toBe("final");
+  });
+
+  it("uses correct placeholder team names in R16, QF, SF, and final rounds", () => {
+    const result = getWorldCup2026KnockoutBracketFoundation();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(result.roundOf16[0]!.homeTeam).toBe("Winner R32-01");
+    expect(result.roundOf16[0]!.awayTeam).toBe("Winner R32-02");
+    expect(result.roundOf16[7]!.homeTeam).toBe("Winner R32-15");
+    expect(result.roundOf16[7]!.awayTeam).toBe("Winner R32-16");
+
+    expect(result.quarterfinals[0]!.homeTeam).toBe("Winner R16-1");
+    expect(result.quarterfinals[0]!.awayTeam).toBe("Winner R16-2");
+
+    expect(result.semifinals[0]!.homeTeam).toBe("Winner QF-1");
+    expect(result.semifinals[0]!.awayTeam).toBe("Winner QF-2");
+
+    expect(result.thirdPlaceMatch.homeTeam).toBe("Loser SF-1");
+    expect(result.thirdPlaceMatch.awayTeam).toBe("Loser SF-2");
+
+    expect(result.final.homeTeam).toBe("Winner SF-1");
+    expect(result.final.awayTeam).toBe("Winner SF-2");
+  });
+
+  it("returns a deterministic bracket on repeated calls", () => {
+    const first = getWorldCup2026KnockoutBracketFoundation();
+    const second = getWorldCup2026KnockoutBracketFoundation();
+
+    expect(first).toEqual(second);
+  });
+
+  it("exposes projected-bracket warnings and metadata", () => {
+    const result = getWorldCup2026KnockoutBracketFoundation();
+
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings.some((w) => w.includes("Projected bracket only"))).toBe(true);
+    expect(result.metadata.mode).toBe("pure_handlers");
+    expect(result.metadata.serverEnabled).toBe(false);
   });
 });
 

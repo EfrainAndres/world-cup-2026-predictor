@@ -325,6 +325,68 @@ export interface WorldCup2026GroupStandingsFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export type WorldCup2026QualificationSource = "group_winner" | "group_runner_up" | "best_third_place";
+
+export interface WorldCup2026QualifiedTeamEntry extends WorldCup2026GroupStandingEntry {
+  group: string;
+  groupName: string;
+  qualificationSource: WorldCup2026QualificationSource;
+  qualificationRank: number;
+}
+
+export interface WorldCup2026RoundOf32Fixture {
+  fixtureId: string;
+  round: "round_of_32";
+  slot: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeQualificationSource: WorldCup2026QualificationSource;
+  awayQualificationSource: WorldCup2026QualificationSource;
+  status: "projected";
+}
+
+export interface WorldCup2026RoundOf32FoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_round_of_32_foundation";
+  totalQualifiedTeams: number;
+  groupWinners: number;
+  groupRunnersUp: number;
+  bestThirdPlaceTeams: number;
+  fixturesCount: number;
+  source: "current_local_standings_foundation";
+  qualifiedTeams: readonly WorldCup2026QualifiedTeamEntry[];
+  fixtures: readonly WorldCup2026RoundOf32Fixture[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
+export type WorldCup2026KnockoutRound = "round_of_32" | "round_of_16" | "quarterfinals" | "semifinals" | "third_place" | "final";
+
+export interface WorldCup2026KnockoutBracketFixture {
+  fixtureId: string;
+  round: WorldCup2026KnockoutRound;
+  slot: number;
+  homeTeam: string;
+  awayTeam: string;
+  source: string;
+  status: "projected";
+}
+
+export interface WorldCup2026KnockoutBracketFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_knockout_bracket_foundation";
+  roundOf32: readonly WorldCup2026KnockoutBracketFixture[];
+  roundOf16: readonly WorldCup2026KnockoutBracketFixture[];
+  quarterfinals: readonly WorldCup2026KnockoutBracketFixture[];
+  semifinals: readonly WorldCup2026KnockoutBracketFixture[];
+  thirdPlaceMatch: WorldCup2026KnockoutBracketFixture;
+  final: WorldCup2026KnockoutBracketFixture;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
 
 export interface TeamRatingFoundationEntry {
@@ -396,6 +458,8 @@ export interface ApiRoutes {
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
+  getWorldCup2026RoundOf32Foundation: () => WorldCup2026RoundOf32FoundationResponse;
+  getWorldCup2026KnockoutBracketFoundation: () => WorldCup2026KnockoutBracketFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";
