@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-28 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
+29 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
 
 ## Test List
 
@@ -15,30 +15,30 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 3 | Dashboard renders World Cup 2026 groups and Group C fixtures | Tournament structure |
 | 4 | Dashboard renders World Cup 2026 group standings tables | Group standings |
 | 5 | Dashboard renders projected World Cup 2026 Round of 32 foundation | Round of 32 foundation |
-| 6 | Dashboard renders projected knockout bracket with all rounds | Knockout bracket |
-| 7 | Match simulation form renders with required inputs and submit button | Form |
-| 7 | Initial simulation results render on page load | Form / results |
-| 8 | Outcome probability cards render with percentage values | Probability cards |
-| 9 | Most likely scorelines heading and list are visible | Scorelines |
-| 10 | Submitting manual simulation with different teams updates result heading | Manual xG |
-| 11 | Manual simulation result shows three probability cards | Manual xG |
-| 12 | Manual simulation result includes win draw loss labels, expected goals, scorelines, and baseline note | Result completeness |
-| 13 | Switching to Auto Predict From Elo mode shows Elo info panel | Elo mode |
-| 14 | Elo mode preset selector shows all three preset buttons | Elo mode |
-| 15 | Auto Predict From Elo with valid teams returns Live Elo prediction result | Elo mode |
-| 16 | Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage | Elo mode / full coverage |
-| 17 | Conservative preset result shows conservative preset metadata | Presets |
-| 18 | Balanced preset result shows balanced preset metadata | Presets |
-| 19 | Aggressive preset result shows aggressive preset metadata | Presets |
-| 20 | Switching preset from conservative to aggressive updates preset metadata in result | Presets |
-| 21 | Entering Korea Republic in Elo mode resolves to South Korea in result heading | Team aliases |
-| 22 | Entering Czech Republic in Elo mode resolves to Czechia in result heading | Team aliases |
-| 23 | Entering USA in Elo mode resolves to United States in result heading | Team aliases |
-| 24 | Submitting unknown team in Elo mode shows validation alert | Elo validation |
-| 25 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
-| 26 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
-| 27 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
-| 28 | Dashboard renders projected knockout bracket with all rounds | Knockout bracket |
+| 6 | Dashboard renders Round of 32 knockout match simulations | Knockout simulation |
+| 7 | Dashboard renders projected knockout bracket with all rounds | Knockout bracket |
+| 8 | Match simulation form renders with required inputs and submit button | Form |
+| 9 | Initial simulation results render on page load | Form / results |
+| 10 | Outcome probability cards render with percentage values | Probability cards |
+| 11 | Most likely scorelines heading and list are visible | Scorelines |
+| 12 | Submitting manual simulation with different teams updates result heading | Manual xG |
+| 13 | Manual simulation result shows three probability cards | Manual xG |
+| 14 | Manual simulation result includes win draw loss labels, expected goals, scorelines, and baseline note | Result completeness |
+| 15 | Switching to Auto Predict From Elo mode shows Elo info panel | Elo mode |
+| 16 | Elo mode preset selector shows all three preset buttons | Elo mode |
+| 17 | Auto Predict From Elo with valid teams returns Live Elo prediction result | Elo mode |
+| 18 | Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage | Elo mode / full coverage |
+| 19 | Conservative preset result shows conservative preset metadata | Presets |
+| 20 | Balanced preset result shows balanced preset metadata | Presets |
+| 21 | Aggressive preset result shows aggressive preset metadata | Presets |
+| 22 | Switching preset from conservative to aggressive updates preset metadata in result | Presets |
+| 23 | Entering Korea Republic in Elo mode resolves to South Korea in result heading | Team aliases |
+| 24 | Entering Czech Republic in Elo mode resolves to Czechia in result heading | Team aliases |
+| 25 | Entering USA in Elo mode resolves to United States in result heading | Team aliases |
+| 26 | Submitting unknown team in Elo mode shows validation alert | Elo validation |
+| 27 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
+| 28 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
+| 29 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
 
 ## Coverage by Area
 
@@ -60,9 +60,13 @@ Test 4 verifies the Phase 10.4A group standings dashboard section. It asserts th
 
 Test 5 verifies the Phase 10.6 projected Round of 32 section. It asserts that "Projected Round of 32", "Round of 32 foundation", "Qualified teams", "Fixtures", at least one fixture card, and the projected/foundation warning render.
 
+### Knockout match simulation
+
+Test 6 verifies the Phase 10.8 knockout simulation section. It asserts that the "Round of 32 match simulations" heading, the "Match probabilities only" warning banner, the "Slot 1" card label, and the "Draw: x.x%" probability text are visible on the dashboard.
+
 ### Knockout bracket foundation
 
-Test 6 (Test 28 in the ordered list) verifies the Phase 10.7 knockout bracket section. It asserts that the "Projected knockout bracket" heading, the "Projected bracket only" warning, all six round labels (Round of 32, Round of 16, Quarterfinals, Semifinals, Third Place, Final), and the first R16 placeholder team name ("Winner R32-01") are visible.
+Test 7 verifies the Phase 10.7 knockout bracket section. It asserts that the "Projected knockout bracket" heading, the "Projected bracket only" warning, all six round labels (Round of 32, Round of 16, Quarterfinals, Semifinals, Third Place, Final), and the first R16 placeholder team name ("Winner R32-01") are visible.
 
 ### Auto Predict From Elo
 
@@ -92,11 +96,11 @@ Each alias test submits the alias as the home team and "France" as the away team
 
 ### Validation
 
-Test 24 (existing) verifies the `role="alert"` summary banner appears when an unknown team is submitted in Elo mode.
+Test 26 (existing) verifies the `role="alert"` summary banner appears when an unknown team is submitted in Elo mode.
 
-Test 25 verifies the field-level `FieldError` component shows "Suggestions:" text when a near-miss team name is submitted. The input "Franc" starts with the normalized form of "France", so `suggestAvailableTeams` surfaces "France" in the suggestions list.
+Test 27 verifies the field-level `FieldError` component shows "Suggestions:" text when a near-miss team name is submitted. The input "Franc" starts with the normalized form of "France", so `suggestAvailableTeams` surfaces "France" in the suggestions list.
 
-Test 26 verifies that a negative xG value in manual mode shows the field error message via client-side validation before any API call is made.
+Test 28 verifies that a negative xG value in manual mode shows the field error message via client-side validation before any API call is made.
 
 ## Selectors
 
@@ -115,7 +119,7 @@ No CSS class selectors are used.
 
 ### Stale result clearing
 
-Test 27 verifies the Phase 10.1 bugfix: after a valid Auto Predict From Elo submission produces a result, submitting the same form with an unavailable team must clear the stale result. The test asserts that the old result heading ("France vs Netherlands") is no longer visible and that the "Prediction unavailable" empty state is shown.
+Test 29 verifies the Phase 10.1 bugfix: after a valid Auto Predict From Elo submission produces a result, submitting the same form with an unavailable team must clear the stale result. The test asserts that the old result heading ("France vs Netherlands") is no longer visible and that the "Prediction unavailable" empty state is shown.
 
 ## Known Limitations
 

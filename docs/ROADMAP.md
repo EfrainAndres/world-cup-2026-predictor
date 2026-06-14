@@ -70,6 +70,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.4A | Results Provider Strategy | Route World Cup 2026 standings through normalized local result provider records with source metadata and external providers disabled. | Done |
 | 10.6 | Round of 32 Bracket Foundation | Derive 32 projected knockout qualifiers from current standings and create 16 deterministic Round of 32 foundation fixtures. | Done |
 | 10.7 | Knockout Bracket Progression Foundation | Build complete placeholder bracket structure from Round of 32 through the Final. No winner simulation. | Done |
+| 10.8 | Knockout Match Simulation Foundation | Simulate individual projected R32 fixtures using Live Elo and Poisson model. No bracket advancement. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

@@ -78,6 +78,16 @@ test("dashboard renders projected World Cup 2026 Round of 32 foundation", async 
   await expect(roundOf32Section.getByText("Projected Round of 32 foundation based on current local standings.")).toBeVisible();
 });
 
+test("dashboard renders Round of 32 knockout match simulations", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Round of 32 match simulations" })).toBeVisible();
+  const simSection = page.getByRole("region", { name: "Round of 32 match simulations" });
+  await expect(simSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
+  await expect(page.getByText("Slot 1").first()).toBeVisible();
+  await expect(page.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 
@@ -113,7 +123,8 @@ test("initial simulation results render on page load", async ({ page }) => {
     page.getByRole("heading", { name: "Canada vs Mexico" })
   ).toBeVisible();
 
-  await expect(page.getByText("Draw")).toBeVisible();
+  const resultsHeadingSection = page.getByRole("region", { name: "Canada vs Mexico" });
+  await expect(resultsHeadingSection.getByText("Draw", { exact: true })).toBeVisible();
 });
 
 // ── Win/draw/loss probability cards ──────────────────────────────────────────

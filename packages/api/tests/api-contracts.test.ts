@@ -153,7 +153,8 @@ describe("api contract coverage", () => {
       "getWorldCup2026FixtureFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
-      "getWorldCup2026KnockoutBracketFoundation"
+      "getWorldCup2026KnockoutBracketFoundation",
+      "simulateWorldCup2026KnockoutFixturesFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
