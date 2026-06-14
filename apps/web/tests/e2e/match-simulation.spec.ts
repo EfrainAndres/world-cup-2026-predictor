@@ -179,6 +179,17 @@ test("dashboard renders projected tournament winner with champion and runner-up"
   await expect(resolutionSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
 });
 
+test("dashboard renders projected third place match with two participants", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Third Place Match" })).toBeVisible();
+  const thirdPlaceSection = page.getByRole("region", { name: "Projected Third Place Match" });
+  await expect(thirdPlaceSection.getByText("Fixture foundation only", { exact: true })).toBeVisible();
+  await expect(thirdPlaceSection.getByText("Home Team", { exact: true })).toBeVisible();
+  await expect(thirdPlaceSection.getByText("Away Team", { exact: true })).toBeVisible();
+  await expect(thirdPlaceSection.getByText(/wc2026-3rd-place-01/).first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

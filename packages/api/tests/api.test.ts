@@ -36,7 +36,8 @@ import {
   simulateWorldCup2026FinalMatchFoundation,
   simulateWorldCup2026SemifinalFoundation,
   simulateWorldCup2026SemifinalMatchesFoundation,
-  resolveWorldCup2026KnockoutWinnersFoundation
+  resolveWorldCup2026KnockoutWinnersFoundation,
+  getWorldCup2026ThirdPlaceMatchFoundation
 } from "../src/index.js";
 
 describe("api foundation handlers", () => {
@@ -1718,6 +1719,81 @@ describe("resolveWorldCup2026KnockoutWinnersFoundation", () => {
     expect(result.status).toBe("success");
     expect(result.champion).toBeDefined();
     expect(result.roundOf32Winners).toHaveLength(16);
+  });
+});
+
+describe("getWorldCup2026ThirdPlaceMatchFoundation", () => {
+  it("returns success with correct dataScope and round", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.tournamentName).toBe("FIFA World Cup 2026");
+    expect(result.dataScope).toBe("world_cup_2026_third_place_match_foundation");
+    expect(result.round).toBe("third_place");
+  });
+
+  it("returns exactly 2 participants and 1 fixture", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(result.participantsCount).toBe(2);
+    expect(result.fixturesCount).toBe(1);
+    expect(result.projectedParticipants).toHaveLength(2);
+  });
+
+  it("fixture has expected shape and fixture ID", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+    const fixture = result.thirdPlaceMatchFixture;
+
+    expect(fixture.fixtureId).toBe("wc2026-3rd-place-01");
+    expect(fixture.round).toBe("third_place");
+    expect(fixture.status).toBe("projected");
+    expect(fixture.source).toBe("projected_semifinal_losers");
+    expect(typeof fixture.homeTeam).toBe("string");
+    expect(typeof fixture.awayTeam).toBe("string");
+  });
+
+  it("each participant has required fields", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+
+    for (const p of result.projectedParticipants) {
+      expect(typeof p.team).toBe("string");
+      expect(typeof p.lostTo).toBe("string");
+      expect(typeof p.eliminationReason).toBe("string");
+      expect(typeof p.semifinalSourceFixtureId).toBe("string");
+      expect(p.probabilitySnapshot).toBeDefined();
+    }
+  });
+
+  it("participants are the two SF losers", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+    const [p1, p2] = result.projectedParticipants;
+
+    expect(p1!.semifinalSourceFixtureId).toMatch(/^wc2026-sf-sim-/);
+    expect(p2!.semifinalSourceFixtureId).toMatch(/^wc2026-sf-sim-/);
+    expect(p1!.semifinalSourceFixtureId).not.toBe(p2!.semifinalSourceFixtureId);
+  });
+
+  it("is deterministic across calls", () => {
+    const first = getWorldCup2026ThirdPlaceMatchFoundation();
+    const second = getWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(first.thirdPlaceMatchFixture.homeTeam).toBe(second.thirdPlaceMatchFixture.homeTeam);
+    expect(first.thirdPlaceMatchFixture.awayTeam).toBe(second.thirdPlaceMatchFixture.awayTeam);
+  });
+
+  it("warnings include no-simulation and no-penalty disclaimers", () => {
+    const result = getWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(result.warnings.some((w) => w.includes("not simulated"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("penalty") || w.includes("No penalty"))).toBe(true);
+  });
+
+  it("apiRoutes exposes the handler", () => {
+    const result = apiRoutes.getWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.thirdPlaceMatchFixture).toBeDefined();
+    expect(result.projectedParticipants).toHaveLength(2);
   });
 });
 

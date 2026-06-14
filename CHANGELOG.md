@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 11.1 Third Place Match foundation — projects the Third Place Match fixture from deterministic SF loser selection; exposes two participants and one projected fixture; no match simulation, no winner selection, no penalty logic.
+- `getWorldCup2026ThirdPlaceMatchFoundation()` API handler; loser selected by lowest pre-match win probability, Elo tie-break, then away team.
+- `WorldCup2026ThirdPlaceParticipant`, `WorldCup2026ThirdPlaceMatchFixture`, and `WorldCup2026ThirdPlaceMatchFoundationResponse` typed schemas.
+- `WorldCupThirdPlaceMatchSection` dashboard component showing the projected Third Place Match fixture with home/away participant cards and fixture foundation warning.
+- `docs/dashboard/WORLD_CUP_2026_THIRD_PLACE_MATCH_FOUNDATION.md` documenting inputs, loser selection rule, output fields, limitations, and future phases.
 - Phase 11.0 Knockout winner resolution foundation — resolves deterministic winners from all 31 simulated knockout fixtures (R32–Final); exposes champion, runner-up, and per-round winner lists; no extra time, no penalties, no champion probability distribution.
 - `resolveWorldCup2026KnockoutWinnersFoundation()` API handler; winner selected by highest pre-match win probability, Elo tie-break, then home team.
 - `WorldCup2026ResolvedKnockoutWinner` and `WorldCup2026KnockoutWinnerResolutionResponse` typed schemas.

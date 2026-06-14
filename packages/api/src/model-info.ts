@@ -27,7 +27,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Match-level semifinal simulation using Live Elo ratings and Poisson score matrix for each projected SF fixture.",
       "Projected Final foundation derived from semifinal match probabilities via deterministic winner selection. No Final match simulation.",
       "Match-level Final simulation using Live Elo ratings and Poisson score matrix for the projected Final fixture.",
-      "Deterministic knockout winner resolution selecting winners from all simulated knockout match probabilities (R32 through Final)."
+      "Deterministic knockout winner resolution selecting winners from all simulated knockout match probabilities (R32 through Final).",
+      "Third Place Match foundation projecting participants from deterministic semifinal loser resolution. No match simulation."
     ],
     supportedHandlers: [
       "getHealth",
@@ -52,7 +53,8 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateWorldCup2026SemifinalMatchesFoundation",
       "simulateWorldCup2026FinalFoundation",
       "simulateWorldCup2026FinalMatchFoundation",
-      "resolveWorldCup2026KnockoutWinnersFoundation"
+      "resolveWorldCup2026KnockoutWinnersFoundation",
+      "getWorldCup2026ThirdPlaceMatchFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

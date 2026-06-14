@@ -22,7 +22,8 @@ import {
   simulateWorldCup2026FinalMatchFoundation,
   simulateWorldCup2026SemifinalFoundation,
   simulateWorldCup2026SemifinalMatchesFoundation,
-  resolveWorldCup2026KnockoutWinnersFoundation
+  resolveWorldCup2026KnockoutWinnersFoundation,
+  getWorldCup2026ThirdPlaceMatchFoundation
 } from "@world-cup-2026-predictor/api";
 import type {
   EloXgPreset,
@@ -56,7 +57,8 @@ import type {
   WorldCup2026RoundOf16FoundationResponse,
   WorldCup2026RoundOf16MatchSimulationFoundationResponse,
   WorldCup2026RoundOf32FoundationResponse,
-  WorldCup2026KnockoutWinnerResolutionResponse
+  WorldCup2026KnockoutWinnerResolutionResponse,
+  WorldCup2026ThirdPlaceMatchFoundationResponse
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -77,6 +79,7 @@ export type { WorldCup2026FinalMatchSimulationFoundationResponse };
 export type { WorldCup2026SemifinalFoundationResponse };
 export type { WorldCup2026SemifinalMatchSimulationFoundationResponse };
 export type { WorldCup2026KnockoutWinnerResolutionResponse };
+export type { WorldCup2026ThirdPlaceMatchFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -103,6 +106,7 @@ export interface DashboardSnapshot {
   worldCup2026Semifinal: WorldCup2026SemifinalFoundationResponse;
   worldCup2026SemifinalMatchSimulation: WorldCup2026SemifinalMatchSimulationFoundationResponse;
   worldCup2026KnockoutWinnerResolution: WorldCup2026KnockoutWinnerResolutionResponse;
+  worldCup2026ThirdPlaceMatch: WorldCup2026ThirdPlaceMatchFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -176,6 +180,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     worldCup2026FinalMatchSimulation: simulateWorldCup2026FinalMatchFoundation(),
     worldCup2026Semifinal: simulateWorldCup2026SemifinalFoundation(),
     worldCup2026SemifinalMatchSimulation: simulateWorldCup2026SemifinalMatchesFoundation(),
-    worldCup2026KnockoutWinnerResolution: resolveWorldCup2026KnockoutWinnersFoundation()
+    worldCup2026KnockoutWinnerResolution: resolveWorldCup2026KnockoutWinnersFoundation(),
+    worldCup2026ThirdPlaceMatch: getWorldCup2026ThirdPlaceMatchFoundation()
   };
 }

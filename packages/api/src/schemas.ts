@@ -705,6 +705,46 @@ export interface WorldCup2026FinalMatchSimulationFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026ThirdPlaceParticipant {
+  team: string;
+  semifinalSourceFixtureId: string;
+  lostTo: string;
+  eliminationReason: string;
+  probabilitySnapshot: {
+    homeWinProbability: number;
+    drawProbability: number;
+    awayWinProbability: number;
+  };
+  homeRatingSource: LiveEloRatingSource;
+  awayRatingSource: LiveEloRatingSource;
+}
+
+export interface WorldCup2026ThirdPlaceMatchFixture {
+  fixtureId: string;
+  round: "third_place";
+  homeTeam: string;
+  awayTeam: string;
+  homeParticipant: WorldCup2026ThirdPlaceParticipant;
+  awayParticipant: WorldCup2026ThirdPlaceParticipant;
+  status: "projected";
+  source: "projected_semifinal_losers";
+}
+
+export interface WorldCup2026ThirdPlaceMatchFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_third_place_match_foundation";
+  round: "third_place";
+  participantsCount: 2;
+  fixturesCount: 1;
+  simulationType: "fixture_foundation";
+  source: "projected_semifinal_losers";
+  projectedParticipants: readonly [WorldCup2026ThirdPlaceParticipant, WorldCup2026ThirdPlaceParticipant];
+  thirdPlaceMatchFixture: WorldCup2026ThirdPlaceMatchFixture;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface WorldCup2026ResolvedKnockoutWinner {
   team: string;
   round: "round_of_32" | "round_of_16" | "quarterfinal" | "semifinal" | "final";
@@ -823,6 +863,7 @@ export interface ApiRoutes {
   simulateWorldCup2026FinalFoundation: () => WorldCup2026FinalFoundationResponse;
   simulateWorldCup2026FinalMatchFoundation: () => WorldCup2026FinalMatchSimulationFoundationResponse;
   resolveWorldCup2026KnockoutWinnersFoundation: () => WorldCup2026KnockoutWinnerResolutionResponse;
+  getWorldCup2026ThirdPlaceMatchFoundation: () => WorldCup2026ThirdPlaceMatchFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

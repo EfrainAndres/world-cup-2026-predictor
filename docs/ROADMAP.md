@@ -1727,3 +1727,37 @@ Exit criteria:
 - win/draw/win probabilities and likely scorelines are returned
 - no champion is selected
 - no penalties or title probabilities are modeled
+
+## Phase 11.0 - Knockout Winner Resolution Foundation
+
+Status: Done
+
+Deliverables:
+
+- `resolveWorldCup2026KnockoutWinnersFoundation()` API handler
+- typed winner resolution response contracts (`WorldCup2026ResolvedKnockoutWinner`, `WorldCup2026KnockoutWinnerResolutionResponse`)
+- dashboard Knockout Winner Resolution section
+- knockout winner resolution documentation
+
+Exit criteria:
+
+- deterministic winners resolved for all 31 knockout fixtures (R32, R16, QF, SF, Final)
+- projected champion and runner-up identified
+- no penalties, no randomization, no champion probability distribution
+
+## Phase 11.1 - Third Place Match Foundation
+
+Status: Done
+
+Deliverables:
+
+- `getWorldCup2026ThirdPlaceMatchFoundation()` API handler
+- typed Third Place Match response contracts (`WorldCup2026ThirdPlaceParticipant`, `WorldCup2026ThirdPlaceMatchFixture`, `WorldCup2026ThirdPlaceMatchFoundationResponse`)
+- dashboard Third Place Match section
+- Third Place Match foundation documentation
+
+Exit criteria:
+
+- two SF losers identified via deterministic loser selection rule
+- one projected Third Place Match fixture produced
+- no Third Place Match simulation, no winner selection, no penalty logic
