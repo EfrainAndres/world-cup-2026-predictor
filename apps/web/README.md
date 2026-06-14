@@ -20,6 +20,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Projected World Cup 2026 Round of 32 section showing 32 qualified teams, 16 projected fixtures, and qualification source labels.
 - Projected knockout bracket section showing the complete placeholder bracket structure from Round of 32 through the Final with Projected and Placeholder badges.
 - Round of 32 knockout match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 16 projected R32 fixtures using Live Elo ratings and the Poisson model.
+- Projected Round of 16 section showing 8 projected R16 fixtures derived from R32 probabilities via deterministic winner selection, with advancement reason, R32 source matchup, and probability snapshot per qualifier.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -59,6 +60,10 @@ The Round of 32 section calls `getWorldCup2026RoundOf32Foundation()` through the
 ## World Cup 2026 Knockout Bracket
 
 The knockout bracket section calls `getWorldCup2026KnockoutBracketFoundation()` through the local API client wrapper. It builds a complete bracket structure from Round of 32 through the Final. R32 uses the actual projected team names; R16, QF, SF, Third Place, and Final use deterministic placeholder slots (Winner R32-01, Winner R16-1, etc.). No winners are simulated and no champion probabilities are calculated.
+
+## World Cup 2026 Round of 16 Projection
+
+The Round of 16 projection section calls `simulateWorldCup2026RoundOf16Foundation()` through the local API client wrapper. It derives a projected winner for each of the 16 Round of 32 simulation fixtures using a deterministic rule: the team with the higher win probability advances; if win probabilities are equal, the team with the higher Live Elo rating advances; if Elo is also equal, the home team advances. The 16 projected winners are paired into 8 Round of 16 fixtures. No R16 match probabilities are computed. No quarterfinal generation. No penalties. No champion probabilities.
 
 ## World Cup 2026 Knockout Match Simulation
 

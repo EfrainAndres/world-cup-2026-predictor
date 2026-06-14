@@ -18,7 +18,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Automatic match prediction from live Elo team names using a transparent Elo-to-expected-goals foundation.",
       "Static World Cup 2026 Groups A-L and group-stage fixture foundation data.",
       "World Cup 2026 group standings foundation calculated from normalized local result provider records.",
-      "Projected World Cup 2026 Round of 32 foundation derived from current local group standings."
+      "Projected World Cup 2026 Round of 32 foundation derived from current local group standings.",
+      "Projected World Cup 2026 Round of 16 foundation derived from deterministic R32 winner selection using pre-match probabilities and Elo tie-breaking."
     ],
     supportedHandlers: [
       "getHealth",
@@ -34,7 +35,8 @@ export function getModelInfo(): ModelInfoResponse {
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
       "getWorldCup2026KnockoutBracketFoundation",
-      "simulateWorldCup2026KnockoutFixturesFoundation"
+      "simulateWorldCup2026KnockoutFixturesFoundation",
+      "simulateWorldCup2026RoundOf16Foundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

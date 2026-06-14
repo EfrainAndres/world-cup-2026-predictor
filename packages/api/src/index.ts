@@ -15,7 +15,8 @@ export {
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation,
-  simulateWorldCup2026KnockoutFixturesFoundation
+  simulateWorldCup2026KnockoutFixturesFoundation,
+  simulateWorldCup2026RoundOf16Foundation
 } from "./routes.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
@@ -97,6 +98,9 @@ export type {
   WorldCup2026KnockoutRound,
   WorldCup2026KnockoutSimulationFixture,
   WorldCup2026KnockoutSimulationFoundationResponse,
+  WorldCup2026ProjectedQualifier,
+  WorldCup2026RoundOf16Fixture,
+  WorldCup2026RoundOf16FoundationResponse,
   WorldCup2026RoundOf32Fixture,
   WorldCup2026RoundOf32FoundationResponse
 } from "./schemas.js";

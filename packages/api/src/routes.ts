@@ -64,6 +64,9 @@ import type {
   WorldCup2026KnockoutBracketFoundationResponse,
   WorldCup2026KnockoutSimulationFixture,
   WorldCup2026KnockoutSimulationFoundationResponse,
+  WorldCup2026ProjectedQualifier,
+  WorldCup2026RoundOf16Fixture,
+  WorldCup2026RoundOf16FoundationResponse,
   WorldCup2026RoundOf32FoundationResponse
 } from "./schemas.js";
 
@@ -613,6 +616,112 @@ export function simulateWorldCup2026KnockoutFixturesFoundation(): WorldCup2026Kn
   };
 }
 
+function deriveProjectedQualifier(
+  fixture: WorldCup2026KnockoutSimulationFixture,
+  ratingsByTeam: Map<string, WorldCup2026CoverageEntry>
+): WorldCup2026ProjectedQualifier {
+  const { homeTeam, awayTeam, homeWinProbability, awayWinProbability, drawProbability, fixtureId, slot, homeRatingSource, awayRatingSource } = fixture;
+
+  let winner: string;
+  let advancementReason: string;
+
+  if (homeWinProbability > awayWinProbability) {
+    winner = homeTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else if (awayWinProbability > homeWinProbability) {
+    winner = awayTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else {
+    const homeElo = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+    const awayElo = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+
+    if (homeElo > awayElo) {
+      winner = homeTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else if (awayElo > homeElo) {
+      winner = awayTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else {
+      winner = homeTeam;
+      advancementReason = "advanced as home team (equal win probability and equal Elo)";
+    }
+  }
+
+  return {
+    team: winner,
+    qualificationSource: "round_of_32",
+    sourceFixtureId: fixtureId,
+    sourceSlot: slot,
+    advancementReason,
+    sourceHomeTeam: homeTeam,
+    sourceAwayTeam: awayTeam,
+    sourceHomeWinProbability: homeWinProbability,
+    sourceDrawProbability: drawProbability,
+    sourceAwayWinProbability: awayWinProbability,
+    homeRatingSource,
+    awayRatingSource
+  };
+}
+
+export function simulateWorldCup2026RoundOf16Foundation(): WorldCup2026RoundOf16FoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const coverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const ratingsByTeam = buildCoverageLookup(coverageEntries);
+
+  const r32Simulation = simulateWorldCup2026KnockoutFixturesFoundation();
+
+  const projectedRoundOf16Teams: WorldCup2026ProjectedQualifier[] = r32Simulation.fixtures.map((fixture) =>
+    deriveProjectedQualifier(fixture, ratingsByTeam)
+  );
+
+  const projectedRoundOf16Fixtures: WorldCup2026RoundOf16Fixture[] = Array.from({ length: 8 }, (_, i) => {
+    const slot = i + 1;
+    const homeQualifier = projectedRoundOf16Teams[i * 2];
+    const awayQualifier = projectedRoundOf16Teams[i * 2 + 1];
+
+    if (homeQualifier === undefined || awayQualifier === undefined) {
+      throw new Error("simulateWorldCup2026RoundOf16Foundation: expected 16 R32 qualifiers to build 8 R16 fixtures.");
+    }
+
+    return {
+      fixtureId: `wc2026-r16-${slot.toString().padStart(2, "0")}`,
+      round: "round_of_16" as const,
+      slot,
+      homeTeam: homeQualifier.team,
+      awayTeam: awayQualifier.team,
+      homeQualifier,
+      awayQualifier,
+      status: "projected" as const
+    };
+  });
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_round_of_16_foundation",
+    round: "round_of_16",
+    projectedQualifiersCount: projectedRoundOf16Teams.length,
+    fixturesCount: projectedRoundOf16Fixtures.length,
+    simulationType: "deterministic_winner_selection",
+    source: "round_of_32_simulation_foundation",
+    projectedRoundOf16Teams,
+    projectedRoundOf16Fixtures,
+    warnings: [
+      "Round of 16 participants are projected from pre-match probabilities. Real match outcomes are not yet simulated.",
+      "Winner selection is deterministic: highest win probability advances. Elo is the tie-breaker; home team wins if both are equal.",
+      "No penalties, no randomization, no quarterfinal generation, no champion probabilities.",
+      `Live Elo simulation uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`,
+      ...internationalSupplement.metadata.foundationWarnings
+    ],
+    metadata: buildApiMetadata([
+      "Round of 16 foundation derives 16 projected qualifiers from R32 match probabilities using a deterministic winner-selection rule.",
+      "Winner selection: highest win probability wins; Elo tie-break if equal; home team wins if both are equal.",
+      "This phase projects R16 participants only — no R16 match simulation, no quarterfinal generation, no bracket auto-advancement.",
+      "No external API calls, live score service, randomization, or prediction formula changes are used."
+    ])
+  };
+}
+
 const TEAM_RATINGS_FOUNDATION_DATA: readonly TeamRatingFoundationEntry[] = [
   {
     rank: 1,
@@ -1020,5 +1129,6 @@ export const apiRoutes: ApiRoutes = {
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026RoundOf32Foundation,
   getWorldCup2026KnockoutBracketFoundation,
-  simulateWorldCup2026KnockoutFixturesFoundation
+  simulateWorldCup2026KnockoutFixturesFoundation,
+  simulateWorldCup2026RoundOf16Foundation
 };

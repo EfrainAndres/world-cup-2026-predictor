@@ -88,6 +88,16 @@ test("dashboard renders Round of 32 knockout match simulations", async ({ page }
   await expect(page.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
 });
 
+test("dashboard renders projected Round of 16 with advancement reasons", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 16" })).toBeVisible();
+  const r16Section = page.getByRole("region", { name: "Projected Round of 16" });
+  await expect(r16Section.getByText("Projected from pre-match probabilities", { exact: true })).toBeVisible();
+  await expect(r16Section.getByText("R16 Slot 1").first()).toBeVisible();
+  await expect(r16Section.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 
