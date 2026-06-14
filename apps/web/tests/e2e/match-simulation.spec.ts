@@ -148,6 +148,16 @@ test("dashboard renders Semifinal match simulations with win and draw probabilit
   await expect(sfSimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
 });
 
+test("dashboard renders projected Final with advancement reasons", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Final" })).toBeVisible();
+  const finalSection = page.getByRole("region", { name: "Projected Final" });
+  await expect(finalSection.getByText("Final participants only", { exact: true })).toBeVisible();
+  await expect(finalSection.getByText("Final Slot 1").first()).toBeVisible();
+  await expect(finalSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

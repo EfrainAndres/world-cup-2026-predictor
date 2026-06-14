@@ -632,6 +632,49 @@ export interface WorldCup2026SemifinalMatchSimulationFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026FinalQualifier {
+  team: string;
+  qualificationSource: "semifinal";
+  semifinalSourceFixtureId: string;
+  sourceSlot: number;
+  advancementReason: string;
+  probabilitySnapshot: {
+    homeWinProbability: number;
+    drawProbability: number;
+    awayWinProbability: number;
+  };
+  sourceHomeTeam: string;
+  sourceAwayTeam: string;
+  homeRatingSource: LiveEloRatingSource;
+  awayRatingSource: LiveEloRatingSource;
+}
+
+export interface WorldCup2026FinalFixture {
+  fixtureId: string;
+  round: "final";
+  slot: 1;
+  homeTeam: string;
+  awayTeam: string;
+  homeQualifier: WorldCup2026FinalQualifier;
+  awayQualifier: WorldCup2026FinalQualifier;
+  status: "projected";
+}
+
+export interface WorldCup2026FinalFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_final_foundation";
+  round: "final";
+  projectedFinalistsCount: number;
+  fixturesCount: number;
+  simulationType: "deterministic_winner_selection";
+  source: "projected_semifinals";
+  projectedFinalists: readonly WorldCup2026FinalQualifier[];
+  projectedFinalFixtures: readonly [WorldCup2026FinalFixture];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
 
 export interface TeamRatingFoundationEntry {
@@ -712,6 +755,7 @@ export interface ApiRoutes {
   simulateWorldCup2026QuarterfinalMatchesFoundation: () => WorldCup2026QuarterfinalMatchSimulationFoundationResponse;
   simulateWorldCup2026SemifinalFoundation: () => WorldCup2026SemifinalFoundationResponse;
   simulateWorldCup2026SemifinalMatchesFoundation: () => WorldCup2026SemifinalMatchSimulationFoundationResponse;
+  simulateWorldCup2026FinalFoundation: () => WorldCup2026FinalFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

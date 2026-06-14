@@ -74,6 +74,9 @@ import type {
   WorldCup2026QuarterfinalMatchSimulationFixture,
   WorldCup2026QuarterfinalMatchSimulationFoundationResponse,
   WorldCup2026QuarterfinalQualifier,
+  WorldCup2026FinalFixture,
+  WorldCup2026FinalFoundationResponse,
+  WorldCup2026FinalQualifier,
   WorldCup2026SemifinalFixture,
   WorldCup2026SemifinalFoundationResponse,
   WorldCup2026SemifinalMatchSimulationFixture,
@@ -1582,6 +1585,120 @@ export function simulateWorldCup2026SemifinalMatchesFoundation(): WorldCup2026Se
   };
 }
 
+function deriveFinalQualifier(
+  fixture: WorldCup2026SemifinalMatchSimulationFixture,
+  ratingsByTeam: Map<string, WorldCup2026CoverageEntry>
+): WorldCup2026FinalQualifier {
+  const {
+    homeTeam,
+    awayTeam,
+    homeWinProbability,
+    awayWinProbability,
+    drawProbability,
+    fixtureId,
+    slot,
+    homeRatingSource,
+    awayRatingSource
+  } = fixture;
+
+  let winner: string;
+  let advancementReason: string;
+
+  if (homeWinProbability > awayWinProbability) {
+    winner = homeTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else if (awayWinProbability > homeWinProbability) {
+    winner = awayTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else {
+    const homeElo = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+    const awayElo = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+
+    if (homeElo > awayElo) {
+      winner = homeTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else if (awayElo > homeElo) {
+      winner = awayTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else {
+      winner = homeTeam;
+      advancementReason = "advanced as home team (equal win probability and equal Elo)";
+    }
+  }
+
+  return {
+    team: winner,
+    qualificationSource: "semifinal",
+    semifinalSourceFixtureId: fixtureId,
+    sourceSlot: slot,
+    advancementReason,
+    probabilitySnapshot: {
+      homeWinProbability,
+      drawProbability,
+      awayWinProbability
+    },
+    sourceHomeTeam: homeTeam,
+    sourceAwayTeam: awayTeam,
+    homeRatingSource,
+    awayRatingSource
+  };
+}
+
+export function simulateWorldCup2026FinalFoundation(): WorldCup2026FinalFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const coverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const ratingsByTeam = buildCoverageLookup(coverageEntries);
+
+  const sfMatchSimulation = simulateWorldCup2026SemifinalMatchesFoundation();
+  const projectedFinalists: WorldCup2026FinalQualifier[] = sfMatchSimulation.fixtures.map((fixture) =>
+    deriveFinalQualifier(fixture, ratingsByTeam)
+  );
+
+  const homeQualifier = projectedFinalists[0];
+  const awayQualifier = projectedFinalists[1];
+
+  if (homeQualifier === undefined || awayQualifier === undefined) {
+    throw new Error("simulateWorldCup2026FinalFoundation: expected 2 semifinal qualifiers to build 1 final fixture.");
+  }
+
+  const projectedFinalFixture: WorldCup2026FinalFixture = {
+    fixtureId: "wc2026-final-01",
+    round: "final",
+    slot: 1,
+    homeTeam: homeQualifier.team,
+    awayTeam: awayQualifier.team,
+    homeQualifier,
+    awayQualifier,
+    status: "projected"
+  };
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_final_foundation",
+    round: "final",
+    projectedFinalistsCount: projectedFinalists.length,
+    fixturesCount: 1,
+    simulationType: "deterministic_winner_selection",
+    source: "projected_semifinals",
+    projectedFinalists,
+    projectedFinalFixtures: [projectedFinalFixture],
+    warnings: [
+      "Projected Final foundation based on semifinal pre-match probabilities. Real match outcomes, extra time, and penalties are not modeled yet.",
+      "Winner selection is deterministic: highest win probability advances. Elo is the tie-breaker; home team wins if both are equal.",
+      "No final match simulation, no penalties, no randomization, no champion output, no title probabilities.",
+      `Live Elo simulation uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`,
+      ...internationalSupplement.metadata.foundationWarnings
+    ],
+    metadata: buildApiMetadata([
+      "Final foundation derives 2 projected finalists from semifinal match probabilities using a deterministic winner-selection rule.",
+      "Winner selection: highest win probability wins; Elo tie-break if equal; home team wins if both are equal.",
+      "This phase projects Final participants only — no Final match simulation, no champion selection, no penalty shootout modeling.",
+      "No external API calls, live score service, randomization, or prediction formula changes are used."
+    ])
+  };
+}
+
 export function getAvailableLiveEloTeams(): string[] {
   const { pipeline } = buildLiveEloPipelineFoundation();
 
@@ -1605,5 +1722,6 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026QuarterfinalFoundation,
   simulateWorldCup2026QuarterfinalMatchesFoundation,
   simulateWorldCup2026SemifinalFoundation,
-  simulateWorldCup2026SemifinalMatchesFoundation
+  simulateWorldCup2026SemifinalMatchesFoundation,
+  simulateWorldCup2026FinalFoundation
 };
