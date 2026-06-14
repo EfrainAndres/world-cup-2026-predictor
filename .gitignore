@@ -1,38 +1,14 @@
-# Dependencies
 node_modules/
-.pnpm-store/
-
-# Build outputs
+.next/
+apps/web/.next/
 dist/
 build/
-.turbo/
 coverage/
-
-# Environment and secrets
-.env
-.env.*
-!.env.example
-
-# Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# OS and editor files
-.DS_Store
-.idea/
-.vscode/
-
-# Playwright
 test-results/
 playwright-report/
 blob-report/
-
-# Data artifacts
-data/raw/
-data/interim/
-data/processed/
-data/exports/
-reports/
+.env
+.env.local
+.DS_Store
+.turbo/
+**/.turbo/
