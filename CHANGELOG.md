@@ -8,6 +8,14 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.6 projected Round of 32 bracket foundation for World Cup 2026.
+- `getWorldCup2026RoundOf32Foundation()` API handler deriving 32 qualified teams and 16 projected fixtures from current local standings.
+- `WorldCupRoundOf32Section` and `WorldCupRoundOf32FixtureCard` dashboard components showing projected Round of 32 slots with qualification source labels.
+- `docs/dashboard/WORLD_CUP_2026_ROUND_OF_32_FOUNDATION.md` documenting derivation rules, API response, projected-bracket warning, dashboard behavior, and boundaries.
+- Phase 10.5 best third-place ranking foundation for World Cup 2026.
+- `getWorldCup2026BestThirdPlaceFoundation()` API handler deriving all 12 third-place teams from current group standings and marking 8 as currently qualifying.
+- `WorldCupBestThirdPlaceSection` and `WorldCupBestThirdPlaceTable` dashboard components showing the compact third-place ranking with "Currently qualifies" and "Currently outside" labels.
+- `docs/dashboard/WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING.md` documenting ranking rules, API response, dashboard behavior, current local-results status, and boundaries.
 - Phase 10.4A results provider strategy and local override contract for World Cup 2026 standings.
 - Normalized `WorldCup2026FixtureResult` and result provider metadata contracts with a local static provider and external providers disabled.
 - Local static completed results for eight group fixtures, including Mexico 2-0 South Africa, Haiti 0-1 Scotland, and Australia 2-0 Turkey.
@@ -20,22 +28,6 @@ This project follows a simple, human-readable changelog format and aims to use c
 - Phase 10.2A: Fallback seed indicator in match simulation results — when a team uses a fallback seed rating, the Live Elo block now shows "Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only." and hides the uncalibrated rank number.
 - Phase 10.2A: WC 2026 coverage note in the Live Elo section amber banner — explains that Auto Predict covers all 48 expected teams and that missing teams use a fallback seed rating of 1500.
 - Phase 10.2A: `docs/dashboard/UI_ELO_CONSISTENCY_POLISH.md` documenting all UI consistency changes.
-
-### Changed
-
-- World Cup 2026 standings now consume normalized provider result records instead of score fields embedded in fixture objects.
-- Dashboard standings now show "Results source: local static provider" and "External provider: disabled".
-- Phase 10.2A: Live Elo rating cards and summary stat now display rounded whole numbers instead of raw floats (e.g. `1621` instead of `1620.8566951497519`).
-- Phase 10.2A: "Teams rated" stat card in the Live Elo section relabeled to "Teams in dataset" with caption "Curated dataset · N shown" to distinguish from the 48-team Auto Predict coverage.
-- Phase 10.2A: Team Ratings section eyebrow updated to "Static contender ratings" and description updated to explicitly state these are static seed ratings separate from the Live Elo pipeline.
-- Phase 10.2A: E2E test 13 (Haiti vs Scotland) updated to also assert the fallback seed indicator is visible.
-
-### Fixed
-
-- Phase 10.1: Stale prediction results no longer remain visible after a validation error. When any form submission fails validation (client-side or API-side), the previous result is cleared and an explicit "Prediction unavailable" empty state is shown in the results panel, preventing users from confusing old results with the current invalid input.
-
-### Added
-
 - Phase 10.3 World Cup 2026 fixtures and groups foundation.
 - `getWorldCup2026FixtureFoundation()` API handler exposing Groups A-L, 48 teams, 72 deterministic group-stage fixtures, deferred date/venue metadata, and structure-data warnings.
 - `WorldCupGroupsSection` and `WorldCupGroupCard` dashboard components showing all groups, teams, fixture counts, and group-stage pairings before full tournament simulation is added.
@@ -123,34 +115,6 @@ This project follows a simple, human-readable changelog format and aims to use c
 - `LIVE_ELO_INTERNATIONAL_SUPPLEMENT` fallback (12 matches) in `packages/api/src/live-elo-data.ts` — Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifiers, and International Friendlies embedded as TypeScript constants.
 - `packages/api/tests/international-elo-adapter.test.ts` — 14 unit tests for adapter functions.
 - `docs/model-results/INTERNATIONAL_DATASET_LIVE_ELO_INTEGRATION.md` documenting the integration architecture, dataset composition, design decisions, and limitations.
-
-### Changed
-
-- Auto Predict From Elo now accepts all 48 expected World Cup 2026 teams. Teams already present in the Live Elo pipeline keep their computed ratings, while missing teams receive an uncalibrated `1500` fallback seed rating marked in response metadata and warnings.
-- `getAvailableLiveEloTeams()` now returns the full sorted World Cup 2026 coverage list instead of only teams present in the current partial Live Elo pipeline.
-- Team alias resolution now includes common names, FIFA names, accents, and abbreviations for Phase 10.2 coverage.
-- `predictMatchFromLiveElo()` now delegates expected-goals computation to `eloToExpectedGoals()` from the model package; behavior is numerically identical to the previous inline calculation.
-- `ELO_TO_XG_UNCALIBRATED_WARNING` replaces the previous hardcoded warning string in routes.ts; the warning text is unchanged.
-- Default Live Elo behavior remains home-advantage-neutral unless `homeAdvantage.enabled` is explicitly supplied.
-- Live Elo API responses now include home advantage status metadata.
-- Default Live Elo behavior remains competition-unweighted unless `competitionWeighting.enabled` is explicitly supplied.
-- Live Elo API responses now include competition weighting status metadata.
-- Default Live Elo behavior remains unweighted unless `recencyWeighting.enabled` is explicitly supplied.
-- Live Elo API responses now include recency weighting status metadata.
-- `predictMatchFromLiveElo()` now uses team aliases, canonical names, case/spacing/accent normalization, unavailable-team suggestions, and available-team coverage metadata.
-- Auto Predict From Elo mode now displays available live Elo teams and field-level suggestions when a team is unavailable.
-- Dashboard home now includes live Elo ratings from the API client wrapper before the static foundation team ratings section.
-- `DashboardSnapshot` now includes `liveEloRatings` from `getLiveEloRatingsFoundation()`.
-- `getLiveEloRatingsFoundation()` now uses a static Elo-compatible mirror of the expanded 56-match international fixture as its live Elo supplement and preserves the previous inline supplement as fallback behavior.
-- Live Elo metadata now reports the expanded dataset ID, supplement match count, warning codes, and partial-history limitations.
-- `getLiveEloRatingsFoundation()` now merges the World Cup foundation (256 matches) with the preferred expanded international supplement (56 matches) for a combined 312-match pipeline using `dataCoverage: "partial_international_history"`.
-- `matchesProcessed` in `getLiveEloRatingsFoundation()` now uses `pipeline.matchesProcessed` (312) rather than a hardcoded constant.
-- `latestMatchDate` now reflects the expanded international supplement's latest match date ("2024-07-14" vs. "2022-12-18").
-- `dataCoverage` string updated to mention Copa America 2024, UEFA Euro 2024, WCQ 2026, and Friendlies.
-- `dataScope` updated to `world_cup_2010_2014_2018_2022+copa_america_2024_euro_2024_wcq_2026_international_friendly`.
-- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING` added to every `getLiveEloRatingsFoundation()` response.
-- `modelScope` entry in `model-info.ts` updated to describe expanded partial international supplement coverage.
-
 - Phase 7.0B historical international match dataset foundation.
 - `packages/data/src/international-matches.ts` with `loadInternationalMatchDataset`, `validateInternationalMatchDataset`, `normalizeInternationalMatch`, `normalizeInternationalMatches`, and full type exports for `InternationalMatch`, `InternationalMatchInput`, `InternationalMatchDatasetMetadata`, `InternationalMatchDatasetResult`, and related validation types.
 - `packages/data/fixtures/international/sample-international-matches.json` — 15-match curated sample covering FIFA World Cup 2022, Copa America 2024, UEFA Euro 2024, FIFA World Cup 2026 Qualifier, and International Friendly.
@@ -268,6 +232,43 @@ This project follows a simple, human-readable changelog format and aims to use c
 - Roadmap for data, modeling, simulation, dashboard, QA, CI/CD, and portfolio polish.
 - Data, model, QA, and validation strategy documents.
 - Agent working instructions for future Codex sessions.
+
+### Changed
+
+- World Cup 2026 standings now consume normalized provider result records instead of score fields embedded in fixture objects.
+- Dashboard standings now show "Results source: local static provider" and "External provider: disabled".
+- Phase 10.2A: Live Elo rating cards and summary stat now display rounded whole numbers instead of raw floats (e.g. `1621` instead of `1620.8566951497519`).
+- Phase 10.2A: "Teams rated" stat card in the Live Elo section relabeled to "Teams in dataset" with caption "Curated dataset · N shown" to distinguish from the 48-team Auto Predict coverage.
+- Phase 10.2A: Team Ratings section eyebrow updated to "Static contender ratings" and description updated to explicitly state these are static seed ratings separate from the Live Elo pipeline.
+- Phase 10.2A: E2E test 13 (Haiti vs Scotland) updated to also assert the fallback seed indicator is visible.
+- Auto Predict From Elo now accepts all 48 expected World Cup 2026 teams. Teams already present in the Live Elo pipeline keep their computed ratings, while missing teams receive an uncalibrated `1500` fallback seed rating marked in response metadata and warnings.
+- `getAvailableLiveEloTeams()` now returns the full sorted World Cup 2026 coverage list instead of only teams present in the current partial Live Elo pipeline.
+- Team alias resolution now includes common names, FIFA names, accents, and abbreviations for Phase 10.2 coverage.
+- `predictMatchFromLiveElo()` now delegates expected-goals computation to `eloToExpectedGoals()` from the model package; behavior is numerically identical to the previous inline calculation.
+- `ELO_TO_XG_UNCALIBRATED_WARNING` replaces the previous hardcoded warning string in routes.ts; the warning text is unchanged.
+- Default Live Elo behavior remains home-advantage-neutral unless `homeAdvantage.enabled` is explicitly supplied.
+- Live Elo API responses now include home advantage status metadata.
+- Default Live Elo behavior remains competition-unweighted unless `competitionWeighting.enabled` is explicitly supplied.
+- Live Elo API responses now include competition weighting status metadata.
+- Default Live Elo behavior remains unweighted unless `recencyWeighting.enabled` is explicitly supplied.
+- Live Elo API responses now include recency weighting status metadata.
+- `predictMatchFromLiveElo()` now uses team aliases, canonical names, case/spacing/accent normalization, unavailable-team suggestions, and available-team coverage metadata.
+- Auto Predict From Elo mode now displays available live Elo teams and field-level suggestions when a team is unavailable.
+- Dashboard home now includes live Elo ratings from the API client wrapper before the static foundation team ratings section.
+- `DashboardSnapshot` now includes `liveEloRatings` from `getLiveEloRatingsFoundation()`.
+- `getLiveEloRatingsFoundation()` now uses a static Elo-compatible mirror of the expanded 56-match international fixture as its live Elo supplement and preserves the previous inline supplement as fallback behavior.
+- Live Elo metadata now reports the expanded dataset ID, supplement match count, warning codes, and partial-history limitations.
+- `getLiveEloRatingsFoundation()` now merges the World Cup foundation (256 matches) with the preferred expanded international supplement (56 matches) for a combined 312-match pipeline using `dataCoverage: "partial_international_history"`.
+- `matchesProcessed` in `getLiveEloRatingsFoundation()` now uses `pipeline.matchesProcessed` (312) rather than a hardcoded constant.
+- `latestMatchDate` now reflects the expanded international supplement's latest match date ("2024-07-14" vs. "2022-12-18").
+- `dataCoverage` string updated to mention Copa America 2024, UEFA Euro 2024, WCQ 2026, and Friendlies.
+- `dataScope` updated to `world_cup_2010_2014_2018_2022+copa_america_2024_euro_2024_wcq_2026_international_friendly`.
+- `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING` added to every `getLiveEloRatingsFoundation()` response.
+- `modelScope` entry in `model-info.ts` updated to describe expanded partial international supplement coverage.
+
+### Fixed
+
+- Phase 10.1: Stale prediction results no longer remain visible after a validation error. When any form submission fails validation (client-side or API-side), the previous result is cleared and an explicit "Prediction unavailable" empty state is shown in the results panel, preventing users from confusing old results with the current invalid input.
 
 ## [0.0.0] - 2026-06-08
 
