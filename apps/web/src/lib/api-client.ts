@@ -21,7 +21,8 @@ import {
   simulateWorldCup2026FinalFoundation,
   simulateWorldCup2026FinalMatchFoundation,
   simulateWorldCup2026SemifinalFoundation,
-  simulateWorldCup2026SemifinalMatchesFoundation
+  simulateWorldCup2026SemifinalMatchesFoundation,
+  resolveWorldCup2026KnockoutWinnersFoundation
 } from "@world-cup-2026-predictor/api";
 import type {
   EloXgPreset,
@@ -54,7 +55,8 @@ import type {
   WorldCup2026SemifinalMatchSimulationFoundationResponse,
   WorldCup2026RoundOf16FoundationResponse,
   WorldCup2026RoundOf16MatchSimulationFoundationResponse,
-  WorldCup2026RoundOf32FoundationResponse
+  WorldCup2026RoundOf32FoundationResponse,
+  WorldCup2026KnockoutWinnerResolutionResponse
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -74,6 +76,7 @@ export type { WorldCup2026FinalFoundationResponse };
 export type { WorldCup2026FinalMatchSimulationFoundationResponse };
 export type { WorldCup2026SemifinalFoundationResponse };
 export type { WorldCup2026SemifinalMatchSimulationFoundationResponse };
+export type { WorldCup2026KnockoutWinnerResolutionResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -99,6 +102,7 @@ export interface DashboardSnapshot {
   worldCup2026FinalMatchSimulation: WorldCup2026FinalMatchSimulationFoundationResponse;
   worldCup2026Semifinal: WorldCup2026SemifinalFoundationResponse;
   worldCup2026SemifinalMatchSimulation: WorldCup2026SemifinalMatchSimulationFoundationResponse;
+  worldCup2026KnockoutWinnerResolution: WorldCup2026KnockoutWinnerResolutionResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -171,6 +175,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     worldCup2026Final: simulateWorldCup2026FinalFoundation(),
     worldCup2026FinalMatchSimulation: simulateWorldCup2026FinalMatchFoundation(),
     worldCup2026Semifinal: simulateWorldCup2026SemifinalFoundation(),
-    worldCup2026SemifinalMatchSimulation: simulateWorldCup2026SemifinalMatchesFoundation()
+    worldCup2026SemifinalMatchSimulation: simulateWorldCup2026SemifinalMatchesFoundation(),
+    worldCup2026KnockoutWinnerResolution: resolveWorldCup2026KnockoutWinnersFoundation()
   };
 }

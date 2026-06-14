@@ -78,6 +78,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.13 | Semifinal Simulation Foundation | Derive projected semifinal participants from QF match probabilities via deterministic winner selection. No semifinal match simulation. | Done |
 | 10.14 | Semifinal Match Simulation | Simulate 2 projected SF fixtures using Live Elo and Poisson model. No winner selection. No final generation. | Done |
 | 10.15 | Final Simulation Foundation | Derive projected finalists from SF match probabilities via deterministic winner selection. No Final match simulation. | Done |
+| 10.16 | Final Match Simulation | Simulate the projected Final fixture using Live Elo and Poisson model. No champion selection. | Done |
+| 11.0 | Knockout Winner Resolution Foundation | Resolve deterministic winners from all simulated knockout match probabilities (R32–Final). Expose champion, runner-up, and winner paths by round. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

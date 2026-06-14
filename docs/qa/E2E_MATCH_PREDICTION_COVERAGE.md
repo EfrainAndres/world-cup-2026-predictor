@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-33 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10 + 1 added in Phase 10.11 + 1 added in Phase 10.12). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
+38 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10 + 1 added in Phase 10.11 + 1 added in Phase 10.12 + 1 added in Phase 10.13 + 1 added in Phase 10.14 + 1 added in Phase 10.15 + 1 added in Phase 10.16 + 1 added in Phase 11.0). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
 
 ## Test List
 
@@ -43,6 +43,11 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 31 | Dashboard renders Round of 16 match simulations with win and draw probabilities | Round of 16 match simulation |
 | 32 | Dashboard renders projected Quarterfinals with advancement reasons | Quarterfinal simulation |
 | 33 | Dashboard renders Quarterfinal match simulations with win and draw probabilities | Quarterfinal match simulation |
+| 34 | Dashboard renders projected Semifinals with advancement reasons | Semifinal simulation |
+| 35 | Dashboard renders Semifinal match simulations with win and draw probabilities | Semifinal match simulation |
+| 36 | Dashboard renders projected Final with advancement reasons | Final simulation |
+| 37 | Dashboard renders Final match simulation with win and draw probabilities | Final match simulation |
+| 38 | Dashboard renders projected tournament winner with champion and runner-up | Knockout winner resolution |
 
 ## Coverage by Area
 

@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 11.0 Knockout winner resolution foundation — resolves deterministic winners from all 31 simulated knockout fixtures (R32–Final); exposes champion, runner-up, and per-round winner lists; no extra time, no penalties, no champion probability distribution.
+- `resolveWorldCup2026KnockoutWinnersFoundation()` API handler; winner selected by highest pre-match win probability, Elo tie-break, then home team.
+- `WorldCup2026ResolvedKnockoutWinner` and `WorldCup2026KnockoutWinnerResolutionResponse` typed schemas.
+- `WorldCupKnockoutWinnerResolutionSection` dashboard component showing projected champion, runner-up, and compact per-round winner lists with deterministic projection warning.
+- `docs/dashboard/WORLD_CUP_2026_KNOCKOUT_WINNER_RESOLUTION.md` documenting inputs, winner selection rule, tie-break chain, output fields, limitations, and future phases.
 - Phase 10.16 Final match simulation — simulates the projected Final fixture using Live Elo ratings and Poisson score model; no champion selection, no penalty logic, no title probabilities.
 - `simulateWorldCup2026FinalMatchFoundation()` API handler; draws after 90 minutes are allowed; champion selection after extra time/penalties is not modeled.
 - `WorldCup2026FinalMatchSimulationFixture` and `WorldCup2026FinalMatchSimulationFoundationResponse` typed schemas.
