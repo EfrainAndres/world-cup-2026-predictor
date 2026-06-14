@@ -559,6 +559,49 @@ export interface WorldCup2026QuarterfinalMatchSimulationFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026SemifinalQualifier {
+  team: string;
+  qualificationSource: "quarterfinal";
+  sourceFixtureId: string;
+  sourceSlot: number;
+  advancementReason: string;
+  probabilitySnapshot: {
+    homeWinProbability: number;
+    drawProbability: number;
+    awayWinProbability: number;
+  };
+  sourceHomeTeam: string;
+  sourceAwayTeam: string;
+  homeRatingSource: LiveEloRatingSource;
+  awayRatingSource: LiveEloRatingSource;
+}
+
+export interface WorldCup2026SemifinalFixture {
+  fixtureId: string;
+  round: "semifinal";
+  slot: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeQualifier: WorldCup2026SemifinalQualifier;
+  awayQualifier: WorldCup2026SemifinalQualifier;
+  status: "projected";
+}
+
+export interface WorldCup2026SemifinalFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_semifinal_foundation";
+  round: "semifinal";
+  projectedSemifinalTeamsCount: number;
+  fixturesCount: number;
+  simulationType: "deterministic_winner_selection";
+  source: "quarterfinal_match_simulation_foundation";
+  projectedSemifinalTeams: readonly WorldCup2026SemifinalQualifier[];
+  projectedSemifinalFixtures: readonly WorldCup2026SemifinalFixture[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
 
 export interface TeamRatingFoundationEntry {
@@ -637,6 +680,7 @@ export interface ApiRoutes {
   simulateWorldCup2026RoundOf16MatchesFoundation: () => WorldCup2026RoundOf16MatchSimulationFoundationResponse;
   simulateWorldCup2026QuarterfinalFoundation: () => WorldCup2026QuarterfinalFoundationResponse;
   simulateWorldCup2026QuarterfinalMatchesFoundation: () => WorldCup2026QuarterfinalMatchSimulationFoundationResponse;
+  simulateWorldCup2026SemifinalFoundation: () => WorldCup2026SemifinalFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

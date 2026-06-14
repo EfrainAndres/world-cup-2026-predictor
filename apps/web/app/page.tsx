@@ -15,6 +15,7 @@ import { WorldCupQuarterfinalSimulationSection } from "../src/components/WorldCu
 import { WorldCupRoundOf16MatchSimulationSection } from "../src/components/WorldCupRoundOf16MatchSimulationSection";
 import { WorldCupRoundOf16SimulationSection } from "../src/components/WorldCupRoundOf16SimulationSection";
 import { WorldCupRoundOf32Section } from "../src/components/WorldCupRoundOf32Section";
+import { WorldCupSemifinalSimulationSection } from "../src/components/WorldCupSemifinalSimulationSection";
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
 import { getDashboardSnapshot } from "../src/lib/api-client";
 
@@ -103,6 +104,8 @@ export default function DashboardHomePage() {
         <WorldCupQuarterfinalSimulationSection quarterfinal={snapshot.worldCup2026Quarterfinal} />
 
         <WorldCupQuarterfinalMatchSimulationSection quarterfinalMatchSimulation={snapshot.worldCup2026QuarterfinalMatchSimulation} />
+
+        <WorldCupSemifinalSimulationSection semifinal={snapshot.worldCup2026Semifinal} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}

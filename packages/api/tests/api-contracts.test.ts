@@ -158,7 +158,8 @@ describe("api contract coverage", () => {
       "simulateWorldCup2026RoundOf16Foundation",
       "simulateWorldCup2026RoundOf16MatchesFoundation",
       "simulateWorldCup2026QuarterfinalFoundation",
-      "simulateWorldCup2026QuarterfinalMatchesFoundation"
+      "simulateWorldCup2026QuarterfinalMatchesFoundation",
+      "simulateWorldCup2026SemifinalFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
@@ -538,6 +539,61 @@ describe("api contract coverage", () => {
       awayTeam: expect.any(String),
       homeQualificationSource: expect.stringMatching(/group_winner|group_runner_up|best_third_place/),
       awayQualificationSource: expect.stringMatching(/group_winner|group_runner_up|best_third_place/),
+      status: "projected"
+    });
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the World Cup 2026 semifinal foundation contract", () => {
+    const response = apiRoutes.simulateWorldCup2026SemifinalFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "dataScope",
+      "fixturesCount",
+      "metadata",
+      "projectedSemifinalFixtures",
+      "projectedSemifinalTeams",
+      "projectedSemifinalTeamsCount",
+      "round",
+      "simulationType",
+      "source",
+      "status",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.tournamentName).toBe("FIFA World Cup 2026");
+    expect(response.dataScope).toBe("world_cup_2026_semifinal_foundation");
+    expect(response.round).toBe("semifinal");
+    expect(response.projectedSemifinalTeamsCount).toBe(4);
+    expect(response.fixturesCount).toBe(2);
+    expect(response.simulationType).toBe("deterministic_winner_selection");
+    expect(response.source).toBe("quarterfinal_match_simulation_foundation");
+    expect(response.projectedSemifinalTeams[0]).toEqual({
+      team: expect.any(String),
+      qualificationSource: "quarterfinal",
+      sourceFixtureId: expect.any(String),
+      sourceSlot: expect.any(Number),
+      advancementReason: expect.any(String),
+      probabilitySnapshot: {
+        homeWinProbability: expect.any(Number),
+        drawProbability: expect.any(Number),
+        awayWinProbability: expect.any(Number)
+      },
+      sourceHomeTeam: expect.any(String),
+      sourceAwayTeam: expect.any(String),
+      homeRatingSource: expect.any(String),
+      awayRatingSource: expect.any(String)
+    });
+    expect(response.projectedSemifinalFixtures[0]).toEqual({
+      fixtureId: expect.any(String),
+      round: "semifinal",
+      slot: expect.any(Number),
+      homeTeam: expect.any(String),
+      awayTeam: expect.any(String),
+      homeQualifier: expect.any(Object),
+      awayQualifier: expect.any(Object),
       status: "projected"
     });
     expectWarningsContract(response.warnings);

@@ -108,7 +108,8 @@ describe("api endpoint validation", () => {
       "simulateWorldCup2026RoundOf16Foundation",
       "simulateWorldCup2026RoundOf16MatchesFoundation",
       "simulateWorldCup2026QuarterfinalFoundation",
-      "simulateWorldCup2026QuarterfinalMatchesFoundation"
+      "simulateWorldCup2026QuarterfinalMatchesFoundation",
+      "simulateWorldCup2026SemifinalFoundation"
     ]);
     expect(body.limitations).toContain("No HTTP server is created in Phase 5.0.");
     expectFoundationMetadata(body.metadata);

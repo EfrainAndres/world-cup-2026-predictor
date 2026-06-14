@@ -66,7 +66,8 @@ describe("api integration validation", () => {
       "simulateWorldCup2026RoundOf16Foundation",
       "simulateWorldCup2026RoundOf16MatchesFoundation",
       "simulateWorldCup2026QuarterfinalFoundation",
-      "simulateWorldCup2026QuarterfinalMatchesFoundation"
+      "simulateWorldCup2026QuarterfinalMatchesFoundation",
+      "simulateWorldCup2026SemifinalFoundation"
     ]);
     expect(modelInfo.limitations).toContain("No database or external services are used.");
     expectPureHandlerMetadata(modelInfo.metadata);
