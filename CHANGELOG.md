@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.11 Quarterfinal simulation foundation — derives 8 projected QF participants and 4 QF fixtures from R16 match probabilities via deterministic winner selection; no QF match simulation, no semifinal generation, no penalties.
+- `simulateWorldCup2026QuarterfinalFoundation()` API handler; winner selected by highest win probability, Elo tie-break, then home team.
+- `WorldCup2026QuarterfinalQualifier`, `WorldCup2026QuarterfinalFixture`, and `WorldCup2026QuarterfinalFoundationResponse` typed schemas.
+- `WorldCupQuarterfinalSimulationSection` dashboard component showing 4 projected QF fixture cards with projected qualifiers, advancement reasons, probability snapshots, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_QUARTERFINAL_SIMULATION.md` documenting winner selection logic, fixture pairing, output fields, limitations, and future phases.
 - Phase 10.10 Round of 16 match simulation — simulates 8 projected R16 fixtures using Live Elo ratings and Poisson score model; no winner selection, no bracket advancement, no penalty logic.
 - `simulateWorldCup2026RoundOf16MatchesFoundation()` API handler; draws after 90 minutes are allowed; advancement after extra time/penalties is not modeled.
 - `WorldCup2026RoundOf16MatchSimulationFixture` and `WorldCup2026RoundOf16MatchSimulationFoundationResponse` typed schemas.

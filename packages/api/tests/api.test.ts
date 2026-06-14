@@ -29,7 +29,8 @@ import {
   simulateTournamentFoundation,
   simulateWorldCup2026KnockoutFixturesFoundation,
   simulateWorldCup2026RoundOf16Foundation,
-  simulateWorldCup2026RoundOf16MatchesFoundation
+  simulateWorldCup2026RoundOf16MatchesFoundation,
+  simulateWorldCup2026QuarterfinalFoundation
 } from "../src/index.js";
 
 describe("api foundation handlers", () => {
@@ -1033,6 +1034,120 @@ describe("simulateWorldCup2026RoundOf16MatchesFoundation", () => {
 
     expect(result.status).toBe("success");
     expect(result.fixtures).toHaveLength(8);
+  });
+});
+
+describe("simulateWorldCup2026QuarterfinalFoundation", () => {
+  it("returns a success response with 8 projected QF teams and 4 fixtures", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.tournamentName).toBe("FIFA World Cup 2026");
+    expect(result.dataScope).toBe("world_cup_2026_quarterfinal_foundation");
+    expect(result.round).toBe("quarterfinals");
+    expect(result.simulationType).toBe("deterministic_winner_selection");
+    expect(result.source).toBe("round_of_16_match_simulation_foundation");
+    expect(result.projectedQualifiersCount).toBe(8);
+    expect(result.fixturesCount).toBe(4);
+    expect(result.projectedQuarterfinalTeams).toHaveLength(8);
+    expect(result.projectedQuarterfinalFixtures).toHaveLength(4);
+  });
+
+  it("each quarterfinal fixture has required shape", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+
+    result.projectedQuarterfinalFixtures.forEach((fixture, i) => {
+      expect(fixture.round).toBe("quarterfinals");
+      expect(fixture.slot).toBe(i + 1);
+      expect(fixture.fixtureId).toBe(`wc2026-qf-0${i + 1}`);
+      expect(fixture.status).toBe("projected");
+      expect(fixture.homeTeam.length).toBeGreaterThan(0);
+      expect(fixture.awayTeam.length).toBeGreaterThan(0);
+      expect(fixture.homeTeam).not.toBe(fixture.awayTeam);
+    });
+  });
+
+  it("each QF qualifier has qualificationSource round_of_16 and advancementReason", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+
+    for (const qualifier of result.projectedQuarterfinalTeams) {
+      expect(qualifier.qualificationSource).toBe("round_of_16");
+      expect(qualifier.advancementReason.length).toBeGreaterThan(0);
+      expect(qualifier.sourceHomeTeam.length).toBeGreaterThan(0);
+      expect(qualifier.sourceAwayTeam.length).toBeGreaterThan(0);
+      expect(qualifier.sourceHomeWinProbability).toBeGreaterThanOrEqual(0);
+      expect(qualifier.sourceDrawProbability).toBeGreaterThanOrEqual(0);
+      expect(qualifier.sourceAwayWinProbability).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("all QF fixture teams are drawn from the projectedQuarterfinalTeams list", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+    const teamNames = new Set(result.projectedQuarterfinalTeams.map((q) => q.team));
+
+    for (const fixture of result.projectedQuarterfinalFixtures) {
+      expect(teamNames.has(fixture.homeTeam)).toBe(true);
+      expect(teamNames.has(fixture.awayTeam)).toBe(true);
+    }
+  });
+
+  it("no duplicate QF teams across all 4 fixtures", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+    const allTeams: string[] = [];
+
+    for (const fixture of result.projectedQuarterfinalFixtures) {
+      allTeams.push(fixture.homeTeam, fixture.awayTeam);
+    }
+
+    expect(new Set(allTeams).size).toBe(8);
+  });
+
+  it("advancement reasons use expected values", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+    const validReasons = new Set([
+      "advanced via highest pre-match win probability",
+      "advanced via Elo tie-break (equal win probability)",
+      "advanced as home team (equal win probability and equal Elo)"
+    ]);
+
+    for (const qualifier of result.projectedQuarterfinalTeams) {
+      expect(validReasons.has(qualifier.advancementReason)).toBe(true);
+    }
+  });
+
+  it("rating sources are valid live_elo_pipeline or fallback_seed values", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+
+    for (const qualifier of result.projectedQuarterfinalTeams) {
+      expect(["live_elo_pipeline", "fallback_seed"]).toContain(qualifier.homeRatingSource);
+      expect(["live_elo_pipeline", "fallback_seed"]).toContain(qualifier.awayRatingSource);
+    }
+  });
+
+  it("response is deterministic across multiple calls", () => {
+    const first = simulateWorldCup2026QuarterfinalFoundation();
+    const second = simulateWorldCup2026QuarterfinalFoundation();
+
+    expect(first.projectedQuarterfinalTeams.map((q) => q.team)).toEqual(
+      second.projectedQuarterfinalTeams.map((q) => q.team)
+    );
+    expect(first.projectedQuarterfinalFixtures.map((f) => f.homeTeam)).toEqual(
+      second.projectedQuarterfinalFixtures.map((f) => f.homeTeam)
+    );
+  });
+
+  it("warnings include the no-penalty and no-semifinal limitations", () => {
+    const result = simulateWorldCup2026QuarterfinalFoundation();
+
+    expect(result.warnings.some((w) => w.includes("extra time") || w.includes("penalties"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("no semifinal generation") || w.includes("no champion"))).toBe(true);
+  });
+
+  it("apiRoutes exposes the handler", () => {
+    const result = apiRoutes.simulateWorldCup2026QuarterfinalFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.projectedQuarterfinalFixtures).toHaveLength(4);
   });
 });
 
