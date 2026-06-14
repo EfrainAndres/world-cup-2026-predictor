@@ -7,6 +7,7 @@ import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
 import { TeamRatingsSection } from "../src/components/TeamRatingsSection";
 import { TournamentSimulationSection } from "../src/components/TournamentSimulationSection";
+import { WorldCupFinalSimulationSection } from "../src/components/WorldCupFinalSimulationSection";
 import { WorldCupGroupsSection } from "../src/components/WorldCupGroupsSection";
 import { WorldCupKnockoutBracketSection } from "../src/components/WorldCupKnockoutBracketSection";
 import { WorldCupKnockoutSimulationSection } from "../src/components/WorldCupKnockoutSimulationSection";
@@ -109,6 +110,8 @@ export default function DashboardHomePage() {
         <WorldCupSemifinalSimulationSection semifinal={snapshot.worldCup2026Semifinal} />
 
         <WorldCupSemifinalMatchSimulationSection semifinalMatchSimulation={snapshot.worldCup2026SemifinalMatchSimulation} />
+
+        <WorldCupFinalSimulationSection finalFoundation={snapshot.worldCup2026Final} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}

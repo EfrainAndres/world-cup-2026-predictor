@@ -77,6 +77,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.12 | Quarterfinal Match Simulation | Simulate 4 projected QF fixtures using Live Elo and Poisson model. No winner selection. No semifinal generation. | Done |
 | 10.13 | Semifinal Simulation Foundation | Derive projected semifinal participants from QF match probabilities via deterministic winner selection. No semifinal match simulation. | Done |
 | 10.14 | Semifinal Match Simulation | Simulate 2 projected SF fixtures using Live Elo and Poisson model. No winner selection. No final generation. | Done |
+| 10.15 | Final Simulation Foundation | Derive projected finalists from SF match probabilities via deterministic winner selection. No Final match simulation. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -138,6 +139,27 @@ Exit criteria:
 - Draws after 90 minutes are preserved in output.
 - No winners are selected, no final advancement is generated, and no penalties are modeled.
 - Output is deterministic.
+- Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
+
+## Phase 10.15 - Final Simulation Foundation
+
+Derive the projected Final participants from semifinal match probabilities.
+
+Deliverables:
+
+- `simulateWorldCup2026FinalFoundation()` pure API handler consuming `simulateWorldCup2026SemifinalMatchesFoundation()`.
+- Deterministic winner selection using highest win probability, then Elo tie-break, then home-team fallback.
+- Two `WorldCup2026FinalQualifier` entries with source fixture, advancement reason, and probability snapshot.
+- One projected Final fixture pairing the two semifinal winners.
+- `WorldCupFinalSimulationSection` dashboard section showing projected finalists, advancement reasons, probability snapshots, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_FINAL_SIMULATION.md`.
+- API, contract, integration, endpoint-validation, and E2E coverage for deterministic Final projection behavior.
+
+Exit criteria:
+
+- API returns 2 projected finalists and 1 projected Final fixture.
+- Output is deterministic with no randomness, no penalties, no Final match simulation, no champion selection, and no title probabilities.
+- Advancement reasons and probability snapshots are present for both projected finalists.
 - Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
 
 ## Phase 10.2 - World Cup 2026 Full Team Coverage
