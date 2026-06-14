@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "es2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2022"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
@@ -20,6 +24,16 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "dist/types/**/*.ts"],
-  "exclude": ["node_modules", "dist", "playwright.config.ts", "tests"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "dist/types/**/*.ts",
+    "next-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "playwright.config.ts",
+    "tests"
+  ]
 }
