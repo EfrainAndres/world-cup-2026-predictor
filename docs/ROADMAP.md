@@ -74,6 +74,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.9 | Round of 16 Simulation Foundation | Derive projected R16 participants from R32 probabilities via deterministic winner selection. No R16 match simulation. | Done |
 | 10.10 | Round of 16 Match Simulation | Simulate 8 projected R16 fixtures using Live Elo and Poisson model. No winner selection. No bracket advancement. | Done |
 | 10.11 | Quarterfinal Simulation Foundation | Derive projected QF participants from R16 match probabilities via deterministic winner selection. No QF match simulation. | Done |
+| 10.12 | Quarterfinal Match Simulation | Simulate 4 projected QF fixtures using Live Elo and Poisson model. No winner selection. No semifinal generation. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
