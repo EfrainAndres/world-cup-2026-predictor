@@ -76,6 +76,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.11 | Quarterfinal Simulation Foundation | Derive projected QF participants from R16 match probabilities via deterministic winner selection. No QF match simulation. | Done |
 | 10.12 | Quarterfinal Match Simulation | Simulate 4 projected QF fixtures using Live Elo and Poisson model. No winner selection. No semifinal generation. | Done |
 | 10.13 | Semifinal Simulation Foundation | Derive projected semifinal participants from QF match probabilities via deterministic winner selection. No semifinal match simulation. | Done |
+| 10.14 | Semifinal Match Simulation | Simulate 2 projected SF fixtures using Live Elo and Poisson model. No winner selection. No final generation. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -115,6 +116,28 @@ Exit criteria:
 - Output is deterministic with no randomness, no penalties, no finalist generation, and no champion calculation.
 - All semifinal fixture teams come from `projectedSemifinalTeams` and no duplicate teams appear.
 - Advancement reasons and probability snapshots are present for every projected semifinal team.
+- Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
+
+## Phase 10.14 - Semifinal Match Simulation
+
+Simulate the 2 projected semifinal fixtures using the same match-level foundation already used for the Round of 32, Round of 16, and Quarterfinal phases.
+
+Deliverables:
+
+- `simulateWorldCup2026SemifinalMatchesFoundation()` pure API handler consuming `simulateWorldCup2026SemifinalFoundation()`.
+- Two `WorldCup2026SemifinalMatchSimulationFixture` entries with Elo-derived expected goals, win/draw/win probabilities, scorelines, rating-source metadata, and fallback warnings.
+- `WorldCup2026SemifinalMatchSimulationFoundationResponse`.
+- `WorldCupSemifinalMatchSimulationSection` dashboard section showing 2 compact semifinal simulation cards.
+- `docs/dashboard/WORLD_CUP_2026_SEMIFINAL_MATCH_SIMULATION.md`.
+- API, contract, integration, endpoint-validation, and E2E coverage for deterministic semifinal match simulation behavior.
+
+Exit criteria:
+
+- API returns 2 simulated semifinal fixtures.
+- Each fixture exposes expected goals, win/draw/win probabilities, and most likely scorelines.
+- Draws after 90 minutes are preserved in output.
+- No winners are selected, no final advancement is generated, and no penalties are modeled.
+- Output is deterministic.
 - Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
 
 ## Phase 10.2 - World Cup 2026 Full Team Coverage
