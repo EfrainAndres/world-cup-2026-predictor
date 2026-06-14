@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.16 Final match simulation — simulates the projected Final fixture using Live Elo ratings and Poisson score model; no champion selection, no penalty logic, no title probabilities.
+- `simulateWorldCup2026FinalMatchFoundation()` API handler; draws after 90 minutes are allowed; champion selection after extra time/penalties is not modeled.
+- `WorldCup2026FinalMatchSimulationFixture` and `WorldCup2026FinalMatchSimulationFoundationResponse` typed schemas.
+- `WorldCupFinalMatchSimulationSection` dashboard component showing the projected Final fixture with win/draw/win probabilities, top scorelines, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_FINAL_MATCH_SIMULATION.md` documenting simulation method, output fields, draw treatment, limitations, and future phases.
 - Phase 10.15 Final simulation foundation — derives 2 projected finalists and 1 projected Final fixture from SF match probabilities via deterministic winner selection; no Final match simulation, no champion selection, no penalties.
 - `simulateWorldCup2026FinalFoundation()` API handler; winner selected by highest win probability, Elo tie-break, then home team.
 - `WorldCup2026FinalQualifier`, `WorldCup2026FinalFixture`, and `WorldCup2026FinalFoundationResponse` typed schemas.

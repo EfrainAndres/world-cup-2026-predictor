@@ -1708,3 +1708,20 @@ Exit criteria:
 - Final release review can be completed from documentation alone.
 - Manual tag creation and rollback steps are clear for the user.
 - The portfolio release remains honest about partial data, foundation modeling, no betting advice, and no public accuracy claim.
+## Phase 10.16 - Final Match Simulation
+
+Status: Done
+
+Deliverables:
+
+- `simulateWorldCup2026FinalMatchFoundation()` API handler
+- typed Final match simulation response contracts
+- dashboard Final match simulation section
+- Final match simulation documentation
+
+Exit criteria:
+
+- projected Final fixture is simulated deterministically
+- win/draw/win probabilities and likely scorelines are returned
+- no champion is selected
+- no penalties or title probabilities are modeled
