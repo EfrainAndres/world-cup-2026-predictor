@@ -14,6 +14,7 @@ This is tournament structure data only. It does not simulate standings, knockout
 - 6 fixtures per group.
 - 3 group fixtures per team.
 - Deterministic fixture IDs.
+- Fixture status (`scheduled` by default; completed scores are modeled as separate normalized result records).
 - Deferred date and venue status.
 - Foundation warnings explaining that this is static local structure data.
 
@@ -62,4 +63,3 @@ Future phases can use this foundation to add:
 - third-place qualification logic against the real 2026 format
 - Round of 32 fixture mapping
 - full tournament simulation using match-level probabilities
-

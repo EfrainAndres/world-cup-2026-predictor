@@ -16,6 +16,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Live Elo ratings section showing top computed teams, ranks, Elo ratings, matches processed, data coverage, latest match date, and partial-data warnings.
 - Team ratings section with foundation Elo seed ratings for top 10 World Cup 2026 contenders, tier pills (Elite/Strong/Competitive), offense/defense scores, strongest offense/defense indicators, and summary stats.
 - World Cup 2026 groups and fixtures section showing Groups A-L, 48 teams, 72 local group-stage fixtures, deferred date/venue metadata, and foundation warnings.
+- World Cup 2026 group standings section showing local standings tables for Groups A-L with points, record, goals for/against, and goal difference.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -43,6 +44,10 @@ The live Elo ratings section calls the local API client wrapper for `getLiveEloR
 ## World Cup 2026 Groups & Fixtures
 
 The groups and fixtures section calls `getWorldCup2026FixtureFoundation()` through the local API client wrapper. It shows static local tournament structure data only: 12 groups, 48 teams, and 72 group-stage fixtures. Dates, venues, standings, and full tournament simulation are deferred.
+
+## World Cup 2026 Group Standings
+
+The standings section calls `getWorldCup2026GroupStandingsFoundation()` through the local API client wrapper. It calculates standings from normalized local result provider records, shows the active result source, and ignores scheduled matches without completed results. The current provider is local static data with external providers disabled.
 
 ## Commands
 

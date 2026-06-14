@@ -1,6 +1,13 @@
 import { canonicalizeTeamName, normalizeTeamSearchText } from "./team-aliases.js";
 import type { TeamCoverageEntry } from "./team-aliases.js";
-import type { WorldCup2026Fixture, WorldCup2026Group } from "./schemas.js";
+import type {
+  WorldCup2026Fixture,
+  WorldCup2026FixtureResult,
+  WorldCup2026Group,
+  WorldCup2026GroupStandingEntry,
+  WorldCup2026GroupStandings,
+  WorldCup2026ResultProviderMetadata
+} from "./schemas.js";
 
 export type WorldCup2026GroupName =
   | "A"
@@ -26,6 +33,16 @@ export interface WorldCup2026TeamEntry {
 export interface WorldCup2026CoverageEntry extends TeamCoverageEntry {
   group: WorldCup2026GroupName;
   ratingSource: WorldCup2026RatingSource;
+}
+
+export interface WorldCup2026ResultProvider {
+  getMetadata: () => WorldCup2026ResultProviderMetadata;
+  getResults: () => readonly WorldCup2026FixtureResult[];
+}
+
+export interface BuildWorldCup2026GroupStandingsInput {
+  fixtures?: readonly WorldCup2026Fixture[];
+  results?: readonly WorldCup2026FixtureResult[];
 }
 
 export const WORLD_CUP_2026_FALLBACK_SEED_RATING = 1500;
@@ -103,6 +120,7 @@ export function buildWorldCup2026GroupFixtures(): WorldCup2026Fixture[] {
         groupFixtureOrder,
         homeTeam,
         awayTeam,
+        status: "scheduled" as const,
         dateStatus: "deferred" as const,
         venueStatus: "deferred" as const
       };
@@ -112,6 +130,202 @@ export function buildWorldCup2026GroupFixtures(): WorldCup2026Fixture[] {
 
 export const WORLD_CUP_2026_FIXTURE_GROUPS: readonly WorldCup2026Group[] = buildWorldCup2026FixtureGroups();
 export const WORLD_CUP_2026_GROUP_STAGE_FIXTURES: readonly WorldCup2026Fixture[] = buildWorldCup2026GroupFixtures();
+
+export const WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT = "2026-06-14";
+
+export const WORLD_CUP_2026_LOCAL_STATIC_RESULTS: readonly WorldCup2026FixtureResult[] = [
+  {
+    fixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+    status: "completed",
+    homeScore: 2,
+    awayScore: 0,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-a-md1-02-south-korea-vs-czechia",
+    status: "completed",
+    homeScore: 2,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-b-md1-01-canada-vs-bosnia-herzegovina",
+    status: "completed",
+    homeScore: 1,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-d-md1-01-united-states-vs-paraguay",
+    status: "completed",
+    homeScore: 4,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-b-md1-02-qatar-vs-switzerland",
+    status: "completed",
+    homeScore: 1,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-c-md1-01-brazil-vs-morocco",
+    status: "completed",
+    homeScore: 1,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-c-md1-02-haiti-vs-scotland",
+    status: "completed",
+    homeScore: 0,
+    awayScore: 1,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  },
+  {
+    fixtureId: "wc2026-group-d-md1-02-australia-vs-turkey",
+    status: "completed",
+    homeScore: 2,
+    awayScore: 0,
+    resultSource: "local_static",
+    updatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT
+  }
+] as const;
+
+export const WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER_METADATA: WorldCup2026ResultProviderMetadata = {
+  providerName: "local static provider",
+  resultSource: "local_static",
+  externalProviderEnabled: false,
+  localOverridesEnabled: true,
+  resultsCount: WORLD_CUP_2026_LOCAL_STATIC_RESULTS.length,
+  dataUpdatedAt: WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT,
+  warnings: [
+    "World Cup 2026 standings are based on local normalized results until an external provider is added.",
+    "No external result provider, live score service, or network call is enabled."
+  ]
+};
+
+export const WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER: WorldCup2026ResultProvider = {
+  getMetadata: () => WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER_METADATA,
+  getResults: () => WORLD_CUP_2026_LOCAL_STATIC_RESULTS
+};
+
+function createZeroStanding(team: string): WorldCup2026GroupStandingEntry {
+  return {
+    team,
+    played: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDifference: 0,
+    points: 0
+  };
+}
+
+function isCompletedResultWithScore(result: WorldCup2026FixtureResult | undefined): result is WorldCup2026FixtureResult & {
+  homeScore: number;
+  awayScore: number;
+} {
+  return result?.status === "completed" && result.homeScore !== undefined && result.awayScore !== undefined;
+}
+
+function buildResultLookup(results: readonly WorldCup2026FixtureResult[]): Map<string, WorldCup2026FixtureResult> {
+  return new Map(results.map((result) => [result.fixtureId, result]));
+}
+
+function applyCompletedFixtureResult(
+  standingsByTeam: Map<string, WorldCup2026GroupStandingEntry>,
+  fixture: WorldCup2026Fixture,
+  result: WorldCup2026FixtureResult | undefined
+): void {
+  if (!isCompletedResultWithScore(result)) {
+    return;
+  }
+
+  const homeStanding = standingsByTeam.get(fixture.homeTeam);
+  const awayStanding = standingsByTeam.get(fixture.awayTeam);
+
+  if (homeStanding === undefined || awayStanding === undefined) {
+    return;
+  }
+
+  homeStanding.played += 1;
+  awayStanding.played += 1;
+  homeStanding.goalsFor += result.homeScore;
+  homeStanding.goalsAgainst += result.awayScore;
+  awayStanding.goalsFor += result.awayScore;
+  awayStanding.goalsAgainst += result.homeScore;
+  homeStanding.goalDifference = homeStanding.goalsFor - homeStanding.goalsAgainst;
+  awayStanding.goalDifference = awayStanding.goalsFor - awayStanding.goalsAgainst;
+
+  if (result.homeScore > result.awayScore) {
+    homeStanding.wins += 1;
+    homeStanding.points += 3;
+    awayStanding.losses += 1;
+    return;
+  }
+
+  if (result.homeScore < result.awayScore) {
+    awayStanding.wins += 1;
+    awayStanding.points += 3;
+    homeStanding.losses += 1;
+    return;
+  }
+
+  homeStanding.draws += 1;
+  awayStanding.draws += 1;
+  homeStanding.points += 1;
+  awayStanding.points += 1;
+}
+
+function sortStandings(standings: readonly WorldCup2026GroupStandingEntry[]): WorldCup2026GroupStandingEntry[] {
+  return [...standings].sort(
+    (a, b) =>
+      b.points - a.points ||
+      b.goalDifference - a.goalDifference ||
+      b.goalsFor - a.goalsFor ||
+      a.team.localeCompare(b.team)
+  );
+}
+
+export function buildWorldCup2026GroupStandings(
+  input: BuildWorldCup2026GroupStandingsInput = {}
+): WorldCup2026GroupStandings[] {
+  const fixtures = input.fixtures ?? WORLD_CUP_2026_GROUP_STAGE_FIXTURES;
+  const results = input.results ?? WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER.getResults();
+  const resultByFixtureId = buildResultLookup(results);
+
+  return WORLD_CUP_2026_FIXTURE_GROUPS.map((group) => {
+    const standingsByTeam = new Map(group.teams.map((team) => [team, createZeroStanding(team)]));
+    const groupFixtures = fixtures.filter((fixture) => fixture.group === group.group);
+
+    for (const fixture of groupFixtures) {
+      applyCompletedFixtureResult(standingsByTeam, fixture, resultByFixtureId.get(fixture.id));
+    }
+
+    const completedFixtureCount = groupFixtures.filter((fixture) => isCompletedResultWithScore(resultByFixtureId.get(fixture.id))).length;
+
+    return {
+      group: group.group,
+      groupName: group.groupName,
+      completedFixtureCount,
+      pendingFixtureCount: groupFixtures.length - completedFixtureCount,
+      standings: sortStandings([...standingsByTeam.values()])
+    };
+  });
+}
+
+export const WORLD_CUP_2026_GROUP_STANDINGS: readonly WorldCup2026GroupStandings[] = buildWorldCup2026GroupStandings();
 
 function buildLiveRatingLookup(rankedRatings: readonly TeamCoverageEntry[]): Map<string, TeamCoverageEntry> {
   const ratingsByCanonicalTeam = new Map<string, TeamCoverageEntry>();

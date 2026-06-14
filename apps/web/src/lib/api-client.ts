@@ -7,6 +7,7 @@ import {
   getModelInfo,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupStandingsFoundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -30,7 +31,8 @@ import type {
   TeamRatingTier,
   TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse,
-  WorldCup2026FixtureFoundationResponse
+  WorldCup2026FixtureFoundationResponse,
+  WorldCup2026GroupStandingsFoundationResponse
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -38,6 +40,7 @@ export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationRe
 export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };
 export type { WorldCup2026FixtureFoundationResponse };
+export type { WorldCup2026GroupStandingsFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -51,6 +54,7 @@ export interface DashboardSnapshot {
   teamRatings: TeamRatingsFoundationResponse;
   liveEloRatings: LiveEloRatingsFoundationResponse;
   worldCup2026Fixtures: WorldCup2026FixtureFoundationResponse;
+  worldCup2026Standings: WorldCup2026GroupStandingsFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -111,6 +115,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     tournamentSimulation: simulateTournamentFoundation(),
     teamRatings: getTeamRatingsFoundation(),
     liveEloRatings: getLiveEloRatingsFoundation(),
-    worldCup2026Fixtures: getWorldCup2026FixtureFoundation()
+    worldCup2026Fixtures: getWorldCup2026FixtureFoundation(),
+    worldCup2026Standings: getWorldCup2026GroupStandingsFoundation()
   };
 }

@@ -16,7 +16,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Curated seed ratings for top 10 World Cup 2026 contenders with tier and strength classifications.",
       "Live Elo pipeline computing current ratings from 256 World Cup fixtures (2010–2022) plus an expanded partial international supplement covering FIFA World Cup 2022, Copa America 2024, Euro 2024, WCQ 2026, and friendlies.",
       "Automatic match prediction from live Elo team names using a transparent Elo-to-expected-goals foundation.",
-      "Static World Cup 2026 Groups A-L and group-stage fixture foundation data."
+      "Static World Cup 2026 Groups A-L and group-stage fixture foundation data.",
+      "World Cup 2026 group standings foundation calculated from normalized local result provider records."
     ],
     supportedHandlers: [
       "getHealth",
@@ -28,7 +29,8 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
-      "getWorldCup2026FixtureFoundation"
+      "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026GroupStandingsFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

@@ -7,6 +7,7 @@ import {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupStandingsFoundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation,
@@ -148,7 +149,8 @@ describe("api contract coverage", () => {
       "simulateTournamentFoundation",
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
-      "getWorldCup2026FixtureFoundation"
+      "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026GroupStandingsFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
@@ -416,8 +418,63 @@ describe("api contract coverage", () => {
       groupFixtureOrder: expect.any(Number),
       homeTeam: expect.any(String),
       awayTeam: expect.any(String),
+      status: "scheduled",
       dateStatus: "deferred",
       venueStatus: "deferred"
+    });
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the World Cup 2026 group standings foundation contract", () => {
+    const response = getWorldCup2026GroupStandingsFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "completedFixtureCount",
+      "dataScope",
+      "groupCount",
+      "groups",
+      "metadata",
+      "pendingFixtureCount",
+      "resultProvider",
+      "status",
+      "teamCount",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.tournamentName).toBe("FIFA World Cup 2026");
+    expect(response.dataScope).toBe("world_cup_2026_group_standings_foundation");
+    expect(response.groupCount).toBe(12);
+    expect(response.teamCount).toBe(48);
+    expect(response.groups).toHaveLength(12);
+    expect(response.resultProvider).toEqual({
+      providerName: expect.any(String),
+      resultSource: "local_static",
+      externalProviderEnabled: false,
+      localOverridesEnabled: true,
+      resultsCount: expect.any(Number),
+      dataUpdatedAt: expect.any(String),
+      warnings: expect.any(Array)
+    });
+    expectWarningsContract(response.resultProvider.warnings);
+    expect(response.groups[0]).toEqual({
+      group: expect.any(String),
+      groupName: expect.any(String),
+      completedFixtureCount: expect.any(Number),
+      pendingFixtureCount: expect.any(Number),
+      standings: expect.any(Array)
+    });
+    expect(response.groups[0]?.standings[0]).toEqual({
+      team: expect.any(String),
+      played: expect.any(Number),
+      wins: expect.any(Number),
+      draws: expect.any(Number),
+      losses: expect.any(Number),
+      goalsFor: expect.any(Number),
+      goalsAgainst: expect.any(Number),
+      goalDifference: expect.any(Number),
+      points: expect.any(Number)
     });
     expectWarningsContract(response.warnings);
     expectMetadataContract(response.metadata);

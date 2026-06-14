@@ -31,16 +31,37 @@ test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ pa
   await expect(
     page.getByRole("heading", { level: 2, name: "World Cup 2026 Groups & Fixtures" })
   ).toBeVisible();
-  await expect(page.getByText("Foundation tournament structure")).toBeVisible();
-  await expect(page.getByText("72 group fixtures")).toBeVisible();
-  await expect(page.getByText("12 groups")).toBeVisible();
+  const groupsSection = page.getByRole("region", { name: "World Cup 2026 Groups & Fixtures" });
+  await expect(groupsSection.getByText("Foundation tournament structure")).toBeVisible();
+  await expect(groupsSection.getByText("72 group fixtures")).toBeVisible();
+  await expect(groupsSection.getByText("12 groups")).toBeVisible();
 
-  const groupC = page.getByRole("article", { name: "Group C" });
+  const groupC = groupsSection.getByRole("article", { name: "Group C" });
   await expect(groupC).toBeVisible();
   await expect(groupC.getByText("Brazil", { exact: true })).toBeVisible();
   await expect(groupC.getByText("Morocco", { exact: true })).toBeVisible();
   await expect(groupC.getByText("Haiti", { exact: true })).toBeVisible();
   await expect(groupC.getByText("Scotland", { exact: true })).toBeVisible();
+});
+
+test("dashboard renders World Cup 2026 group standings tables", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(
+    page.getByRole("heading", { level: 2, name: "World Cup 2026 Group Standings" })
+  ).toBeVisible();
+  await expect(page.getByText("Foundation standings")).toBeVisible();
+  await expect(page.getByText("Results source: local static provider")).toBeVisible();
+  await expect(page.getByText("External provider: disabled")).toBeVisible();
+  await expect(page.getByText("Standings are calculated from local normalized results. Scheduled matches are ignored.")).toBeVisible();
+
+  const groupA = page.getByRole("article", { name: "Group A standings" });
+  const groupC = page.getByRole("article", { name: "Group C standings" });
+
+  await expect(groupA).toBeVisible();
+  await expect(groupA.getByRole("row", { name: /Mexico/ })).toContainText("3");
+  await expect(groupC).toBeVisible();
+  await expect(groupC.getByRole("row", { name: /Scotland/ })).toContainText("3");
 });
 
 // ── Match simulation form ─────────────────────────────────────────────────────

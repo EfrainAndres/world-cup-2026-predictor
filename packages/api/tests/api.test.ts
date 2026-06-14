@@ -8,8 +8,11 @@ import {
 } from "../../model/src/elo-to-xg.js";
 import {
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULTS,
   WORLD_CUP_2026_TEAM_NAMES,
   apiRoutes,
+  buildWorldCup2026GroupStandings,
   getAvailableLiveEloTeams,
   getHealth,
   getHistoricalReplayAudit,
@@ -18,6 +21,7 @@ import {
   getModelInfo,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupStandingsFoundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -265,6 +269,7 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getModelInfo()).toEqual(getModelInfo());
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
     expect(apiRoutes.getWorldCup2026FixtureFoundation()).toEqual(getWorldCup2026FixtureFoundation());
+    expect(apiRoutes.getWorldCup2026GroupStandingsFoundation()).toEqual(getWorldCup2026GroupStandingsFoundation());
     expect(apiRoutes.predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })).toEqual(
       predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })
     );
@@ -359,9 +364,216 @@ describe("getWorldCup2026FixtureFoundation", () => {
       groupFixtureOrder: 1,
       homeTeam: "Mexico",
       awayTeam: "South Africa",
+      status: "scheduled",
       dateStatus: "deferred",
       venueStatus: "deferred"
     });
+  });
+});
+
+describe("getWorldCup2026GroupStandingsFoundation", () => {
+  it("returns 12 groups with 4 standings entries per group", () => {
+    const result = getWorldCup2026GroupStandingsFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.groupCount).toBe(12);
+    expect(result.teamCount).toBe(48);
+    expect(result.groups).toHaveLength(12);
+    expect(result.completedFixtureCount).toBe(8);
+    expect(result.pendingFixtureCount).toBe(64);
+    for (const group of result.groups) {
+      expect(group.standings).toHaveLength(4);
+    }
+  });
+
+  it("exposes normalized local result provider metadata", () => {
+    const result = getWorldCup2026GroupStandingsFoundation();
+
+    expect(result.resultProvider).toEqual({
+      providerName: "local static provider",
+      resultSource: "local_static",
+      externalProviderEnabled: false,
+      localOverridesEnabled: true,
+      resultsCount: WORLD_CUP_2026_LOCAL_STATIC_RESULTS.length,
+      dataUpdatedAt: "2026-06-14",
+      warnings: expect.any(Array)
+    });
+    expect(result.warnings.some((warning) => warning.includes("local normalized fixture results"))).toBe(true);
+  });
+
+  it("local static provider returns deterministic normalized result records", () => {
+    const first = WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER.getResults();
+    const second = WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER.getResults();
+
+    expect(first).toEqual(second);
+    expect(WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER.getMetadata().externalProviderEnabled).toBe(false);
+    expect(first).toHaveLength(8);
+    expect(first).toContainEqual({
+      fixtureId: "wc2026-group-c-md1-02-haiti-vs-scotland",
+      status: "completed",
+      homeScore: 0,
+      awayScore: 1,
+      resultSource: "local_static",
+      updatedAt: "2026-06-14"
+    });
+  });
+
+  it("starts every team with zeroes when no completed results are provided", () => {
+    const result = buildWorldCup2026GroupStandings({ results: [] });
+
+    for (const group of result) {
+      for (const entry of group.standings) {
+        expect(entry).toMatchObject({
+          played: 0,
+          wins: 0,
+          draws: 0,
+          losses: 0,
+          goalsFor: 0,
+          goalsAgainst: 0,
+          goalDifference: 0,
+          points: 0
+        });
+      }
+    }
+  });
+
+  it("applies completed wins, draws, goals, and goal difference", () => {
+    const results = [
+      {
+        fixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+        status: "completed" as const,
+        homeScore: 2,
+        awayScore: 0,
+        resultSource: "local_static" as const
+      },
+      {
+        fixtureId: "wc2026-group-a-md1-02-south-korea-vs-czechia",
+        status: "completed" as const,
+        homeScore: 1,
+        awayScore: 1,
+        resultSource: "local_static" as const
+      }
+    ];
+    const groupA = buildWorldCup2026GroupStandings({ results }).find((group) => group.group === "A");
+
+    expect(groupA?.completedFixtureCount).toBe(2);
+    expect(groupA?.pendingFixtureCount).toBe(4);
+    expect(groupA?.standings).toEqual([
+      {
+        team: "Mexico",
+        played: 1,
+        wins: 1,
+        draws: 0,
+        losses: 0,
+        goalsFor: 2,
+        goalsAgainst: 0,
+        goalDifference: 2,
+        points: 3
+      },
+      {
+        team: "Czechia",
+        played: 1,
+        wins: 0,
+        draws: 1,
+        losses: 0,
+        goalsFor: 1,
+        goalsAgainst: 1,
+        goalDifference: 0,
+        points: 1
+      },
+      {
+        team: "South Korea",
+        played: 1,
+        wins: 0,
+        draws: 1,
+        losses: 0,
+        goalsFor: 1,
+        goalsAgainst: 1,
+        goalDifference: 0,
+        points: 1
+      },
+      {
+        team: "South Africa",
+        played: 1,
+        wins: 0,
+        draws: 0,
+        losses: 1,
+        goalsFor: 0,
+        goalsAgainst: 2,
+        goalDifference: -2,
+        points: 0
+      }
+    ]);
+  });
+
+  it("ignores pending fixtures even if score fields are present", () => {
+    const results = [
+      {
+        fixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+        status: "scheduled" as const,
+        homeScore: 5,
+        awayScore: 0,
+        resultSource: "manual_override" as const
+      }
+    ];
+    const groupA = buildWorldCup2026GroupStandings({ results }).find((group) => group.group === "A");
+
+    expect(groupA?.completedFixtureCount).toBe(0);
+    expect(groupA?.standings.every((entry) => entry.points === 0 && entry.played === 0)).toBe(true);
+  });
+
+  it("orders standings deterministically by points, goal difference, goals for, then team name", () => {
+    const results = [
+      {
+        fixtureId: "wc2026-group-c-md1-01-brazil-vs-morocco",
+        status: "completed" as const,
+        homeScore: 1,
+        awayScore: 0,
+        resultSource: "manual_override" as const
+      },
+      {
+        fixtureId: "wc2026-group-c-md1-02-haiti-vs-scotland",
+        status: "completed" as const,
+        homeScore: 2,
+        awayScore: 2,
+        resultSource: "manual_override" as const
+      }
+    ];
+    const groupC = buildWorldCup2026GroupStandings({ results }).find((group) => group.group === "C");
+
+    expect(groupC?.standings.map((entry) => entry.team)).toEqual(["Brazil", "Haiti", "Scotland", "Morocco"]);
+  });
+
+  it("applies current local static completed results in production standings", () => {
+    const result = getWorldCup2026GroupStandingsFoundation();
+    const groupA = result.groups.find((group) => group.group === "A");
+    const groupC = result.groups.find((group) => group.group === "C");
+
+    expect(groupA?.standings.map((entry) => [entry.team, entry.points, entry.goalDifference])).toEqual([
+      ["Mexico", 3, 2],
+      ["South Korea", 3, 1],
+      ["Czechia", 0, -1],
+      ["South Africa", 0, -2]
+    ]);
+    expect(groupC?.standings.map((entry) => [entry.team, entry.points, entry.goalDifference])).toEqual([
+      ["Scotland", 3, 1],
+      ["Brazil", 1, 0],
+      ["Morocco", 1, 0],
+      ["Haiti", 0, -1]
+    ]);
+  });
+
+  it("returns deterministic standings from the production handler", () => {
+    const first = getWorldCup2026GroupStandingsFoundation();
+    const second = getWorldCup2026GroupStandingsFoundation();
+
+    expect(first).toEqual(second);
+    expect(first.groups.find((group) => group.group === "A")?.standings.map((entry) => entry.team)).toEqual([
+      "Mexico",
+      "South Korea",
+      "Czechia",
+      "South Africa"
+    ]);
   });
 });
 
