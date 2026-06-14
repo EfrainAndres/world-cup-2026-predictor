@@ -108,6 +108,16 @@ test("dashboard renders Round of 16 match simulations with win and draw probabil
   await expect(r16SimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
 });
 
+test("dashboard renders projected Quarterfinals with advancement reasons", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Quarterfinals" })).toBeVisible();
+  const qfSection = page.getByRole("region", { name: "Projected Quarterfinals" });
+  await expect(qfSection.getByText("Projected from pre-match probabilities", { exact: true })).toBeVisible();
+  await expect(qfSection.getByText("QF Slot 1").first()).toBeVisible();
+  await expect(qfSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

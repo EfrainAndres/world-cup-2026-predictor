@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-31 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
+32 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10 + 1 added in Phase 10.11). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
 
 ## Test List
 
@@ -41,6 +41,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 29 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
 | 30 | Dashboard renders projected Round of 16 with advancement reasons | Round of 16 simulation |
 | 31 | Dashboard renders Round of 16 match simulations with win and draw probabilities | Round of 16 match simulation |
+| 32 | Dashboard renders projected Quarterfinals with advancement reasons | Quarterfinal simulation |
 
 ## Coverage by Area
 
@@ -73,6 +74,10 @@ Test 30 verifies the Phase 10.9 Round of 16 simulation section. It asserts that 
 ### Round of 16 match simulation
 
 Test 31 verifies the Phase 10.10 Round of 16 match simulation section. It asserts that the "Round of 16 match simulations" heading, the "Match probabilities only" warning banner, the "R16 Sim Slot 1" card label, and a "Draw: x.x%" probability text are visible on the dashboard.
+
+### Quarterfinal simulation
+
+Test 32 verifies the Phase 10.11 Quarterfinal simulation section. It asserts that the "Projected Quarterfinals" heading, the "Projected from pre-match probabilities" warning banner, the "QF Slot 1" card label, and the "advanced via highest pre-match win probability" advancement reason text are visible on the dashboard.
 
 ### Knockout bracket foundation
 

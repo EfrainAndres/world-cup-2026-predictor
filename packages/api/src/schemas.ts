@@ -488,6 +488,47 @@ export interface WorldCup2026RoundOf16MatchSimulationFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026QuarterfinalQualifier {
+  team: string;
+  qualificationSource: "round_of_16";
+  sourceFixtureId: string;
+  sourceSlot: number;
+  advancementReason: string;
+  sourceHomeTeam: string;
+  sourceAwayTeam: string;
+  sourceHomeWinProbability: number;
+  sourceDrawProbability: number;
+  sourceAwayWinProbability: number;
+  homeRatingSource: LiveEloRatingSource;
+  awayRatingSource: LiveEloRatingSource;
+}
+
+export interface WorldCup2026QuarterfinalFixture {
+  fixtureId: string;
+  round: "quarterfinals";
+  slot: number;
+  homeTeam: string;
+  awayTeam: string;
+  homeQualifier: WorldCup2026QuarterfinalQualifier;
+  awayQualifier: WorldCup2026QuarterfinalQualifier;
+  status: "projected";
+}
+
+export interface WorldCup2026QuarterfinalFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_quarterfinal_foundation";
+  round: "quarterfinals";
+  projectedQualifiersCount: number;
+  fixturesCount: number;
+  simulationType: "deterministic_winner_selection";
+  source: "round_of_16_match_simulation_foundation";
+  projectedQuarterfinalTeams: readonly WorldCup2026QuarterfinalQualifier[];
+  projectedQuarterfinalFixtures: readonly WorldCup2026QuarterfinalFixture[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type TeamRatingTier = "Elite" | "Strong" | "Competitive";
 
 export interface TeamRatingFoundationEntry {
@@ -564,6 +605,7 @@ export interface ApiRoutes {
   simulateWorldCup2026KnockoutFixturesFoundation: () => WorldCup2026KnockoutSimulationFoundationResponse;
   simulateWorldCup2026RoundOf16Foundation: () => WorldCup2026RoundOf16FoundationResponse;
   simulateWorldCup2026RoundOf16MatchesFoundation: () => WorldCup2026RoundOf16MatchSimulationFoundationResponse;
+  simulateWorldCup2026QuarterfinalFoundation: () => WorldCup2026QuarterfinalFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

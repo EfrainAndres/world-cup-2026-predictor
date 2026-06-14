@@ -22,6 +22,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Round of 32 knockout match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 16 projected R32 fixtures using Live Elo ratings and the Poisson model.
 - Projected Round of 16 section showing 8 projected R16 fixtures derived from R32 probabilities via deterministic winner selection, with advancement reason, R32 source matchup, and probability snapshot per qualifier.
 - Round of 16 match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 8 projected R16 fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
+- Projected Quarterfinals section showing 4 projected QF fixtures derived from R16 match probabilities via deterministic winner selection, with projected qualifier cards showing advancement reason, R16 source matchup, and probability snapshot.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -73,6 +74,10 @@ The knockout simulation section calls `simulateWorldCup2026KnockoutFixturesFound
 ## World Cup 2026 Round of 16 Match Simulation
 
 The Round of 16 match simulation section calls `simulateWorldCup2026RoundOf16MatchesFoundation()` through the local API client wrapper. It consumes the 8 projected R16 fixtures from `simulateWorldCup2026RoundOf16Foundation()` and runs the same Live Elo → Poisson pipeline for each fixture, producing home win / draw / away win probabilities and the top 3 most likely scorelines. Teams not in the Live Elo pipeline receive a fallback seed rating of 1500 and are labeled "Partial data". No winners are selected. Advancement after extra time or penalties is not modeled in this phase.
+
+## World Cup 2026 Quarterfinal Projection
+
+The Quarterfinal projection section calls `simulateWorldCup2026QuarterfinalFoundation()` through the local API client wrapper. It consumes the 8 R16 simulated fixtures from `simulateWorldCup2026RoundOf16MatchesFoundation()` and applies a deterministic winner-selection rule to each: the team with the higher win probability advances; if win probabilities are equal, the team with the higher Live Elo rating advances; if Elo is also equal, the home team advances. The 8 projected QF qualifiers are paired into 4 quarterfinal fixtures. No QF match probabilities are computed. No semifinal generation. No champion probabilities.
 
 ## Commands
 
