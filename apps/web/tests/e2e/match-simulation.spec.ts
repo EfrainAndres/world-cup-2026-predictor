@@ -168,6 +168,17 @@ test("dashboard renders Final match simulation with win and draw probabilities",
   await expect(finalSimSection.getByText(/Draw/).first()).toBeVisible();
 });
 
+test("dashboard renders projected tournament winner with champion and runner-up", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Projected Tournament Winner" })).toBeVisible();
+  const resolutionSection = page.getByRole("region", { name: "Projected Tournament Winner" });
+  await expect(resolutionSection.getByText("Deterministic projection only", { exact: true })).toBeVisible();
+  await expect(resolutionSection.getByText("Projected Champion", { exact: true })).toBeVisible();
+  await expect(resolutionSection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
+  await expect(resolutionSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

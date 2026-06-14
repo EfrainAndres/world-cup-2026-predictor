@@ -47,6 +47,7 @@ import type {
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   HistoricalTournamentSummaryResponse,
+  LiveEloRatingSource,
   LiveEloRatingsFoundationOptions,
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,
@@ -79,6 +80,8 @@ import type {
   WorldCup2026FinalMatchSimulationFixture,
   WorldCup2026FinalMatchSimulationFoundationResponse,
   WorldCup2026FinalQualifier,
+  WorldCup2026KnockoutWinnerResolutionResponse,
+  WorldCup2026ResolvedKnockoutWinner,
   WorldCup2026SemifinalFixture,
   WorldCup2026SemifinalFoundationResponse,
   WorldCup2026SemifinalMatchSimulationFixture,
@@ -1778,6 +1781,139 @@ export function simulateWorldCup2026FinalMatchFoundation(): WorldCup2026FinalMat
   };
 }
 
+function resolveKnockoutWinnerFromFixture(
+  fixture: {
+    fixtureId: string;
+    slot: number;
+    homeTeam: string;
+    awayTeam: string;
+    homeWinProbability: number;
+    drawProbability: number;
+    awayWinProbability: number;
+    homeRatingSource: LiveEloRatingSource;
+    awayRatingSource: LiveEloRatingSource;
+  },
+  round: WorldCup2026ResolvedKnockoutWinner["round"],
+  ratingsByTeam: Map<string, WorldCup2026CoverageEntry>
+): WorldCup2026ResolvedKnockoutWinner {
+  const { fixtureId, slot, homeTeam, awayTeam, homeWinProbability, awayWinProbability, drawProbability, homeRatingSource, awayRatingSource } = fixture;
+  let winner: string;
+  let loser: string;
+  let advancementReason: string;
+
+  if (homeWinProbability > awayWinProbability) {
+    winner = homeTeam;
+    loser = awayTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else if (awayWinProbability > homeWinProbability) {
+    winner = awayTeam;
+    loser = homeTeam;
+    advancementReason = "advanced via highest pre-match win probability";
+  } else {
+    const homeElo = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+    const awayElo = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+
+    if (homeElo > awayElo) {
+      winner = homeTeam;
+      loser = awayTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else if (awayElo > homeElo) {
+      winner = awayTeam;
+      loser = homeTeam;
+      advancementReason = "advanced via Elo tie-break (equal win probability)";
+    } else {
+      winner = homeTeam;
+      loser = awayTeam;
+      advancementReason = "advanced as home team (equal win probability and equal Elo)";
+    }
+  }
+
+  return {
+    team: winner,
+    round,
+    sourceFixtureId: fixtureId,
+    slot,
+    opponent: loser,
+    advancementReason,
+    probabilitySnapshot: { homeWinProbability, drawProbability, awayWinProbability },
+    homeRatingSource,
+    awayRatingSource
+  };
+}
+
+export function resolveWorldCup2026KnockoutWinnersFoundation(): WorldCup2026KnockoutWinnerResolutionResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const coverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const ratingsByTeam = buildCoverageLookup(coverageEntries);
+
+  const r32Sim = simulateWorldCup2026KnockoutFixturesFoundation();
+  const r16Sim = simulateWorldCup2026RoundOf16MatchesFoundation();
+  const qfSim = simulateWorldCup2026QuarterfinalMatchesFoundation();
+  const sfSim = simulateWorldCup2026SemifinalMatchesFoundation();
+  const finalSim = simulateWorldCup2026FinalMatchFoundation();
+
+  const finalFixture = finalSim.fixtures[0];
+  if (finalFixture === undefined) {
+    throw new Error("resolveWorldCup2026KnockoutWinnersFoundation: expected 1 projected final fixture.");
+  }
+
+  const roundOf32Winners = r32Sim.fixtures.map((f) => resolveKnockoutWinnerFromFixture(f, "round_of_32", ratingsByTeam));
+  const roundOf16Winners = r16Sim.fixtures.map((f) => resolveKnockoutWinnerFromFixture(f, "round_of_16", ratingsByTeam));
+  const quarterfinalWinners = qfSim.fixtures.map((f) => resolveKnockoutWinnerFromFixture(f, "quarterfinal", ratingsByTeam));
+  const semifinalWinners = sfSim.fixtures.map((f) => resolveKnockoutWinnerFromFixture(f, "semifinal", ratingsByTeam));
+  const champion = resolveKnockoutWinnerFromFixture(finalFixture, "final", ratingsByTeam);
+
+  const runnerUpTeam = champion.team === finalFixture.homeTeam ? finalFixture.awayTeam : finalFixture.homeTeam;
+  const runnerUp: WorldCup2026ResolvedKnockoutWinner = {
+    team: runnerUpTeam,
+    round: "final",
+    sourceFixtureId: finalFixture.fixtureId,
+    slot: finalFixture.slot,
+    opponent: champion.team,
+    advancementReason: "reached the final",
+    probabilitySnapshot: {
+      homeWinProbability: finalFixture.homeWinProbability,
+      drawProbability: finalFixture.drawProbability,
+      awayWinProbability: finalFixture.awayWinProbability
+    },
+    homeRatingSource: finalFixture.homeRatingSource,
+    awayRatingSource: finalFixture.awayRatingSource
+  };
+
+  const totalResolvedFixtures = roundOf32Winners.length + roundOf16Winners.length + quarterfinalWinners.length + semifinalWinners.length + 1;
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_knockout_winner_resolution_foundation",
+    resolutionType: "deterministic_foundation",
+    resolvedRounds: ["round_of_32", "round_of_16", "quarterfinal", "semifinal", "final"],
+    totalResolvedFixtures,
+    championSelected: true,
+    roundOf32Winners,
+    roundOf16Winners,
+    quarterfinalWinners,
+    semifinalWinners,
+    champion,
+    runnerUp,
+    finalFixtureId: finalFixture.fixtureId,
+    warnings: [
+      "Champion is selected by deterministic pre-match probabilities only. Extra time, penalties, and live results are not modeled.",
+      "No extra time modeled. No penalty shootout modeled. This is a deterministic projection only.",
+      "Projected bracket is based on local curated match data. Not a live or official source.",
+      "Winner selection: highest win probability advances. Elo is the tie-breaker; home team wins if both are equal.",
+      `Live Elo simulation uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`,
+      ...internationalSupplement.metadata.foundationWarnings
+    ],
+    metadata: buildApiMetadata([
+      "Knockout winner resolution foundation: deterministic winners derived from all simulated knockout match probabilities.",
+      "Winner selection: highest win probability wins; Elo tie-break if equal; home team wins if both are equal.",
+      "No extra time, penalties, or randomization. No champion probability distribution.",
+      "No external API calls, live score service, or prediction formula changes are used."
+    ])
+  };
+}
+
 export function getAvailableLiveEloTeams(): string[] {
   const { pipeline } = buildLiveEloPipelineFoundation();
 
@@ -1803,5 +1939,6 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026SemifinalFoundation,
   simulateWorldCup2026SemifinalMatchesFoundation,
   simulateWorldCup2026FinalFoundation,
-  simulateWorldCup2026FinalMatchFoundation
+  simulateWorldCup2026FinalMatchFoundation,
+  resolveWorldCup2026KnockoutWinnersFoundation
 };
