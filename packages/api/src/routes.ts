@@ -82,6 +82,9 @@ import type {
   WorldCup2026FinalQualifier,
   WorldCup2026KnockoutWinnerResolutionResponse,
   WorldCup2026ResolvedKnockoutWinner,
+  WorldCup2026ThirdPlaceMatchFoundationResponse,
+  WorldCup2026ThirdPlaceMatchFixture,
+  WorldCup2026ThirdPlaceParticipant,
   WorldCup2026SemifinalFixture,
   WorldCup2026SemifinalFoundationResponse,
   WorldCup2026SemifinalMatchSimulationFixture,
@@ -1914,6 +1917,109 @@ export function resolveWorldCup2026KnockoutWinnersFoundation(): WorldCup2026Knoc
   };
 }
 
+export function getWorldCup2026ThirdPlaceMatchFoundation(): WorldCup2026ThirdPlaceMatchFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const coverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const ratingsByTeam = buildCoverageLookup(coverageEntries);
+
+  const sfSim = simulateWorldCup2026SemifinalMatchesFoundation();
+  const sfFixtures = sfSim.fixtures;
+
+  if (sfFixtures.length < 2) {
+    throw new Error("getWorldCup2026ThirdPlaceMatchFoundation: expected 2 semifinal simulated fixtures.");
+  }
+
+  const participants: WorldCup2026ThirdPlaceParticipant[] = sfFixtures.map((fixture) => {
+    const { homeTeam, awayTeam, homeWinProbability, awayWinProbability, drawProbability, fixtureId, homeRatingSource, awayRatingSource } = fixture;
+
+    let loser: string;
+    let winner: string;
+    let eliminationReason: string;
+
+    if (homeWinProbability > awayWinProbability) {
+      winner = homeTeam;
+      loser = awayTeam;
+      eliminationReason = "eliminated — opponent had higher pre-match win probability";
+    } else if (awayWinProbability > homeWinProbability) {
+      winner = awayTeam;
+      loser = homeTeam;
+      eliminationReason = "eliminated — opponent had higher pre-match win probability";
+    } else {
+      const homeElo = ratingsByTeam.get(normalizeTeamLookupKey(homeTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+      const awayElo = ratingsByTeam.get(normalizeTeamLookupKey(awayTeam))?.eloRating ?? WORLD_CUP_2026_FALLBACK_SEED_RATING;
+
+      if (homeElo > awayElo) {
+        winner = homeTeam;
+        loser = awayTeam;
+        eliminationReason = "eliminated via Elo tie-break (equal win probability)";
+      } else if (awayElo > homeElo) {
+        winner = awayTeam;
+        loser = homeTeam;
+        eliminationReason = "eliminated via Elo tie-break (equal win probability)";
+      } else {
+        winner = homeTeam;
+        loser = awayTeam;
+        eliminationReason = "eliminated as away team (equal win probability and equal Elo)";
+      }
+    }
+
+    return {
+      team: loser,
+      semifinalSourceFixtureId: fixtureId,
+      lostTo: winner,
+      eliminationReason,
+      probabilitySnapshot: { homeWinProbability, drawProbability, awayWinProbability },
+      homeRatingSource,
+      awayRatingSource
+    };
+  });
+
+  const homeParticipant = participants[0];
+  const awayParticipant = participants[1];
+
+  if (homeParticipant === undefined || awayParticipant === undefined) {
+    throw new Error("getWorldCup2026ThirdPlaceMatchFoundation: expected 2 semifinal losers.");
+  }
+
+  const fixture: WorldCup2026ThirdPlaceMatchFixture = {
+    fixtureId: "wc2026-3rd-place-01",
+    round: "third_place",
+    homeTeam: homeParticipant.team,
+    awayTeam: awayParticipant.team,
+    homeParticipant,
+    awayParticipant,
+    status: "projected",
+    source: "projected_semifinal_losers"
+  };
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_third_place_match_foundation",
+    round: "third_place",
+    participantsCount: 2,
+    fixturesCount: 1,
+    simulationType: "fixture_foundation",
+    source: "projected_semifinal_losers",
+    projectedParticipants: [homeParticipant, awayParticipant],
+    thirdPlaceMatchFixture: fixture,
+    warnings: [
+      "This section projects the Third Place Match participants only. The match is not simulated yet.",
+      "Participants are the projected semifinal losers from deterministic pre-match probability resolution.",
+      "No third-place match simulation, no third-place winner selection, no penalty logic.",
+      "No extra time or penalty modeling. Deterministic semifinal loser selection only.",
+      `Live Elo simulation uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`,
+      ...internationalSupplement.metadata.foundationWarnings
+    ],
+    metadata: buildApiMetadata([
+      "Third Place Match foundation: participants derived from projected semifinal losers using deterministic winner selection.",
+      "Loser selection: lower win probability is eliminated; Elo tie-break if equal; away team eliminated if both equal.",
+      "This phase generates the Third Place Match fixture only — no match simulation, no winner selection, no penalty shootout modeling.",
+      "No external API calls, live score service, randomization, or prediction formula changes are used."
+    ])
+  };
+}
+
 export function getAvailableLiveEloTeams(): string[] {
   const { pipeline } = buildLiveEloPipelineFoundation();
 
@@ -1940,5 +2046,6 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026SemifinalMatchesFoundation,
   simulateWorldCup2026FinalFoundation,
   simulateWorldCup2026FinalMatchFoundation,
-  resolveWorldCup2026KnockoutWinnersFoundation
+  resolveWorldCup2026KnockoutWinnersFoundation,
+  getWorldCup2026ThirdPlaceMatchFoundation
 };
