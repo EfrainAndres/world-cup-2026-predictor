@@ -23,7 +23,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Match-level Round of 16 simulation using Live Elo ratings and Poisson score matrix for each projected R16 fixture.",
       "Projected quarterfinal foundation derived from R16 match probabilities via deterministic winner selection. No QF match simulation.",
       "Match-level quarterfinal simulation using Live Elo ratings and Poisson score matrix for each projected QF fixture.",
-      "Projected semifinal foundation derived from quarterfinal match probabilities via deterministic winner selection. No semifinal match simulation."
+      "Projected semifinal foundation derived from quarterfinal match probabilities via deterministic winner selection. No semifinal match simulation.",
+      "Match-level semifinal simulation using Live Elo ratings and Poisson score matrix for each projected SF fixture."
     ],
     supportedHandlers: [
       "getHealth",
@@ -44,7 +45,8 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateWorldCup2026RoundOf16MatchesFoundation",
       "simulateWorldCup2026QuarterfinalFoundation",
       "simulateWorldCup2026QuarterfinalMatchesFoundation",
-      "simulateWorldCup2026SemifinalFoundation"
+      "simulateWorldCup2026SemifinalFoundation",
+      "simulateWorldCup2026SemifinalMatchesFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

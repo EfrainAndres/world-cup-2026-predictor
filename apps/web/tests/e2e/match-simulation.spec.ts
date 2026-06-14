@@ -138,6 +138,16 @@ test("dashboard renders projected Semifinals with advancement reasons", async ({
   await expect(sfSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
 });
 
+test("dashboard renders Semifinal match simulations with win and draw probabilities", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Semifinal match simulations" })).toBeVisible();
+  const sfSimSection = page.getByRole("region", { name: "Semifinal match simulations" });
+  await expect(sfSimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
+  await expect(sfSimSection.getByText("SF Sim Slot 1").first()).toBeVisible();
+  await expect(sfSimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 
