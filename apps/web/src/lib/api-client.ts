@@ -14,7 +14,8 @@ import {
   simulateMatch,
   simulateTournamentFoundation,
   simulateWorldCup2026KnockoutFixturesFoundation,
-  simulateWorldCup2026RoundOf16Foundation
+  simulateWorldCup2026RoundOf16Foundation,
+  simulateWorldCup2026RoundOf16MatchesFoundation
 } from "@world-cup-2026-predictor/api";
 import type {
   EloXgPreset,
@@ -40,6 +41,7 @@ import type {
   WorldCup2026KnockoutBracketFoundationResponse,
   WorldCup2026KnockoutSimulationFoundationResponse,
   WorldCup2026RoundOf16FoundationResponse,
+  WorldCup2026RoundOf16MatchSimulationFoundationResponse,
   WorldCup2026RoundOf32FoundationResponse
 } from "@world-cup-2026-predictor/api";
 
@@ -53,6 +55,7 @@ export type { WorldCup2026RoundOf32FoundationResponse };
 export type { WorldCup2026KnockoutBracketFoundationResponse };
 export type { WorldCup2026KnockoutSimulationFoundationResponse };
 export type { WorldCup2026RoundOf16FoundationResponse };
+export type { WorldCup2026RoundOf16MatchSimulationFoundationResponse };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -71,6 +74,7 @@ export interface DashboardSnapshot {
   worldCup2026KnockoutBracket: WorldCup2026KnockoutBracketFoundationResponse;
   worldCup2026KnockoutSimulation: WorldCup2026KnockoutSimulationFoundationResponse;
   worldCup2026RoundOf16: WorldCup2026RoundOf16FoundationResponse;
+  worldCup2026RoundOf16MatchSimulation: WorldCup2026RoundOf16MatchSimulationFoundationResponse;
 }
 
 export function formatPercent(value: number): string {
@@ -136,6 +140,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     worldCup2026RoundOf32: getWorldCup2026RoundOf32Foundation(),
     worldCup2026KnockoutBracket: getWorldCup2026KnockoutBracketFoundation(),
     worldCup2026KnockoutSimulation: simulateWorldCup2026KnockoutFixturesFoundation(),
-    worldCup2026RoundOf16: simulateWorldCup2026RoundOf16Foundation()
+    worldCup2026RoundOf16: simulateWorldCup2026RoundOf16Foundation(),
+    worldCup2026RoundOf16MatchSimulation: simulateWorldCup2026RoundOf16MatchesFoundation()
   };
 }
