@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.9 Round of 16 simulation foundation — derives 16 projected R16 participants from R32 match probabilities via deterministic winner selection.
+- `simulateWorldCup2026RoundOf16Foundation()` API handler; winner selected by highest win probability, Elo tie-break, then home team; no R16 match simulation, no quarterfinals, no penalties.
+- `WorldCup2026ProjectedQualifier`, `WorldCup2026RoundOf16Fixture`, and `WorldCup2026RoundOf16FoundationResponse` typed schemas with `advancementReason` and probability snapshot per qualifier.
+- `WorldCupRoundOf16SimulationSection` dashboard component showing 8 projected R16 fixture cards with projected teams, R32 source matchup, advancement reason, win probability snapshot, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_ROUND_OF_16_SIMULATION.md` documenting winner selection logic, tie-breaker chain, fixture pairing, output fields, limitations, and future phases.
 - Phase 10.8 knockout match simulation foundation — simulates all 16 projected Round of 32 fixtures using Live Elo ratings and Poisson score model.
 - `simulateWorldCup2026KnockoutFixturesFoundation()` API handler; no winner selection, no bracket advancement, no penalty logic.
 - `WorldCup2026KnockoutSimulationFixture` and `WorldCup2026KnockoutSimulationFoundationResponse` typed schemas.

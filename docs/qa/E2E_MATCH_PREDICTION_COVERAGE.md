@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-29 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
+30 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
 
 ## Test List
 
@@ -39,6 +39,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 27 | Unavailable team in Elo mode shows field error with suggestions | Elo validation |
 | 28 | Invalid xG value in manual mode shows field-level validation error | Manual validation |
 | 29 | Stale result is cleared and empty state is shown when validation fails after a valid prediction | Stale result clearing |
+| 30 | Dashboard renders projected Round of 16 with advancement reasons | Round of 16 simulation |
 
 ## Coverage by Area
 
@@ -63,6 +64,10 @@ Test 5 verifies the Phase 10.6 projected Round of 32 section. It asserts that "P
 ### Knockout match simulation
 
 Test 6 verifies the Phase 10.8 knockout simulation section. It asserts that the "Round of 32 match simulations" heading, the "Match probabilities only" warning banner, the "Slot 1" card label, and the "Draw: x.x%" probability text are visible on the dashboard.
+
+### Round of 16 simulation
+
+Test 30 verifies the Phase 10.9 Round of 16 simulation section. It asserts that the "Projected Round of 16" heading, the "Projected from pre-match probabilities" warning banner, the "R16 Slot 1" card label, and the "advanced via highest pre-match win probability" advancement reason text are visible on the dashboard.
 
 ### Knockout bracket foundation
 
