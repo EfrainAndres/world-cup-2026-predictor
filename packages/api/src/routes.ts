@@ -76,6 +76,8 @@ import type {
   WorldCup2026QuarterfinalQualifier,
   WorldCup2026FinalFixture,
   WorldCup2026FinalFoundationResponse,
+  WorldCup2026FinalMatchSimulationFixture,
+  WorldCup2026FinalMatchSimulationFoundationResponse,
   WorldCup2026FinalQualifier,
   WorldCup2026SemifinalFixture,
   WorldCup2026SemifinalFoundationResponse,
@@ -1699,6 +1701,83 @@ export function simulateWorldCup2026FinalFoundation(): WorldCup2026FinalFoundati
   };
 }
 
+export function simulateWorldCup2026FinalMatchFoundation(): WorldCup2026FinalMatchSimulationFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const coverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const ratingsByTeam = buildCoverageLookup(coverageEntries);
+
+  const finalFoundation = simulateWorldCup2026FinalFoundation();
+  const projectedFixture = finalFoundation.projectedFinalFixtures[0];
+
+  if (projectedFixture === undefined) {
+    throw new Error("simulateWorldCup2026FinalMatchFoundation: expected 1 projected final fixture.");
+  }
+
+  const homeEntry = ratingsByTeam.get(normalizeTeamLookupKey(projectedFixture.homeTeam));
+  const awayEntry = ratingsByTeam.get(normalizeTeamLookupKey(projectedFixture.awayTeam));
+  const homeElo = homeEntry !== undefined ? homeEntry.eloRating : WORLD_CUP_2026_FALLBACK_SEED_RATING;
+  const awayElo = awayEntry !== undefined ? awayEntry.eloRating : WORLD_CUP_2026_FALLBACK_SEED_RATING;
+  const homeRatingSource = homeEntry !== undefined ? homeEntry.ratingSource : ("fallback_seed" as const);
+  const awayRatingSource = awayEntry !== undefined ? awayEntry.ratingSource : ("fallback_seed" as const);
+
+  const xgResult = eloToExpectedGoals({ homeEloRating: homeElo, awayEloRating: awayElo });
+  const scoreMatrix = generateScoreMatrix(
+    { expectedHomeGoals: xgResult.homeExpectedGoals, expectedAwayGoals: xgResult.awayExpectedGoals },
+    { maxGoals: DEFAULT_POISSON_CONFIG.maxGoals, normalizeMatrix: DEFAULT_POISSON_CONFIG.normalizeMatrix }
+  );
+  const outcomes = aggregateOutcomeProbabilities(scoreMatrix);
+  const scorelines = getMostLikelyScorelines(scoreMatrix, 3);
+
+  const fallbackTeams: string[] = [];
+  if (homeRatingSource === "fallback_seed") fallbackTeams.push(projectedFixture.homeTeam);
+  if (awayRatingSource === "fallback_seed") fallbackTeams.push(projectedFixture.awayTeam);
+  const fixtureWarnings: string[] =
+    fallbackTeams.length === 0
+      ? []
+      : [`${WORLD_CUP_2026_FALLBACK_RATING_WARNING} Fallback teams: ${fallbackTeams.join(", ")}.`];
+
+  const fixture: WorldCup2026FinalMatchSimulationFixture = {
+    fixtureId: "wc2026-final-sim-01",
+    round: "final",
+    slot: 1,
+    homeTeam: projectedFixture.homeTeam,
+    awayTeam: projectedFixture.awayTeam,
+    homeExpectedGoals: xgResult.homeExpectedGoals,
+    awayExpectedGoals: xgResult.awayExpectedGoals,
+    homeWinProbability: outcomes.homeWinProbability,
+    drawProbability: outcomes.drawProbability,
+    awayWinProbability: outcomes.awayWinProbability,
+    mostLikelyScorelines: scorelines,
+    homeRatingSource,
+    awayRatingSource,
+    warnings: fixtureWarnings
+  };
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_final_match_simulation_foundation",
+    simulatedFixturesCount: 1,
+    round: "final",
+    simulationType: "match_level_foundation",
+    source: "projected_final",
+    fixtures: [fixture],
+    warnings: [
+      "Champion selection after extra time/penalties is not modeled in this phase.",
+      "Final participants are projected from semifinal pre-match probabilities. Real match outcomes are not yet simulated.",
+      "Champion is not selected. No title probabilities.",
+      `Live Elo simulation uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`,
+      ...internationalSupplement.metadata.foundationWarnings
+    ],
+    metadata: buildApiMetadata([
+      "Final match simulation foundation: match probabilities computed for the projected Final fixture using Live Elo ratings and Poisson score matrix.",
+      "Participants are projected from the semifinal match simulation foundation via deterministic winner selection.",
+      "This phase simulates Final match-level probabilities only — no champion selection, no title probabilities, no penalty shootout modeling.",
+      "No external API calls, live score service, winner selection, or prediction formula changes are used."
+    ])
+  };
+}
+
 export function getAvailableLiveEloTeams(): string[] {
   const { pipeline } = buildLiveEloPipelineFoundation();
 
@@ -1723,5 +1802,6 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026QuarterfinalMatchesFoundation,
   simulateWorldCup2026SemifinalFoundation,
   simulateWorldCup2026SemifinalMatchesFoundation,
-  simulateWorldCup2026FinalFoundation
+  simulateWorldCup2026FinalFoundation,
+  simulateWorldCup2026FinalMatchFoundation
 };

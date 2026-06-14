@@ -161,7 +161,8 @@ describe("api contract coverage", () => {
       "simulateWorldCup2026QuarterfinalMatchesFoundation",
       "simulateWorldCup2026SemifinalFoundation",
       "simulateWorldCup2026SemifinalMatchesFoundation",
-      "simulateWorldCup2026FinalFoundation"
+      "simulateWorldCup2026FinalFoundation",
+      "simulateWorldCup2026FinalMatchFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
@@ -169,6 +170,56 @@ describe("api contract coverage", () => {
     }
 
     expect(response.limitations).toContain("No database or external services are used.");
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the final match simulation foundation contract", () => {
+    const response = apiRoutes.simulateWorldCup2026FinalMatchFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "dataScope",
+      "fixtures",
+      "metadata",
+      "round",
+      "simulatedFixturesCount",
+      "simulationType",
+      "source",
+      "status",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.dataScope).toBe("world_cup_2026_final_match_simulation_foundation");
+    expect(response.round).toBe("final");
+    expect(response.source).toBe("projected_final");
+    expect(response.simulatedFixturesCount).toBe(1);
+    expect(response.fixtures).toHaveLength(1);
+
+    const fixture = response.fixtures[0];
+    expect(fixture).toEqual({
+      fixtureId: expect.any(String),
+      round: "final",
+      slot: 1,
+      homeTeam: expect.any(String),
+      awayTeam: expect.any(String),
+      homeExpectedGoals: expect.any(Number),
+      awayExpectedGoals: expect.any(Number),
+      homeWinProbability: expect.any(Number),
+      drawProbability: expect.any(Number),
+      awayWinProbability: expect.any(Number),
+      mostLikelyScorelines: expect.any(Array),
+      homeRatingSource: expect.any(String),
+      awayRatingSource: expect.any(String),
+      warnings: expect.any(Array)
+    });
+    expectProbabilitiesContract({
+      homeWinProbability: fixture.homeWinProbability,
+      drawProbability: fixture.drawProbability,
+      awayWinProbability: fixture.awayWinProbability,
+      totalProbability: fixture.homeWinProbability + fixture.drawProbability + fixture.awayWinProbability
+    });
+    expectScorelinesContract(fixture.mostLikelyScorelines);
+    expectWarningsContract(response.warnings);
     expectMetadataContract(response.metadata);
   });
 

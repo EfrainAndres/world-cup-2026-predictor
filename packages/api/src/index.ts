@@ -22,7 +22,8 @@ export {
   simulateWorldCup2026QuarterfinalMatchesFoundation,
   simulateWorldCup2026SemifinalFoundation,
   simulateWorldCup2026SemifinalMatchesFoundation,
-  simulateWorldCup2026FinalFoundation
+  simulateWorldCup2026FinalFoundation,
+  simulateWorldCup2026FinalMatchFoundation
 } from "./routes.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
@@ -66,6 +67,8 @@ export type {
   ApiValidationIssue,
   WorldCup2026FinalFixture,
   WorldCup2026FinalFoundationResponse,
+  WorldCup2026FinalMatchSimulationFixture,
+  WorldCup2026FinalMatchSimulationFoundationResponse,
   WorldCup2026FinalQualifier,
   HealthResponse,
   HistoricalReplayAuditResponse,
