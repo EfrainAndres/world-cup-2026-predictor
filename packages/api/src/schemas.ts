@@ -241,6 +241,9 @@ export interface WorldCup2026Group {
   fixtureCount: number;
 }
 
+export type WorldCup2026FixtureStatus = "scheduled" | "completed";
+export type WorldCup2026ResultSource = "local_static" | "manual_override" | "external_api";
+
 export interface WorldCup2026Fixture {
   id: string;
   group: string;
@@ -249,8 +252,28 @@ export interface WorldCup2026Fixture {
   groupFixtureOrder: number;
   homeTeam: string;
   awayTeam: string;
+  status: WorldCup2026FixtureStatus;
   dateStatus: "deferred";
   venueStatus: "deferred";
+}
+
+export interface WorldCup2026FixtureResult {
+  fixtureId: string;
+  status: WorldCup2026FixtureStatus;
+  homeScore?: number;
+  awayScore?: number;
+  resultSource: WorldCup2026ResultSource;
+  updatedAt?: string;
+}
+
+export interface WorldCup2026ResultProviderMetadata {
+  providerName: string;
+  resultSource: WorldCup2026ResultSource;
+  externalProviderEnabled: boolean;
+  localOverridesEnabled: boolean;
+  resultsCount: number;
+  dataUpdatedAt?: string;
+  warnings: readonly string[];
 }
 
 export interface WorldCup2026FixtureFoundationResponse {
@@ -264,6 +287,40 @@ export interface WorldCup2026FixtureFoundationResponse {
   matchesPerTeam: number;
   groups: readonly WorldCup2026Group[];
   fixtures: readonly WorldCup2026Fixture[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
+export interface WorldCup2026GroupStandingEntry {
+  team: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+}
+
+export interface WorldCup2026GroupStandings {
+  group: string;
+  groupName: string;
+  completedFixtureCount: number;
+  pendingFixtureCount: number;
+  standings: readonly WorldCup2026GroupStandingEntry[];
+}
+
+export interface WorldCup2026GroupStandingsFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_group_standings_foundation";
+  groupCount: number;
+  teamCount: number;
+  completedFixtureCount: number;
+  pendingFixtureCount: number;
+  resultProvider: WorldCup2026ResultProviderMetadata;
+  groups: readonly WorldCup2026GroupStandings[];
   warnings: readonly string[];
   metadata: ApiMetadata;
 }
@@ -338,6 +395,7 @@ export interface ApiRoutes {
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
+  getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

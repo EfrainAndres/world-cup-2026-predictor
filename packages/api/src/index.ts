@@ -9,6 +9,7 @@ export {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupStandingsFoundation,
   predictMatchFromLiveElo,
   simulateMatch,
   simulateTournamentFoundation
@@ -17,10 +18,16 @@ export {
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_GROUP_STANDINGS,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_GROUPS,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER_METADATA,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULTS,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULTS_UPDATED_AT,
   WORLD_CUP_2026_TEAM_NAMES,
   WORLD_CUP_2026_TEAMS,
+  buildWorldCup2026GroupStandings,
   buildWorldCup2026FixtureGroups,
   buildWorldCup2026GroupFixtures,
   buildWorldCup2026CoverageEntries
@@ -64,12 +71,21 @@ export type {
   TournamentSimulationTeamResult,
   WorldCup2026Fixture,
   WorldCup2026FixtureFoundationResponse,
-  WorldCup2026Group
+  WorldCup2026FixtureResult,
+  WorldCup2026FixtureStatus,
+  WorldCup2026Group,
+  WorldCup2026GroupStandingEntry,
+  WorldCup2026GroupStandings,
+  WorldCup2026GroupStandingsFoundationResponse,
+  WorldCup2026ResultProviderMetadata,
+  WorldCup2026ResultSource
 } from "./schemas.js";
 
 export type {
+  BuildWorldCup2026GroupStandingsInput,
   WorldCup2026CoverageEntry,
   WorldCup2026GroupName,
   WorldCup2026RatingSource,
+  WorldCup2026ResultProvider,
   WorldCup2026TeamEntry
 } from "./world-cup-2026-teams.js";

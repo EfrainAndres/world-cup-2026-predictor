@@ -30,7 +30,9 @@ import {
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
   WORLD_CUP_2026_FALLBACK_SEED_RATING,
+  WORLD_CUP_2026_GROUP_STANDINGS,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+  WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER,
   WORLD_CUP_2026_TEAM_NAMES,
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
@@ -53,7 +55,8 @@ import type {
   TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse,
   TournamentSimulationTeamResult,
-  WorldCup2026FixtureFoundationResponse
+  WorldCup2026FixtureFoundationResponse,
+  WorldCup2026GroupStandingsFoundationResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -448,6 +451,35 @@ export function getWorldCup2026FixtureFoundation(): WorldCup2026FixtureFoundatio
       "World Cup 2026 fixture foundation exposes Groups A-L and deterministic group-stage pairings only.",
       "Each group contains 4 teams, 6 fixtures, and 3 fixtures per team.",
       "No standings, knockout bracket simulation, real-time scores, network calls, database, or external services are used."
+    ])
+  };
+}
+
+export function getWorldCup2026GroupStandingsFoundation(): WorldCup2026GroupStandingsFoundationResponse {
+  const completedFixtureCount = WORLD_CUP_2026_GROUP_STANDINGS.reduce((sum, group) => sum + group.completedFixtureCount, 0);
+  const pendingFixtureCount = WORLD_CUP_2026_GROUP_STANDINGS.reduce((sum, group) => sum + group.pendingFixtureCount, 0);
+  const resultProvider = WORLD_CUP_2026_LOCAL_STATIC_RESULT_PROVIDER.getMetadata();
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_group_standings_foundation",
+    groupCount: WORLD_CUP_2026_GROUP_STANDINGS.length,
+    teamCount: WORLD_CUP_2026_TEAM_NAMES.length,
+    completedFixtureCount,
+    pendingFixtureCount,
+    resultProvider,
+    groups: WORLD_CUP_2026_GROUP_STANDINGS,
+    warnings: [
+      "Standings are calculated from local normalized fixture results. Scheduled matches are ignored.",
+      "This is a foundation standings view, not a live scores service or external provider integration.",
+      ...resultProvider.warnings,
+      "Tie-breaking is limited to points, goal difference, goals for, and team name until full FIFA rules are modeled."
+    ],
+    metadata: buildApiMetadata([
+      "World Cup 2026 group standings foundation calculates tables from normalized result provider records.",
+      "The current result provider is local_static with externalProviderEnabled=false.",
+      "No live score service, external API, knockout bracket, database, or prediction formula changes are used."
     ])
   };
 }
@@ -855,5 +887,6 @@ export const apiRoutes: ApiRoutes = {
   predictMatchFromLiveElo,
   getHistoricalTournamentSummary,
   getHistoricalReplayAudit,
-  getWorldCup2026FixtureFoundation
+  getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupStandingsFoundation
 };

@@ -8,6 +8,14 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.4A results provider strategy and local override contract for World Cup 2026 standings.
+- Normalized `WorldCup2026FixtureResult` and result provider metadata contracts with a local static provider and external providers disabled.
+- Local static completed results for eight group fixtures, including Mexico 2-0 South Africa, Haiti 0-1 Scotland, and Australia 2-0 Turkey.
+- `docs/data-quality/RESULTS_PROVIDER_STRATEGY.md` documenting provider metadata, result source boundaries, included local results, and future external-provider path.
+- Phase 10.4 group standings foundation for World Cup 2026.
+- `getWorldCup2026GroupStandingsFoundation()` API handler exposing deterministic standings for Groups A-L from local result records.
+- `WorldCupStandingsSection` and `WorldCupStandingsTable` dashboard components showing compact standings tables with Pts, P, W, D, L, GF, GA, and GD.
+- `docs/dashboard/WORLD_CUP_2026_GROUP_STANDINGS.md` documenting calculation rules, sorting, result-provider status, dashboard behavior, and boundaries.
 - Phase 10.2A: `formatElo` helper in `apps/web/src/lib/api-client.ts` — rounds Elo values to whole numbers for display without changing underlying API values.
 - Phase 10.2A: Fallback seed indicator in match simulation results — when a team uses a fallback seed rating, the Live Elo block now shows "Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only." and hides the uncalibrated rank number.
 - Phase 10.2A: WC 2026 coverage note in the Live Elo section amber banner — explains that Auto Predict covers all 48 expected teams and that missing teams use a fallback seed rating of 1500.
@@ -15,6 +23,8 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Changed
 
+- World Cup 2026 standings now consume normalized provider result records instead of score fields embedded in fixture objects.
+- Dashboard standings now show "Results source: local static provider" and "External provider: disabled".
 - Phase 10.2A: Live Elo rating cards and summary stat now display rounded whole numbers instead of raw floats (e.g. `1621` instead of `1620.8566951497519`).
 - Phase 10.2A: "Teams rated" stat card in the Live Elo section relabeled to "Teams in dataset" with caption "Curated dataset · N shown" to distinguish from the 48-team Auto Predict coverage.
 - Phase 10.2A: Team Ratings section eyebrow updated to "Static contender ratings" and description updated to explicitly state these are static seed ratings separate from the Live Elo pipeline.

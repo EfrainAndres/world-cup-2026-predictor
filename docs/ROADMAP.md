@@ -66,6 +66,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.2 | World Cup 2026 Full Team Coverage | Make Auto Predict From Elo available for all expected 48 teams with explicit fallback seed metadata for teams missing from the partial Live Elo pipeline. | Done |
 | 10.2A | UI Polish & Consistency | Format Elo values as whole numbers, add fallback seed indicator in match simulation results, clarify Live Elo dataset count vs WC 2026 coverage, and distinguish static contender ratings from the Live Elo pipeline. | Done |
 | 10.3 | World Cup 2026 Fixtures & Groups | Add static Groups A-L and all 72 group-stage fixtures to the API and dashboard as tournament structure foundation data. | Done |
+| 10.4 | Group Standings Engine | Calculate deterministic World Cup 2026 group standings from local completed fixture results while ignoring scheduled fixtures. | Done |
+| 10.4A | Results Provider Strategy | Route World Cup 2026 standings through normalized local result provider records with source metadata and external providers disabled. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -157,6 +159,60 @@ Exit criteria:
 - Dashboard labels this as local curated tournament structure data.
 - No standings simulation, full tournament simulation, real-time scores, external APIs, dependencies, prediction formula changes, or Elo rating changes are introduced.
 - Unit, typecheck, build, Playwright E2E, and `git diff --check` pass.
+
+## Phase 10.4 - Group Standings Engine
+
+Add a group standings foundation for World Cup 2026 using the existing Groups A-L and group-stage fixture data.
+
+Deliverables:
+
+- Group standings calculation for Groups A-L.
+- Points, played, wins, draws, losses, goals for, goals against, and goal difference.
+- Deterministic standings sort by points, goal difference, goals for, then team name.
+- Scheduled fixtures ignored by standings calculation.
+- Completed local fixture results supported through normalized result records.
+- `getWorldCup2026GroupStandingsFoundation()` pure API handler.
+- Schema types for standings entries, group standings, and standings response.
+- Dashboard standings section with compact tables for all groups.
+- API tests for zero-state standings with no results, win/draw scoring, goals for/against, goal difference, scheduled-match behavior, deterministic ordering, and Group A/Group C completed-result scenarios.
+- Contract test for response shape.
+- E2E smoke test for Group A and Group C standings tables.
+- `docs/dashboard/WORLD_CUP_2026_GROUP_STANDINGS.md`.
+
+Exit criteria:
+
+- API returns 12 groups and 4 standings entries per group.
+- Teams start with zeroes when no completed result records are provided.
+- Completed match results update standings when provided by local normalized data.
+- Scheduled fixtures do not affect standings.
+- Dashboard labels standings as local result-provider output.
+- No external API calls, live score service, knockout bracket, Elo formula changes, prediction formula changes, or dependencies are introduced.
+- Unit, typecheck, build, Playwright E2E, and whitespace checks pass.
+
+## Phase 10.4A - Results Provider Strategy
+
+Prepare the World Cup 2026 standings architecture so result data can come from normalized provider records instead of fixture objects.
+
+Deliverables:
+
+- `WorldCup2026FixtureStatus`, `WorldCup2026ResultSource`, `WorldCup2026FixtureResult`, and `WorldCup2026ResultProviderMetadata` contracts.
+- Local static result provider with external providers disabled and local overrides enabled.
+- Eight completed local static group-stage results modeled as normalized result records.
+- Standings engine consuming result records by fixture ID.
+- `getWorldCup2026GroupStandingsFoundation()` response metadata exposing provider name, result source, external-provider flag, local-overrides flag, result count, warnings, and data update date.
+- Dashboard provider/source note showing the local static provider and disabled external provider state.
+- API and contract tests for provider metadata, normalized result behavior, scheduled-result ignore behavior, deterministic output, and local static standings updates.
+- E2E smoke coverage for provider/source notes and local static points in Group A and Group C.
+- `docs/data-quality/RESULTS_PROVIDER_STRATEGY.md`.
+
+Exit criteria:
+
+- Standings calculation does not depend on hardcoded score fields inside fixture objects.
+- Local static completed results update standings.
+- Scheduled result records and scheduled fixtures are ignored.
+- API response exposes provider metadata and local-data warnings.
+- No external API calls, live score service, secrets, database, dependencies, Elo formula changes, prediction formula changes, or deployment changes are introduced.
+- Unit, typecheck, build, Playwright E2E, and whitespace checks pass.
 
 ## Phase 0.0 - Project Foundation
 
