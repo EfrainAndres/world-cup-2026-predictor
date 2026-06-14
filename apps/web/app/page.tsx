@@ -10,6 +10,7 @@ import { TournamentSimulationSection } from "../src/components/TournamentSimulat
 import { WorldCupFinalSimulationSection } from "../src/components/WorldCupFinalSimulationSection";
 import { WorldCupFinalMatchSimulationSection } from "../src/components/WorldCupFinalMatchSimulationSection";
 import { WorldCupKnockoutWinnerResolutionSection } from "../src/components/WorldCupKnockoutWinnerResolutionSection";
+import { WorldCupThirdPlaceMatchSection } from "../src/components/WorldCupThirdPlaceMatchSection";
 import { WorldCupGroupsSection } from "../src/components/WorldCupGroupsSection";
 import { WorldCupKnockoutBracketSection } from "../src/components/WorldCupKnockoutBracketSection";
 import { WorldCupKnockoutSimulationSection } from "../src/components/WorldCupKnockoutSimulationSection";
@@ -118,6 +119,8 @@ export default function DashboardHomePage() {
         <WorldCupFinalMatchSimulationSection finalMatchSimulation={snapshot.worldCup2026FinalMatchSimulation} />
 
         <WorldCupKnockoutWinnerResolutionSection resolution={snapshot.worldCup2026KnockoutWinnerResolution} />
+
+        <WorldCupThirdPlaceMatchSection thirdPlaceMatch={snapshot.worldCup2026ThirdPlaceMatch} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}
