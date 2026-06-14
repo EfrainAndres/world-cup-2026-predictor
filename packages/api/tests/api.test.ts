@@ -26,7 +26,8 @@ import {
   getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
   simulateMatch,
-  simulateTournamentFoundation
+  simulateTournamentFoundation,
+  simulateWorldCup2026KnockoutFixturesFoundation
 } from "../src/index.js";
 
 describe("api foundation handlers", () => {
@@ -274,6 +275,7 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getWorldCup2026GroupStandingsFoundation()).toEqual(getWorldCup2026GroupStandingsFoundation());
     expect(apiRoutes.getWorldCup2026RoundOf32Foundation()).toEqual(getWorldCup2026RoundOf32Foundation());
     expect(apiRoutes.getWorldCup2026KnockoutBracketFoundation()).toEqual(getWorldCup2026KnockoutBracketFoundation());
+    expect(apiRoutes.simulateWorldCup2026KnockoutFixturesFoundation()).toEqual(simulateWorldCup2026KnockoutFixturesFoundation());
     expect(apiRoutes.predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })).toEqual(
       predictMatchFromLiveElo({ homeTeam: "Argentina", awayTeam: "France" })
     );
@@ -723,6 +725,98 @@ describe("getWorldCup2026KnockoutBracketFoundation", () => {
     expect(result.warnings.some((w) => w.includes("Projected bracket only"))).toBe(true);
     expect(result.metadata.mode).toBe("pure_handlers");
     expect(result.metadata.serverEnabled).toBe(false);
+  });
+});
+
+describe("simulateWorldCup2026KnockoutFixturesFoundation", () => {
+  it("returns a success response with correct metadata fields", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    expect(result.status).toBe("success");
+    expect(result.tournamentName).toBe("FIFA World Cup 2026");
+    expect(result.dataScope).toBe("world_cup_2026_knockout_simulation_foundation");
+    expect(result.round).toBe("round_of_32");
+    expect(result.simulationType).toBe("match_level_foundation");
+    expect(result.source).toBe("projected_round_of_32");
+  });
+
+  it("returns 16 simulated Round of 32 fixtures", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    expect(result.simulatedFixturesCount).toBe(16);
+    expect(result.fixtures).toHaveLength(16);
+  });
+
+  it("each fixture has valid match probabilities that sum close to 1", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    for (const fixture of result.fixtures) {
+      expect(fixture.homeWinProbability).toBeGreaterThan(0);
+      expect(fixture.drawProbability).toBeGreaterThan(0);
+      expect(fixture.awayWinProbability).toBeGreaterThan(0);
+      const total = fixture.homeWinProbability + fixture.drawProbability + fixture.awayWinProbability;
+      expect(total).toBeCloseTo(1, 5);
+    }
+  });
+
+  it("each fixture has round_of_32 and at least one scoreline", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    for (const fixture of result.fixtures) {
+      expect(fixture.round).toBe("round_of_32");
+      expect(fixture.mostLikelyScorelines.length).toBeGreaterThan(0);
+      for (const scoreline of fixture.mostLikelyScorelines) {
+        expect(scoreline.homeGoals).toBeGreaterThanOrEqual(0);
+        expect(scoreline.awayGoals).toBeGreaterThanOrEqual(0);
+        expect(scoreline.probability).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("does not select winners or advance teams", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    const responseKeys = Object.keys(result);
+    expect(responseKeys).not.toContain("winner");
+    expect(responseKeys).not.toContain("advancement");
+    expect(responseKeys).not.toContain("champion");
+
+    for (const fixture of result.fixtures) {
+      expect(Object.keys(fixture)).not.toContain("winner");
+      expect(Object.keys(fixture)).not.toContain("advancement");
+    }
+  });
+
+  it("warnings include no-advancement and no-penalties notes", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    expect(result.warnings.some((w) => w.includes("Advancement after extra time/penalties is not modeled"))).toBe(true);
+    expect(result.warnings.some((w) => w.includes("Winners are not selected"))).toBe(true);
+  });
+
+  it("returns a deterministic response on repeated calls", () => {
+    const first = simulateWorldCup2026KnockoutFixturesFoundation();
+    const second = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    expect(first).toEqual(second);
+  });
+
+  it("exposes ratingSource on each fixture", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    for (const fixture of result.fixtures) {
+      expect(["live_elo_pipeline", "fallback_seed"]).toContain(fixture.homeRatingSource);
+      expect(["live_elo_pipeline", "fallback_seed"]).toContain(fixture.awayRatingSource);
+    }
+  });
+
+  it("metadata reflects pure handler constraints", () => {
+    const result = simulateWorldCup2026KnockoutFixturesFoundation();
+
+    expect(result.metadata.mode).toBe("pure_handlers");
+    expect(result.metadata.serverEnabled).toBe(false);
+    expect(result.metadata.databaseEnabled).toBe(false);
+    expect(result.metadata.externalServicesEnabled).toBe(false);
   });
 });
 

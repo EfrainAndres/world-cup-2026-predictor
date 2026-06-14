@@ -19,6 +19,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - World Cup 2026 group standings section showing local standings tables for Groups A-L with points, record, goals for/against, and goal difference.
 - Projected World Cup 2026 Round of 32 section showing 32 qualified teams, 16 projected fixtures, and qualification source labels.
 - Projected knockout bracket section showing the complete placeholder bracket structure from Round of 32 through the Final with Projected and Placeholder badges.
+- Round of 32 knockout match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 16 projected R32 fixtures using Live Elo ratings and the Poisson model.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -58,6 +59,10 @@ The Round of 32 section calls `getWorldCup2026RoundOf32Foundation()` through the
 ## World Cup 2026 Knockout Bracket
 
 The knockout bracket section calls `getWorldCup2026KnockoutBracketFoundation()` through the local API client wrapper. It builds a complete bracket structure from Round of 32 through the Final. R32 uses the actual projected team names; R16, QF, SF, Third Place, and Final use deterministic placeholder slots (Winner R32-01, Winner R16-1, etc.). No winners are simulated and no champion probabilities are calculated.
+
+## World Cup 2026 Knockout Match Simulation
+
+The knockout simulation section calls `simulateWorldCup2026KnockoutFixturesFoundation()` through the local API client wrapper. For each of the 16 projected Round of 32 fixtures, it looks up Live Elo ratings from the same pipeline used by Auto Predict From Elo, converts ratings to expected goals via `eloToExpectedGoals`, builds a Poisson score matrix, and computes home win / draw / away win probabilities plus the top 3 most likely scorelines. Teams not in the Live Elo pipeline receive a fallback seed rating of 1500 and are labeled "Partial data". No winners are selected. No teams advance. No extra time or penalty logic is applied.
 
 ## Commands
 

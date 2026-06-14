@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 10.8 knockout match simulation foundation — simulates all 16 projected Round of 32 fixtures using Live Elo ratings and Poisson score model.
+- `simulateWorldCup2026KnockoutFixturesFoundation()` API handler; no winner selection, no bracket advancement, no penalty logic.
+- `WorldCup2026KnockoutSimulationFixture` and `WorldCup2026KnockoutSimulationFoundationResponse` typed schemas.
+- `WorldCupKnockoutSimulationSection` dashboard component showing 16 compact fixture cards with win/draw/win probabilities, top scorelines, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_KNOCKOUT_MATCH_SIMULATION.md` documenting simulation inputs, method, output fields, draw treatment, limitations, and future phases.
 - Phase 10.7 projected knockout bracket foundation for World Cup 2026 — complete bracket structure from Round of 32 through the Final.
 - `getWorldCup2026KnockoutBracketFoundation()` API handler consuming the existing Round of 32 foundation and generating deterministic placeholder progression for R16, QF, SF, Third Place, and Final.
 - `WorldCup2026KnockoutBracketFixture` and `WorldCup2026KnockoutBracketFoundationResponse` typed schemas; `WorldCup2026KnockoutRound` union type.

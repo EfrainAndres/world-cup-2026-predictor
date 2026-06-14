@@ -61,7 +61,8 @@ describe("api integration validation", () => {
       "getWorldCup2026FixtureFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
-      "getWorldCup2026KnockoutBracketFoundation"
+      "getWorldCup2026KnockoutBracketFoundation",
+      "simulateWorldCup2026KnockoutFixturesFoundation"
     ]);
     expect(modelInfo.limitations).toContain("No database or external services are used.");
     expectPureHandlerMetadata(modelInfo.metadata);
