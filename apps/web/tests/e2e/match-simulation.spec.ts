@@ -98,6 +98,16 @@ test("dashboard renders projected Round of 16 with advancement reasons", async (
   await expect(r16Section.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
 });
 
+test("dashboard renders Round of 16 match simulations with win and draw probabilities", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Round of 16 match simulations" })).toBeVisible();
+  const r16SimSection = page.getByRole("region", { name: "Round of 16 match simulations" });
+  await expect(r16SimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
+  await expect(r16SimSection.getByText("R16 Sim Slot 1").first()).toBeVisible();
+  await expect(r16SimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

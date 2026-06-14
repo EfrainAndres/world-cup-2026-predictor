@@ -72,6 +72,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.7 | Knockout Bracket Progression Foundation | Build complete placeholder bracket structure from Round of 32 through the Final. No winner simulation. | Done |
 | 10.8 | Knockout Match Simulation Foundation | Simulate individual projected R32 fixtures using Live Elo and Poisson model. No bracket advancement. | Done |
 | 10.9 | Round of 16 Simulation Foundation | Derive projected R16 participants from R32 probabilities via deterministic winner selection. No R16 match simulation. | Done |
+| 10.10 | Round of 16 Match Simulation | Simulate 8 projected R16 fixtures using Live Elo and Poisson model. No winner selection. No bracket advancement. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

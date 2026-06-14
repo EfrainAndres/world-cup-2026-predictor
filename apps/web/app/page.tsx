@@ -10,6 +10,7 @@ import { TournamentSimulationSection } from "../src/components/TournamentSimulat
 import { WorldCupGroupsSection } from "../src/components/WorldCupGroupsSection";
 import { WorldCupKnockoutBracketSection } from "../src/components/WorldCupKnockoutBracketSection";
 import { WorldCupKnockoutSimulationSection } from "../src/components/WorldCupKnockoutSimulationSection";
+import { WorldCupRoundOf16MatchSimulationSection } from "../src/components/WorldCupRoundOf16MatchSimulationSection";
 import { WorldCupRoundOf16SimulationSection } from "../src/components/WorldCupRoundOf16SimulationSection";
 import { WorldCupRoundOf32Section } from "../src/components/WorldCupRoundOf32Section";
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
@@ -94,6 +95,8 @@ export default function DashboardHomePage() {
         <WorldCupKnockoutSimulationSection knockoutSimulation={snapshot.worldCup2026KnockoutSimulation} />
 
         <WorldCupRoundOf16SimulationSection roundOf16={snapshot.worldCup2026RoundOf16} />
+
+        <WorldCupRoundOf16MatchSimulationSection roundOf16MatchSimulation={snapshot.worldCup2026RoundOf16MatchSimulation} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}
