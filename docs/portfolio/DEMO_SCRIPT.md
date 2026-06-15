@@ -10,12 +10,12 @@ Use this version for recruiter screens, quick portfolio reviews, or a short Link
    - "World Cup 2026 Predictor is a TypeScript monorepo that turns a prediction idea into a quality engineering case study."
 2. Show the README and architecture summary.
    - Point to the data, model, API, dashboard, QA, and CI layers.
-3. Show the dashboard overview.
-   - Emphasize that predictions include metadata, warnings, and limitations.
+3. Show the Tournament Projection Overview.
+   - "The dashboard projects the full five-round knockout tournament — champion, runner-up, and third place are all visible at a glance."
 4. Demonstrate one match prediction.
    - Use manual xG or Auto Predict From Elo and point out probabilities plus scorelines.
 5. Close with quality gates.
-   - Mention deterministic tests, API contracts, Playwright E2E, historical validation, and GitHub Actions CI.
+   - Mention deterministic tests, API contracts, 52 Playwright E2E tests, historical validation, and GitHub Actions CI.
 
 Closing line:
 
@@ -34,11 +34,14 @@ Use this version for engineering interviews or deeper portfolio walkthroughs.
    - `apps/web` presents dashboard workflows without owning model logic.
 3. Walk through the data-to-prediction flow.
    - Historical fixtures -> validation -> normalization -> Live Elo -> Elo-to-xG -> Poisson -> Monte Carlo -> prediction output.
-4. Demonstrate dashboard workflows.
-   - Manual match simulation.
-   - Auto Predict From Elo.
-   - Prediction presets.
-   - Live Elo ratings or historical validation.
+4. Demonstrate dashboard workflows in the order the dashboard presents them.
+   - Tournament Projection Overview — headline summary with champion, runner-up, and third-place contestants.
+   - Champion Projection Summary — five-round path (R32 → R16 → QF → SF → Final) with numbered step badges.
+   - Final match simulation — win/draw/win probabilities and top scorelines.
+   - Scroll through Semifinal → Quarterfinal → Round of 16 → Round of 32 simulations briefly.
+   - Third Place Match — projected fixture and simulation.
+   - Interactive match simulation form — manual xG and Auto Predict From Elo.
+   - Live Elo ratings and historical validation evidence.
 5. Explain validation.
    - Unit tests protect deterministic logic.
    - API contract tests protect response shape.

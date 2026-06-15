@@ -57,7 +57,7 @@ Release notes:
 
 ## Final LinkedIn Summary
 
-World Cup 2026 Predictor is now portfolio-ready as a TypeScript monorepo case study for building a testable prediction system. It combines data validation, Elo ratings, Poisson scoreline probabilities, Monte Carlo simulation, pure API handlers, a Next.js dashboard, deterministic tests, API contract coverage, regression snapshots, Playwright E2E checks, architecture diagrams, and GitHub Actions CI.
+World Cup 2026 Predictor is now portfolio-ready as a TypeScript monorepo case study for building a testable prediction system. It combines data validation, Elo ratings, Poisson scoreline probabilities, Monte Carlo simulation, a full five-round World Cup 2026 knockout tournament projection (R32 → R16 → QF → SF → Final → champion), third-place match simulation, pure API handlers, a Next.js dashboard, deterministic tests, API contract coverage, regression snapshots, 52 Playwright E2E checks, architecture diagrams, and GitHub Actions CI.
 
 The project is designed for honest model communication: partial data and foundation-model limitations are visible, and predictions are not presented as betting advice or a public accuracy claim.
 
@@ -71,8 +71,14 @@ Show these artifacts in order when time allows:
 
 1. README overview and portfolio highlights.
 2. Architecture diagrams, especially Monorepo Architecture and QA Strategy.
-3. Dashboard workflows: manual match simulation, Auto Predict From Elo, presets, Live Elo ratings, and historical validation.
-4. Test strategy: unit tests, integration tests, API contracts, regression snapshots, Playwright E2E, and GitHub Actions CI.
+3. Dashboard workflows — in the order they appear on screen:
+   - Tournament Projection Overview (champion, runner-up, third place at a glance)
+   - Champion Projection Summary (five-round path with probability snapshots)
+   - Final → Semifinal → Quarterfinal → Round of 16 → Round of 32 simulations
+   - Third Place Match projection and simulation
+   - Interactive match simulation (manual xG and Auto Predict From Elo)
+   - Live Elo ratings and historical validation evidence
+4. Test strategy: unit tests, integration tests, API contracts, regression snapshots, 52 Playwright E2E tests, and GitHub Actions CI.
 5. Release checklist and demo script to show portfolio readiness.
 6. Limitations to demonstrate engineering honesty.
 

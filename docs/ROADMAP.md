@@ -87,6 +87,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 11.5 | Dashboard Ordering & Section Cleanup | Reorder dashboard to summary-first flow (overview → champion → final → semis → QF → R16 → R32 → third place → audit). Add section captions, full AppHeader anchor nav, E2E ordering test. No new prediction logic. | Done |
 | 11.6 | Header Anchor Cleanup | Fix pre-existing AppHeader anchor links (`#match-preview`, `#replay-audit`, `#historical`) that had no matching section ids. Add `id="match-preview"` to the match simulation section and `id="historical"` wrapper for the historical validation section; `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard`. Add two E2E anchor-validation tests. | Done |
 | 11.7 | Remove Orphaned MatchSimulationPreviewCard | Delete `MatchSimulationPreviewCard.tsx` — confirmed zero consumers across all source and test files. No visible dashboard change; `#match-preview` anchor is now provided by the section id added in Phase 11.6. | Done |
+| 11.8 | Portfolio Demo Final QA Pass | Final QA pass after full tournament projection polish. Create `PORTFOLIO_DEMO_FINAL_QA_PASS.md`, update demo script for tournament projection flow, polish README and web README, update FINAL_PORTFOLIO_QA_REVIEW.md, update dashboard intro copy. No API or model changes. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

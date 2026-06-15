@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 7.3).
+`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 11.8).
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 
@@ -10,7 +10,6 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Header and navigation.
 - Model status card.
 - Interactive match simulation form.
-- Match simulation preview card.
 - Match simulation result cards.
 - Historical replay audit preview card.
 - Live Elo ratings section showing top computed teams, ranks, Elo ratings, matches processed, data coverage, latest match date, and partial-data warnings.
@@ -24,6 +23,13 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Round of 16 match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 8 projected R16 fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
 - Projected Quarterfinals section showing 4 projected QF fixtures derived from R16 match probabilities via deterministic winner selection, with projected qualifier cards showing advancement reason, R16 source matchup, and probability snapshot.
 - Quarterfinal match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 4 projected QF fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
+- Projected Semifinals section showing 2 projected SF fixtures derived from QF match probabilities via deterministic winner selection.
+- Semifinal match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for 2 SF fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
+- Projected Final section showing 2 projected finalists derived from SF match probabilities via deterministic winner selection.
+- Final match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for the projected Final using Live Elo ratings and the Poisson model. Champion selection after extra time/penalties is not modeled.
+- Projected Third Place Match section showing 2 projected participants derived from SF losers, with participant cards and fixture foundation warning.
+- Third Place Match simulation section showing match-level probabilities and top 3 scorelines for the projected Third Place fixture. Winner selection after extra time/penalties is not modeled.
+- Projected Tournament Winner section (audit detail) showing champion, runner-up, and compact per-round winner lists with deterministic projection warning.
 - Dashboard sections ordered in a summary-first / inverted-knockout flow: Tournament Projection Overview → Champion Summary → Final → Semifinals → Quarterfinals → Round of 16 → Round of 32 → Third Place Match → Audit Detail → Groups / Standings / Historical. Section captions ("Summary", "Projected final", "Projected semifinals", "Projected quarterfinals", "Projected early knockout", "Third place match", "Audit detail") divide the logical blocks. AppHeader anchor nav covers all twelve destinations — all twelve `href` targets (`#match-preview`, `#replay-audit`, `#historical`, and all knockout-round ids) resolve to existing elements in the rendered page.
 - Tournament projection overview section showing projected champion, runner-up, and Third Place Match contestants in a three-card grid; a portfolio readiness banner (31 knockout fixtures resolved, Live Elo + Poisson model); and anchor navigation links to Champion, Final, Semifinals, Quarterfinals, Round of 16, and R32 simulation sections.
 - Champion projection summary section showing the projected champion card, projected runner-up card, final matchup, final probability snapshot, and a five-round champion path (Round of 32 → Round of 16 → Quarterfinal → Semifinal → Final) with numbered step badges, opponents, and probability snapshots. Derived from the existing knockout winner resolution snapshot — no new API handler.
@@ -87,9 +93,41 @@ The Quarterfinal projection section calls `simulateWorldCup2026QuarterfinalFound
 
 The Quarterfinal match simulation section calls `simulateWorldCup2026QuarterfinalMatchesFoundation()` through the local API client wrapper. It consumes the 4 projected QF fixtures from `simulateWorldCup2026QuarterfinalFoundation()` and runs the same Live Elo → Poisson pipeline for each fixture, producing home win / draw / away win probabilities and the top 3 most likely scorelines. Teams not in the Live Elo pipeline receive a fallback seed rating of 1500 and are labeled "Partial data". No winners are selected. Advancement after extra time or penalties is not modeled in this phase.
 
+## World Cup 2026 Semifinal Projection
+
+The Semifinal projection section calls `simulateWorldCup2026SemifinalFoundation()` through the local API client wrapper. It consumes the 4 projected QF simulated fixtures and applies deterministic winner selection to derive 4 semifinal participants and 2 SF fixtures. No SF match simulation. No finalist generation.
+
+## World Cup 2026 Semifinal Match Simulation
+
+The Semifinal match simulation section calls `simulateWorldCup2026SemifinalMatchesFoundation()`. It runs the Live Elo → Poisson pipeline for each of the 2 projected SF fixtures, producing home win / draw / away win probabilities and top 3 scorelines. Advancement after extra time or penalties is not modeled.
+
+## World Cup 2026 Final Projection
+
+The Final projection section calls `simulateWorldCup2026FinalFoundation()`. It consumes the 2 projected SF simulated fixtures and applies deterministic winner selection to derive 2 finalists and 1 Final fixture. No Final match simulation. No champion selection.
+
+## World Cup 2026 Final Match Simulation
+
+The Final match simulation section calls `simulateWorldCup2026FinalMatchFoundation()`. It runs the Live Elo → Poisson pipeline for the projected Final fixture, producing home win / draw / away win probabilities and top 3 scorelines. Champion selection after extra time or penalties is not modeled.
+
+## World Cup 2026 Knockout Winner Resolution
+
+The projected tournament winner section calls `resolveWorldCup2026KnockoutWinnersFoundation()`. It resolves a deterministic champion and runner-up from all 31 simulated knockout fixtures (R32–Final), exposes per-round winner lists, and surfaces the winner selection rule in a deterministic projection warning. No extra time, no penalties, no champion probability distribution.
+
+## World Cup 2026 Third Place Match
+
+The Third Place Match foundation section calls `getWorldCup2026ThirdPlaceMatchFoundation()`. It projects the third-place fixture from the two semifinal losers. The loser is selected by the lowest pre-match win probability; Elo tie-break; then away team. No match simulation, no winner selection, no penalty logic.
+
+## World Cup 2026 Third Place Match Simulation
+
+The Third Place Match simulation section calls `simulateWorldCup2026ThirdPlaceMatchFoundation()`. It runs the Live Elo → Poisson pipeline for the projected Third Place fixture, producing home win / draw / away win probabilities and top 3 scorelines. Winner selection after extra time or penalties is not modeled.
+
 ## Champion Projection Summary
 
 The champion projection summary section calls `resolveWorldCup2026KnockoutWinnersFoundation()` through the local API client wrapper (same snapshot used by the detailed knockout winner resolution section). It derives the champion's five-round path by searching the `roundOf32Winners`, `roundOf16Winners`, `quarterfinalWinners`, and `semifinalWinners` arrays for the champion's name, then reads each defeated opponent and probability snapshot. No extra time, penalties, or champion probability distribution is modeled. The section displays a deterministic-only disclaimer banner.
+
+## Tournament Projection Overview
+
+The tournament projection overview section consumes the same `worldCup2026KnockoutWinnerResolution` and `worldCup2026ThirdPlaceMatch` snapshots already in the dashboard. It renders a portfolio readiness banner confirming all 31 knockout fixtures are resolved, a three-card grid (projected champion, projected runner-up, third place match), and anchor navigation links to all major knockout-round sections on the page.
 
 ## Commands
 

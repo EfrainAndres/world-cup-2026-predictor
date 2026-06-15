@@ -42,9 +42,10 @@ export default function DashboardHomePage() {
                 World Cup prediction signals with model limits in view
               </h1>
               <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-                This first dashboard surface connects directly to the local API foundation. It previews model status, a deterministic
-                match simulation, live Elo ratings from partial curated data, historical replay readiness, and curated historical
-                tournament summaries.
+                A full five-round World Cup 2026 knockout tournament projection — from Round of 32 through the Final — built on Live
+                Elo ratings and a Poisson probability model. Includes deterministic champion and runner-up projection, third-place
+                match simulation, and an interactive match simulation form. All predictions include data source metadata, partial-data
+                warnings, and explicit model limitations.
               </p>
             </div>
             <aside aria-label="Dashboard boundary summary" className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">

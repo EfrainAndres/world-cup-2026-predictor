@@ -38,11 +38,11 @@ For recruiters and interviewers, the repository is meant to be readable as an en
 | --- | --- |
 | Data | Match contracts, validation, normalization, historical World Cup fixtures, and international fixture samples. |
 | Modeling | Elo rating updates, Poisson scoreline probabilities, Dixon-Coles foundation, Elo-to-xG calibration, and prediction presets. |
-| Simulation | Seeded Monte Carlo match simulation, group/knockout tournament simulation, repeated tournament runs, and FIFA 2026 format helpers. |
+| Simulation | Seeded Monte Carlo match simulation, group/knockout tournament simulation, repeated tournament runs, FIFA 2026 format helpers, and full five-round World Cup 2026 knockout tournament projection (R32 → R16 → QF → SF → Final). |
 | Historical validation | Historical brackets, replay snapshots, Monte Carlo replay, backtesting reports, and replay accuracy audit helpers. |
 | API | Pure TypeScript handlers, runtime adapter, validation errors, deterministic responses, and API contract tests. |
-| Dashboard | Next.js dashboard with match simulation, Live Elo predictions, team ratings, tournament simulation, and historical validation evidence. |
-| QA | Unit tests, integration tests, deterministic regression snapshots, API contract tests, and Playwright E2E coverage. |
+| Dashboard | Next.js dashboard with full tournament projection overview, deterministic champion projection, five-round champion path, third-place match foundation and simulation, round-by-round knockout simulations, match simulation form, Live Elo predictions, team ratings, and historical validation evidence. |
+| QA | Unit tests, integration tests, deterministic regression snapshots, API contract tests, and 52 Playwright E2E tests covering tournament projections, match simulation, form validation, Elo mode, presets, team aliases, and anchor navigation. |
 | CI/CD | GitHub Actions workflow for install, tests, typecheck, build, and Chromium E2E validation. |
 
 ## Architecture
@@ -134,19 +134,22 @@ It supports opt-in model adjustments while preserving a transparent baseline:
 
 ## Dashboard Features
 
-The Next.js dashboard presents model outputs with context:
+The Next.js dashboard presents model outputs in a summary-first layout:
 
-- Interactive manual xG match simulation.
-- Auto Predict From Elo mode.
-- Prediction preset selector.
-- Team alias handling and field-level suggestions.
-- Probability cards for win/draw/loss outcomes.
-- Most likely scoreline list.
-- Live Elo team ratings.
-- Tournament simulation foundation section.
-- Historical validation evidence and warnings.
+- **Tournament Projection Overview** — projected champion, runner-up, and third-place match at a glance; anchor navigation to all knockout rounds.
+- **Champion Projection Summary** — champion card, runner-up card, and five-round champion path (R32 → R16 → QF → SF → Final) with numbered step badges and per-round probability snapshots.
+- **Full knockout simulation** — match-level probabilities and top scorelines for every round: Final, Semifinals, Quarterfinals, Round of 16, and Round of 32 (31 fixtures total).
+- **Third Place Match** — projected fixture from semifinal losers and match-level simulation.
+- **Interactive manual xG match simulation** — enter teams and expected goals to run a local Poisson simulation.
+- **Auto Predict From Elo mode** — derive expected goals automatically from Live Elo ratings.
+- **Prediction preset selector** — conservative, balanced, and aggressive presets.
+- **Team alias handling** and field-level validation suggestions.
+- **Live Elo team ratings** — computed from curated historical data with partial-data warnings.
+- **Historical validation evidence** and replay audit status.
 
-The dashboard is intentionally evidence-oriented: it shows model status, data warnings, and limitations alongside prediction outputs.
+All predictions include source metadata, data warnings, and explicit model limitations. The dashboard does not hide uncertainty.
+
+12 AppHeader anchor links provide direct navigation to all major dashboard sections.
 
 ## QA Strategy
 
@@ -272,17 +275,19 @@ Screenshots are planned manual portfolio assets and should not be committed unti
 
 | Screenshot | Purpose |
 | --- | --- |
-| Dashboard overview | Show the full product surface and evidence-first layout. |
-| Architecture diagrams | Show monorepo structure, prediction flow, API flow, QA strategy, and interview story. |
-| Manual match simulation | Show manual xG inputs, probabilities, scorelines, and baseline framing. |
-| Auto Predict From Elo | Show Live Elo prediction flow, metadata, and partial-data warnings. |
-| Prediction presets | Show conservative, balanced, and aggressive preset controls. |
-| Live Elo ratings | Show model metadata and data coverage warnings. |
-| Historical validation | Show replay evidence and known limitations. |
-| Tournament simulation | Show champion and runner-up probability output. |
-| Team ratings | Show Elo tiers, offense/defense scores, and summary stats. |
-| Playwright E2E passing | Show dashboard workflow automation passing. |
-| GitHub Actions CI passing | Show automated checks passing on GitHub Actions. |
+| AppHeader with all 12 nav links | Show navigation scope |
+| Tournament Projection Overview | Headline projection — champion, runner-up, third place |
+| Champion Projection Summary with path | Five-round path with numbered badges |
+| Final match simulation | Probabilities and scorelines |
+| Semifinal match simulation | Probabilities and scorelines |
+| Third Place Match simulation | Probabilities and scorelines |
+| Manual match simulation result | Show form + probability output |
+| Auto Predict From Elo result | Show Elo mode and partial-data warning |
+| Live Elo ratings | Model metadata and coverage warnings |
+| Historical validation | Replay evidence and known limitations |
+| Playwright E2E passing (52 tests) | Dashboard workflow automation passing |
+| GitHub Actions CI passing | Automated checks passing on GitHub Actions |
+| Architecture diagrams | Monorepo structure, prediction flow, QA strategy |
 
 ## Portfolio Highlights
 
