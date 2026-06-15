@@ -4,7 +4,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 
 ## Test Count
 
-39 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10 + 1 added in Phase 10.11 + 1 added in Phase 10.12 + 1 added in Phase 10.13 + 1 added in Phase 10.14 + 1 added in Phase 10.15 + 1 added in Phase 10.16 + 1 added in Phase 11.0 + 1 added in Phase 11.1). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator.
+40 tests total (11 original from Phase 8.0 + 11 added in Phase 8.1 + 1 added in Phase 10.1 + 1 added in Phase 10.2 + 1 added in Phase 10.3 + 1 added in Phase 10.4 + 1 added in Phase 10.6 + 1 added in Phase 10.7 + 1 added in Phase 10.8 + 1 added in Phase 10.9 + 1 added in Phase 10.10 + 1 added in Phase 10.11 + 1 added in Phase 10.12 + 1 added in Phase 10.13 + 1 added in Phase 10.14 + 1 added in Phase 10.15 + 1 added in Phase 10.16 + 1 added in Phase 11.0 + 1 added in Phase 11.1 + 1 added in Phase 11.2). The Haiti vs Scotland coverage test was updated in Phase 10.2A to also assert the fallback seed indicator. Phase 11.2A fixed an E2E locator ambiguity in the Third Place Match section — participant card `aria-label` values were updated so they no longer shadow the match simulation form's `getByLabel('Home team')` / `getByLabel('Away team')` selectors.
 
 ## Test List
 
@@ -49,6 +49,7 @@ Phase 8.1 expands the Playwright E2E suite to cover the full match prediction wo
 | 37 | Dashboard renders Final match simulation with win and draw probabilities | Final match simulation |
 | 38 | Dashboard renders projected tournament winner with champion and runner-up | Knockout winner resolution |
 | 39 | Dashboard renders projected third place match with two participants | Third place match foundation |
+| 40 | Dashboard renders third place match simulation section with probabilities and scorelines | Third place match simulation |
 
 ## Coverage by Area
 

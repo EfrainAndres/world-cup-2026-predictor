@@ -16,7 +16,7 @@ interface ParticipantCardProps {
 function ParticipantCard({ participant, role }: ParticipantCardProps) {
   return (
     <article
-      aria-label={`${role} team: ${participant.team}`}
+      aria-label={`Third place ${role.toLowerCase()} participant: ${participant.team}`}
       className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
     >
       <p className="text-xs font-semibold uppercase text-slate-400">{role} Team</p>

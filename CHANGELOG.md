@@ -6,6 +6,10 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ## [Unreleased]
 
+### Fixed
+
+- Phase 11.2A E2E locator ambiguity — participant card `aria-label` values in `WorldCupThirdPlaceMatchSection` changed from `"Home team: <Team>"` / `"Away team: <Team>"` to `"Third place home participant: <Team>"` / `"Third place away participant: <Team>"`. The previous values caused Playwright `getByLabel('Home team')` to resolve to two elements (the form input and the participant card), breaking 15 E2E tests. Visible UI text is unchanged.
+
 ### Added
 
 - Phase 11.2 Third Place Match simulation — simulates the projected Third Place fixture using Live Elo ratings and Poisson score model; no third-place winner selection, no extra time, no penalty logic.
