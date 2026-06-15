@@ -11,12 +11,12 @@ interface TournamentProjectionOverviewSectionProps {
 }
 
 const ROUND_ANCHORS = [
-  { label: "R32 Simulations", href: "#world-cup-knockout-simulation" },
-  { label: "Round of 16", href: "#world-cup-round-of-16" },
-  { label: "Quarterfinals", href: "#world-cup-quarterfinal" },
-  { label: "Semifinals", href: "#world-cup-semifinal" },
-  { label: "Final", href: "#world-cup-final" },
-  { label: "Champion", href: "#world-cup-champion-projection-summary" }
+  { label: "Champion", href: "#world-cup-champion-projection-summary" },
+  { label: "Final", href: "#world-cup-final-match-simulation" },
+  { label: "Semifinals", href: "#world-cup-semifinal-match-simulation" },
+  { label: "Quarterfinals", href: "#world-cup-quarterfinal-match-simulation" },
+  { label: "Round of 16", href: "#world-cup-round-of-16-match-simulation" },
+  { label: "R32 Simulations", href: "#world-cup-knockout-simulation" }
 ] as const;
 
 export function TournamentProjectionOverviewSection({

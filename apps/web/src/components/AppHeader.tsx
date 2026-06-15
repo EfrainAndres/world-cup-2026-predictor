@@ -2,6 +2,12 @@ const navigationItems = [
   { label: "Home", href: "#overview" },
   { label: "Tournament", href: "#world-cup-tournament-overview" },
   { label: "Champion", href: "#world-cup-champion-projection-summary" },
+  { label: "Final", href: "#world-cup-final-match-simulation" },
+  { label: "Semifinals", href: "#world-cup-semifinal-match-simulation" },
+  { label: "Quarterfinals", href: "#world-cup-quarterfinal-match-simulation" },
+  { label: "Round of 16", href: "#world-cup-round-of-16-match-simulation" },
+  { label: "Round of 32", href: "#world-cup-knockout-simulation" },
+  { label: "Third Place", href: "#world-cup-third-place-match-simulation" },
   { label: "Match Preview", href: "#match-preview" },
   { label: "Replay Audit", href: "#replay-audit" },
   { label: "Historical", href: "#historical" }

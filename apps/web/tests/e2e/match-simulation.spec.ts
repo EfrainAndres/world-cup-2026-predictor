@@ -242,6 +242,37 @@ test("dashboard renders projected knockout bracket with all rounds", async ({ pa
   await expect(page.getByText("Winner R32-01").first()).toBeVisible();
 });
 
+test("dashboard sections appear in correct top-to-bottom order for portfolio flow", async ({ page }) => {
+  await page.goto("/");
+
+  const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview", exact: true });
+  const championSection = page.getByRole("region", { name: "Champion Projection Summary", exact: true });
+  const finalSimSection = page.getByRole("region", { name: "Final match simulation", exact: true });
+  const semifinalSimSection = page.getByRole("region", { name: "Semifinal match simulations", exact: true });
+  const thirdPlaceSection = page.getByRole("region", { name: "Projected Third Place Match", exact: true });
+  const winnerResolutionSection = page.getByRole("region", { name: "Projected Tournament Winner", exact: true });
+
+  await expect(overviewSection).toBeVisible();
+  await expect(championSection).toBeVisible();
+  await expect(finalSimSection).toBeVisible();
+  await expect(semifinalSimSection).toBeVisible();
+  await expect(thirdPlaceSection).toBeVisible();
+  await expect(winnerResolutionSection).toBeVisible();
+
+  const overviewBox = await overviewSection.boundingBox();
+  const championBox = await championSection.boundingBox();
+  const finalSimBox = await finalSimSection.boundingBox();
+  const semifinalSimBox = await semifinalSimSection.boundingBox();
+  const thirdPlaceBox = await thirdPlaceSection.boundingBox();
+  const winnerResolutionBox = await winnerResolutionSection.boundingBox();
+
+  expect(overviewBox!.y).toBeLessThan(championBox!.y);
+  expect(championBox!.y).toBeLessThan(finalSimBox!.y);
+  expect(finalSimBox!.y).toBeLessThan(semifinalSimBox!.y);
+  expect(semifinalSimBox!.y).toBeLessThan(thirdPlaceBox!.y);
+  expect(thirdPlaceBox!.y).toBeLessThan(winnerResolutionBox!.y);
+});
+
 // ── Match simulation form ─────────────────────────────────────────────────────
 
 test("match simulation form renders with required inputs and submit button", async ({ page }) => {

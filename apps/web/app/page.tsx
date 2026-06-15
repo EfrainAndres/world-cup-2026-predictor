@@ -95,44 +95,72 @@ export default function DashboardHomePage() {
 
         <TeamRatingsSection teamRatings={snapshot.teamRatings} />
 
-        <WorldCupGroupsSection fixtureFoundation={snapshot.worldCup2026Fixtures} />
-
-        <WorldCupStandingsSection standingsFoundation={snapshot.worldCup2026Standings} />
-
-        <WorldCupRoundOf32Section roundOf32Foundation={snapshot.worldCup2026RoundOf32} />
-
-        <WorldCupKnockoutBracketSection knockoutBracket={snapshot.worldCup2026KnockoutBracket} />
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Summary</p>
+        </div>
 
         <TournamentProjectionOverviewSection
           resolution={snapshot.worldCup2026KnockoutWinnerResolution}
           thirdPlaceMatch={snapshot.worldCup2026ThirdPlaceMatch}
         />
 
-        <WorldCupKnockoutSimulationSection knockoutSimulation={snapshot.worldCup2026KnockoutSimulation} />
+        <WorldCupChampionProjectionSummarySection resolution={snapshot.worldCup2026KnockoutWinnerResolution} />
 
-        <WorldCupRoundOf16SimulationSection roundOf16={snapshot.worldCup2026RoundOf16} />
-
-        <WorldCupRoundOf16MatchSimulationSection roundOf16MatchSimulation={snapshot.worldCup2026RoundOf16MatchSimulation} />
-
-        <WorldCupQuarterfinalSimulationSection quarterfinal={snapshot.worldCup2026Quarterfinal} />
-
-        <WorldCupQuarterfinalMatchSimulationSection quarterfinalMatchSimulation={snapshot.worldCup2026QuarterfinalMatchSimulation} />
-
-        <WorldCupSemifinalSimulationSection semifinal={snapshot.worldCup2026Semifinal} />
-
-        <WorldCupSemifinalMatchSimulationSection semifinalMatchSimulation={snapshot.worldCup2026SemifinalMatchSimulation} />
-
-        <WorldCupFinalSimulationSection finalFoundation={snapshot.worldCup2026Final} />
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Projected final</p>
+        </div>
 
         <WorldCupFinalMatchSimulationSection finalMatchSimulation={snapshot.worldCup2026FinalMatchSimulation} />
 
-        <WorldCupChampionProjectionSummarySection resolution={snapshot.worldCup2026KnockoutWinnerResolution} />
+        <WorldCupFinalSimulationSection finalFoundation={snapshot.worldCup2026Final} />
 
-        <WorldCupKnockoutWinnerResolutionSection resolution={snapshot.worldCup2026KnockoutWinnerResolution} />
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Projected semifinals</p>
+        </div>
+
+        <WorldCupSemifinalMatchSimulationSection semifinalMatchSimulation={snapshot.worldCup2026SemifinalMatchSimulation} />
+
+        <WorldCupSemifinalSimulationSection semifinal={snapshot.worldCup2026Semifinal} />
+
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Projected quarterfinals</p>
+        </div>
+
+        <WorldCupQuarterfinalMatchSimulationSection quarterfinalMatchSimulation={snapshot.worldCup2026QuarterfinalMatchSimulation} />
+
+        <WorldCupQuarterfinalSimulationSection quarterfinal={snapshot.worldCup2026Quarterfinal} />
+
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Projected early knockout</p>
+        </div>
+
+        <WorldCupRoundOf16MatchSimulationSection roundOf16MatchSimulation={snapshot.worldCup2026RoundOf16MatchSimulation} />
+
+        <WorldCupRoundOf16SimulationSection roundOf16={snapshot.worldCup2026RoundOf16} />
+
+        <WorldCupKnockoutSimulationSection knockoutSimulation={snapshot.worldCup2026KnockoutSimulation} />
+
+        <WorldCupRoundOf32Section roundOf32Foundation={snapshot.worldCup2026RoundOf32} />
+
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Third place match</p>
+        </div>
+
+        <WorldCupThirdPlaceMatchSimulationSection thirdPlaceMatchSimulation={snapshot.worldCup2026ThirdPlaceMatchSimulation} />
 
         <WorldCupThirdPlaceMatchSection thirdPlaceMatch={snapshot.worldCup2026ThirdPlaceMatch} />
 
-        <WorldCupThirdPlaceMatchSimulationSection thirdPlaceMatchSimulation={snapshot.worldCup2026ThirdPlaceMatchSimulation} />
+        <div className="border-t border-slate-200 pb-2 pt-8">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Audit detail</p>
+        </div>
+
+        <WorldCupKnockoutWinnerResolutionSection resolution={snapshot.worldCup2026KnockoutWinnerResolution} />
+
+        <WorldCupGroupsSection fixtureFoundation={snapshot.worldCup2026Fixtures} />
+
+        <WorldCupStandingsSection standingsFoundation={snapshot.worldCup2026Standings} />
+
+        <WorldCupKnockoutBracketSection knockoutBracket={snapshot.worldCup2026KnockoutBracket} />
 
         <TournamentSimulationSection
           simulation={snapshot.tournamentSimulation}
