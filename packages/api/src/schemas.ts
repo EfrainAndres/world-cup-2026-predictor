@@ -745,6 +745,35 @@ export interface WorldCup2026ThirdPlaceMatchFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export interface WorldCup2026ThirdPlaceMatchSimulationFixture {
+  fixtureId: string;
+  round: "third_place";
+  homeTeam: string;
+  awayTeam: string;
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  mostLikelyScorelines: readonly ScorelineProbability[];
+  homeRatingSource: LiveEloRatingSource;
+  awayRatingSource: LiveEloRatingSource;
+  warnings: readonly string[];
+}
+
+export interface WorldCup2026ThirdPlaceMatchSimulationFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_third_place_match_simulation_foundation";
+  simulatedFixturesCount: 1;
+  round: "third_place";
+  simulationType: "match_level_foundation";
+  source: "projected_third_place_match";
+  fixtures: readonly [WorldCup2026ThirdPlaceMatchSimulationFixture];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface WorldCup2026ResolvedKnockoutWinner {
   team: string;
   round: "round_of_32" | "round_of_16" | "quarterfinal" | "semifinal" | "final";
@@ -864,6 +893,7 @@ export interface ApiRoutes {
   simulateWorldCup2026FinalMatchFoundation: () => WorldCup2026FinalMatchSimulationFoundationResponse;
   resolveWorldCup2026KnockoutWinnersFoundation: () => WorldCup2026KnockoutWinnerResolutionResponse;
   getWorldCup2026ThirdPlaceMatchFoundation: () => WorldCup2026ThirdPlaceMatchFoundationResponse;
+  simulateWorldCup2026ThirdPlaceMatchFoundation: () => WorldCup2026ThirdPlaceMatchSimulationFoundationResponse;
 }
 
 export const API_VERSION = "api-foundation-v1";

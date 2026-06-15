@@ -164,7 +164,8 @@ describe("api contract coverage", () => {
       "simulateWorldCup2026FinalFoundation",
       "simulateWorldCup2026FinalMatchFoundation",
       "resolveWorldCup2026KnockoutWinnersFoundation",
-      "getWorldCup2026ThirdPlaceMatchFoundation"
+      "getWorldCup2026ThirdPlaceMatchFoundation",
+      "simulateWorldCup2026ThirdPlaceMatchFoundation"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {
@@ -202,6 +203,55 @@ describe("api contract coverage", () => {
       fixtureId: expect.any(String),
       round: "final",
       slot: 1,
+      homeTeam: expect.any(String),
+      awayTeam: expect.any(String),
+      homeExpectedGoals: expect.any(Number),
+      awayExpectedGoals: expect.any(Number),
+      homeWinProbability: expect.any(Number),
+      drawProbability: expect.any(Number),
+      awayWinProbability: expect.any(Number),
+      mostLikelyScorelines: expect.any(Array),
+      homeRatingSource: expect.any(String),
+      awayRatingSource: expect.any(String),
+      warnings: expect.any(Array)
+    });
+    expectProbabilitiesContract({
+      homeWinProbability: fixture.homeWinProbability,
+      drawProbability: fixture.drawProbability,
+      awayWinProbability: fixture.awayWinProbability,
+      totalProbability: fixture.homeWinProbability + fixture.drawProbability + fixture.awayWinProbability
+    });
+    expectScorelinesContract(fixture.mostLikelyScorelines);
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the third place match simulation foundation contract", () => {
+    const response = apiRoutes.simulateWorldCup2026ThirdPlaceMatchFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "dataScope",
+      "fixtures",
+      "metadata",
+      "round",
+      "simulatedFixturesCount",
+      "simulationType",
+      "source",
+      "status",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.dataScope).toBe("world_cup_2026_third_place_match_simulation_foundation");
+    expect(response.round).toBe("third_place");
+    expect(response.source).toBe("projected_third_place_match");
+    expect(response.simulatedFixturesCount).toBe(1);
+    expect(response.fixtures).toHaveLength(1);
+
+    const fixture = response.fixtures[0];
+    expect(fixture).toEqual({
+      fixtureId: expect.any(String),
+      round: "third_place",
       homeTeam: expect.any(String),
       awayTeam: expect.any(String),
       homeExpectedGoals: expect.any(Number),

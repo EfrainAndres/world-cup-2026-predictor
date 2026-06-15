@@ -190,6 +190,17 @@ test("dashboard renders projected third place match with two participants", asyn
   await expect(thirdPlaceSection.getByText(/wc2026-3rd-place-01/).first()).toBeVisible();
 });
 
+test("dashboard renders third place match simulation section with probabilities and scorelines", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Third Place Match simulation" })).toBeVisible();
+  const simSection = page.getByRole("region", { name: "Third Place Match simulation" });
+  await expect(simSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
+  await expect(simSection.getByText("Draw", { exact: true })).toBeVisible();
+  await expect(simSection.getByText("Top scorelines", { exact: true })).toBeVisible();
+  await expect(simSection.getByText("Expected goals", { exact: true })).toBeVisible();
+});
+
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
   await page.goto("/");
 

@@ -80,6 +80,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 10.15 | Final Simulation Foundation | Derive projected finalists from SF match probabilities via deterministic winner selection. No Final match simulation. | Done |
 | 10.16 | Final Match Simulation | Simulate the projected Final fixture using Live Elo and Poisson model. No champion selection. | Done |
 | 11.0 | Knockout Winner Resolution Foundation | Resolve deterministic winners from all simulated knockout match probabilities (R32–Final). Expose champion, runner-up, and winner paths by round. | Done |
+| 11.1 | Third Place Match Foundation | Project the Third Place Match fixture from deterministic SF loser selection. No match simulation, no winner selection, no penalty logic. | Done |
+| 11.2 | Third Place Match Simulation | Simulate the projected Third Place fixture using Live Elo and Poisson model. No winner selection, no extra time, no penalty logic. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

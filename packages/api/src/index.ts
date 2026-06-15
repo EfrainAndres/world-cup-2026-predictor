@@ -25,7 +25,8 @@ export {
   simulateWorldCup2026FinalFoundation,
   simulateWorldCup2026FinalMatchFoundation,
   resolveWorldCup2026KnockoutWinnersFoundation,
-  getWorldCup2026ThirdPlaceMatchFoundation
+  getWorldCup2026ThirdPlaceMatchFoundation,
+  simulateWorldCup2026ThirdPlaceMatchFoundation
 } from "./routes.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
@@ -133,7 +134,9 @@ export type {
   WorldCup2026KnockoutWinnerResolutionResponse,
   WorldCup2026ThirdPlaceParticipant,
   WorldCup2026ThirdPlaceMatchFixture,
-  WorldCup2026ThirdPlaceMatchFoundationResponse
+  WorldCup2026ThirdPlaceMatchFoundationResponse,
+  WorldCup2026ThirdPlaceMatchSimulationFixture,
+  WorldCup2026ThirdPlaceMatchSimulationFoundationResponse
 } from "./schemas.js";
 
 export type {

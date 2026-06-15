@@ -8,6 +8,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 11.2 Third Place Match simulation — simulates the projected Third Place fixture using Live Elo ratings and Poisson score model; no third-place winner selection, no extra time, no penalty logic.
+- `simulateWorldCup2026ThirdPlaceMatchFoundation()` API handler; draws after 90 minutes are allowed; third-place winner selection after extra time/penalties is not modeled.
+- `WorldCup2026ThirdPlaceMatchSimulationFixture` and `WorldCup2026ThirdPlaceMatchSimulationFoundationResponse` typed schemas.
+- `WorldCupThirdPlaceMatchSimulationSection` dashboard component showing the projected Third Place fixture with win/draw/win probabilities, top scorelines, and Live Elo / Partial data badges.
+- `docs/dashboard/WORLD_CUP_2026_THIRD_PLACE_MATCH_SIMULATION.md` documenting simulation flow, Elo usage, Poisson model, output fields, limitations, and future phases.
 - Phase 11.1 Third Place Match foundation — projects the Third Place Match fixture from deterministic SF loser selection; exposes two participants and one projected fixture; no match simulation, no winner selection, no penalty logic.
 - `getWorldCup2026ThirdPlaceMatchFoundation()` API handler; loser selected by lowest pre-match win probability, Elo tie-break, then away team.
 - `WorldCup2026ThirdPlaceParticipant`, `WorldCup2026ThirdPlaceMatchFixture`, and `WorldCup2026ThirdPlaceMatchFoundationResponse` typed schemas.
