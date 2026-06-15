@@ -79,7 +79,7 @@ export default function DashboardHomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="match-section-title" className="py-8">
+        <section id="match-preview" aria-labelledby="match-section-title" className="py-8">
           <SectionHeader
             eyebrow="Match preview"
             titleId="match-section-title"
@@ -167,10 +167,12 @@ export default function DashboardHomePage() {
           modelInfo={snapshot.modelInfo}
         />
 
-        <HistoricalValidationSection
-          tournaments={snapshot.historicalTournaments}
-          audit={snapshot.historicalReplayAudit}
-        />
+        <div id="historical">
+          <HistoricalValidationSection
+            tournaments={snapshot.historicalTournaments}
+            audit={snapshot.historicalReplayAudit}
+          />
+        </div>
       </main>
     </div>
   );
