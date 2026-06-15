@@ -1,5 +1,7 @@
 const navigationItems = [
   { label: "Home", href: "#overview" },
+  { label: "Tournament", href: "#world-cup-tournament-overview" },
+  { label: "Champion", href: "#world-cup-champion-projection-summary" },
   { label: "Match Preview", href: "#match-preview" },
   { label: "Replay Audit", href: "#replay-audit" },
   { label: "Historical", href: "#historical" }
