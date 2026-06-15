@@ -6,11 +6,6 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ## [Unreleased]
 
-### Fixed
-
-- Phase 11.6 Header Anchor Cleanup — three `AppHeader` nav links (`#match-preview`, `#replay-audit`, `#historical`) previously pointed to ids that did not exist in the rendered page. Fixed by adding `id="match-preview"` to the match simulation `<section>` in `page.tsx` and a `<div id="historical">` wrapper around `HistoricalValidationSection`. `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard` and required no page-level change. `MatchSimulationPreviewCard` was identified as an orphaned component (zero consumers) whose `id="match-preview"` was never rendered. No visible UI change.
-- Phase 11.2A E2E locator ambiguity — participant card `aria-label` values in `WorldCupThirdPlaceMatchSection` changed from `"Home team: <Team>"` / `"Away team: <Team>"` to `"Third place home participant: <Team>"` / `"Third place away participant: <Team>"`. The previous values caused Playwright `getByLabel('Home team')` to resolve to two elements (the form input and the participant card), breaking 15 E2E tests. Visible UI text is unchanged.
-
 ### Added
 
 - Phase 11.5 Dashboard Ordering & Section Cleanup — reordered dashboard to summary-first / inverted-knockout flow: Tournament Overview → Champion Summary → Final → Semifinals → Quarterfinals → Round of 16 → Round of 32 → Third Place → Audit detail → Groups/standings/historical. Added section captions ("Summary", "Projected final", "Projected semifinals", "Projected quarterfinals", "Projected early knockout", "Third place match", "Audit detail"). Extended `AppHeader` nav with Final, Semifinals, Quarterfinals, Round of 16, Round of 32, and Third Place anchor links. Updated `TournamentProjectionOverviewSection` ROUND_ANCHORS to point to simulation sections. Added E2E ordering test verifying key section DOM positions. No new API handlers or prediction logic.
@@ -349,6 +344,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 ### Fixed
 
 - Phase 10.1: Stale prediction results no longer remain visible after a validation error. When any form submission fails validation (client-side or API-side), the previous result is cleared and an explicit "Prediction unavailable" empty state is shown in the results panel, preventing users from confusing old results with the current invalid input.
+- Phase 11.7 Remove Orphaned MatchSimulationPreviewCard — deleted `apps/web/src/components/MatchSimulationPreviewCard.tsx`. Confirmed zero consumers across all `.ts`, `.tsx`, `.js`, `.jsx`, and `.spec.ts` files. The `#match-preview` anchor is now provided by the `id="match-preview"` added to the match simulation section in Phase 11.6. No visible dashboard change, no E2E impact.
+- Phase 11.6 Header Anchor Cleanup — three `AppHeader` nav links (`#match-preview`, `#replay-audit`, `#historical`) previously pointed to ids that did not exist in the rendered page. Fixed by adding `id="match-preview"` to the match simulation `<section>` in `page.tsx` and a `<div id="historical">` wrapper around `HistoricalValidationSection`. `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard` and required no page-level change. `MatchSimulationPreviewCard` was identified as an orphaned component (zero consumers) whose `id="match-preview"` was never rendered. No visible UI change.
+- Phase 11.2A E2E locator ambiguity — participant card `aria-label` values in `WorldCupThirdPlaceMatchSection` changed from `"Home team: <Team>"` / `"Away team: <Team>"` to `"Third place home participant: <Team>"` / `"Third place away participant: <Team>"`. The previous values caused Playwright `getByLabel('Home team')` to resolve to two elements (the form input and the participant card), breaking 15 E2E tests. Visible UI text is unchanged.
 
 ## [0.0.0] - 2026-06-08
 
