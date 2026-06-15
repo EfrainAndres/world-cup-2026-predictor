@@ -24,6 +24,7 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 - Round of 16 match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 8 projected R16 fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
 - Projected Quarterfinals section showing 4 projected QF fixtures derived from R16 match probabilities via deterministic winner selection, with projected qualifier cards showing advancement reason, R16 source matchup, and probability snapshot.
 - Quarterfinal match simulation section showing match-level probabilities (home win, draw, away win) and top 3 scorelines for all 4 projected QF fixtures using Live Elo ratings and the Poisson model. Advancement after extra time/penalties is not modeled.
+- Champion projection summary section showing the projected champion card, projected runner-up card, final matchup, final probability snapshot, and a five-round champion path (Round of 32 → Round of 16 → Quarterfinal → Semifinal → Final) with opponents and probability snapshots. Derived from the existing knockout winner resolution snapshot — no new API handler.
 - Tournament simulation section with live local foundation simulation (8-team sample, seed 2026, 1000 runs), champion/runner-up probability cards for all 8 teams, model limitations, and match simulation CTA.
 - Historical validation section with aggregate audit status and per-year tournament cards.
 - Responsive Tailwind layout.
@@ -83,6 +84,10 @@ The Quarterfinal projection section calls `simulateWorldCup2026QuarterfinalFound
 ## World Cup 2026 Quarterfinal Match Simulation
 
 The Quarterfinal match simulation section calls `simulateWorldCup2026QuarterfinalMatchesFoundation()` through the local API client wrapper. It consumes the 4 projected QF fixtures from `simulateWorldCup2026QuarterfinalFoundation()` and runs the same Live Elo → Poisson pipeline for each fixture, producing home win / draw / away win probabilities and the top 3 most likely scorelines. Teams not in the Live Elo pipeline receive a fallback seed rating of 1500 and are labeled "Partial data". No winners are selected. Advancement after extra time or penalties is not modeled in this phase.
+
+## Champion Projection Summary
+
+The champion projection summary section calls `resolveWorldCup2026KnockoutWinnersFoundation()` through the local API client wrapper (same snapshot used by the detailed knockout winner resolution section). It derives the champion's five-round path by searching the `roundOf32Winners`, `roundOf16Winners`, `quarterfinalWinners`, and `semifinalWinners` arrays for the champion's name, then reads each defeated opponent and probability snapshot. No extra time, penalties, or champion probability distribution is modeled. The section displays a deterministic-only disclaimer banner.
 
 ## Commands
 

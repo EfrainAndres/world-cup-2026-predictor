@@ -168,6 +168,19 @@ test("dashboard renders Final match simulation with win and draw probabilities",
   await expect(finalSimSection.getByText(/Draw/).first()).toBeVisible();
 });
 
+test("dashboard renders champion projection summary with champion, runner-up, path, and warning", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Champion Projection Summary" })).toBeVisible();
+  const summarySection = page.getByRole("region", { name: "Champion Projection Summary" });
+  await expect(summarySection.getByText("Deterministic projection only", { exact: true })).toBeVisible();
+  await expect(summarySection.getByText("Projected Champion", { exact: true })).toBeVisible();
+  await expect(summarySection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
+  await expect(summarySection.getByText("Champion path", { exact: true })).toBeVisible();
+  await expect(summarySection.getByText("Round of 32").first()).toBeVisible();
+  await expect(summarySection.getByText("Final").first()).toBeVisible();
+});
+
 test("dashboard renders projected tournament winner with champion and runner-up", async ({ page }) => {
   await page.goto("/");
 

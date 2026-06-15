@@ -12,6 +12,9 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 11.3 Champion Projection Summary — dashboard section showing projected champion, runner-up, final matchup, and full five-round champion path. Consumes existing `resolveWorldCup2026KnockoutWinnersFoundation()` response with no new API handler or schema changes.
+- `WorldCupChampionProjectionSummarySection` dashboard component rendering projected champion card, projected runner-up card, final probability snapshot, and champion path (R32 → R16 → QF → SF → Final opponents with probability snapshots) derived from existing winner resolution arrays.
+- `docs/dashboard/WORLD_CUP_2026_CHAMPION_PROJECTION_SUMMARY.md` documenting source handler, displayed fields, champion path derivation, deterministic limitations, and future improvement ideas.
 - Phase 11.2 Third Place Match simulation — simulates the projected Third Place fixture using Live Elo ratings and Poisson score model; no third-place winner selection, no extra time, no penalty logic.
 - `simulateWorldCup2026ThirdPlaceMatchFoundation()` API handler; draws after 90 minutes are allowed; third-place winner selection after extra time/penalties is not modeled.
 - `WorldCup2026ThirdPlaceMatchSimulationFixture` and `WorldCup2026ThirdPlaceMatchSimulationFoundationResponse` typed schemas.
