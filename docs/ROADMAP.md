@@ -85,6 +85,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 11.3 | Champion Projection Summary | Dashboard polish: projected champion card, runner-up card, and five-round champion path derived from Phase 11.0 winner resolution. No new prediction logic. | Done |
 | 11.4 | Tournament Projection Overview | Dashboard polish: full tournament overview section (champion, runner-up, third place match, anchor nav), AppHeader nav items, numbered champion path steps, portfolio readiness banner. No new prediction logic. | Done |
 | 11.5 | Dashboard Ordering & Section Cleanup | Reorder dashboard to summary-first flow (overview → champion → final → semis → QF → R16 → R32 → third place → audit). Add section captions, full AppHeader anchor nav, E2E ordering test. No new prediction logic. | Done |
+| 11.6 | Header Anchor Cleanup | Fix pre-existing AppHeader anchor links (`#match-preview`, `#replay-audit`, `#historical`) that had no matching section ids. Add `id="match-preview"` to the match simulation section and `id="historical"` wrapper for the historical validation section; `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard`. Add two E2E anchor-validation tests. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

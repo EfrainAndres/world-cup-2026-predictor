@@ -242,6 +242,35 @@ test("dashboard renders projected knockout bracket with all rounds", async ({ pa
   await expect(page.getByText("Winner R32-01").first()).toBeVisible();
 });
 
+test("AppHeader anchor links have matching section targets in the page", async ({ page }) => {
+  await page.goto("/");
+
+  // Verify the three anchors that were previously broken now have matching ids
+  await expect(page.locator("#match-preview")).toBeAttached();
+  await expect(page.locator("#replay-audit")).toBeAttached();
+  await expect(page.locator("#historical")).toBeAttached();
+
+  // Verify the existing tournament-section anchors also resolve
+  await expect(page.locator("#overview")).toBeAttached();
+  await expect(page.locator("#world-cup-tournament-overview")).toBeAttached();
+  await expect(page.locator("#world-cup-champion-projection-summary")).toBeAttached();
+  await expect(page.locator("#world-cup-final-match-simulation")).toBeAttached();
+  await expect(page.locator("#world-cup-semifinal-match-simulation")).toBeAttached();
+  await expect(page.locator("#world-cup-quarterfinal-match-simulation")).toBeAttached();
+  await expect(page.locator("#world-cup-round-of-16-match-simulation")).toBeAttached();
+  await expect(page.locator("#world-cup-knockout-simulation")).toBeAttached();
+  await expect(page.locator("#world-cup-third-place-match-simulation")).toBeAttached();
+});
+
+test("clicking Match Preview AppHeader link navigates to the match simulation section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("navigation", { name: "Dashboard navigation" }).getByRole("link", { name: "Match Preview" }).click();
+
+  await expect(page).toHaveURL(/#match-preview$/);
+  await expect(page.locator("#match-preview")).toBeAttached();
+});
+
 test("dashboard sections appear in correct top-to-bottom order for portfolio flow", async ({ page }) => {
   await page.goto("/");
 

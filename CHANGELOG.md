@@ -8,6 +8,7 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Fixed
 
+- Phase 11.6 Header Anchor Cleanup — three `AppHeader` nav links (`#match-preview`, `#replay-audit`, `#historical`) previously pointed to ids that did not exist in the rendered page. Fixed by adding `id="match-preview"` to the match simulation `<section>` in `page.tsx` and a `<div id="historical">` wrapper around `HistoricalValidationSection`. `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard` and required no page-level change. `MatchSimulationPreviewCard` was identified as an orphaned component (zero consumers) whose `id="match-preview"` was never rendered. No visible UI change.
 - Phase 11.2A E2E locator ambiguity — participant card `aria-label` values in `WorldCupThirdPlaceMatchSection` changed from `"Home team: <Team>"` / `"Away team: <Team>"` to `"Third place home participant: <Team>"` / `"Third place away participant: <Team>"`. The previous values caused Playwright `getByLabel('Home team')` to resolve to two elements (the form input and the participant card), breaking 15 E2E tests. Visible UI text is unchanged.
 
 ### Added
