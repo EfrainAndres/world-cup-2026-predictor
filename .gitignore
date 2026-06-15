@@ -12,3 +12,10 @@ blob-report/
 .DS_Store
 .turbo/
 **/.turbo/
+
+# Generated build/cache output
+.next/
+apps/web/.next/
+.turbo/
+**/.turbo/
+node_modules/
