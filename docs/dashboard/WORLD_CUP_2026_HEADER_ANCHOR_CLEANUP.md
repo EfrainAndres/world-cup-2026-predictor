@@ -69,4 +69,4 @@ Phase 11.6 adds two new E2E tests (tests #44 and #45):
 
 ## Orphaned Component Note
 
-`MatchSimulationPreviewCard.tsx` exists with `id="match-preview"` but has no consumers. It is left in place but out of scope for Phase 11.6. Its removal or repurposing is a future cleanup task.
+`MatchSimulationPreviewCard.tsx` had zero consumers across all source and test files and was removed in Phase 11.7. The `#match-preview` anchor is now exclusively provided by the `id="match-preview"` added to the match simulation `<section>` in `page.tsx` during Phase 11.6.
