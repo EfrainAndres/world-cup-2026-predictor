@@ -120,10 +120,13 @@ export function WorldCupChampionProjectionSummarySection({ resolution }: WorldCu
         <p className="text-xs font-semibold uppercase text-slate-500">Champion path</p>
         <p className="mt-1 text-xs text-slate-400">{champion.team} projected path to the title</p>
         <ol className="mt-3 divide-y divide-slate-100">
-          {pathEntries.map(({ label, opponent, homeWinProbability, drawProbability, awayWinProbability }) => (
-            <li key={label} className="flex items-center justify-between gap-4 py-2 text-sm">
-              <span className="w-28 shrink-0 text-xs font-semibold uppercase text-slate-500">{label}</span>
-              <span className="flex-1 text-slate-950">def. {opponent}</span>
+          {pathEntries.map(({ label, opponent, homeWinProbability, drawProbability, awayWinProbability }, index) => (
+            <li key={label} className="flex items-center gap-4 py-2.5 text-sm">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                {index + 1}
+              </span>
+              <span className="w-24 shrink-0 text-xs font-semibold uppercase text-slate-500">{label}</span>
+              <span className="flex-1 font-medium text-slate-950">def. {opponent}</span>
               <span className="text-xs text-slate-400">
                 {formatPercent(homeWinProbability)} / {formatPercent(drawProbability)} /{" "}
                 {formatPercent(awayWinProbability)}

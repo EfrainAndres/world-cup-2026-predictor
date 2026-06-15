@@ -12,6 +12,11 @@ This project follows a simple, human-readable changelog format and aims to use c
 
 ### Added
 
+- Phase 11.4 Tournament Projection Overview — full tournament summary section (`TournamentProjectionOverviewSection`) showing projected champion, runner-up, and Third Place Match contestants in a three-card grid, a portfolio readiness banner confirming all 31 knockout fixtures are resolved, and anchor navigation links to all six knockout-phase sections. No new API handler or simulation logic.
+- `TournamentProjectionOverviewSection` dashboard component placed after the knockout bracket and before R32 simulations; consumes existing `worldCup2026KnockoutWinnerResolution` and `worldCup2026ThirdPlaceMatch` snapshots.
+- Two new `AppHeader` nav items: "Tournament" → `#world-cup-tournament-overview` and "Champion" → `#world-cup-champion-projection-summary`.
+- Numbered step badges (1–5) in `WorldCupChampionProjectionSummarySection` champion path for clearer five-round progression.
+- `docs/dashboard/WORLD_CUP_2026_TOURNAMENT_PROJECTION_OVERVIEW.md` documenting section purpose, source data, displayed content, anchor nav, AppHeader changes, and future ideas.
 - Phase 11.3 Champion Projection Summary — dashboard section showing projected champion, runner-up, final matchup, and full five-round champion path. Consumes existing `resolveWorldCup2026KnockoutWinnersFoundation()` response with no new API handler or schema changes.
 - `WorldCupChampionProjectionSummarySection` dashboard component rendering projected champion card, projected runner-up card, final probability snapshot, and champion path (R32 → R16 → QF → SF → Final opponents with probability snapshots) derived from existing winner resolution arrays.
 - `docs/dashboard/WORLD_CUP_2026_CHAMPION_PROJECTION_SUMMARY.md` documenting source handler, displayed fields, champion path derivation, deterministic limitations, and future improvement ideas.

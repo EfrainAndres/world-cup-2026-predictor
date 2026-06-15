@@ -168,6 +168,19 @@ test("dashboard renders Final match simulation with win and draw probabilities",
   await expect(finalSimSection.getByText(/Draw/).first()).toBeVisible();
 });
 
+test("dashboard renders tournament projection overview with champion, runner-up, third place, and phase nav", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { level: 2, name: "Tournament Projection Overview" })).toBeVisible();
+  const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview" });
+  await expect(overviewSection.getByText("Full tournament projection complete", { exact: true })).toBeVisible();
+  await expect(overviewSection.getByText("Projected Champion", { exact: true })).toBeVisible();
+  await expect(overviewSection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
+  await expect(overviewSection.getByText("Third Place Match", { exact: true })).toBeVisible();
+  await expect(overviewSection.getByText("Jump to round", { exact: true })).toBeVisible();
+  await expect(overviewSection.getByRole("link", { name: "Champion" })).toBeVisible();
+});
+
 test("dashboard renders champion projection summary with champion, runner-up, path, and warning", async ({ page }) => {
   await page.goto("/");
 

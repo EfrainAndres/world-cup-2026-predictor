@@ -83,6 +83,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 11.1 | Third Place Match Foundation | Project the Third Place Match fixture from deterministic SF loser selection. No match simulation, no winner selection, no penalty logic. | Done |
 | 11.2 | Third Place Match Simulation | Simulate the projected Third Place fixture using Live Elo and Poisson model. No winner selection, no extra time, no penalty logic. | Done |
 | 11.3 | Champion Projection Summary | Dashboard polish: projected champion card, runner-up card, and five-round champion path derived from Phase 11.0 winner resolution. No new prediction logic. | Done |
+| 11.4 | Tournament Projection Overview | Dashboard polish: full tournament overview section (champion, runner-up, third place match, anchor nav), AppHeader nav items, numbered champion path steps, portfolio readiness banner. No new prediction logic. | Done |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
