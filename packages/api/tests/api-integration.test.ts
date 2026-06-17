@@ -59,6 +59,7 @@ describe("api integration validation", () => {
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026ResultsProviderFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
       "getWorldCup2026KnockoutBracketFoundation",

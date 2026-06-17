@@ -7,6 +7,7 @@ import {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
@@ -151,6 +152,7 @@ describe("api contract coverage", () => {
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026ResultsProviderFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
       "getWorldCup2026KnockoutBracketFoundation",
@@ -608,6 +610,54 @@ describe("api contract coverage", () => {
       goalDifference: expect.any(Number),
       points: expect.any(Number)
     });
+    expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the World Cup 2026 results provider foundation contract", () => {
+    const response = getWorldCup2026ResultsProviderFoundation();
+
+    expect(Object.keys(response).sort()).toEqual([
+      "completedResults",
+      "dataScope",
+      "fixtures",
+      "liveMatches",
+      "metadata",
+      "provider",
+      "standings",
+      "status",
+      "tournamentName",
+      "warnings"
+    ]);
+    expect(response.status).toBe("success");
+    expect(response.dataScope).toBe("world_cup_2026_results_provider_foundation");
+    expect(response.provider).toEqual({
+      currentDefaultProvider: expect.any(String),
+      attemptedProvider: expect.any(String),
+      activeProvider: expect.any(String),
+      cacheUsed: expect.any(Boolean),
+      localFallbackUsed: expect.any(Boolean),
+      externalProviderEnabled: expect.any(Boolean),
+      lastSuccessfulSync: expect.any(String),
+      warnings: expect.any(Array),
+      normalizationIssues: expect.any(Array),
+      error: expect.any(Object)
+    });
+    expect(response.fixtures[0]).toMatchObject({
+      providerFixtureId: expect.any(String),
+      competition: expect.any(String),
+      season: expect.any(String),
+      stage: expect.any(String),
+      group: expect.any(String),
+      matchday: expect.any(Number),
+      homeTeam: expect.any(String),
+      awayTeam: expect.any(String),
+      status: expect.any(String),
+      updatedAt: expect.any(String)
+    });
+    expect(Array.isArray(response.liveMatches)).toBe(true);
+    expect(Array.isArray(response.completedResults)).toBe(true);
+    expect(Array.isArray(response.standings)).toBe(true);
     expectWarningsContract(response.warnings);
     expectMetadataContract(response.metadata);
   });

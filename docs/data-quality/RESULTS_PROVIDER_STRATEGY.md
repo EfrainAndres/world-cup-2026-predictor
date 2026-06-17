@@ -4,6 +4,8 @@ Phase 10.4A prepares World Cup 2026 standings for multiple result sources withou
 
 The current implementation uses a normalized local static provider. Future phases can add manual override or external API providers behind the same result contract.
 
+Phase 12.4 now implements the provider-agnostic results foundation described here. See `docs/data-quality/EXTERNAL_RESULTS_PROVIDER_FOUNDATION.md` for the external-stub provider, in-memory cache wrapper, normalization rules, and fallback-chain metadata.
+
 ## Provider Contract
 
 Fixture structure and match results are intentionally separate.

@@ -92,7 +92,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.1 | Scheduled Match Selector by Group | Make scheduled World Cup fixtures the primary prediction path with official fixture ordering, group context, and status/date metadata. | Done |
 | 12.2 | Searchable Grouped Team Selectors | Keep custom matchup mode as an advanced path with grouped selectors, aliases, swap action, keyboard support, and mobile-friendly behavior. | Done |
 | 12.3 | Prediction Confidence & Data Coverage | Expose confidence levels, provenance, freshness, fallback status, and coverage gaps directly in prediction UX and API metadata. | Done |
-| 12.4 | External Results-Provider Foundation | Define the normalized external/live results provider layer with cache and local static fallback chain. | Planned |
+| 12.4 | External Results-Provider Foundation | Define the normalized external/live results provider layer with cache and local static fallback chain. | Done |
 | 12.5 | Live Results Synchronization | Synchronize scheduled, live, halftime, finished, postponed, and cancelled fixtures while preserving last valid cache behavior. | Planned |
 | 12.6 | Live Group Standings | Support official, provisional live, and projected standings with best third-place and projected Round of 32 updates. | Planned |
 | 12.7 | World Cup Results-to-Elo Ingestion | Process completed tournament results idempotently into ratings and future projections without look-ahead leakage. | Planned |

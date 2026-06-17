@@ -25,6 +25,7 @@ import { LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING, mergeEloMatchSources } from 
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { assessPredictionConfidence } from "./prediction-confidence.js";
+import { resolveWorldCup2026ResultsProviderFoundation } from "./results-provider-foundation.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -62,6 +63,7 @@ import type {
   TournamentSimulationSuccessResponse,
   TournamentSimulationTeamResult,
   WorldCup2026FixtureFoundationResponse,
+  WorldCup2026ResultsProviderFoundationResponse,
   WorldCup2026GroupStandingsFoundationResponse,
   WorldCup2026KnockoutBracketFoundationResponse,
   WorldCup2026KnockoutSimulationFixture,
@@ -519,6 +521,10 @@ export function getWorldCup2026GroupStandingsFoundation(): WorldCup2026GroupStan
       "No live score service, external API, knockout bracket, database, or prediction formula changes are used."
     ])
   };
+}
+
+export function getWorldCup2026ResultsProviderFoundation(): WorldCup2026ResultsProviderFoundationResponse {
+  return resolveWorldCup2026ResultsProviderFoundation();
 }
 
 export function getWorldCup2026RoundOf32Foundation(): WorldCup2026RoundOf32FoundationResponse {
@@ -2124,6 +2130,7 @@ export const apiRoutes: ApiRoutes = {
   getHistoricalTournamentSummary,
   getHistoricalReplayAudit,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026RoundOf32Foundation,
   getWorldCup2026KnockoutBracketFoundation,
