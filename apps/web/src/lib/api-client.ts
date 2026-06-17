@@ -134,11 +134,18 @@ export function getDashboardAvailableLiveEloTeams(): string[] {
 }
 
 export function getDashboardSnapshot(): DashboardSnapshot {
+  const worldCup2026Fixtures = getWorldCup2026FixtureFoundation();
+  const defaultScheduledFixture = worldCup2026Fixtures.fixtures[0];
+
+  if (defaultScheduledFixture === undefined) {
+    throw new Error("World Cup 2026 fixture foundation must expose at least one group-stage fixture.");
+  }
+
   const matchPreview = simulateMatch({
-    homeTeam: "Canada",
-    awayTeam: "Mexico",
-    expectedHomeGoals: 1.15,
-    expectedAwayGoals: 1.25,
+    homeTeam: defaultScheduledFixture.homeTeam,
+    awayTeam: defaultScheduledFixture.awayTeam,
+    expectedHomeGoals: 1.25,
+    expectedAwayGoals: 0.85,
     maxGoals: 6,
     mostLikelyScorelineLimit: 4,
     monteCarlo: {
@@ -171,7 +178,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     tournamentSimulation: simulateTournamentFoundation(),
     teamRatings: getTeamRatingsFoundation(),
     liveEloRatings: getLiveEloRatingsFoundation(),
-    worldCup2026Fixtures: getWorldCup2026FixtureFoundation(),
+    worldCup2026Fixtures,
     worldCup2026Standings: getWorldCup2026GroupStandingsFoundation(),
     worldCup2026RoundOf32: getWorldCup2026RoundOf32Foundation(),
     worldCup2026KnockoutBracket: getWorldCup2026KnockoutBracketFoundation(),

@@ -1,13 +1,21 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import type { ApiValidationIssue, SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
+import type { ApiValidationIssue, SimulateMatchSuccessResponse, WorldCup2026FixtureFoundationResponse } from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import {
+  formatFixtureStatus,
+  formatScheduledFixtureLabel,
+  getDefaultScheduledMatchSelection,
+  getFixturesForGroup,
+  resolveScheduledFixture
+} from "../lib/scheduled-match-selector";
 import { MatchSimulationResults } from "./MatchSimulationResults";
 
 interface MatchSimulationFormProps {
   initialResult: SimulateMatchSuccessResponse;
+  fixtureFoundation: WorldCup2026FixtureFoundationResponse;
 }
 
 interface MatchSimulationFormState {
@@ -20,19 +28,22 @@ interface MatchSimulationFormState {
 }
 
 type PredictionMode = "manual" | "elo";
+type MatchSelectionMode = "scheduled" | "custom";
 type MatchSimulationResultState = SimulateMatchSuccessResponse | PredictMatchFromLiveEloSuccessResponse;
-
-const initialFormState: MatchSimulationFormState = {
-  homeTeam: "Canada",
-  awayTeam: "Mexico",
-  expectedHomeGoals: "1.15",
-  expectedAwayGoals: "1.25",
-  maxGoals: "6",
-  simulationCount: "100"
-};
 
 function parseNumber(value: string): number {
   return Number(value.trim());
+}
+
+function buildInitialFormState(initialResult: SimulateMatchSuccessResponse): MatchSimulationFormState {
+  return {
+    homeTeam: initialResult.request.homeTeam,
+    awayTeam: initialResult.request.awayTeam,
+    expectedHomeGoals: initialResult.request.expectedHomeGoals.toFixed(2),
+    expectedAwayGoals: initialResult.request.expectedAwayGoals.toFixed(2),
+    maxGoals: initialResult.request.maxGoals.toString(),
+    simulationCount: initialResult.monteCarloSimulation?.simulationCount?.toString() ?? "100"
+  };
 }
 
 function buildClientValidationIssues(state: MatchSimulationFormState, mode: PredictionMode): ApiValidationIssue[] {
@@ -89,24 +100,94 @@ const PRESET_LABELS: Record<EloXgPreset, string> = {
   aggressive: "Aggressive"
 };
 
-export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps) {
-  const [mode, setMode] = useState<PredictionMode>("manual");
+export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchSimulationFormProps) {
+  const defaultScheduledSelection = getDefaultScheduledMatchSelection(fixtureFoundation);
+  const [matchSelectionMode, setMatchSelectionMode] = useState<MatchSelectionMode>("scheduled");
+  const [predictionMode, setPredictionMode] = useState<PredictionMode>("manual");
   const [preset, setPreset] = useState<EloXgPreset>("balanced");
-  const [formState, setFormState] = useState<MatchSimulationFormState>(initialFormState);
+  const [scheduledGroup, setScheduledGroup] = useState(defaultScheduledSelection.group);
+  const [scheduledFixtureId, setScheduledFixtureId] = useState(defaultScheduledSelection.fixtureId);
+  const [formState, setFormState] = useState<MatchSimulationFormState>(() => buildInitialFormState(initialResult));
   const [issues, setIssues] = useState<ApiValidationIssue[]>([]);
   const [result, setResult] = useState<MatchSimulationResultState | null>(initialResult);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [availableTeams] = useState(() => getDashboardAvailableLiveEloTeams());
 
+  const scheduledFixtures = getFixturesForGroup(fixtureFoundation, scheduledGroup);
+  const selectedFixture = resolveScheduledFixture(fixtureFoundation, {
+    group: scheduledGroup,
+    fixtureId: scheduledFixtureId
+  });
+
+  function clearInteractiveState(): void {
+    setIssues([]);
+    setResult(null);
+  }
+
   function updateField(field: keyof MatchSimulationFormState, value: string): void {
     setFormState((current) => ({ ...current, [field]: value }));
+  }
+
+  function applyScheduledFixtureSelection(nextGroup: string, nextFixtureId: string): void {
+    const fixture = resolveScheduledFixture(fixtureFoundation, {
+      group: nextGroup,
+      fixtureId: nextFixtureId
+    });
+
+    setFormState((current) => ({
+      ...current,
+      homeTeam: fixture.homeTeam,
+      awayTeam: fixture.awayTeam
+    }));
+  }
+
+  function handleMatchSelectionModeChange(nextMode: MatchSelectionMode): void {
+    if (nextMode === matchSelectionMode) {
+      return;
+    }
+
+    setMatchSelectionMode(nextMode);
+
+    if (nextMode === "scheduled") {
+      applyScheduledFixtureSelection(scheduledGroup, scheduledFixtureId);
+    }
+
+    clearInteractiveState();
+  }
+
+  function handlePredictionModeChange(nextMode: PredictionMode): void {
+    if (nextMode === predictionMode) {
+      return;
+    }
+
+    setPredictionMode(nextMode);
+    clearInteractiveState();
+  }
+
+  function handleScheduledGroupChange(nextGroup: string): void {
+    const nextFixture = getFixturesForGroup(fixtureFoundation, nextGroup)[0];
+
+    if (nextFixture === undefined) {
+      return;
+    }
+
+    setScheduledGroup(nextGroup);
+    setScheduledFixtureId(nextFixture.id);
+    applyScheduledFixtureSelection(nextGroup, nextFixture.id);
+    clearInteractiveState();
+  }
+
+  function handleScheduledFixtureChange(nextFixtureId: string): void {
+    setScheduledFixtureId(nextFixtureId);
+    applyScheduledFixtureSelection(scheduledGroup, nextFixtureId);
+    clearInteractiveState();
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     setIsSubmitting(true);
 
-    const clientIssues = buildClientValidationIssues(formState, mode);
+    const clientIssues = buildClientValidationIssues(formState, predictionMode);
 
     if (clientIssues.length > 0) {
       setIssues(clientIssues);
@@ -125,7 +206,7 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
             mostCommonScorelineLimit: 3
           };
     const response =
-      mode === "elo"
+      predictionMode === "elo"
         ? predictDashboardMatchFromLiveElo({
             homeTeam: formState.homeTeam,
             awayTeam: formState.awayTeam,
@@ -168,60 +249,159 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
           <p className="text-sm font-semibold text-slate-500">Match inputs</p>
           <h3 className="mt-1 text-xl font-semibold text-slate-950">Run a baseline simulation</h3>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            Use expected-goals inputs manually or let the local API generate them from live Elo ratings.
+            Select an official World Cup fixture or switch to a custom matchup. Use expected-goals inputs manually or let the local
+            API generate them from live Elo ratings.
           </p>
         </div>
 
         <div className="mt-6 space-y-4">
+          <fieldset>
+            <legend className="text-sm font-semibold text-slate-700">Match selection</legend>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                className={`rounded-md border px-3 py-2 text-sm font-semibold ${
+                  matchSelectionMode === "scheduled"
+                    ? "border-teal-700 bg-teal-50 text-teal-900"
+                    : "border-slate-200 bg-white text-slate-700"
+                }`}
+                onClick={() => handleMatchSelectionModeChange("scheduled")}
+              >
+                Scheduled World Cup match
+              </button>
+              <button
+                type="button"
+                className={`rounded-md border px-3 py-2 text-sm font-semibold ${
+                  matchSelectionMode === "custom"
+                    ? "border-teal-700 bg-teal-50 text-teal-900"
+                    : "border-slate-200 bg-white text-slate-700"
+                }`}
+                onClick={() => handleMatchSelectionModeChange("custom")}
+              >
+                Custom matchup
+              </button>
+            </div>
+          </fieldset>
+
+          {matchSelectionMode === "scheduled" ? (
+            <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block text-sm font-semibold text-slate-700">
+                  World Cup group
+                  <select
+                    className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-950 shadow-sm"
+                    value={scheduledGroup}
+                    onChange={(event) => handleScheduledGroupChange(event.target.value)}
+                  >
+                    {fixtureFoundation.groups.map((group) => (
+                      <option key={group.group} value={group.group}>
+                        {group.groupName}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block text-sm font-semibold text-slate-700">
+                  Official fixture
+                  <select
+                    className="mt-2 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base text-slate-950 shadow-sm"
+                    value={selectedFixture.id}
+                    onChange={(event) => handleScheduledFixtureChange(event.target.value)}
+                  >
+                    {scheduledFixtures.map((fixture) => (
+                      <option key={fixture.id} value={fixture.id}>
+                        {formatScheduledFixtureLabel(fixture)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="rounded-md border border-slate-200 bg-white px-4 py-3">
+                <p className="text-sm font-semibold text-slate-950">Selected fixture metadata</p>
+                <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                  <div>
+                    <dt className="text-slate-500">Group</dt>
+                    <dd className="font-semibold text-slate-950">{`Group ${selectedFixture.group}`}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Matchday</dt>
+                    <dd className="font-semibold text-slate-950">{selectedFixture.matchday}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Status</dt>
+                    <dd className="font-semibold text-slate-950">{formatFixtureStatus(selectedFixture.status)}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Fixture order</dt>
+                    <dd className="font-semibold text-slate-950">{selectedFixture.groupFixtureOrder}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Selected home team</dt>
+                    <dd className="font-semibold text-slate-950">{selectedFixture.homeTeam}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-slate-500">Selected away team</dt>
+                    <dd className="font-semibold text-slate-950">{selectedFixture.awayTeam}</dd>
+                  </div>
+                </dl>
+              </div>
+            </div>
+          ) : (
+            <>
+              <label className="block text-sm font-semibold text-slate-700">
+                Home team
+                <input
+                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
+                  value={formState.homeTeam}
+                  onChange={(event) => updateField("homeTeam", event.target.value)}
+                  type="text"
+                  autoComplete="off"
+                />
+                <FieldError issues={issues} field="homeTeam" />
+              </label>
+
+              <label className="block text-sm font-semibold text-slate-700">
+                Away team
+                <input
+                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
+                  value={formState.awayTeam}
+                  onChange={(event) => updateField("awayTeam", event.target.value)}
+                  type="text"
+                  autoComplete="off"
+                />
+                <FieldError issues={issues} field="awayTeam" />
+              </label>
+            </>
+          )}
+
           <fieldset>
             <legend className="text-sm font-semibold text-slate-700">Prediction mode</legend>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button
                 type="button"
                 className={`rounded-md border px-3 py-2 text-sm font-semibold ${
-                  mode === "manual" ? "border-teal-700 bg-teal-50 text-teal-900" : "border-slate-200 bg-white text-slate-700"
+                  predictionMode === "manual"
+                    ? "border-teal-700 bg-teal-50 text-teal-900"
+                    : "border-slate-200 bg-white text-slate-700"
                 }`}
-                onClick={() => setMode("manual")}
+                onClick={() => handlePredictionModeChange("manual")}
               >
                 Manual xG
               </button>
               <button
                 type="button"
                 className={`rounded-md border px-3 py-2 text-sm font-semibold ${
-                  mode === "elo" ? "border-teal-700 bg-teal-50 text-teal-900" : "border-slate-200 bg-white text-slate-700"
+                  predictionMode === "elo" ? "border-teal-700 bg-teal-50 text-teal-900" : "border-slate-200 bg-white text-slate-700"
                 }`}
-                onClick={() => setMode("elo")}
+                onClick={() => handlePredictionModeChange("elo")}
               >
                 Auto Predict From Elo
               </button>
             </div>
           </fieldset>
 
-          <label className="block text-sm font-semibold text-slate-700">
-            Home team
-            <input
-              className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
-              value={formState.homeTeam}
-              onChange={(event) => updateField("homeTeam", event.target.value)}
-              type="text"
-              autoComplete="off"
-            />
-            <FieldError issues={issues} field="homeTeam" />
-          </label>
-
-          <label className="block text-sm font-semibold text-slate-700">
-            Away team
-            <input
-              className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
-              value={formState.awayTeam}
-              onChange={(event) => updateField("awayTeam", event.target.value)}
-              type="text"
-              autoComplete="off"
-            />
-            <FieldError issues={issues} field="awayTeam" />
-          </label>
-
-          {mode === "manual" ? (
+          {predictionMode === "manual" ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Expected home goals
@@ -255,7 +435,9 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
             <div className="rounded-md border border-teal-200 bg-teal-50 px-3 py-3">
               <p className="text-sm font-semibold text-teal-950">Expected goals generated from live Elo</p>
               <p className="mt-1 text-sm leading-6 text-teal-900">
-                Enter team names only. The API looks up both teams in the live Elo pipeline and generates expected goals automatically.
+                {matchSelectionMode === "scheduled"
+                  ? "The API uses the selected official fixture teams, looks both up in the live Elo pipeline, and generates expected goals automatically."
+                  : "Enter team names only. The API looks up both teams in the live Elo pipeline and generates expected goals automatically."}
               </p>
 
               <fieldset className="mt-3">
@@ -339,11 +521,11 @@ export function MatchSimulationForm({ initialResult }: MatchSimulationFormProps)
           type="submit"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Running simulation..." : mode === "elo" ? "Auto predict from Elo" : "Run simulation"}
+          {isSubmitting ? "Running simulation..." : predictionMode === "elo" ? "Auto predict from Elo" : "Run simulation"}
         </button>
 
         <p className="mt-4 text-sm leading-6 text-slate-600">
-          {mode === "elo"
+          {predictionMode === "elo"
             ? "Live Elo prediction uses partial curated data and is not a public accuracy claim."
             : "Baseline simulation, not a guarantee."}
         </p>

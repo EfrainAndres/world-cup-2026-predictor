@@ -85,10 +85,10 @@ export default function DashboardHomePage() {
             eyebrow="Match preview"
             titleId="match-section-title"
             title="Interactive match simulation"
-            description="Enter teams and expected goals to run a local API simulation. The output is a baseline scenario, not a published forecast."
+            description="Select an official World Cup fixture or switch to a custom matchup, then run a local API simulation. The output is a baseline scenario, not a published forecast."
           />
           <div className="mt-6">
-            <MatchSimulationForm initialResult={snapshot.matchPreview} />
+            <MatchSimulationForm initialResult={snapshot.matchPreview} fixtureFoundation={snapshot.worldCup2026Fixtures} />
           </div>
         </section>
 
