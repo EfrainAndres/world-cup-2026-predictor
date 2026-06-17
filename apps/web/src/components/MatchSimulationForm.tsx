@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import type { ApiValidationIssue, SimulateMatchSuccessResponse, WorldCup2026FixtureFoundationResponse } from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import { getGroupedTeamOptions } from "../lib/grouped-team-options";
 import {
   formatFixtureStatus,
   formatScheduledFixtureLabel,
@@ -12,6 +13,7 @@ import {
   resolveScheduledFixture
 } from "../lib/scheduled-match-selector";
 import { MatchSimulationResults } from "./MatchSimulationResults";
+import { SearchableTeamSelect } from "./SearchableTeamSelect";
 
 interface MatchSimulationFormProps {
   initialResult: SimulateMatchSuccessResponse;
@@ -100,6 +102,8 @@ const PRESET_LABELS: Record<EloXgPreset, string> = {
   aggressive: "Aggressive"
 };
 
+const GROUPED_TEAM_OPTIONS = getGroupedTeamOptions();
+
 export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchSimulationFormProps) {
   const defaultScheduledSelection = getDefaultScheduledMatchSelection(fixtureFoundation);
   const [matchSelectionMode, setMatchSelectionMode] = useState<MatchSelectionMode>("scheduled");
@@ -126,6 +130,28 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
 
   function updateField(field: keyof MatchSimulationFormState, value: string): void {
     setFormState((current) => ({ ...current, [field]: value }));
+  }
+
+  function handleCustomTeamChange(field: "homeTeam" | "awayTeam", value: string): void {
+    if (formState[field] === value) {
+      return;
+    }
+
+    setFormState((current) => ({ ...current, [field]: value }));
+    clearInteractiveState();
+  }
+
+  function handleSwapTeams(): void {
+    if (formState.homeTeam.trim().length === 0 || formState.awayTeam.trim().length === 0) {
+      return;
+    }
+
+    setFormState((current) => ({
+      ...current,
+      homeTeam: current.awayTeam,
+      awayTeam: current.homeTeam
+    }));
+    clearInteractiveState();
   }
 
   function applyScheduledFixtureSelection(nextGroup: string, nextFixtureId: string): void {
@@ -349,29 +375,37 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
             </div>
           ) : (
             <>
-              <label className="block text-sm font-semibold text-slate-700">
-                Home team
-                <input
-                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
-                  value={formState.homeTeam}
-                  onChange={(event) => updateField("homeTeam", event.target.value)}
-                  type="text"
-                  autoComplete="off"
-                />
-                <FieldError issues={issues} field="homeTeam" />
-              </label>
+              <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-end">
+                <div>
+                  <SearchableTeamSelect
+                    label="Home team"
+                    value={formState.homeTeam}
+                    options={GROUPED_TEAM_OPTIONS}
+                    excludedTeam={formState.awayTeam}
+                    onChange={(value) => handleCustomTeamChange("homeTeam", value)}
+                  />
+                  <FieldError issues={issues} field="homeTeam" />
+                </div>
 
-              <label className="block text-sm font-semibold text-slate-700">
-                Away team
-                <input
-                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
-                  value={formState.awayTeam}
-                  onChange={(event) => updateField("awayTeam", event.target.value)}
-                  type="text"
-                  autoComplete="off"
-                />
-                <FieldError issues={issues} field="awayTeam" />
-              </label>
+                <button
+                  type="button"
+                  className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm hover:border-slate-400 hover:text-slate-950"
+                  onClick={handleSwapTeams}
+                >
+                  Swap teams
+                </button>
+
+                <div>
+                  <SearchableTeamSelect
+                    label="Away team"
+                    value={formState.awayTeam}
+                    options={GROUPED_TEAM_OPTIONS}
+                    excludedTeam={formState.homeTeam}
+                    onChange={(value) => handleCustomTeamChange("awayTeam", value)}
+                  />
+                  <FieldError issues={issues} field="awayTeam" />
+                </div>
+              </div>
             </>
           )}
 

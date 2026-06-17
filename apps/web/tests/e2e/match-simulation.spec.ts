@@ -1,4 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function selectTeamOption(page: Page, label: string, searchText: string, optionLabel: string): Promise<void> {
+  const input = page.getByRole("combobox", { name: label });
+
+  await input.click();
+  await input.fill(searchText);
+  await page.getByRole("option", { name: optionLabel, exact: true }).click();
+}
 
 // ── Dashboard shell ───────────────────────────────────────────────────────────
 
@@ -463,14 +471,74 @@ test("custom matchup mode remains functional with manual inputs", async ({ page 
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
 
-  await expect(page.getByLabel("Home team")).toBeVisible();
-  await expect(page.getByLabel("Away team")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Home team" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Away team" })).toBeVisible();
 
-  await page.getByLabel("Home team").fill("Brazil");
-  await page.getByLabel("Away team").fill("Germany");
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
   await page.getByRole("button", { name: "Run simulation" }).click();
 
   await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).toBeVisible();
+});
+
+test("custom matchup grouped selector excludes the selected home team from away options", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+
+  await page.getByRole("combobox", { name: "Away team" }).click();
+  await page.getByRole("combobox", { name: "Away team" }).fill("Brazil");
+
+  await expect(page.getByRole("option", { name: "Brazil · Group C" })).not.toBeVisible();
+});
+
+test("custom matchup supports keyboard selection and canonical team labels", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  await homeTeamInput.click();
+  await homeTeamInput.fill("USA");
+  await homeTeamInput.press("ArrowDown");
+  await homeTeamInput.press("Enter");
+
+  await expect(homeTeamInput).toHaveValue("United States");
+});
+
+test("changing a custom selected team clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).toBeVisible();
+
+  await selectTeamOption(page, "Away team", "England", "England · Group L");
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("swap teams exchanges canonical values and clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Swap teams" }).click();
+
+  await expect(page.getByRole("combobox", { name: "Home team" })).toHaveValue("Germany");
+  await expect(page.getByRole("combobox", { name: "Away team" })).toHaveValue("Brazil");
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
 });
 
 test("custom matchup remains functional in Auto Predict From Elo mode", async ({ page }) => {
@@ -478,8 +546,8 @@ test("custom matchup remains functional in Auto Predict From Elo mode", async ({
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
@@ -491,8 +559,8 @@ test("submitting manual simulation with different teams updates result heading",
   await page.goto("/");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
-  await page.getByLabel("Home team").fill("Brazil");
-  await page.getByLabel("Away team").fill("Germany");
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
 
   await page.getByRole("button", { name: "Run simulation" }).click();
 
@@ -505,8 +573,8 @@ test("manual simulation result shows three probability cards", async ({ page }) 
   await page.goto("/");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
-  await page.getByLabel("Home team").fill("Spain");
-  await page.getByLabel("Away team").fill("England");
+  await selectTeamOption(page, "Home team", "Spain", "Spain · Group H");
+  await selectTeamOption(page, "Away team", "England", "England · Group L");
   await page.getByRole("button", { name: "Run simulation" }).click();
 
   const resultsSection = page.getByRole("region", { name: "Spain vs England" });
@@ -580,8 +648,8 @@ test("Auto Predict From Elo with valid teams returns Live Elo prediction result"
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
@@ -600,8 +668,8 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("Haiti");
-  await page.getByLabel("Away team").fill("Scotland");
+  await selectTeamOption(page, "Home team", "Haiti", "Haiti · Group C");
+  await selectTeamOption(page, "Away team", "Scotland", "Scotland · Group C");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "Haiti vs Scotland" });
@@ -626,8 +694,8 @@ test("conservative preset result shows conservative preset metadata", async ({ p
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Conservative" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
@@ -640,8 +708,8 @@ test("balanced preset result shows balanced preset metadata", async ({ page }) =
   // Balanced is the default preset — no preset button click needed
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
@@ -654,8 +722,8 @@ test("aggressive preset result shows aggressive preset metadata", async ({ page 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Aggressive" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
@@ -668,8 +736,8 @@ test("switching preset from conservative to aggressive updates preset metadata i
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Conservative" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "France vs Netherlands" });
@@ -690,8 +758,8 @@ test("entering Korea Republic in Elo mode resolves to South Korea in result head
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("Korea Republic");
-  await page.getByLabel("Away team").fill("France");
+  await selectTeamOption(page, "Home team", "Korea Republic", "South Korea · Group A");
+  await selectTeamOption(page, "Away team", "France", "France · Group I");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   await expect(
@@ -704,8 +772,8 @@ test("entering Czech Republic in Elo mode resolves to Czechia in result heading"
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("Czech Republic");
-  await page.getByLabel("Away team").fill("France");
+  await selectTeamOption(page, "Home team", "Czech Republic", "Czechia · Group A");
+  await selectTeamOption(page, "Away team", "France", "France · Group I");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   await expect(
@@ -718,8 +786,8 @@ test("entering USA in Elo mode resolves to United States in result heading", asy
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("USA");
-  await page.getByLabel("Away team").fill("France");
+  await selectTeamOption(page, "Home team", "USA", "United States · Group D");
+  await selectTeamOption(page, "Away team", "France", "France · Group I");
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   await expect(
@@ -727,66 +795,27 @@ test("entering USA in Elo mode resolves to United States in result heading", asy
   ).toBeVisible();
 });
 
-// ── Elo mode validation ───────────────────────────────────────────────────────
+// ── Alias search and duplicate prevention ─────────────────────────────────────
 
-test("submitting unknown team in Elo mode shows validation alert", async ({ page }) => {
+test("alias search in custom mode returns canonical team options", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
-  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("combobox", { name: "Home team" }).click();
+  await page.getByRole("combobox", { name: "Home team" }).fill("USA");
 
-  await page.getByLabel("Home team").fill("Unknown Team XYZ");
-  await page.getByLabel("Away team").fill("France");
-
-  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
-
-  await expect(
-    page.getByRole("alert").filter({ hasText: "Fix the highlighted fields" })
-  ).toBeVisible();
+  await expect(page.getByRole("option", { name: "United States · Group D" })).toBeVisible();
 });
 
-test("unavailable team in Elo mode shows field error with suggestions", async ({ page }) => {
+test("duplicate-team selection is prevented in custom mode", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
-  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  // "Franc" is close to "France" — the suggestion engine should surface it
-  await page.getByLabel("Home team").fill("Franc");
-  await page.getByLabel("Away team").fill("Netherlands");
-  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await page.getByRole("combobox", { name: "Away team" }).click();
+  await page.getByRole("combobox", { name: "Away team" }).fill("Brazil");
 
-  await expect(page.getByText(/Suggestions:/)).toBeVisible();
-});
-
-// ── Stale result clearing ─────────────────────────────────────────────────────
-
-test("stale result is cleared and empty state is shown when validation fails after a valid prediction", async ({
-  page
-}) => {
-  await page.goto("/");
-
-  // Run a valid Auto Predict From Elo prediction first
-  await page.getByRole("button", { name: "Custom matchup" }).click();
-  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
-  await page.getByLabel("Home team").fill("France");
-  await page.getByLabel("Away team").fill("Netherlands");
-  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
-
-  // Confirm result heading appears
-  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
-
-  // Change to an unavailable team and re-submit
-  await page.getByLabel("Home team").fill("Unknown Team XYZ");
-  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
-
-  // Validation alert must appear
-  await expect(
-    page.getByRole("alert").filter({ hasText: "Fix the highlighted fields" })
-  ).toBeVisible();
-
-  // Stale result heading must be gone and empty state must be visible
-  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).not.toBeVisible();
-  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+  await expect(page.getByRole("option", { name: "Brazil · Group C" })).not.toBeVisible();
 });
 
 // ── Manual mode validation ────────────────────────────────────────────────────
