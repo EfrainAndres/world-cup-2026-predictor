@@ -347,6 +347,7 @@ describe("api contract coverage", () => {
       "monteCarloSimulation",
       "mostLikelyScorelines",
       "outcomeProbabilities",
+      "predictionConfidence",
       "request",
       "status",
       "warnings"
@@ -380,6 +381,23 @@ describe("api contract coverage", () => {
       homeMatchedBy: expect.any(String),
       awayMatchedBy: expect.any(String)
     });
+    expect(first.predictionConfidence).toEqual({
+      level: expect.stringMatching(/^(high|medium|low|very_low)$/),
+      coverageType: expect.stringMatching(/^(full|partial|fallback|fallback_only)$/),
+      reasons: expect.any(Array),
+      dataPoints: {
+        homeUsesFallback: expect.any(Boolean),
+        awayUsesFallback: expect.any(Boolean),
+        homeMatchesPlayed: expect.any(Number),
+        awayMatchesPlayed: expect.any(Number),
+        historicalMatchesAvailable: expect.any(Number),
+        latestMatchDate: expect.any(String),
+        currentTournamentMatchesIncluded: expect.any(Number),
+        attackDefenseAvailable: expect.any(Boolean)
+      },
+      manualXgRecommended: expect.any(Boolean)
+    });
+    expect(new Set(first.predictionConfidence.reasons).size).toBe(first.predictionConfidence.reasons.length);
     expectProbabilitiesContract(first.outcomeProbabilities);
     expectScorelinesContract(first.mostLikelyScorelines);
     expect(first.monteCarloSimulation?.simulationCount).toBe(40);

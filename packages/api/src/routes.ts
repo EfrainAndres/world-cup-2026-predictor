@@ -24,6 +24,7 @@ import {
 import { LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING, mergeEloMatchSources } from "./international-elo-adapter.js";
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
+import { assessPredictionConfidence } from "./prediction-confidence.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -1102,6 +1103,21 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     },
     outcomeProbabilities: aggregateOutcomeProbabilities(scoreMatrix),
     mostLikelyScorelines: getMostLikelyScorelines(scoreMatrix, mostLikelyLimit),
+    predictionConfidence: assessPredictionConfidence({
+      homeTeam: homeResolution.canonicalName ?? homeEntry.team,
+      awayTeam: awayResolution.canonicalName ?? awayEntry.team,
+      homeRatingSource: homeEntry.ratingSource,
+      awayRatingSource: awayEntry.ratingSource,
+      homeMatchesPlayed: homeEntry.matchesPlayed,
+      awayMatchesPlayed: awayEntry.matchesPlayed,
+      matchesProcessed: pipeline.matchesProcessed,
+      latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
+      currentTournamentMatchesIncluded: 0,
+      fallbackSeedRating: WORLD_CUP_2026_FALLBACK_SEED_RATING,
+      dataCoverage:
+        "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample and World Cup 2026 fallback coverage.",
+      attackDefenseAvailable: false
+    }),
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,

@@ -656,6 +656,12 @@ test("Auto Predict From Elo with valid teams returns Live Elo prediction result"
 
   await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
   await expect(resultsSection.getByText("Live Elo auto prediction")).toBeVisible();
+  await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).toBeVisible();
+  await expect(resultsSection.getByText("Medium", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Data coverage")).toBeVisible();
+  await expect(resultsSection.getByText("Partial", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Both teams use computed Live Elo ratings.")).toBeVisible();
+  await expect(resultsSection.getByText("Attack and defense ratings are unavailable.")).toBeVisible();
   await expect(
     resultsSection.getByText(
       "Live Elo is based on partial curated data and is not a public accuracy claim."
@@ -676,6 +682,11 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
 
   await expect(page.getByRole("heading", { name: "Haiti vs Scotland" })).toBeVisible();
   await expect(resultsSection.getByText("Live Elo auto prediction")).toBeVisible();
+  await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).toBeVisible();
+  await expect(resultsSection.getByText("Low", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Partial with fallback", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Haiti uses the fallback rating of 1500.")).toBeVisible();
+  await expect(resultsSection.getByText("Manual xG review recommended.")).toBeVisible();
   await expect(
     resultsSection.getByText(
       "Live Elo is based on partial curated data and is not a public accuracy claim."
@@ -684,6 +695,35 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
   await expect(
     resultsSection.getByText(/Fallback seed rating/)
   ).toBeVisible();
+});
+
+test("changing a scheduled fixture clears stale confidence output together with stale prediction results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).toBeVisible();
+
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-a-md1-02-south-korea-vs-czechia");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByRole("heading", { name: "Prediction confidence" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("manual simulation flow does not render automated confidence metadata", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Brazil vs Germany" });
+  await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).not.toBeVisible();
+  await expect(resultsSection.getByText("Manual xG review recommended.")).not.toBeVisible();
 });
 
 // ── Elo prediction presets ────────────────────────────────────────────────────

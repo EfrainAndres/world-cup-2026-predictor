@@ -19,6 +19,8 @@ export type ApiStatus = "ok" | "error";
 export type ApiFoundationResponseStatus = "success" | "validation_error";
 export type SupportedHistoricalTournamentYear = 2010 | 2014 | 2018 | 2022;
 export type LiveEloRatingSource = "live_elo_pipeline" | "fallback_seed";
+export type PredictionConfidenceLevel = "high" | "medium" | "low" | "very_low";
+export type PredictionCoverageType = "full" | "partial" | "fallback" | "fallback_only";
 
 export interface ApiMetadata {
   apiVersion: string;
@@ -103,6 +105,25 @@ export interface PredictMatchFromLiveEloRequest {
   preset?: EloXgPreset;
 }
 
+export interface PredictionConfidenceDataPoints {
+  homeUsesFallback: boolean;
+  awayUsesFallback: boolean;
+  homeMatchesPlayed: number;
+  awayMatchesPlayed: number;
+  historicalMatchesAvailable: number;
+  latestMatchDate?: string | undefined;
+  currentTournamentMatchesIncluded?: number | undefined;
+  attackDefenseAvailable?: boolean | undefined;
+}
+
+export interface PredictionConfidenceAssessment {
+  level: PredictionConfidenceLevel;
+  coverageType: PredictionCoverageType;
+  reasons: readonly string[];
+  dataPoints: PredictionConfidenceDataPoints;
+  manualXgRecommended: boolean;
+}
+
 export interface PredictMatchFromLiveEloSuccessResponse {
   status: "success";
   request: {
@@ -146,6 +167,7 @@ export interface PredictMatchFromLiveEloSuccessResponse {
   };
   outcomeProbabilities: OutcomeProbabilities;
   mostLikelyScorelines: ScorelineProbability[];
+  predictionConfidence: PredictionConfidenceAssessment;
   monteCarloSimulation?: MonteCarloMatchSimulationResult;
   warnings: readonly string[];
   metadata: ApiMetadata;
