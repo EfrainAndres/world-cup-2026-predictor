@@ -307,23 +307,60 @@ test("dashboard sections appear in correct top-to-bottom order for portfolio flo
 test("match simulation form renders with required inputs and submit button", async ({ page }) => {
   await page.goto("/");
 
-  await expect(page.getByLabel("Home team")).toBeVisible();
-  await expect(page.getByLabel("Away team")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Scheduled World Cup match" })).toBeVisible();
+  await expect(page.getByLabel("World Cup group")).toBeVisible();
+  await expect(page.getByLabel("Official fixture")).toBeVisible();
   await expect(page.getByLabel("Expected home goals")).toBeVisible();
   await expect(page.getByLabel("Expected away goals")).toBeVisible();
   await expect(page.getByRole("button", { name: "Run simulation" })).toBeVisible();
 });
 
-test("initial simulation results render on page load", async ({ page }) => {
+test("scheduled World Cup match mode is the default selection path", async ({ page }) => {
   await page.goto("/");
 
-  // Page server-renders the initial Canada vs Mexico result
+  const fixtureMetadata = page.getByText("Selected fixture metadata").locator("..");
+
+  await expect(page.getByRole("button", { name: "Scheduled World Cup match" })).toHaveClass(/bg-teal-50/);
+  await expect(page.getByLabel("World Cup group")).toHaveValue("A");
+  await expect(page.getByLabel("Official fixture")).toHaveValue("wc2026-group-a-md1-01-mexico-vs-south-africa");
+  await expect(fixtureMetadata.getByText("Selected home team").locator("..")).toContainText("Mexico");
+  await expect(fixtureMetadata.getByText("Selected away team").locator("..")).toContainText("South Africa");
+  await expect(fixtureMetadata.getByText("Status", { exact: true }).locator("..")).toContainText("Scheduled");
+});
+
+test("initial simulation results render on page load for the default scheduled fixture", async ({ page }) => {
+  await page.goto("/");
+
   await expect(
-    page.getByRole("heading", { name: "Canada vs Mexico" })
+    page.getByRole("heading", { name: "Mexico vs South Africa" })
   ).toBeVisible();
 
-  const resultsHeadingSection = page.getByRole("region", { name: "Canada vs Mexico" });
+  const resultsHeadingSection = page.getByRole("region", { name: "Mexico vs South Africa" });
   await expect(resultsHeadingSection.getByText("Draw", { exact: true })).toBeVisible();
+});
+
+test("changing the selected group filters official fixtures to that group only", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("World Cup group").selectOption("C");
+
+  const fixtureSelect = page.getByLabel("Official fixture");
+  await expect(fixtureSelect).toHaveValue("wc2026-group-c-md1-01-brazil-vs-morocco");
+  await expect(fixtureSelect.getByRole("option")).toHaveCount(6);
+  await expect(fixtureSelect).toContainText("Fixture 1 - Brazil vs Morocco");
+  await expect(fixtureSelect).toContainText("Fixture 2 - Haiti vs Scotland");
+  await expect(fixtureSelect).not.toContainText("Mexico vs South Africa");
+});
+
+test("scheduled fixture selection updates both teams in official order", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("World Cup group").selectOption("D");
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-d-md1-02-australia-vs-turkey");
+
+  await expect(page.getByText("Selected home team").locator("..")).toContainText("Australia");
+  await expect(page.getByText("Selected away team").locator("..")).toContainText("Turkey");
+  await expect(page.getByText("Fixture order").locator("..")).toContainText("2");
 });
 
 // ── Win/draw/loss probability cards ──────────────────────────────────────────
@@ -332,7 +369,7 @@ test("outcome probability cards render with percentage values", async ({ page })
   await page.goto("/");
 
   const resultsSection = page.getByRole("region", {
-    name: "Canada vs Mexico"
+    name: "Mexico vs South Africa"
   });
 
   // Three probability articles are inside the results section
@@ -356,11 +393,96 @@ test("most likely scorelines heading and list are visible", async ({ page }) => 
 
   // Scorelines render as a list — at least one item should be present
   const scorelineItems = page
-    .getByRole("region", { name: "Canada vs Mexico" })
+    .getByRole("region", { name: "Mexico vs South Africa" })
     .getByRole("list")
     .getByRole("listitem");
 
   await expect(scorelineItems.first()).toBeVisible();
+});
+
+// ── Scheduled simulation run ──────────────────────────────────────────────────
+
+test("running a manual simulation from a scheduled fixture uses the selected official matchup", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByLabel("World Cup group").selectOption("C");
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-c-md1-02-haiti-vs-scotland");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(page.getByRole("heading", { name: "Haiti vs Scotland" })).toBeVisible();
+});
+
+test("changing scheduled fixture selection clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-a-md1-02-south-korea-vs-czechia");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("changing scheduled group clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByLabel("World Cup group").selectOption("B");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("switching prediction mode clears stale results for the selected fixture", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("switching to custom matchup clears stale scheduled results", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+// ── Custom matchup mode ───────────────────────────────────────────────────────
+
+test("custom matchup mode remains functional with manual inputs", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await expect(page.getByLabel("Home team")).toBeVisible();
+  await expect(page.getByLabel("Away team")).toBeVisible();
+
+  await page.getByLabel("Home team").fill("Brazil");
+  await page.getByLabel("Away team").fill("Germany");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).toBeVisible();
+});
+
+test("custom matchup remains functional in Auto Predict From Elo mode", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("Home team").fill("France");
+  await page.getByLabel("Away team").fill("Netherlands");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
 });
 
 // ── Manual simulation run ─────────────────────────────────────────────────────
@@ -368,6 +490,7 @@ test("most likely scorelines heading and list are visible", async ({ page }) => 
 test("submitting manual simulation with different teams updates result heading", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByLabel("Home team").fill("Brazil");
   await page.getByLabel("Away team").fill("Germany");
 
@@ -381,6 +504,7 @@ test("submitting manual simulation with different teams updates result heading",
 test("manual simulation result shows three probability cards", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByLabel("Home team").fill("Spain");
   await page.getByLabel("Away team").fill("England");
   await page.getByRole("button", { name: "Run simulation" }).click();
@@ -396,12 +520,12 @@ test("manual simulation result includes win draw loss labels, expected goals, sc
 }) => {
   await page.goto("/");
 
-  const resultsSection = page.getByRole("region", { name: "Canada vs Mexico" });
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
 
   // Win/draw/loss probability card labels use home and away team names
-  await expect(resultsSection.getByText("Canada win")).toBeVisible();
-  await expect(resultsSection.getByText("Draw")).toBeVisible();
   await expect(resultsSection.getByText("Mexico win")).toBeVisible();
+  await expect(resultsSection.getByText("Draw")).toBeVisible();
+  await expect(resultsSection.getByText("South Africa win")).toBeVisible();
 
   // Expected goals metadata terms
   await expect(resultsSection.getByText("Expected home goals")).toBeVisible();
@@ -430,6 +554,17 @@ test("switching to Auto Predict From Elo mode shows Elo info panel", async ({ pa
   ).toBeVisible();
 });
 
+test("scheduled fixture selection works in Auto Predict From Elo mode", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByLabel("World Cup group").selectOption("C");
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-c-md1-02-haiti-vs-scotland");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Haiti vs Scotland" })).toBeVisible();
+});
+
 test("Elo mode preset selector shows all three preset buttons", async ({ page }) => {
   await page.goto("/");
 
@@ -443,6 +578,7 @@ test("Elo mode preset selector shows all three preset buttons", async ({ page })
 test("Auto Predict From Elo with valid teams returns Live Elo prediction result", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("France");
   await page.getByLabel("Away team").fill("Netherlands");
@@ -462,6 +598,7 @@ test("Auto Predict From Elo with valid teams returns Live Elo prediction result"
 test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("Haiti");
   await page.getByLabel("Away team").fill("Scotland");
@@ -486,6 +623,7 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
 test("conservative preset result shows conservative preset metadata", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Conservative" }).click();
   await page.getByLabel("Home team").fill("France");
@@ -500,6 +638,7 @@ test("balanced preset result shows balanced preset metadata", async ({ page }) =
   await page.goto("/");
 
   // Balanced is the default preset — no preset button click needed
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("France");
   await page.getByLabel("Away team").fill("Netherlands");
@@ -512,6 +651,7 @@ test("balanced preset result shows balanced preset metadata", async ({ page }) =
 test("aggressive preset result shows aggressive preset metadata", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Aggressive" }).click();
   await page.getByLabel("Home team").fill("France");
@@ -525,6 +665,7 @@ test("aggressive preset result shows aggressive preset metadata", async ({ page 
 test("switching preset from conservative to aggressive updates preset metadata in result", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Conservative" }).click();
   await page.getByLabel("Home team").fill("France");
@@ -547,6 +688,7 @@ test("switching preset from conservative to aggressive updates preset metadata i
 test("entering Korea Republic in Elo mode resolves to South Korea in result heading", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("Korea Republic");
   await page.getByLabel("Away team").fill("France");
@@ -560,6 +702,7 @@ test("entering Korea Republic in Elo mode resolves to South Korea in result head
 test("entering Czech Republic in Elo mode resolves to Czechia in result heading", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("Czech Republic");
   await page.getByLabel("Away team").fill("France");
@@ -573,6 +716,7 @@ test("entering Czech Republic in Elo mode resolves to Czechia in result heading"
 test("entering USA in Elo mode resolves to United States in result heading", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("USA");
   await page.getByLabel("Away team").fill("France");
@@ -588,6 +732,7 @@ test("entering USA in Elo mode resolves to United States in result heading", asy
 test("submitting unknown team in Elo mode shows validation alert", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
 
   await page.getByLabel("Home team").fill("Unknown Team XYZ");
@@ -603,6 +748,7 @@ test("submitting unknown team in Elo mode shows validation alert", async ({ page
 test("unavailable team in Elo mode shows field error with suggestions", async ({ page }) => {
   await page.goto("/");
 
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   // "Franc" is close to "France" — the suggestion engine should surface it
   await page.getByLabel("Home team").fill("Franc");
@@ -620,6 +766,7 @@ test("stale result is cleared and empty state is shown when validation fails aft
   await page.goto("/");
 
   // Run a valid Auto Predict From Elo prediction first
+  await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("Home team").fill("France");
   await page.getByLabel("Away team").fill("Netherlands");
