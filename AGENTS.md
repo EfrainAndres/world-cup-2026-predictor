@@ -64,6 +64,7 @@ For project structure, milestone, release, or phase implementation work, also re
 
 - Check `git status` before editing.
 - Confirm the current branch before editing.
+- Before starting a new phase, fetch `origin`, compare with `origin/main`, inspect open pull requests when GitHub tooling is available, and verify the previous completed branch was actually merged. A pushed branch is not the same as a merged branch.
 - Do not overwrite unrelated local changes.
 - Keep each change focused on the requested task.
 - Do not install dependencies unless the task explicitly requires it.
