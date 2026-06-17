@@ -90,7 +90,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 11.8 | Portfolio Demo Final QA Pass | Final QA pass after full tournament projection polish. Create `PORTFOLIO_DEMO_FINAL_QA_PASS.md`, update demo script for tournament projection flow, polish README and web README, update FINAL_PORTFOLIO_QA_REVIEW.md, update dashboard intro copy. No API or model changes. | Done |
 | 12.0 | Live Data, Model Quality & UX Backlog | Define the prioritized documentation backlog that evolves the static World Cup dashboard into a live, confidence-aware tournament intelligence product. | Done |
 | 12.1 | Scheduled Match Selector by Group | Make scheduled World Cup fixtures the primary prediction path with official fixture ordering, group context, and status/date metadata. | Planned |
-| 12.2 | Searchable Grouped Team Selectors | Keep custom matchup mode as an advanced path with grouped selectors, aliases, swap action, keyboard support, and mobile-friendly behavior. | Planned |
+| 12.2 | Searchable Grouped Team Selectors | Keep custom matchup mode as an advanced path with grouped selectors, aliases, swap action, keyboard support, and mobile-friendly behavior. | Done |
 | 12.3 | Prediction Confidence & Data Coverage | Expose confidence levels, provenance, freshness, fallback status, and coverage gaps directly in prediction UX and API metadata. | Planned |
 | 12.4 | External Results-Provider Foundation | Define the normalized external/live results provider layer with cache and local static fallback chain. | Planned |
 | 12.5 | Live Results Synchronization | Synchronize scheduled, live, halftime, finished, postponed, and cancelled fixtures while preserving last valid cache behavior. | Planned |

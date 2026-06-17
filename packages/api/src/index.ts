@@ -54,6 +54,14 @@ export {
   buildWorldCup2026GroupFixtures,
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
+export {
+  TEAM_ALIASES,
+  canonicalizeTeamName,
+  getAvailableTeamCoverage,
+  normalizeTeamSearchText,
+  resolveTeamAlias,
+  suggestAvailableTeams
+} from "./team-aliases.js";
 
 export type { ApiRuntime, ApiRuntimeErrorResponse, ApiRuntimeFailureResponse, ApiRuntimeValidationErrorResponse } from "./runtime.js";
 
@@ -147,3 +155,4 @@ export type {
   WorldCup2026ResultProvider,
   WorldCup2026TeamEntry
 } from "./world-cup-2026-teams.js";
+export type { TeamAliasResolution, TeamCoverageEntry } from "./team-aliases.js";
