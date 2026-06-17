@@ -298,6 +298,90 @@ export interface WorldCup2026ResultProviderMetadata {
   warnings: readonly string[];
 }
 
+export type WorldCup2026ExternalMatchStatus =
+  | "scheduled"
+  | "live"
+  | "halftime"
+  | "finished"
+  | "postponed"
+  | "cancelled"
+  | "unknown";
+
+export interface WorldCup2026ExternalFixtureRecord {
+  providerFixtureId: string;
+  competition: string;
+  season: string;
+  stage?: string;
+  group?: string;
+  matchday?: number;
+  kickoffAt?: string;
+  homeTeam: string;
+  awayTeam: string;
+  status: WorldCup2026ExternalMatchStatus;
+  homeScore?: number;
+  awayScore?: number;
+  venue?: string;
+  updatedAt?: string;
+}
+
+export interface WorldCup2026ExternalStandingRecord {
+  group?: string;
+  team: string;
+  position: number;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  updatedAt?: string;
+}
+
+export type WorldCup2026ResultsProviderErrorCode =
+  | "provider_disabled"
+  | "provider_unavailable"
+  | "invalid_provider_response"
+  | "duplicate_fixture_id"
+  | "unsupported_match_status"
+  | "stale_cache_unavailable"
+  | "normalization_failure";
+
+export interface WorldCup2026ResultsProviderError {
+  code: WorldCup2026ResultsProviderErrorCode;
+  providerId: string;
+  operation: "fixtures" | "live_matches" | "completed_results" | "standings" | "bundle";
+  message: string;
+  details?: readonly string[];
+}
+
+export interface WorldCup2026ResultsProviderFoundationSource {
+  currentDefaultProvider: string;
+  attemptedProvider: string;
+  activeProvider: string;
+  cacheUsed: boolean;
+  localFallbackUsed: boolean;
+  externalProviderEnabled: boolean;
+  lastSuccessfulSync?: string;
+  warnings: readonly string[];
+  normalizationIssues: readonly WorldCup2026ResultsProviderError[];
+  error?: WorldCup2026ResultsProviderError;
+}
+
+export interface WorldCup2026ResultsProviderFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_results_provider_foundation";
+  fixtures: readonly WorldCup2026ExternalFixtureRecord[];
+  liveMatches: readonly WorldCup2026ExternalFixtureRecord[];
+  completedResults: readonly WorldCup2026ExternalFixtureRecord[];
+  standings: readonly WorldCup2026ExternalStandingRecord[];
+  provider: WorldCup2026ResultsProviderFoundationSource;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface WorldCup2026FixtureFoundationResponse {
   status: "success";
   tournamentName: "FIFA World Cup 2026";
@@ -901,6 +985,7 @@ export interface ApiRoutes {
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
+  getWorldCup2026ResultsProviderFoundation: () => WorldCup2026ResultsProviderFoundationResponse;
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
   getWorldCup2026RoundOf32Foundation: () => WorldCup2026RoundOf32FoundationResponse;
   getWorldCup2026KnockoutBracketFoundation: () => WorldCup2026KnockoutBracketFoundationResponse;

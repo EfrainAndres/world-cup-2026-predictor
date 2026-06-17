@@ -9,6 +9,7 @@ export {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026KnockoutBracketFoundation,
   getWorldCup2026RoundOf32Foundation,
@@ -28,6 +29,15 @@ export {
   getWorldCup2026ThirdPlaceMatchFoundation,
   simulateWorldCup2026ThirdPlaceMatchFoundation
 } from "./routes.js";
+export {
+  createCachedResultsProvider,
+  createExternalApiResultsProvider,
+  createLocalStaticResultsProvider,
+  normalizeExternalFixtureRecords,
+  resolveWorldCup2026ResultsProviderFoundation,
+  toExternalStandings,
+  toFixtureResultsFromExternalRecords
+} from "./results-provider-foundation.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
@@ -79,6 +89,9 @@ export type {
   ApiRoutes,
   ApiStatus,
   ApiValidationIssue,
+  WorldCup2026ExternalFixtureRecord,
+  WorldCup2026ExternalMatchStatus,
+  WorldCup2026ExternalStandingRecord,
   WorldCup2026FinalFixture,
   WorldCup2026FinalFoundationResponse,
   WorldCup2026FinalMatchSimulationFixture,
@@ -146,6 +159,10 @@ export type {
   WorldCup2026RoundOf32Fixture,
   WorldCup2026RoundOf32FoundationResponse,
   WorldCup2026ResolvedKnockoutWinner,
+  WorldCup2026ResultsProviderError,
+  WorldCup2026ResultsProviderErrorCode,
+  WorldCup2026ResultsProviderFoundationResponse,
+  WorldCup2026ResultsProviderFoundationSource,
   WorldCup2026KnockoutWinnerResolutionResponse,
   WorldCup2026ThirdPlaceParticipant,
   WorldCup2026ThirdPlaceMatchFixture,
@@ -154,6 +171,13 @@ export type {
   WorldCup2026ThirdPlaceMatchSimulationFoundationResponse
 } from "./schemas.js";
 
+export type {
+  ResolveWorldCup2026ResultsProviderInput,
+  WorldCup2026FootballResultsProvider,
+  WorldCup2026ResultsProviderFailure,
+  WorldCup2026ResultsProviderResult,
+  WorldCup2026ResultsProviderSuccess
+} from "./results-provider-foundation.js";
 export type {
   BuildWorldCup2026GroupStandingsInput,
   WorldCup2026CoverageEntry,
