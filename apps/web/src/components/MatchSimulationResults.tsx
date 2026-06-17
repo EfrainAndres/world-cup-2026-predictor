@@ -9,6 +9,32 @@ interface MatchSimulationResultsProps {
   result: SimulateMatchSuccessResponse | PredictMatchFromLiveEloSuccessResponse;
 }
 
+function formatConfidenceLevel(level: PredictMatchFromLiveEloSuccessResponse["predictionConfidence"]["level"]): string {
+  switch (level) {
+    case "very_low":
+      return "Very Low";
+    case "low":
+      return "Low";
+    case "medium":
+      return "Medium";
+    case "high":
+      return "High";
+  }
+}
+
+function formatCoverageType(coverageType: PredictMatchFromLiveEloSuccessResponse["predictionConfidence"]["coverageType"]): string {
+  switch (coverageType) {
+    case "fallback_only":
+      return "Fallback only";
+    case "fallback":
+      return "Partial with fallback";
+    case "partial":
+      return "Partial";
+    case "full":
+      return "Full";
+  }
+}
+
 export function MatchSimulationResults({ result }: MatchSimulationResultsProps) {
   const isLiveEloPrediction = "liveElo" in result;
   const probabilityCards = [
@@ -69,6 +95,69 @@ export function MatchSimulationResults({ result }: MatchSimulationResultsProps) 
             <span className="font-semibold capitalize">{result.expectedGoals.preset}</span> preset —{" "}
             {result.expectedGoals.presetDescription}
           </p>
+        </div>
+      ) : null}
+
+      {isLiveEloPrediction ? (
+        <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h4 className="text-sm font-semibold text-slate-950">Prediction confidence</h4>
+              <p className="mt-1 text-sm text-slate-700">
+                {formatConfidenceLevel(result.predictionConfidence.level)}
+              </p>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Data coverage</p>
+              <p className="mt-1 text-sm text-slate-700">
+                {formatCoverageType(result.predictionConfidence.coverageType)}
+              </p>
+            </div>
+          </div>
+
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+              <dt className="text-xs text-slate-500">Latest match date</dt>
+              <dd className="mt-1 font-medium text-slate-950">
+                {result.predictionConfidence.dataPoints.latestMatchDate ?? "Unavailable"}
+              </dd>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+              <dt className="text-xs text-slate-500">Historical matches processed</dt>
+              <dd className="mt-1 font-medium text-slate-950">
+                {result.predictionConfidence.dataPoints.historicalMatchesAvailable}
+              </dd>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+              <dt className="text-xs text-slate-500">Fallback status</dt>
+              <dd className="mt-1 font-medium text-slate-950">
+                {result.predictionConfidence.dataPoints.homeUsesFallback || result.predictionConfidence.dataPoints.awayUsesFallback
+                  ? "Fallback used"
+                  : "No fallback used"}
+              </dd>
+            </div>
+            <div className="rounded-md border border-slate-200 bg-white px-3 py-2">
+              <dt className="text-xs text-slate-500">World Cup 2026 matches included</dt>
+              <dd className="mt-1 font-medium text-slate-950">
+                {result.predictionConfidence.dataPoints.currentTournamentMatchesIncluded ?? "Unavailable"}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Why</p>
+            <ul className="mt-2 space-y-1 text-sm text-slate-700">
+              {result.predictionConfidence.reasons.map((reason) => (
+                <li key={reason}>- {reason}</li>
+              ))}
+            </ul>
+          </div>
+
+          {result.predictionConfidence.manualXgRecommended ? (
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-900">
+              Manual xG review recommended.
+            </p>
+          ) : null}
         </div>
       ) : null}
 

@@ -137,6 +137,27 @@ describe("api foundation handlers", () => {
     expect(result.expectedGoals.eloDifference).toBeCloseTo(result.liveElo.homeEloRating - result.liveElo.awayEloRating, 2);
     expect(result.outcomeProbabilities.totalProbability).toBeCloseTo(1, 10);
     expect(result.mostLikelyScorelines).toHaveLength(4);
+    expect(result.predictionConfidence).toEqual({
+      level: "medium",
+      coverageType: "partial",
+      reasons: [
+        "Both teams use computed Live Elo ratings.",
+        "The international dataset is partial and curated.",
+        "No current World Cup 2026 matches are included yet.",
+        "Attack and defense ratings are unavailable."
+      ],
+      dataPoints: {
+        homeUsesFallback: false,
+        awayUsesFallback: false,
+        homeMatchesPlayed: result.liveElo.homeMatchesPlayed,
+        awayMatchesPlayed: result.liveElo.awayMatchesPlayed,
+        historicalMatchesAvailable: result.liveElo.matchesProcessed,
+        latestMatchDate: result.liveElo.latestMatchDate,
+        currentTournamentMatchesIncluded: 0,
+        attackDefenseAvailable: false
+      },
+      manualXgRecommended: false
+    });
     expect(result.monteCarloSimulation?.simulationCount).toBe(25);
     expect(result.warnings.some((warning) => warning.includes("Elo difference mapping"))).toBe(true);
   });
@@ -228,6 +249,43 @@ describe("api foundation handlers", () => {
     expect(result.liveElo.fallbackSeedRating).toBe(WORLD_CUP_2026_FALLBACK_SEED_RATING);
     expect(result.warnings.some((warning) => warning.includes("Fallback teams in this prediction"))).toBe(true);
     expect(result.metadata.notes).toContain("Fallback seed ratings used: Haiti.");
+    expect(result.predictionConfidence.level).toBe("low");
+    expect(result.predictionConfidence.coverageType).toBe("fallback");
+    expect(result.predictionConfidence.manualXgRecommended).toBe(true);
+    expect(result.predictionConfidence.reasons).toEqual([
+      "Haiti uses the fallback rating of 1500.",
+      "The international dataset is partial and curated.",
+      "No current World Cup 2026 matches are included yet.",
+      "Attack and defense ratings are unavailable.",
+      "Manual xG review is recommended."
+    ]);
+  });
+
+  it("preserves canonical names and numeric outputs while adding confidence metadata", () => {
+    const result = predictMatchFromLiveElo({
+      homeTeam: "England",
+      awayTeam: "Croatia",
+      preset: "balanced"
+    });
+
+    expect(result.status).toBe("success");
+
+    if (result.status !== "success") return;
+
+    const expected = eloToExpectedGoals({
+      homeEloRating: result.liveElo.homeEloRating,
+      awayEloRating: result.liveElo.awayEloRating,
+      preset: "balanced"
+    });
+
+    expect(result.request.homeTeam).toBe("England");
+    expect(result.request.awayTeam).toBe("Croatia");
+    expect(result.expectedGoals.home).toBeCloseTo(expected.homeExpectedGoals, 10);
+    expect(result.expectedGoals.away).toBeCloseTo(expected.awayExpectedGoals, 10);
+    expect(result.request.expectedHomeGoals).toBeCloseTo(expected.homeExpectedGoals, 10);
+    expect(result.request.expectedAwayGoals).toBeCloseTo(expected.awayExpectedGoals, 10);
+    expect(result.predictionConfidence.level).toBe("medium");
+    expect(result.predictionConfidence.coverageType).toBe("partial");
   });
 
   it("rejects invalid match simulation requests", () => {

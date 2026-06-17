@@ -55,6 +55,9 @@ export {
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
 export {
+  assessPredictionConfidence
+} from "./prediction-confidence.js";
+export {
   TEAM_ALIASES,
   canonicalizeTeamName,
   getAvailableTeamCoverage,
@@ -91,6 +94,10 @@ export type {
   ModelInfoResponse,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
+  PredictionConfidenceAssessment,
+  PredictionConfidenceDataPoints,
+  PredictionConfidenceLevel,
+  PredictionCoverageType,
   PredictMatchFromLiveEloSuccessResponse,
   PredictMatchFromLiveEloValidationErrorResponse,
   SimulateMatchMonteCarloRequest,
