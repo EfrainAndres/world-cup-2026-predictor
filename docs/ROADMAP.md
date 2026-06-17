@@ -88,6 +88,23 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 11.6 | Header Anchor Cleanup | Fix pre-existing AppHeader anchor links (`#match-preview`, `#replay-audit`, `#historical`) that had no matching section ids. Add `id="match-preview"` to the match simulation section and `id="historical"` wrapper for the historical validation section; `#replay-audit` was already present inside `HistoricalReplayAuditPreviewCard`. Add two E2E anchor-validation tests. | Done |
 | 11.7 | Remove Orphaned MatchSimulationPreviewCard | Delete `MatchSimulationPreviewCard.tsx` — confirmed zero consumers across all source and test files. No visible dashboard change; `#match-preview` anchor is now provided by the section id added in Phase 11.6. | Done |
 | 11.8 | Portfolio Demo Final QA Pass | Final QA pass after full tournament projection polish. Create `PORTFOLIO_DEMO_FINAL_QA_PASS.md`, update demo script for tournament projection flow, polish README and web README, update FINAL_PORTFOLIO_QA_REVIEW.md, update dashboard intro copy. No API or model changes. | Done |
+| 12.0 | Live Data, Model Quality & UX Backlog | Define the prioritized documentation backlog that evolves the static World Cup dashboard into a live, confidence-aware tournament intelligence product. | Done |
+| 12.1 | Scheduled Match Selector by Group | Make scheduled World Cup fixtures the primary prediction path with official fixture ordering, group context, and status/date metadata. | Planned |
+| 12.2 | Searchable Grouped Team Selectors | Keep custom matchup mode as an advanced path with grouped selectors, aliases, swap action, keyboard support, and mobile-friendly behavior. | Planned |
+| 12.3 | Prediction Confidence & Data Coverage | Expose confidence levels, provenance, freshness, fallback status, and coverage gaps directly in prediction UX and API metadata. | Planned |
+| 12.4 | External Results-Provider Foundation | Define the normalized external/live results provider layer with cache and local static fallback chain. | Planned |
+| 12.5 | Live Results Synchronization | Synchronize scheduled, live, halftime, finished, postponed, and cancelled fixtures while preserving last valid cache behavior. | Planned |
+| 12.6 | Live Group Standings | Support official, provisional live, and projected standings with best third-place and projected Round of 32 updates. | Planned |
+| 12.7 | World Cup Results-to-Elo Ingestion | Process completed tournament results idempotently into ratings and future projections without look-ahead leakage. | Planned |
+| 12.8 | Prediction Snapshot Storage | Persist immutable pre-match prediction snapshots for later evaluation and product history views. | Planned |
+| 12.9 | Model vs Reality Tracker | Measure prediction quality against actual outcomes with calibration, Brier Score, Log Loss, and fallback-vs-full-coverage analysis. | Planned |
+| 12.10 | Tournament-Form Adjustment | Add controlled current-tournament and recent-form context after live ingestion and snapshot tracking are stable. | Planned |
+| 12.11 | Elo-to-xG Calibration V2 | Recalibrate compressed Elo-to-xG behavior only after broader evaluation evidence and backtesting exist. | Planned |
+| 12.12 | Today’s Matches & Live Match Center | Add a daily experience for upcoming, live, and final matches with immutable pre-match predictions and result review. | Planned |
+| 12.13 | Group Detail Prediction Pages | Build group-centered views that combine standings, results, live fixtures, confidence, and qualification context. | Planned |
+| 12.14 | Automatic Projection Refresh | Refresh standings, qualification, and knockout projections automatically as live results are processed. | Planned |
+| 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
+| 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
@@ -106,6 +123,25 @@ Exit criteria:
 - The empty state panel is visible in the results column when validation has failed.
 - All 30 E2E tests pass.
 - All unit, integration, typecheck, and build checks pass with no regressions.
+
+## Phase 12.0 - Live Data, Model Quality & UX Backlog
+
+Define the ordered backlog that takes the project from a deterministic local World Cup predictor to a live, confidence-aware World Cup intelligence dashboard.
+
+Deliverables:
+
+- `docs/roadmap/PHASE_12_LIVE_DATA_MODEL_QUALITY_UX_BACKLOG.md` with prioritized backlog items, acceptance criteria, risks, dependencies, and test expectations.
+- Immediate-value roadmap for scheduled fixtures, grouped selectors, prediction confidence, provider foundation, live sync, and live standings.
+- Model-value roadmap for result ingestion, immutable prediction snapshots, model-vs-reality tracking, tournament-form adjustment, and Elo-to-xG recalibration.
+- Product-value roadmap for daily match center, group detail pages, automatic projection refresh, shareable prediction cards, and post-validation multi-tournament architecture.
+- New workflow rule documenting that every future phase starts only after fetching `origin`, comparing against `origin/main`, and verifying previous work has actually merged.
+
+Exit criteria:
+
+- The detailed Phase 12 backlog exists under `docs/roadmap/`.
+- `docs/ROADMAP.md`, `PROJECT_BRIEF.md`, `AGENTS.md`, `CLAUDE.md`, and `CHANGELOG.md` contain only concise summary updates that link back to the Phase 12 backlog.
+- The roadmap clearly distinguishes immediate-value, model-value, and product-value priorities.
+- No production code, dependencies, provider credentials, environment variables, database changes, model formula changes, or UI implementation work is introduced.
 
 ## Phase 10.13 - Semifinal Simulation Foundation
 

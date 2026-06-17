@@ -19,6 +19,7 @@ For phase-specific work, also read the files listed in the relevant section of `
 
 - Do not change application code, install dependencies, or create UI, API, or model logic unless the task explicitly requires it.
 - Do not refactor files unrelated to the current task.
+- Before starting a new phase, fetch `origin`, compare with `origin/main`, inspect open pull requests when GitHub tooling is available, and verify the previous completed branch was actually merged. A pushed branch is not the same as a merged branch.
 - Do not run `git checkout`, `git pull`, `git commit`, `git push`, `git branch`, or `git merge` — the user handles all git operations.
 - Keep each change focused on the requested phase or task.
 - Run only the checks required by the current phase.

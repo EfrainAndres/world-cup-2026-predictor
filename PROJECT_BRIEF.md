@@ -100,4 +100,6 @@ Recommended branch naming:
 
 ## Current Phase
 
-The project is in Phase 0.0, Project Foundation. This phase is documentation-only and defines the intended scope, working standards, roadmap, data strategy, model strategy, QA approach, and validation backlog.
+The current documentation direction includes Phase 12.0, Live Data, Model Quality & UX Backlog.
+
+This phase is documentation-only and defines the prioritized path from a mostly static World Cup predictor to a live, confidence-aware World Cup intelligence dashboard. The detailed backlog lives in `docs/roadmap/PHASE_12_LIVE_DATA_MODEL_QUALITY_UX_BACKLOG.md`.
