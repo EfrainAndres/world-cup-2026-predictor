@@ -107,6 +107,10 @@ export interface PredictMatchFromLiveEloRequest {
     enabled: boolean;
     cutoffAt?: string;
   };
+  tournamentFormAdjustment?: {
+    enabled: boolean;
+    cutoffAt?: string;
+  };
 }
 
 export interface PredictionConfidenceDataPoints {
@@ -118,6 +122,11 @@ export interface PredictionConfidenceDataPoints {
   latestMatchDate?: string | undefined;
   currentTournamentMatchesIncluded?: number | undefined;
   attackDefenseAvailable?: boolean | undefined;
+  tournamentFormEnabled?: boolean | undefined;
+  tournamentFormApplied?: boolean | undefined;
+  homeTournamentFormMatchesIncluded?: number | undefined;
+  awayTournamentFormMatchesIncluded?: number | undefined;
+  tournamentFormFormulaVersion?: string | undefined;
 }
 
 export interface PredictionConfidenceAssessment {
@@ -176,6 +185,27 @@ export interface PredictMatchFromLiveEloSuccessResponse {
   tournamentAdjustment?: {
     applied: boolean;
     matchesIncluded: number;
+  };
+  tournamentFormAdjustment?: {
+    enabled: boolean;
+    applied: boolean;
+    cutoffAt?: string;
+    home: {
+      baselineElo: number;
+      adjustment: number;
+      effectiveElo: number;
+      matchesIncluded: number;
+      formScore?: number;
+    };
+    away: {
+      baselineElo: number;
+      adjustment: number;
+      effectiveElo: number;
+      matchesIncluded: number;
+      formScore?: number;
+    };
+    formulaVersion?: string;
+    warnings: readonly string[];
   };
   warnings: readonly string[];
   metadata: ApiMetadata;

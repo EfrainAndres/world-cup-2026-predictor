@@ -67,6 +67,10 @@ export {
   calculateWorldCup2026TournamentForm
 } from "./tournament-form.js";
 export type { CalculateWorldCup2026TournamentFormInput } from "./tournament-form.js";
+export { resolveTournamentFormPredictionAdjustment } from "./tournament-form-prediction-integration.js";
+export type {
+  ResolveTournamentFormPredictionAdjustmentInput
+} from "./tournament-form-prediction-integration.js";
 export { canonicalizeForHash, computeContentHash, buildSnapshotIdempotencyKey, buildSnapshotId, buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
 export type { BuildSnapshotInput } from "./snapshot-service.js";
 export { createInMemorySnapshotStore, defaultSnapshotStore } from "./snapshot-store.js";

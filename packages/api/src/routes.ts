@@ -39,6 +39,7 @@ import {
 } from "./prediction-evaluation-service.js";
 import { defaultPredictionEvaluationStore } from "./prediction-evaluation-store.js";
 import { calculateWorldCup2026TournamentForm } from "./tournament-form.js";
+import { resolveTournamentFormPredictionAdjustment } from "./tournament-form-prediction-integration.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -68,6 +69,7 @@ import type {
   LiveEloRatingsFoundationResponse,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
+  PredictMatchFromLiveEloSuccessResponse,
   SimulateMatchRequest,
   SimulateMatchResponse,
   SupportedHistoricalTournamentYear,
@@ -297,6 +299,46 @@ function validatePredictMatchFromLiveEloRequest(request: PredictMatchFromLiveElo
     issues.push({
       field: "preset",
       message: `preset must be one of: ${[...VALID_PREDICTION_PRESETS].join(", ")}.`
+    });
+  }
+
+  if (
+    request.tournamentResultsAdjustment !== undefined &&
+    typeof request.tournamentResultsAdjustment.enabled !== "boolean"
+  ) {
+    issues.push({
+      field: "tournamentResultsAdjustment.enabled",
+      message: "tournamentResultsAdjustment.enabled must be a boolean."
+    });
+  }
+
+  if (
+    request.tournamentResultsAdjustment?.cutoffAt !== undefined &&
+    Number.isNaN(Date.parse(request.tournamentResultsAdjustment.cutoffAt))
+  ) {
+    issues.push({
+      field: "tournamentResultsAdjustment.cutoffAt",
+      message: "tournamentResultsAdjustment.cutoffAt must be a valid timestamp."
+    });
+  }
+
+  if (
+    request.tournamentFormAdjustment !== undefined &&
+    typeof request.tournamentFormAdjustment.enabled !== "boolean"
+  ) {
+    issues.push({
+      field: "tournamentFormAdjustment.enabled",
+      message: "tournamentFormAdjustment.enabled must be a boolean."
+    });
+  }
+
+  if (
+    request.tournamentFormAdjustment?.cutoffAt !== undefined &&
+    Number.isNaN(Date.parse(request.tournamentFormAdjustment.cutoffAt))
+  ) {
+    issues.push({
+      field: "tournamentFormAdjustment.cutoffAt",
+      message: "tournamentFormAdjustment.cutoffAt must be a valid timestamp."
     });
   }
 
@@ -1020,16 +1062,17 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   }
 
   const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
-  let worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const baseWorldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  let worldCupCoverageEntries = baseWorldCupCoverageEntries;
 
   let tournamentMatchesIncluded = 0;
+  const completedResults = resolveWorldCup2026ResultsProviderFoundation();
+  const completedRecords = completedResults.status === "success" ? completedResults.completedResults : [];
 
   if (request.tournamentResultsAdjustment?.enabled === true) {
     const baselineRatings = new Map<string, number>(
       worldCupCoverageEntries.map((e) => [e.team, e.eloRating])
     );
-    const completedResults = resolveWorldCup2026ResultsProviderFoundation();
-    const completedRecords = completedResults.status === "success" ? completedResults.completedResults : [];
     const ingestion = ingestWorldCup2026ResultsIntoLiveElo({
       completedResults: completedRecords,
       baselineRatings,
@@ -1103,9 +1146,73 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
           )}.`
         ];
 
+  let tournamentFormAdjustment:
+    | NonNullable<PredictMatchFromLiveEloSuccessResponse["tournamentFormAdjustment"]>
+    | undefined;
+
+  if (request.tournamentFormAdjustment?.enabled === true) {
+    tournamentFormAdjustment = resolveTournamentFormPredictionAdjustment({
+      homeTeam: homeResolution.canonicalName ?? homeEntry.team,
+      awayTeam: awayResolution.canonicalName ?? awayEntry.team,
+      baselineRatingsForForm: new Map(
+        baseWorldCupCoverageEntries.map((entry) => [entry.team, entry.eloRating])
+      ),
+      effectiveRatingsBeforeTournamentForm: new Map(
+        worldCupCoverageEntries.map((entry) => [entry.team, entry.eloRating])
+      ),
+      completedResults: completedRecords,
+      ...(request.tournamentFormAdjustment.cutoffAt === undefined
+        ? {}
+        : { cutoffAt: request.tournamentFormAdjustment.cutoffAt })
+    });
+
+    worldCupCoverageEntries = worldCupCoverageEntries.map((entry) => {
+      if (entry.team === (homeResolution.canonicalName ?? homeEntry.team)) {
+        return {
+          ...entry,
+          eloRating: tournamentFormAdjustment?.home.effectiveElo ?? entry.eloRating
+        };
+      }
+
+      if (entry.team === (awayResolution.canonicalName ?? awayEntry.team)) {
+        return {
+          ...entry,
+          eloRating: tournamentFormAdjustment?.away.effectiveElo ?? entry.eloRating
+        };
+      }
+
+      return entry;
+    });
+  }
+
+  const effectiveRatingsByTeam = buildCoverageLookup(worldCupCoverageEntries);
+  const effectiveHomeEntry =
+    homeResolution.canonicalName === undefined
+      ? undefined
+      : effectiveRatingsByTeam.get(normalizeTeamLookupKey(homeResolution.canonicalName));
+  const effectiveAwayEntry =
+    awayResolution.canonicalName === undefined
+      ? undefined
+      : effectiveRatingsByTeam.get(normalizeTeamLookupKey(awayResolution.canonicalName));
+
+  if (effectiveHomeEntry === undefined || effectiveAwayEntry === undefined) {
+    return {
+      status: "validation_error",
+      issues: [
+        {
+          field: "tournamentFormAdjustment",
+          message: "Tournament form adjustment could not resolve effective Elo coverage for the requested teams."
+        }
+      ],
+      metadata: buildApiMetadata([
+        "Tournament form prediction integration could not resolve effective Elo coverage."
+      ])
+    };
+  }
+
   const xgResult = eloToExpectedGoals({
-    homeEloRating: homeEntry.eloRating,
-    awayEloRating: awayEntry.eloRating,
+    homeEloRating: effectiveHomeEntry.eloRating,
+    awayEloRating: effectiveAwayEntry.eloRating,
     ...(request.preset === undefined ? {} : { preset: request.preset })
   });
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
@@ -1143,16 +1250,16 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     liveElo: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
       awayTeam: awayResolution.canonicalName ?? awayEntry.team,
-      homeEloRating: homeEntry.eloRating,
-      awayEloRating: awayEntry.eloRating,
-      homeRank: homeEntry.rank,
-      awayRank: awayEntry.rank,
-      homeMatchesPlayed: homeEntry.matchesPlayed,
-      awayMatchesPlayed: awayEntry.matchesPlayed,
-      homeGroup: homeEntry.group,
-      awayGroup: awayEntry.group,
-      homeRatingSource: homeEntry.ratingSource,
-      awayRatingSource: awayEntry.ratingSource,
+      homeEloRating: effectiveHomeEntry.eloRating,
+      awayEloRating: effectiveAwayEntry.eloRating,
+      homeRank: effectiveHomeEntry.rank,
+      awayRank: effectiveAwayEntry.rank,
+      homeMatchesPlayed: effectiveHomeEntry.matchesPlayed,
+      awayMatchesPlayed: effectiveAwayEntry.matchesPlayed,
+      homeGroup: effectiveHomeEntry.group,
+      awayGroup: effectiveAwayEntry.group,
+      homeRatingSource: effectiveHomeEntry.ratingSource,
+      awayRatingSource: effectiveAwayEntry.ratingSource,
       fallbackSeedRating: WORLD_CUP_2026_FALLBACK_SEED_RATING,
       matchesProcessed: pipeline.matchesProcessed,
       latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
@@ -1168,32 +1275,45 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     predictionConfidence: assessPredictionConfidence({
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
       awayTeam: awayResolution.canonicalName ?? awayEntry.team,
-      homeRatingSource: homeEntry.ratingSource,
-      awayRatingSource: awayEntry.ratingSource,
-      homeMatchesPlayed: homeEntry.matchesPlayed,
-      awayMatchesPlayed: awayEntry.matchesPlayed,
+      homeRatingSource: effectiveHomeEntry.ratingSource,
+      awayRatingSource: effectiveAwayEntry.ratingSource,
+      homeMatchesPlayed: effectiveHomeEntry.matchesPlayed,
+      awayMatchesPlayed: effectiveAwayEntry.matchesPlayed,
       matchesProcessed: pipeline.matchesProcessed,
       latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
       currentTournamentMatchesIncluded: tournamentMatchesIncluded,
       fallbackSeedRating: WORLD_CUP_2026_FALLBACK_SEED_RATING,
       dataCoverage:
         "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample and World Cup 2026 fallback coverage.",
-      attackDefenseAvailable: false
+      attackDefenseAvailable: false,
+      ...(request.tournamentFormAdjustment?.enabled === true
+        ? {
+            tournamentFormEnabled: true,
+            tournamentFormApplied: tournamentFormAdjustment?.applied,
+            homeTournamentFormMatchesIncluded: tournamentFormAdjustment?.home.matchesIncluded,
+            awayTournamentFormMatchesIncluded: tournamentFormAdjustment?.away.matchesIncluded,
+            tournamentFormFormulaVersion: tournamentFormAdjustment?.formulaVersion
+          }
+        : {})
     }),
     ...(request.tournamentResultsAdjustment?.enabled === true
       ? { tournamentAdjustment: { applied: true, matchesIncluded: tournamentMatchesIncluded } }
       : {}),
+    ...(tournamentFormAdjustment === undefined ? {} : { tournamentFormAdjustment }),
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
       LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
       ...internationalSupplement.metadata.foundationWarnings,
       ...fallbackWarnings,
+      ...(tournamentFormAdjustment?.warnings ?? []),
       ...xgResult.warnings,
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([
-      "Match prediction loaded live Elo ratings, converted Elo difference to expected goals, then reused Poisson scoreline probabilities.",
+      request.tournamentFormAdjustment?.enabled === true
+        ? "Match prediction loaded live Elo ratings, applied optional tournament-result Elo ingestion, then optional tournament-form secondary adjustment, then converted the effective Elo difference to expected goals and reused Poisson scoreline probabilities."
+        : "Match prediction loaded live Elo ratings, converted Elo difference to expected goals, then reused Poisson scoreline probabilities.",
       WORLD_CUP_2026_AUTO_PREDICT_COVERAGE_NOTE,
       `Fallback seed ratings used: ${fallbackTeamsUsed.length === 0 ? "none" : fallbackTeamsUsed.join(", ")}.`,
       `Prediction preset: ${xgResult.preset}.`,

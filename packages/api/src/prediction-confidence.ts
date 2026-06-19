@@ -21,6 +21,11 @@ export interface AssessPredictionConfidenceInput {
   fallbackSeedRating: number;
   dataCoverage: string;
   attackDefenseAvailable?: boolean | undefined;
+  tournamentFormEnabled?: boolean | undefined;
+  tournamentFormApplied?: boolean | undefined;
+  homeTournamentFormMatchesIncluded?: number | undefined;
+  awayTournamentFormMatchesIncluded?: number | undefined;
+  tournamentFormFormulaVersion?: string | undefined;
 }
 
 function includesPartialCoverageMarker(dataCoverage: string): boolean {
@@ -141,6 +146,17 @@ export function assessPredictionConfidence(input: AssessPredictionConfidenceInpu
     pushReason(reasons, "No current World Cup 2026 matches are included yet.");
   }
 
+  if (input.tournamentFormEnabled === true) {
+    if (input.tournamentFormApplied === true) {
+      pushReason(reasons, "Tournament form was applied as a bounded secondary Elo adjustment.");
+    } else {
+      pushReason(
+        reasons,
+        "Tournament form did not apply because at least one team lacks the minimum completed tournament sample."
+      );
+    }
+  }
+
   if (input.attackDefenseAvailable !== true) {
     pushReason(reasons, "Attack and defense ratings are unavailable.");
   }
@@ -161,7 +177,16 @@ export function assessPredictionConfidence(input: AssessPredictionConfidenceInpu
       historicalMatchesAvailable: input.matchesProcessed,
       latestMatchDate: input.latestMatchDate,
       currentTournamentMatchesIncluded: input.currentTournamentMatchesIncluded,
-      attackDefenseAvailable: input.attackDefenseAvailable
+      attackDefenseAvailable: input.attackDefenseAvailable,
+      ...(input.tournamentFormEnabled === undefined
+        ? {}
+        : {
+            tournamentFormEnabled: input.tournamentFormEnabled,
+            tournamentFormApplied: input.tournamentFormApplied,
+            homeTournamentFormMatchesIncluded: input.homeTournamentFormMatchesIncluded,
+            awayTournamentFormMatchesIncluded: input.awayTournamentFormMatchesIncluded,
+            tournamentFormFormulaVersion: input.tournamentFormFormulaVersion
+          })
     },
     manualXgRecommended: level === "low" || level === "very_low"
   };
