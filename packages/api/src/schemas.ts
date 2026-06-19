@@ -1213,6 +1213,201 @@ export interface ListWorldCup2026PredictionSnapshotsResponse {
   metadata: ApiMetadata;
 }
 
+export type PredictionOutcome = "home_win" | "draw" | "away_win";
+export type PredictionEvaluationStatus = "evaluated" | "duplicate" | "not_eligible";
+
+export type WorldCup2026PredictionEvaluationIssueCode =
+  | "missing_snapshot"
+  | "missing_completed_result"
+  | "fixture_mismatch"
+  | "team_order_mismatch"
+  | "incomplete_score"
+  | "live_or_scheduled_status"
+  | "duplicate_completed_result"
+  | "invalid_fixture_identity"
+  | "unsupported_snapshot_state"
+  | "invalid_snapshot_probabilities";
+
+export interface WorldCup2026PredictionEvaluationIssue {
+  code: WorldCup2026PredictionEvaluationIssueCode;
+  message: string;
+  snapshotId?: string;
+  fixtureId?: string;
+  providerFixtureId?: string;
+}
+
+export interface WorldCup2026PredictionEvaluationPredictedScoreline {
+  homeGoals: number;
+  awayGoals: number;
+}
+
+export interface WorldCup2026PredictionEvaluationPredicted {
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  mostLikelyScorelines: readonly WorldCup2026PredictionSnapshotScoreline[];
+  predictedOutcome: PredictionOutcome;
+  predictedScoreline: WorldCup2026PredictionEvaluationPredictedScoreline;
+}
+
+export interface WorldCup2026PredictionEvaluationActual {
+  homeGoals: number;
+  awayGoals: number;
+  outcome: PredictionOutcome;
+}
+
+export interface WorldCup2026PredictionEvaluationMetrics {
+  outcomeCorrect: boolean;
+  drawCorrect: boolean;
+  exactScoreCorrect: boolean;
+  homeGoalAbsoluteError: number;
+  awayGoalAbsoluteError: number;
+  totalGoalAbsoluteError: number;
+  goalDifferenceAbsoluteError: number;
+  brierScore: number;
+  logLoss: number;
+  predictedOutcomeProbability: number;
+  actualOutcomeProbability: number;
+}
+
+export interface WorldCup2026PredictionEvaluationConfidence {
+  level: PredictionConfidenceLevel;
+  coverageType: PredictionCoverageType;
+  fallbackUsed: boolean;
+}
+
+export interface WorldCup2026PredictionEvaluationProvenance {
+  snapshotContentHash: string;
+  resultSource?: string;
+  cacheUsed?: boolean;
+  localFallbackUsed?: boolean;
+  completedAt?: string;
+}
+
+export interface WorldCup2026PredictionEvaluation {
+  evaluationId: string;
+  snapshotId: string;
+  fixtureId: string;
+  providerFixtureId?: string;
+  evaluatedAt: string;
+  modelVersion: string;
+  metricVersion: string;
+  predicted: WorldCup2026PredictionEvaluationPredicted;
+  actual: WorldCup2026PredictionEvaluationActual;
+  metrics: WorldCup2026PredictionEvaluationMetrics;
+  confidence: WorldCup2026PredictionEvaluationConfidence;
+  provenance: WorldCup2026PredictionEvaluationProvenance;
+}
+
+export interface WorldCup2026PredictionEvaluationCreateResult {
+  result: "created" | "existing";
+  evaluation: WorldCup2026PredictionEvaluation;
+  identityKey: string;
+  duplicate: boolean;
+}
+
+export interface CreateWorldCup2026PredictionEvaluationRequest {
+  snapshotId: string;
+  evaluatedAt?: string;
+}
+
+export interface CreateWorldCup2026PredictionEvaluationSuccessResponse {
+  status: "evaluated" | "duplicate";
+  evaluation: WorldCup2026PredictionEvaluation;
+  issues: readonly WorldCup2026PredictionEvaluationIssue[];
+  metadata: ApiMetadata;
+}
+
+export interface CreateWorldCup2026PredictionEvaluationNotEligibleResponse {
+  status: "not_eligible";
+  issues: readonly WorldCup2026PredictionEvaluationIssue[];
+  metadata: ApiMetadata;
+}
+
+export type CreateWorldCup2026PredictionEvaluationResponse =
+  | CreateWorldCup2026PredictionEvaluationSuccessResponse
+  | CreateWorldCup2026PredictionEvaluationNotEligibleResponse;
+
+export interface GetWorldCup2026PredictionEvaluationSuccessResponse {
+  status: "success";
+  evaluation: WorldCup2026PredictionEvaluation;
+  metadata: ApiMetadata;
+}
+
+export interface GetWorldCup2026PredictionEvaluationNotFoundResponse {
+  status: "not_found";
+  evaluationId: string;
+  metadata: ApiMetadata;
+}
+
+export type GetWorldCup2026PredictionEvaluationResponse =
+  | GetWorldCup2026PredictionEvaluationSuccessResponse
+  | GetWorldCup2026PredictionEvaluationNotFoundResponse;
+
+export interface ListWorldCup2026PredictionEvaluationsResponse {
+  status: "success";
+  evaluations: readonly WorldCup2026PredictionEvaluation[];
+  totalCount: number;
+  fixtureId?: string;
+  metadata: ApiMetadata;
+}
+
+export interface WorldCup2026PredictionCalibrationBucket {
+  bucketStart: number;
+  bucketEnd: number;
+  predictionsCount: number;
+  meanPredictedProbability: number | null;
+  observedFrequency: number | null;
+  absoluteCalibrationGap: number | null;
+}
+
+export interface WorldCup2026ModelRealityConfidenceSummary {
+  confidenceLevel: PredictionConfidenceLevel;
+  evaluationsCount: number;
+  outcomeAccuracy: number | null;
+  meanBrierScore: number | null;
+  meanLogLoss: number | null;
+}
+
+export interface WorldCup2026ModelRealityCoverageSummary {
+  coverageType: PredictionCoverageType;
+  evaluationsCount: number;
+  outcomeAccuracy: number | null;
+  meanBrierScore: number | null;
+}
+
+export interface WorldCup2026ModelRealityFallbackSummary {
+  evaluationsCount: number;
+  outcomeAccuracy: number | null;
+  meanBrierScore: number | null;
+}
+
+export interface WorldCup2026ModelRealitySummary {
+  evaluationsCount: number;
+  outcomeAccuracy: number | null;
+  drawAccuracy: number | null;
+  exactScoreAccuracy: number | null;
+  meanHomeGoalAbsoluteError: number | null;
+  meanAwayGoalAbsoluteError: number | null;
+  meanTotalGoalAbsoluteError: number | null;
+  meanGoalDifferenceAbsoluteError: number | null;
+  meanBrierScore: number | null;
+  meanLogLoss: number | null;
+  byConfidenceLevel: readonly WorldCup2026ModelRealityConfidenceSummary[];
+  byCoverageType: readonly WorldCup2026ModelRealityCoverageSummary[];
+  withFallback: WorldCup2026ModelRealityFallbackSummary;
+  withoutFallback: WorldCup2026ModelRealityFallbackSummary;
+  calibrationBuckets: readonly WorldCup2026PredictionCalibrationBucket[];
+}
+
+export interface GetWorldCup2026ModelRealitySummaryResponse {
+  status: "success";
+  summary: WorldCup2026ModelRealitySummary;
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
@@ -1221,6 +1416,10 @@ export interface ApiRoutes {
   createWorldCup2026PredictionSnapshot: (request: CreateWorldCup2026PredictionSnapshotRequest) => CreateWorldCup2026PredictionSnapshotResponse;
   getWorldCup2026PredictionSnapshot: (snapshotId: string) => GetWorldCup2026PredictionSnapshotResponse;
   listWorldCup2026PredictionSnapshots: (fixtureId?: string) => ListWorldCup2026PredictionSnapshotsResponse;
+  createWorldCup2026PredictionEvaluation: (request: CreateWorldCup2026PredictionEvaluationRequest) => CreateWorldCup2026PredictionEvaluationResponse;
+  getWorldCup2026PredictionEvaluation: (evaluationId: string) => GetWorldCup2026PredictionEvaluationResponse;
+  listWorldCup2026PredictionEvaluations: (fixtureId?: string) => ListWorldCup2026PredictionEvaluationsResponse;
+  getWorldCup2026ModelRealitySummary: () => GetWorldCup2026ModelRealitySummaryResponse;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;

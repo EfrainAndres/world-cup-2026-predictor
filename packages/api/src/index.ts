@@ -31,7 +31,11 @@ export {
   getWorldCup2026EloIngestionFoundation,
   createWorldCup2026PredictionSnapshot,
   getWorldCup2026PredictionSnapshot,
-  listWorldCup2026PredictionSnapshots
+  listWorldCup2026PredictionSnapshots,
+  createWorldCup2026PredictionEvaluation,
+  getWorldCup2026PredictionEvaluation,
+  listWorldCup2026PredictionEvaluations,
+  getWorldCup2026ModelRealitySummary
 } from "./routes.js";
 export {
   createCachedResultsProvider,
@@ -55,6 +59,27 @@ export { canonicalizeForHash, computeContentHash, buildSnapshotIdempotencyKey, b
 export type { BuildSnapshotInput } from "./snapshot-service.js";
 export { createInMemorySnapshotStore, defaultSnapshotStore } from "./snapshot-store.js";
 export type { PredictionSnapshotStore } from "./snapshot-store.js";
+export {
+  WORLD_CUP_2026_EVALUATION_METRIC_VERSION,
+  buildWorldCup2026PredictionEvaluationId,
+  buildWorldCup2026PredictionCalibrationBuckets,
+  calculateOutcomeLogLoss,
+  calculateThreeWayBrierScore,
+  deriveActualOutcome,
+  derivePredictionOutcome,
+  evaluateWorldCup2026PredictionSnapshot,
+  selectTopPredictedScoreline,
+  summarizeWorldCup2026ModelReality
+} from "./prediction-evaluation-service.js";
+export type {
+  EvaluateWorldCup2026PredictionSnapshotInput,
+  EvaluateWorldCup2026PredictionSnapshotResult
+} from "./prediction-evaluation-service.js";
+export {
+  createInMemoryPredictionEvaluationStore,
+  defaultPredictionEvaluationStore
+} from "./prediction-evaluation-store.js";
+export type { PredictionEvaluationStore } from "./prediction-evaluation-store.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
@@ -213,7 +238,33 @@ export type {
   GetWorldCup2026PredictionSnapshotSuccessResponse,
   GetWorldCup2026PredictionSnapshotNotFoundResponse,
   GetWorldCup2026PredictionSnapshotResponse,
-  ListWorldCup2026PredictionSnapshotsResponse
+  ListWorldCup2026PredictionSnapshotsResponse,
+  PredictionOutcome,
+  PredictionEvaluationStatus,
+  WorldCup2026PredictionEvaluationIssueCode,
+  WorldCup2026PredictionEvaluationIssue,
+  WorldCup2026PredictionEvaluationPredictedScoreline,
+  WorldCup2026PredictionEvaluationPredicted,
+  WorldCup2026PredictionEvaluationActual,
+  WorldCup2026PredictionEvaluationMetrics,
+  WorldCup2026PredictionEvaluationConfidence,
+  WorldCup2026PredictionEvaluationProvenance,
+  WorldCup2026PredictionEvaluation,
+  WorldCup2026PredictionEvaluationCreateResult,
+  CreateWorldCup2026PredictionEvaluationRequest,
+  CreateWorldCup2026PredictionEvaluationSuccessResponse,
+  CreateWorldCup2026PredictionEvaluationNotEligibleResponse,
+  CreateWorldCup2026PredictionEvaluationResponse,
+  GetWorldCup2026PredictionEvaluationSuccessResponse,
+  GetWorldCup2026PredictionEvaluationNotFoundResponse,
+  GetWorldCup2026PredictionEvaluationResponse,
+  ListWorldCup2026PredictionEvaluationsResponse,
+  WorldCup2026PredictionCalibrationBucket,
+  WorldCup2026ModelRealityConfidenceSummary,
+  WorldCup2026ModelRealityCoverageSummary,
+  WorldCup2026ModelRealityFallbackSummary,
+  WorldCup2026ModelRealitySummary,
+  GetWorldCup2026ModelRealitySummaryResponse
 } from "./schemas.js";
 
 export type {

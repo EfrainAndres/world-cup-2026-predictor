@@ -97,7 +97,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.6 | Live Group Standings | Support official, provisional live, and projected standings with best third-place and projected Round of 32 updates. | Done |
 | 12.7 | World Cup Results-to-Elo Ingestion | Process completed tournament results idempotently into ratings and future projections without look-ahead leakage. | Done |
 | 12.8 | Prediction Snapshot Storage | Persist immutable pre-match prediction snapshots for later evaluation and product history views. | Done |
-| 12.9 | Model vs Reality Tracker | Measure prediction quality against actual outcomes with calibration, Brier Score, Log Loss, and fallback-vs-full-coverage analysis. | Planned |
+| 12.9 | Model vs Reality Tracker | Measure prediction quality against actual outcomes with calibration, Brier Score, Log Loss, and fallback-vs-full-coverage analysis. | Done |
 | 12.10 | Tournament-Form Adjustment | Add controlled current-tournament and recent-form context after live ingestion and snapshot tracking are stable. | Planned |
 | 12.11 | Elo-to-xG Calibration V2 | Recalibrate compressed Elo-to-xG behavior only after broader evaluation evidence and backtesting exist. | Planned |
 | 12.12 | Today’s Matches & Live Match Center | Add a daily experience for upcoming, live, and final matches with immutable pre-match predictions and result review. | Planned |
