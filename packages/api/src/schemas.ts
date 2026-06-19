@@ -382,6 +382,26 @@ export interface WorldCup2026ResultsProviderFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export type WorldCup2026SyncProviderMode = "football_data_org" | "local_static";
+
+export interface WorldCup2026SyncResult {
+  status: "success" | "error";
+  providerMode: WorldCup2026SyncProviderMode;
+  activeProvider: string;
+  cacheUsed: boolean;
+  localFallbackUsed: boolean;
+  externalProviderEnabled: boolean;
+  syncedAt: string;
+  lastSuccessfulSync?: string;
+  fixtures: readonly WorldCup2026ExternalFixtureRecord[];
+  liveMatches: readonly WorldCup2026ExternalFixtureRecord[];
+  completedResults: readonly WorldCup2026ExternalFixtureRecord[];
+  standings: readonly WorldCup2026ExternalStandingRecord[];
+  normalizationIssues: readonly WorldCup2026ResultsProviderError[];
+  warnings: readonly string[];
+  error?: WorldCup2026ResultsProviderError;
+}
+
 export interface WorldCup2026FixtureFoundationResponse {
   status: "success";
   tournamentName: "FIFA World Cup 2026";
