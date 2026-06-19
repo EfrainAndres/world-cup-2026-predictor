@@ -58,10 +58,10 @@ test("dashboard renders World Cup 2026 group standings tables", async ({ page })
   await expect(
     page.getByRole("heading", { level: 2, name: "World Cup 2026 Group Standings" })
   ).toBeVisible();
-  await expect(page.getByText("Foundation standings")).toBeVisible();
+  await expect(page.getByText("Live group standings")).toBeVisible();
   await expect(page.getByText("Results source: local static provider")).toBeVisible();
   await expect(page.getByText("External provider: disabled")).toBeVisible();
-  await expect(page.getByText("Standings are calculated from local normalized results. Scheduled matches are ignored.")).toBeVisible();
+  await expect(page.getByText("Standings are calculated from completed matches only. Scheduled fixtures are excluded.")).toBeVisible();
 
   const groupA = page.getByRole("article", { name: "Group A standings" });
   const groupC = page.getByRole("article", { name: "Group C standings" });
@@ -70,6 +70,47 @@ test("dashboard renders World Cup 2026 group standings tables", async ({ page })
   await expect(groupA.getByRole("row", { name: /Mexico/ })).toContainText("3");
   await expect(groupC).toBeVisible();
   await expect(groupC.getByRole("row", { name: /Scotland/ })).toContainText("3");
+});
+
+test("standings section shows Official tab selected by default", async ({ page }) => {
+  await page.goto("/");
+
+  const tablist = page.getByRole("tablist", { name: "Standings mode" });
+  await expect(tablist).toBeVisible();
+
+  const officialTab = tablist.getByRole("tab", { name: /Official/ });
+  await expect(officialTab).toBeVisible();
+  await expect(officialTab).toHaveAttribute("aria-selected", "true");
+});
+
+test("standings section shows live provisional tab in disabled state when no live matches", async ({ page }) => {
+  await page.goto("/");
+
+  const tablist = page.getByRole("tablist", { name: "Standings mode" });
+  const provisionalTab = tablist.getByRole("tab", { name: /Live provisional/ });
+  await expect(provisionalTab).toBeVisible();
+  await expect(provisionalTab).toBeDisabled();
+  await expect(provisionalTab).toHaveAttribute("aria-disabled", "true");
+});
+
+test("standings section shows projected tab in disabled state", async ({ page }) => {
+  await page.goto("/");
+
+  const tablist = page.getByRole("tablist", { name: "Standings mode" });
+  const projectedTab = tablist.getByRole("tab", { name: /Projected/ });
+  await expect(projectedTab).toBeVisible();
+  await expect(projectedTab).toBeDisabled();
+  await expect(projectedTab).toHaveAttribute("aria-disabled", "true");
+});
+
+test("standings section group tables remain accessible via Official tab", async ({ page }) => {
+  await page.goto("/");
+
+  const groupsSection = page.getByRole("region", { name: "World Cup 2026 Group Standings" });
+  const groupA = groupsSection.getByRole("article", { name: "Group A standings" });
+  const groupL = groupsSection.getByRole("article", { name: "Group L standings" });
+  await expect(groupA).toBeVisible();
+  await expect(groupL).toBeVisible();
 });
 
 test("dashboard renders projected World Cup 2026 Round of 32 foundation", async ({ page }) => {

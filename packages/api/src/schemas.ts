@@ -451,6 +451,38 @@ export interface WorldCup2026GroupStandingsFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export type WorldCup2026StandingsMode = "official" | "live_provisional" | "projected";
+
+export interface WorldCup2026LiveStandingsSyncMetadata {
+  mode: WorldCup2026StandingsMode;
+  activeProvider: string;
+  cacheUsed: boolean;
+  localFallbackUsed: boolean;
+  externalProviderEnabled: boolean;
+  lastSuccessfulSync?: string;
+  generatedAt: string;
+  activeLiveMatchCount: number;
+  completedMatchCount: number;
+  warnings: readonly string[];
+}
+
+export interface WorldCup2026LiveGroupStandingsResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_live_group_standings";
+  groupCount: number;
+  teamCount: number;
+  officialGroups: readonly WorldCup2026GroupStandings[];
+  provisionalGroups: readonly WorldCup2026GroupStandings[] | null;
+  projectedGroups: readonly WorldCup2026GroupStandings[] | null;
+  activeLiveMatchCount: number;
+  completedMatchCount: number;
+  syncMetadata: WorldCup2026LiveStandingsSyncMetadata;
+  resultProvider: WorldCup2026ResultProviderMetadata;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type WorldCup2026QualificationSource = "group_winner" | "group_runner_up" | "best_third_place";
 
 export interface WorldCup2026QualifiedTeamEntry extends WorldCup2026GroupStandingEntry {
@@ -1007,6 +1039,7 @@ export interface ApiRoutes {
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
   getWorldCup2026ResultsProviderFoundation: () => WorldCup2026ResultsProviderFoundationResponse;
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
+  getWorldCup2026LiveGroupStandings: () => WorldCup2026LiveGroupStandingsResponse;
   getWorldCup2026RoundOf32Foundation: () => WorldCup2026RoundOf32FoundationResponse;
   getWorldCup2026KnockoutBracketFoundation: () => WorldCup2026KnockoutBracketFoundationResponse;
   simulateWorldCup2026KnockoutFixturesFoundation: () => WorldCup2026KnockoutSimulationFoundationResponse;
