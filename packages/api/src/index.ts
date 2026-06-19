@@ -39,6 +39,11 @@ export {
   toFixtureResultsFromExternalRecords
 } from "./results-provider-foundation.js";
 export {
+  createFootballDataOrgResultsProvider,
+  synchronizeWorldCup2026Results
+} from "./live-results-sync.js";
+export type { FootballDataOrgProviderConfig, SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
+export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
@@ -168,7 +173,9 @@ export type {
   WorldCup2026ThirdPlaceMatchFixture,
   WorldCup2026ThirdPlaceMatchFoundationResponse,
   WorldCup2026ThirdPlaceMatchSimulationFixture,
-  WorldCup2026ThirdPlaceMatchSimulationFoundationResponse
+  WorldCup2026ThirdPlaceMatchSimulationFoundationResponse,
+  WorldCup2026SyncProviderMode,
+  WorldCup2026SyncResult
 } from "./schemas.js";
 
 export type {
