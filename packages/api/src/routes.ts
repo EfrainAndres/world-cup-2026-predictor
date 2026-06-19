@@ -28,6 +28,8 @@ import { assessPredictionConfidence } from "./prediction-confidence.js";
 import { resolveWorldCup2026ResultsProviderFoundation } from "./results-provider-foundation.js";
 import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
+import { buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
+import { defaultSnapshotStore } from "./snapshot-store.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -98,7 +100,11 @@ import type {
   WorldCup2026SemifinalMatchSimulationFoundationResponse,
   WorldCup2026SemifinalQualifier,
   WorldCup2026RoundOf32FoundationResponse,
-  WorldCup2026EloIngestionFoundationResponse
+  WorldCup2026EloIngestionFoundationResponse,
+  CreateWorldCup2026PredictionSnapshotRequest,
+  CreateWorldCup2026PredictionSnapshotResponse,
+  GetWorldCup2026PredictionSnapshotResponse,
+  ListWorldCup2026PredictionSnapshotsResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -2199,6 +2205,131 @@ export function getAvailableLiveEloTeams(): string[] {
   return getAvailableTeamCoverage(buildWorldCup2026CoverageEntries(pipeline.rankedRatings));
 }
 
+export function createWorldCup2026PredictionSnapshot(
+  request: CreateWorldCup2026PredictionSnapshotRequest
+): CreateWorldCup2026PredictionSnapshotResponse {
+  const { fixtureId, capturedAt: rawCapturedAt, cutoffAt: rawCutoffAt, kickoffAt, tournamentResultsAdjustmentEnabled = false } = request;
+  const issues: import("./schemas.js").ApiValidationIssue[] = [];
+
+  if (typeof fixtureId !== "string" || fixtureId.trim() === "") {
+    issues.push({ field: "fixtureId", message: "fixtureId is required." });
+  }
+
+  if (issues.length > 0) {
+    return {
+      status: "validation_error",
+      issues,
+      metadata: buildApiMetadata(["Snapshot creation failed validation."])
+    };
+  }
+
+  const fixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find((f) => f.id === fixtureId);
+
+  if (fixture === undefined) {
+    return {
+      status: "validation_error",
+      issues: [{ field: "fixtureId", message: `fixtureId "${fixtureId}" does not match any official World Cup 2026 group-stage fixture.` }],
+      metadata: buildApiMetadata(["Only official scheduled WC2026 fixtures may have pre-match prediction snapshots."])
+    };
+  }
+
+  const capturedAt = rawCapturedAt ?? new Date().toISOString();
+  const cutoffAt = rawCutoffAt ?? capturedAt;
+
+  if (kickoffAt !== undefined && capturedAt >= kickoffAt) {
+    return {
+      status: "validation_error",
+      issues: [{ field: "capturedAt", message: `Cannot create a pre-match snapshot after kickoff. capturedAt "${capturedAt}" is at or after kickoffAt "${kickoffAt}".` }],
+      metadata: buildApiMetadata(["Snapshot creation rejected: match has already started or the capture time is past kickoff."])
+    };
+  }
+
+  const predictionResult = predictMatchFromLiveElo({
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    ...(tournamentResultsAdjustmentEnabled ? { tournamentResultsAdjustment: { enabled: true, cutoffAt } } : {})
+  });
+
+  if (predictionResult.status !== "success") {
+    return {
+      status: "validation_error",
+      issues: predictionResult.issues,
+      metadata: buildApiMetadata(["Prediction could not be generated for the requested fixture."])
+    };
+  }
+
+  const { snapshot, idempotencyKey } = buildWorldCup2026PredictionSnapshot({
+    fixture,
+    prediction: predictionResult,
+    capturedAt,
+    cutoffAt,
+    ...(kickoffAt !== undefined ? { kickoffAt } : {}),
+    tournamentResultsAdjustmentEnabled
+  });
+
+  const storeResult = defaultSnapshotStore.create(snapshot, idempotencyKey);
+
+  const warnings: string[] = [];
+
+  if (snapshot.status === "foundation_unverified") {
+    warnings.push(
+      "This snapshot has status 'foundation_unverified' because no kickoff time was available to confirm pre-match capture. It should not be treated as a verified pre-match lock."
+    );
+  }
+
+  return {
+    status: "success",
+    result: storeResult.result,
+    duplicate: storeResult.duplicate,
+    snapshot: storeResult.snapshot,
+    warnings,
+    metadata: buildApiMetadata([
+      `Snapshot model version: ${WORLD_CUP_2026_PREDICTION_MODEL_VERSION}.`,
+      `Snapshot status: ${storeResult.snapshot.status}.`,
+      storeResult.duplicate ? "Idempotency key matched an existing snapshot. Returned existing record." : "New snapshot created and stored.",
+      "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
+    ])
+  };
+}
+
+export function getWorldCup2026PredictionSnapshot(snapshotId: string): GetWorldCup2026PredictionSnapshotResponse {
+  const snapshot = defaultSnapshotStore.getById(snapshotId);
+
+  if (snapshot === undefined) {
+    return {
+      status: "not_found",
+      snapshotId,
+      metadata: buildApiMetadata([`No snapshot found with id "${snapshotId}".`])
+    };
+  }
+
+  return {
+    status: "success",
+    snapshot,
+    metadata: buildApiMetadata([`Snapshot "${snapshotId}" retrieved from in-memory store.`])
+  };
+}
+
+export function listWorldCup2026PredictionSnapshots(fixtureId?: string): ListWorldCup2026PredictionSnapshotsResponse {
+  const snapshots = fixtureId !== undefined
+    ? defaultSnapshotStore.getByFixtureId(fixtureId)
+    : defaultSnapshotStore.list();
+
+  return {
+    status: "success",
+    snapshots,
+    totalCount: snapshots.length,
+    ...(fixtureId !== undefined ? { fixtureId } : {}),
+    metadata: buildApiMetadata([
+      fixtureId !== undefined
+        ? `Listed ${snapshots.length} snapshot(s) for fixture "${fixtureId}".`
+        : `Listed all ${snapshots.length} snapshot(s) from in-memory store.`,
+      "Snapshots are ordered by capturedAt ascending, then snapshotId ascending.",
+      "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
+    ])
+  };
+}
+
 export const apiRoutes: ApiRoutes = {
   getHealth,
   getModelInfo,
@@ -2224,5 +2355,8 @@ export const apiRoutes: ApiRoutes = {
   getWorldCup2026ThirdPlaceMatchFoundation,
   simulateWorldCup2026ThirdPlaceMatchFoundation,
   getWorldCup2026LiveGroupStandings,
-  getWorldCup2026EloIngestionFoundation
+  getWorldCup2026EloIngestionFoundation,
+  createWorldCup2026PredictionSnapshot,
+  getWorldCup2026PredictionSnapshot,
+  listWorldCup2026PredictionSnapshots
 };
