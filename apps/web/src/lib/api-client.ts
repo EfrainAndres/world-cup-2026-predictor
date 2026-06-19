@@ -8,6 +8,7 @@ import {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
+  getWorldCup2026LiveGroupStandings,
   getWorldCup2026KnockoutBracketFoundation,
   getWorldCup2026RoundOf32Foundation,
   predictMatchFromLiveElo,
@@ -47,6 +48,9 @@ import type {
   TournamentSimulationSuccessResponse,
   WorldCup2026FixtureFoundationResponse,
   WorldCup2026GroupStandingsFoundationResponse,
+  WorldCup2026LiveGroupStandingsResponse,
+  WorldCup2026StandingsMode,
+  WorldCup2026LiveStandingsSyncMetadata,
   WorldCup2026KnockoutBracketFoundationResponse,
   WorldCup2026KnockoutSimulationFoundationResponse,
   WorldCup2026QuarterfinalFoundationResponse,
@@ -69,6 +73,7 @@ export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };
 export type { WorldCup2026FixtureFoundationResponse };
 export type { WorldCup2026GroupStandingsFoundationResponse };
+export type { WorldCup2026LiveGroupStandingsResponse, WorldCup2026StandingsMode, WorldCup2026LiveStandingsSyncMetadata };
 export type { WorldCup2026RoundOf32FoundationResponse };
 export type { WorldCup2026KnockoutBracketFoundationResponse };
 export type { WorldCup2026KnockoutSimulationFoundationResponse };
@@ -96,7 +101,7 @@ export interface DashboardSnapshot {
   teamRatings: TeamRatingsFoundationResponse;
   liveEloRatings: LiveEloRatingsFoundationResponse;
   worldCup2026Fixtures: WorldCup2026FixtureFoundationResponse;
-  worldCup2026Standings: WorldCup2026GroupStandingsFoundationResponse;
+  worldCup2026Standings: WorldCup2026LiveGroupStandingsResponse;
   worldCup2026RoundOf32: WorldCup2026RoundOf32FoundationResponse;
   worldCup2026KnockoutBracket: WorldCup2026KnockoutBracketFoundationResponse;
   worldCup2026KnockoutSimulation: WorldCup2026KnockoutSimulationFoundationResponse;
@@ -179,7 +184,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     teamRatings: getTeamRatingsFoundation(),
     liveEloRatings: getLiveEloRatingsFoundation(),
     worldCup2026Fixtures,
-    worldCup2026Standings: getWorldCup2026GroupStandingsFoundation(),
+    worldCup2026Standings: getWorldCup2026LiveGroupStandings(),
     worldCup2026RoundOf32: getWorldCup2026RoundOf32Foundation(),
     worldCup2026KnockoutBracket: getWorldCup2026KnockoutBracketFoundation(),
     worldCup2026KnockoutSimulation: simulateWorldCup2026KnockoutFixturesFoundation(),

@@ -26,6 +26,7 @@ import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { assessPredictionConfidence } from "./prediction-confidence.js";
 import { resolveWorldCup2026ResultsProviderFoundation } from "./results-provider-foundation.js";
+import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -2145,5 +2146,6 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026FinalMatchFoundation,
   resolveWorldCup2026KnockoutWinnersFoundation,
   getWorldCup2026ThirdPlaceMatchFoundation,
-  simulateWorldCup2026ThirdPlaceMatchFoundation
+  simulateWorldCup2026ThirdPlaceMatchFoundation,
+  getWorldCup2026LiveGroupStandings
 };

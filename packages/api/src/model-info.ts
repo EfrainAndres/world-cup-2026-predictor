@@ -58,7 +58,8 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateWorldCup2026FinalMatchFoundation",
       "resolveWorldCup2026KnockoutWinnersFoundation",
       "getWorldCup2026ThirdPlaceMatchFoundation",
-      "simulateWorldCup2026ThirdPlaceMatchFoundation"
+      "simulateWorldCup2026ThirdPlaceMatchFoundation",
+      "getWorldCup2026LiveGroupStandings"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

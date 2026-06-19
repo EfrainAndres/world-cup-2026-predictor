@@ -43,6 +43,8 @@ export {
   synchronizeWorldCup2026Results
 } from "./live-results-sync.js";
 export type { FootballDataOrgProviderConfig, SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
+export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
+export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
@@ -175,7 +177,10 @@ export type {
   WorldCup2026ThirdPlaceMatchSimulationFixture,
   WorldCup2026ThirdPlaceMatchSimulationFoundationResponse,
   WorldCup2026SyncProviderMode,
-  WorldCup2026SyncResult
+  WorldCup2026SyncResult,
+  WorldCup2026StandingsMode,
+  WorldCup2026LiveStandingsSyncMetadata,
+  WorldCup2026LiveGroupStandingsResponse
 } from "./schemas.js";
 
 export type {
