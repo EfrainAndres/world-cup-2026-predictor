@@ -103,6 +103,10 @@ export interface PredictMatchFromLiveEloRequest {
   mostLikelyScorelineLimit?: number;
   monteCarlo?: SimulateMatchMonteCarloRequest;
   preset?: EloXgPreset;
+  tournamentResultsAdjustment?: {
+    enabled: boolean;
+    cutoffAt?: string;
+  };
 }
 
 export interface PredictionConfidenceDataPoints {
@@ -169,6 +173,10 @@ export interface PredictMatchFromLiveEloSuccessResponse {
   mostLikelyScorelines: ScorelineProbability[];
   predictionConfidence: PredictionConfidenceAssessment;
   monteCarloSimulation?: MonteCarloMatchSimulationResult;
+  tournamentAdjustment?: {
+    applied: boolean;
+    matchesIncluded: number;
+  };
   warnings: readonly string[];
   metadata: ApiMetadata;
 }
@@ -1029,6 +1037,68 @@ export interface LiveEloRatingsFoundationOptions {
   attackDefense?: LiveEloAttackDefenseConfig;
 }
 
+export type WorldCup2026EloIngestionIssueCode =
+  | "record_rejected_non_finished"
+  | "fixture_not_found"
+  | "score_missing"
+  | "duplicate_skipped"
+  | "cutoff_exceeded";
+
+export interface WorldCup2026EloIngestionIssue {
+  code: WorldCup2026EloIngestionIssueCode;
+  providerFixtureId?: string;
+  fixtureId?: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  message: string;
+}
+
+export interface WorldCup2026EloIngestionRecord {
+  fixtureId: string;
+  providerFixtureId?: string;
+  processedAt: string;
+  kickoffAt?: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeScore: number;
+  awayScore: number;
+}
+
+export interface WorldCup2026TournamentAdjustedEloEntry {
+  team: string;
+  baselineEloRating: number;
+  adjustedEloRating: number;
+  ratingChange: number;
+}
+
+export interface WorldCup2026EloIngestionMetadata {
+  totalRecordsReceived: number;
+  eligibleRecords: number;
+  processedCount: number;
+  skippedCount: number;
+  cutoffAt?: string;
+  processedAt: string;
+  pipelineVersion: string;
+  combinedMatchCount: number;
+}
+
+export interface WorldCup2026EloIngestionResult {
+  status: "success";
+  processedRecords: readonly WorldCup2026EloIngestionRecord[];
+  adjustedRatings: readonly WorldCup2026TournamentAdjustedEloEntry[];
+  issues: readonly WorldCup2026EloIngestionIssue[];
+  metadata: WorldCup2026EloIngestionMetadata;
+}
+
+export interface WorldCup2026EloIngestionFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_elo_ingestion_foundation";
+  ingestion: WorldCup2026EloIngestionResult;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
@@ -1040,6 +1110,7 @@ export interface ApiRoutes {
   getWorldCup2026ResultsProviderFoundation: () => WorldCup2026ResultsProviderFoundationResponse;
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
   getWorldCup2026LiveGroupStandings: () => WorldCup2026LiveGroupStandingsResponse;
+  getWorldCup2026EloIngestionFoundation: () => WorldCup2026EloIngestionFoundationResponse;
   getWorldCup2026RoundOf32Foundation: () => WorldCup2026RoundOf32FoundationResponse;
   getWorldCup2026KnockoutBracketFoundation: () => WorldCup2026KnockoutBracketFoundationResponse;
   simulateWorldCup2026KnockoutFixturesFoundation: () => WorldCup2026KnockoutSimulationFoundationResponse;

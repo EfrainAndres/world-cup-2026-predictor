@@ -30,7 +30,8 @@ export function getModelInfo(): ModelInfoResponse {
       "Match-level Final simulation using Live Elo ratings and Poisson score matrix for the projected Final fixture.",
       "Deterministic knockout winner resolution selecting winners from all simulated knockout match probabilities (R32 through Final).",
       "Third Place Match foundation projecting participants from deterministic semifinal loser resolution. No match simulation.",
-      "Match-level Third Place Match simulation using Live Elo ratings and Poisson score matrix for the projected Third Place fixture."
+      "Match-level Third Place Match simulation using Live Elo ratings and Poisson score matrix for the projected Third Place fixture.",
+      "Deterministic, idempotent, look-ahead-free ingestion of completed WC2026 match results into the live Elo pipeline for tournament-adjusted team ratings."
     ],
     supportedHandlers: [
       "getHealth",
@@ -59,7 +60,8 @@ export function getModelInfo(): ModelInfoResponse {
       "resolveWorldCup2026KnockoutWinnersFoundation",
       "getWorldCup2026ThirdPlaceMatchFoundation",
       "simulateWorldCup2026ThirdPlaceMatchFoundation",
-      "getWorldCup2026LiveGroupStandings"
+      "getWorldCup2026LiveGroupStandings",
+      "getWorldCup2026EloIngestionFoundation"
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",

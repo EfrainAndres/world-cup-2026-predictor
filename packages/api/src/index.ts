@@ -27,7 +27,8 @@ export {
   simulateWorldCup2026FinalMatchFoundation,
   resolveWorldCup2026KnockoutWinnersFoundation,
   getWorldCup2026ThirdPlaceMatchFoundation,
-  simulateWorldCup2026ThirdPlaceMatchFoundation
+  simulateWorldCup2026ThirdPlaceMatchFoundation,
+  getWorldCup2026EloIngestionFoundation
 } from "./routes.js";
 export {
   createCachedResultsProvider,
@@ -45,6 +46,8 @@ export {
 export type { FootballDataOrgProviderConfig, SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
 export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
+export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
+export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
@@ -180,7 +183,14 @@ export type {
   WorldCup2026SyncResult,
   WorldCup2026StandingsMode,
   WorldCup2026LiveStandingsSyncMetadata,
-  WorldCup2026LiveGroupStandingsResponse
+  WorldCup2026LiveGroupStandingsResponse,
+  WorldCup2026EloIngestionIssueCode,
+  WorldCup2026EloIngestionIssue,
+  WorldCup2026EloIngestionRecord,
+  WorldCup2026TournamentAdjustedEloEntry,
+  WorldCup2026EloIngestionMetadata,
+  WorldCup2026EloIngestionResult,
+  WorldCup2026EloIngestionFoundationResponse
 } from "./schemas.js";
 
 export type {
