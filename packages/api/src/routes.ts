@@ -25,11 +25,19 @@ import { LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING, mergeEloMatchSources } from 
 import { getHealth } from "./health.js";
 import { getModelInfo } from "./model-info.js";
 import { assessPredictionConfidence } from "./prediction-confidence.js";
-import { resolveWorldCup2026ResultsProviderFoundation } from "./results-provider-foundation.js";
+import {
+  createLocalStaticResultsProvider,
+  resolveWorldCup2026ResultsProviderFoundation
+} from "./results-provider-foundation.js";
 import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
 import { buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
 import { defaultSnapshotStore } from "./snapshot-store.js";
+import {
+  evaluateWorldCup2026PredictionSnapshot,
+  summarizeWorldCup2026ModelReality
+} from "./prediction-evaluation-service.js";
+import { defaultPredictionEvaluationStore } from "./prediction-evaluation-store.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -104,7 +112,12 @@ import type {
   CreateWorldCup2026PredictionSnapshotRequest,
   CreateWorldCup2026PredictionSnapshotResponse,
   GetWorldCup2026PredictionSnapshotResponse,
-  ListWorldCup2026PredictionSnapshotsResponse
+  ListWorldCup2026PredictionSnapshotsResponse,
+  CreateWorldCup2026PredictionEvaluationRequest,
+  CreateWorldCup2026PredictionEvaluationResponse,
+  GetWorldCup2026PredictionEvaluationResponse,
+  ListWorldCup2026PredictionEvaluationsResponse,
+  GetWorldCup2026ModelRealitySummaryResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -2330,6 +2343,140 @@ export function listWorldCup2026PredictionSnapshots(fixtureId?: string): ListWor
   };
 }
 
+export function createWorldCup2026PredictionEvaluation(
+  request: CreateWorldCup2026PredictionEvaluationRequest
+): CreateWorldCup2026PredictionEvaluationResponse {
+  if (typeof request.snapshotId !== "string" || request.snapshotId.trim() === "") {
+    return {
+      status: "not_eligible",
+      issues: [
+        {
+          code: "missing_snapshot",
+          message: "snapshotId is required."
+        }
+      ],
+      metadata: buildApiMetadata([
+        "Prediction evaluation creation failed validation."
+      ])
+    };
+  }
+
+  const snapshot = defaultSnapshotStore.getById(request.snapshotId.trim());
+
+  if (snapshot === undefined) {
+    return {
+      status: "not_eligible",
+      issues: [
+        {
+          code: "missing_snapshot",
+          message: `No prediction snapshot exists with id "${request.snapshotId.trim()}".`,
+          snapshotId: request.snapshotId.trim()
+        }
+      ],
+      metadata: buildApiMetadata([
+        "Prediction evaluation rejected because the referenced snapshot does not exist."
+      ])
+    };
+  }
+
+  const localResults = createLocalStaticResultsProvider().getCompletedResults();
+
+  const evaluationResult = evaluateWorldCup2026PredictionSnapshot({
+    snapshot,
+    completedResults:
+      localResults.status === "success" ? localResults.records : [],
+    evaluationStore: defaultPredictionEvaluationStore,
+    resultSource: "local_static",
+    cacheUsed: false,
+    localFallbackUsed: true,
+    ...(request.evaluatedAt === undefined ? {} : { evaluatedAt: request.evaluatedAt })
+  });
+
+  if (evaluationResult.status === "not_eligible") {
+    return {
+      status: "not_eligible",
+      issues: evaluationResult.issues,
+      metadata: buildApiMetadata([
+        "Prediction snapshot was not eligible for model-vs-reality evaluation."
+      ])
+    };
+  }
+
+  return {
+    status: evaluationResult.status,
+    evaluation: evaluationResult.evaluation!,
+    issues: evaluationResult.issues,
+    metadata: buildApiMetadata([
+      evaluationResult.status === "duplicate"
+        ? "Existing immutable evaluation returned for the same snapshot/result identity."
+        : "Immutable model-vs-reality evaluation created from stored pre-match snapshot and completed local result.",
+      "Evaluation uses stored snapshot probabilities only. No prediction was regenerated.",
+      "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
+    ])
+  };
+}
+
+export function getWorldCup2026PredictionEvaluation(
+  evaluationId: string
+): GetWorldCup2026PredictionEvaluationResponse {
+  const evaluation = defaultPredictionEvaluationStore.getById(evaluationId);
+
+  if (evaluation === undefined) {
+    return {
+      status: "not_found",
+      evaluationId,
+      metadata: buildApiMetadata([
+        `No model-vs-reality evaluation found with id "${evaluationId}".`
+      ])
+    };
+  }
+
+  return {
+    status: "success",
+    evaluation,
+    metadata: buildApiMetadata([
+      `Model-vs-reality evaluation "${evaluationId}" retrieved from in-memory store.`
+    ])
+  };
+}
+
+export function listWorldCup2026PredictionEvaluations(
+  fixtureId?: string
+): ListWorldCup2026PredictionEvaluationsResponse {
+  const evaluations =
+    fixtureId !== undefined
+      ? defaultPredictionEvaluationStore.getByFixtureId(fixtureId)
+      : defaultPredictionEvaluationStore.list();
+
+  return {
+    status: "success",
+    evaluations,
+    totalCount: evaluations.length,
+    ...(fixtureId !== undefined ? { fixtureId } : {}),
+    metadata: buildApiMetadata([
+      fixtureId !== undefined
+        ? `Listed ${evaluations.length} evaluation(s) for fixture "${fixtureId}".`
+        : `Listed all ${evaluations.length} model-vs-reality evaluation(s).`,
+      "Evaluations are ordered by evaluatedAt ascending, then evaluationId ascending.",
+      "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
+    ])
+  };
+}
+
+export function getWorldCup2026ModelRealitySummary(): GetWorldCup2026ModelRealitySummaryResponse {
+  const evaluations = defaultPredictionEvaluationStore.list();
+
+  return {
+    status: "success",
+    summary: summarizeWorldCup2026ModelReality(evaluations),
+    metadata: buildApiMetadata([
+      `Model-vs-reality summary computed from ${evaluations.length} immutable evaluation(s).`,
+      "Aggregate metrics are descriptive only and do not guarantee future predictive performance.",
+      "Small samples should be treated cautiously."
+    ])
+  };
+}
+
 export const apiRoutes: ApiRoutes = {
   getHealth,
   getModelInfo,
@@ -2358,5 +2505,9 @@ export const apiRoutes: ApiRoutes = {
   getWorldCup2026EloIngestionFoundation,
   createWorldCup2026PredictionSnapshot,
   getWorldCup2026PredictionSnapshot,
-  listWorldCup2026PredictionSnapshots
+  listWorldCup2026PredictionSnapshots,
+  createWorldCup2026PredictionEvaluation,
+  getWorldCup2026PredictionEvaluation,
+  listWorldCup2026PredictionEvaluations,
+  getWorldCup2026ModelRealitySummary
 };

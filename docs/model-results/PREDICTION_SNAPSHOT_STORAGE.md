@@ -100,10 +100,14 @@ Returns all snapshots, optionally filtered by `fixtureId`, ordered deterministic
 
 `canonicalizeForHash(value)` produces stable JSON by sorting object keys recursively before serialization. Arrays preserve their original element order. This guarantees that objects with the same logical content but different key insertion orders hash identically.
 
+## Relationship to Model vs Reality
+
+Phase 12.9 adds the first immutable evaluation layer on top of these stored snapshots. See `docs/model-results/MODEL_VS_REALITY_TRACKER.md` for eligibility rules, metric definitions, calibration buckets, and summary behavior.
+
 ## Limitations
 
 - **In-memory only**: snapshots do not persist across serverless invocations or process restarts.
-- **No accuracy scoring**: Brier Score, Log Loss, and model-vs-reality comparison are deferred to Phase 12.9.
+- **No embedded accuracy scoring**: evaluation is handled separately by the Phase 12.9 model-vs-reality tracker so the original snapshot remains untouched.
 - **No result attachment**: actual match scores cannot be attached to snapshots yet.
 - **Group-stage only**: only fixtures in `WORLD_CUP_2026_GROUP_STAGE_FIXTURES` are eligible.
 - **Default Poisson config**: `maxGoals` is fixed at `DEFAULT_POISSON_CONFIG.maxGoals = 7`.

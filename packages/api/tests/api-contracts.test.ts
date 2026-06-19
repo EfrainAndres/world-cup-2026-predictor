@@ -172,7 +172,11 @@ describe("api contract coverage", () => {
       "getWorldCup2026EloIngestionFoundation",
       "createWorldCup2026PredictionSnapshot",
       "getWorldCup2026PredictionSnapshot",
-      "listWorldCup2026PredictionSnapshots"
+      "listWorldCup2026PredictionSnapshots",
+      "createWorldCup2026PredictionEvaluation",
+      "getWorldCup2026PredictionEvaluation",
+      "listWorldCup2026PredictionEvaluations",
+      "getWorldCup2026ModelRealitySummary"
     ]);
 
     for (const routeHandler of Object.keys(apiRoutes)) {

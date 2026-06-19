@@ -100,6 +100,6 @@ Recommended branch naming:
 
 ## Current Phase
 
-The current documentation direction includes Phase 12.0, Live Data, Model Quality & UX Backlog.
+The current implementation track is executing the Phase 12 backlog, including immutable prediction snapshots, synchronized World Cup 2026 result ingestion into Elo, and the Phase 12.9 Model vs Reality tracker for post-match evaluation.
 
-This phase is documentation-only and defines the prioritized path from a mostly static World Cup predictor to a live, confidence-aware World Cup intelligence dashboard. The detailed backlog lives in `docs/roadmap/PHASE_12_LIVE_DATA_MODEL_QUALITY_UX_BACKLOG.md`.
+The ordered Phase 12 plan still lives in `docs/roadmap/PHASE_12_LIVE_DATA_MODEL_QUALITY_UX_BACKLOG.md`.
