@@ -170,6 +170,7 @@ describe("api contract coverage", () => {
       "simulateWorldCup2026ThirdPlaceMatchFoundation",
       "getWorldCup2026LiveGroupStandings",
       "getWorldCup2026EloIngestionFoundation",
+      "getWorldCup2026TournamentFormFoundation",
       "createWorldCup2026PredictionSnapshot",
       "getWorldCup2026PredictionSnapshot",
       "listWorldCup2026PredictionSnapshots",

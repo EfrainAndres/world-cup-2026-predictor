@@ -38,6 +38,7 @@ import {
   summarizeWorldCup2026ModelReality
 } from "./prediction-evaluation-service.js";
 import { defaultPredictionEvaluationStore } from "./prediction-evaluation-store.js";
+import { calculateWorldCup2026TournamentForm } from "./tournament-form.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -117,7 +118,9 @@ import type {
   CreateWorldCup2026PredictionEvaluationResponse,
   GetWorldCup2026PredictionEvaluationResponse,
   ListWorldCup2026PredictionEvaluationsResponse,
-  GetWorldCup2026ModelRealitySummaryResponse
+  GetWorldCup2026ModelRealitySummaryResponse,
+  GetWorldCup2026TournamentFormFoundationInput,
+  WorldCup2026TournamentFormFoundationResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -1250,6 +1253,45 @@ export function getWorldCup2026EloIngestionFoundation(): WorldCup2026EloIngestio
       `Baseline pipeline processes ${combinedMatchCount} historical matches before WC2026 tournament adjustment.`,
       `WC2026 completed matches ingested: ${ingestion.metadata.processedCount} of ${ingestion.metadata.eligibleRecords} eligible.`,
       "Ingestion is deterministic, chronological, idempotent, and look-ahead-free.",
+      "No network calls, database, or external services are used."
+    ])
+  };
+}
+
+export function getWorldCup2026TournamentFormFoundation(
+  input: GetWorldCup2026TournamentFormFoundationInput = {}
+): WorldCup2026TournamentFormFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  const baselineRatings = new Map<string, number>(
+    worldCupCoverageEntries.map((entry) => [entry.team, entry.eloRating])
+  );
+  const completedResults = createLocalStaticResultsProvider().getCompletedResults();
+  const form = calculateWorldCup2026TournamentForm({
+    completedResults: completedResults.status === "success" ? completedResults.records : [],
+    baselineRatings,
+    ...(input.cutoffAt === undefined ? {} : { cutoffAt: input.cutoffAt }),
+    ...(input.referenceAt === undefined ? {} : { referenceAt: input.referenceAt })
+  });
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_tournament_form_foundation",
+    form,
+    warnings: [
+      ...form.metadata.warnings,
+      ...pipeline.warnings,
+      ...internationalSupplement.loadWarnings,
+      LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
+      ...internationalSupplement.metadata.foundationWarnings,
+      `Tournament form uses ${combinedMatchCount} historical matches only for opponent-strength context.`,
+      "Tournament form is not integrated into live predictions in this phase."
+    ],
+    metadata: buildApiMetadata([
+      `Tournament form was calculated from ${form.metadata.recordsAccepted} accepted completed World Cup 2026 records.`,
+      `Teams summarized: ${form.metadata.teamsSummarized}.`,
+      "This handler is deterministic and does not mutate Elo ratings or recalculate predictions.",
       "No network calls, database, or external services are used."
     ])
   };
@@ -2503,6 +2545,7 @@ export const apiRoutes: ApiRoutes = {
   simulateWorldCup2026ThirdPlaceMatchFoundation,
   getWorldCup2026LiveGroupStandings,
   getWorldCup2026EloIngestionFoundation,
+  getWorldCup2026TournamentFormFoundation,
   createWorldCup2026PredictionSnapshot,
   getWorldCup2026PredictionSnapshot,
   listWorldCup2026PredictionSnapshots,

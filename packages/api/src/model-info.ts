@@ -32,6 +32,7 @@ export function getModelInfo(): ModelInfoResponse {
       "Third Place Match foundation projecting participants from deterministic semifinal loser resolution. No match simulation.",
       "Match-level Third Place Match simulation using Live Elo ratings and Poisson score matrix for the projected Third Place fixture.",
       "Deterministic, idempotent, look-ahead-free ingestion of completed WC2026 match results into the live Elo pipeline for tournament-adjusted team ratings.",
+      "Deterministic tournament-form foundation summarizing completed WC2026 matches into bounded secondary-signal recommendations without mutating Elo ratings or predictions.",
       "Immutable, auditable pre-match prediction snapshots for official WC2026 group-stage fixtures with stable content hashing, idempotency, and look-ahead cutoff protection.",
       "Immutable model-vs-reality evaluations linking stored pre-match snapshots to completed WC2026 results with deterministic outcome, scoreline, Brier Score, Log Loss, calibration, and fallback-coverage summaries."
     ],
@@ -64,6 +65,7 @@ export function getModelInfo(): ModelInfoResponse {
       "simulateWorldCup2026ThirdPlaceMatchFoundation",
       "getWorldCup2026LiveGroupStandings",
       "getWorldCup2026EloIngestionFoundation",
+      "getWorldCup2026TournamentFormFoundation",
       "createWorldCup2026PredictionSnapshot",
       "getWorldCup2026PredictionSnapshot",
       "listWorldCup2026PredictionSnapshots",
