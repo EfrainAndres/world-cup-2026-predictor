@@ -1099,11 +1099,128 @@ export interface WorldCup2026EloIngestionFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export type PredictionSnapshotStatus = "pre_match_locked" | "foundation_unverified";
+
+export interface WorldCup2026PredictionSnapshotModelConfig {
+  predictionMode: "live_elo";
+  eloPreset: string;
+  maxGoals: number;
+  tournamentResultsAdjustmentEnabled: boolean;
+}
+
+export interface WorldCup2026PredictionSnapshotInputs {
+  homeElo: number;
+  awayElo: number;
+  homeUsesFallback: boolean;
+  awayUsesFallback: boolean;
+  tournamentMatchesIncluded: number;
+}
+
+export interface WorldCup2026PredictionSnapshotScoreline {
+  homeGoals: number;
+  awayGoals: number;
+  probability: number;
+}
+
+export interface WorldCup2026PredictionSnapshotPrediction {
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  mostLikelyScorelines: readonly WorldCup2026PredictionSnapshotScoreline[];
+}
+
+export interface WorldCup2026PredictionSnapshotProvenance {
+  dataCoverage?: string;
+}
+
+export interface WorldCup2026PredictionSnapshot {
+  snapshotId: string;
+  fixtureId: string;
+  status: PredictionSnapshotStatus;
+  capturedAt: string;
+  cutoffAt: string;
+  kickoffAt?: string;
+  group?: string;
+  matchday?: number;
+  homeTeam: string;
+  awayTeam: string;
+  modelVersion: string;
+  modelConfiguration: WorldCup2026PredictionSnapshotModelConfig;
+  inputs: WorldCup2026PredictionSnapshotInputs;
+  prediction: WorldCup2026PredictionSnapshotPrediction;
+  confidence: PredictionConfidenceAssessment;
+  provenance: WorldCup2026PredictionSnapshotProvenance;
+  contentHash: string;
+}
+
+export interface WorldCup2026PredictionSnapshotCreateResult {
+  result: "created" | "existing";
+  snapshot: WorldCup2026PredictionSnapshot;
+  idempotencyKey: string;
+  duplicate: boolean;
+}
+
+export interface CreateWorldCup2026PredictionSnapshotRequest {
+  fixtureId: string;
+  capturedAt?: string;
+  cutoffAt?: string;
+  kickoffAt?: string;
+  tournamentResultsAdjustmentEnabled?: boolean;
+}
+
+export interface CreateWorldCup2026PredictionSnapshotSuccessResponse {
+  status: "success";
+  result: "created" | "existing";
+  duplicate: boolean;
+  snapshot: WorldCup2026PredictionSnapshot;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
+export interface CreateWorldCup2026PredictionSnapshotValidationErrorResponse {
+  status: "validation_error";
+  issues: readonly ApiValidationIssue[];
+  metadata: ApiMetadata;
+}
+
+export type CreateWorldCup2026PredictionSnapshotResponse =
+  | CreateWorldCup2026PredictionSnapshotSuccessResponse
+  | CreateWorldCup2026PredictionSnapshotValidationErrorResponse;
+
+export interface GetWorldCup2026PredictionSnapshotSuccessResponse {
+  status: "success";
+  snapshot: WorldCup2026PredictionSnapshot;
+  metadata: ApiMetadata;
+}
+
+export interface GetWorldCup2026PredictionSnapshotNotFoundResponse {
+  status: "not_found";
+  snapshotId: string;
+  metadata: ApiMetadata;
+}
+
+export type GetWorldCup2026PredictionSnapshotResponse =
+  | GetWorldCup2026PredictionSnapshotSuccessResponse
+  | GetWorldCup2026PredictionSnapshotNotFoundResponse;
+
+export interface ListWorldCup2026PredictionSnapshotsResponse {
+  status: "success";
+  snapshots: readonly WorldCup2026PredictionSnapshot[];
+  totalCount: number;
+  fixtureId?: string;
+  metadata: ApiMetadata;
+}
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
   simulateMatch: (request: SimulateMatchRequest) => SimulateMatchResponse;
   predictMatchFromLiveElo: (request: PredictMatchFromLiveEloRequest) => PredictMatchFromLiveEloResponse;
+  createWorldCup2026PredictionSnapshot: (request: CreateWorldCup2026PredictionSnapshotRequest) => CreateWorldCup2026PredictionSnapshotResponse;
+  getWorldCup2026PredictionSnapshot: (snapshotId: string) => GetWorldCup2026PredictionSnapshotResponse;
+  listWorldCup2026PredictionSnapshots: (fixtureId?: string) => ListWorldCup2026PredictionSnapshotsResponse;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;

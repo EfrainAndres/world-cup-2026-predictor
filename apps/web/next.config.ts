@@ -16,8 +16,16 @@ function isWorkspaceSourceContext(context: string): boolean {
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@world-cup-2026-predictor/api"],
-  webpack(config, { webpack }) {
+  webpack(config, { webpack, isServer }) {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        crypto: false
+      };
+    }
+
     config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, "crypto"),
       new webpack.NormalModuleReplacementPlugin(
         /^\..*\.js$/,
         (resource: { context?: string; request: string }) => {

@@ -28,7 +28,10 @@ export {
   resolveWorldCup2026KnockoutWinnersFoundation,
   getWorldCup2026ThirdPlaceMatchFoundation,
   simulateWorldCup2026ThirdPlaceMatchFoundation,
-  getWorldCup2026EloIngestionFoundation
+  getWorldCup2026EloIngestionFoundation,
+  createWorldCup2026PredictionSnapshot,
+  getWorldCup2026PredictionSnapshot,
+  listWorldCup2026PredictionSnapshots
 } from "./routes.js";
 export {
   createCachedResultsProvider,
@@ -48,6 +51,10 @@ export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
+export { canonicalizeForHash, computeContentHash, buildSnapshotIdempotencyKey, buildSnapshotId, buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
+export type { BuildSnapshotInput } from "./snapshot-service.js";
+export { createInMemorySnapshotStore, defaultSnapshotStore } from "./snapshot-store.js";
+export type { PredictionSnapshotStore } from "./snapshot-store.js";
 export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
@@ -190,7 +197,23 @@ export type {
   WorldCup2026TournamentAdjustedEloEntry,
   WorldCup2026EloIngestionMetadata,
   WorldCup2026EloIngestionResult,
-  WorldCup2026EloIngestionFoundationResponse
+  WorldCup2026EloIngestionFoundationResponse,
+  PredictionSnapshotStatus,
+  WorldCup2026PredictionSnapshotModelConfig,
+  WorldCup2026PredictionSnapshotInputs,
+  WorldCup2026PredictionSnapshotScoreline,
+  WorldCup2026PredictionSnapshotPrediction,
+  WorldCup2026PredictionSnapshotProvenance,
+  WorldCup2026PredictionSnapshot,
+  WorldCup2026PredictionSnapshotCreateResult,
+  CreateWorldCup2026PredictionSnapshotRequest,
+  CreateWorldCup2026PredictionSnapshotSuccessResponse,
+  CreateWorldCup2026PredictionSnapshotValidationErrorResponse,
+  CreateWorldCup2026PredictionSnapshotResponse,
+  GetWorldCup2026PredictionSnapshotSuccessResponse,
+  GetWorldCup2026PredictionSnapshotNotFoundResponse,
+  GetWorldCup2026PredictionSnapshotResponse,
+  ListWorldCup2026PredictionSnapshotsResponse
 } from "./schemas.js";
 
 export type {
