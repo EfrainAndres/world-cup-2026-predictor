@@ -95,7 +95,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.4 | External Results-Provider Foundation | Define the normalized external/live results provider layer with cache and local static fallback chain. | Done |
 | 12.5 | Live Results Synchronization | Synchronize scheduled, live, halftime, finished, postponed, and cancelled fixtures while preserving last valid cache behavior. | Done |
 | 12.6 | Live Group Standings | Support official, provisional live, and projected standings with best third-place and projected Round of 32 updates. | Done |
-| 12.7 | World Cup Results-to-Elo Ingestion | Process completed tournament results idempotently into ratings and future projections without look-ahead leakage. | Planned |
+| 12.7 | World Cup Results-to-Elo Ingestion | Process completed tournament results idempotently into ratings and future projections without look-ahead leakage. | Done |
 | 12.8 | Prediction Snapshot Storage | Persist immutable pre-match prediction snapshots for later evaluation and product history views. | Planned |
 | 12.9 | Model vs Reality Tracker | Measure prediction quality against actual outcomes with calibration, Brier Score, Log Loss, and fallback-vs-full-coverage analysis. | Planned |
 | 12.10 | Tournament-Form Adjustment | Add controlled current-tournament and recent-form context after live ingestion and snapshot tracking are stable. | Planned |

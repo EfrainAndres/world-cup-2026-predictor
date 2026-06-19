@@ -27,6 +27,7 @@ import { getModelInfo } from "./model-info.js";
 import { assessPredictionConfidence } from "./prediction-confidence.js";
 import { resolveWorldCup2026ResultsProviderFoundation } from "./results-provider-foundation.js";
 import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
+import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
@@ -96,7 +97,8 @@ import type {
   WorldCup2026SemifinalMatchSimulationFixture,
   WorldCup2026SemifinalMatchSimulationFoundationResponse,
   WorldCup2026SemifinalQualifier,
-  WorldCup2026RoundOf32FoundationResponse
+  WorldCup2026RoundOf32FoundationResponse,
+  WorldCup2026EloIngestionFoundationResponse
 } from "./schemas.js";
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
@@ -996,7 +998,38 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
   }
 
   const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
-  const worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+  let worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+
+  let tournamentMatchesIncluded = 0;
+
+  if (request.tournamentResultsAdjustment?.enabled === true) {
+    const baselineRatings = new Map<string, number>(
+      worldCupCoverageEntries.map((e) => [e.team, e.eloRating])
+    );
+    const completedResults = resolveWorldCup2026ResultsProviderFoundation();
+    const completedRecords = completedResults.status === "success" ? completedResults.completedResults : [];
+    const ingestion = ingestWorldCup2026ResultsIntoLiveElo({
+      completedResults: completedRecords,
+      baselineRatings,
+      pipelineVersion: pipeline.pipelineVersion,
+      combinedMatchCount,
+      ...(request.tournamentResultsAdjustment.cutoffAt !== undefined
+        ? { cutoffAt: request.tournamentResultsAdjustment.cutoffAt }
+        : {})
+    });
+    tournamentMatchesIncluded = ingestion.metadata.processedCount;
+    const adjustedRatingMap = new Map<string, number>(
+      ingestion.adjustedRatings.map((e) => [e.team, e.adjustedEloRating])
+    );
+    worldCupCoverageEntries = worldCupCoverageEntries.map((entry) => {
+      const adjusted = adjustedRatingMap.get(entry.team);
+      if (adjusted !== undefined) {
+        return { ...entry, eloRating: adjusted };
+      }
+      return entry;
+    });
+  }
+
   const availableTeams = getAvailableTeamCoverage(worldCupCoverageEntries);
   const ratingsByTeam = buildCoverageLookup(worldCupCoverageEntries);
   const homeTeam = request.homeTeam.trim();
@@ -1119,12 +1152,15 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       awayMatchesPlayed: awayEntry.matchesPlayed,
       matchesProcessed: pipeline.matchesProcessed,
       latestMatchDate: pipeline.latestMatchDate ?? LIVE_ELO_FOUNDATION_LATEST_MATCH_DATE,
-      currentTournamentMatchesIncluded: 0,
+      currentTournamentMatchesIncluded: tournamentMatchesIncluded,
       fallbackSeedRating: WORLD_CUP_2026_FALLBACK_SEED_RATING,
       dataCoverage:
         "World Cup 2010, 2014, 2018, and 2022 curated fixture results supplemented with an expanded partial international sample and World Cup 2026 fallback coverage.",
       attackDefenseAvailable: false
     }),
+    ...(request.tournamentResultsAdjustment?.enabled === true
+      ? { tournamentAdjustment: { applied: true, matchesIncluded: tournamentMatchesIncluded } }
+      : {}),
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -1157,6 +1193,46 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
         ? {}
         : { mostCommonScorelineLimit: request.monteCarlo.mostCommonScorelineLimit })
     })
+  };
+}
+
+export function getWorldCup2026EloIngestionFoundation(): WorldCup2026EloIngestionFoundationResponse {
+  const { internationalSupplement, combinedMatchCount, pipeline } = buildLiveEloPipelineFoundation();
+  const worldCupCoverageEntries = buildWorldCup2026CoverageEntries(pipeline.rankedRatings);
+
+  const baselineRatings = new Map<string, number>(
+    worldCupCoverageEntries.map((e) => [e.team, e.eloRating])
+  );
+
+  const completedResults = resolveWorldCup2026ResultsProviderFoundation();
+  const completedRecords = completedResults.status === "success" ? completedResults.completedResults : [];
+
+  const ingestion = ingestWorldCup2026ResultsIntoLiveElo({
+    completedResults: completedRecords,
+    baselineRatings,
+    pipelineVersion: pipeline.pipelineVersion,
+    combinedMatchCount
+  });
+
+  return {
+    status: "success",
+    tournamentName: "FIFA World Cup 2026",
+    dataScope: "world_cup_2026_elo_ingestion_foundation",
+    ingestion,
+    warnings: [
+      ...pipeline.warnings,
+      ...internationalSupplement.loadWarnings,
+      LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING,
+      ...internationalSupplement.metadata.foundationWarnings,
+      "Elo ingestion uses local static results only. No live provider data is fetched in this foundation handler.",
+      WORLD_CUP_2026_FALLBACK_RATING_WARNING
+    ],
+    metadata: buildApiMetadata([
+      `Baseline pipeline processes ${combinedMatchCount} historical matches before WC2026 tournament adjustment.`,
+      `WC2026 completed matches ingested: ${ingestion.metadata.processedCount} of ${ingestion.metadata.eligibleRecords} eligible.`,
+      "Ingestion is deterministic, chronological, idempotent, and look-ahead-free.",
+      "No network calls, database, or external services are used."
+    ])
   };
 }
 
@@ -2147,5 +2223,6 @@ export const apiRoutes: ApiRoutes = {
   resolveWorldCup2026KnockoutWinnersFoundation,
   getWorldCup2026ThirdPlaceMatchFoundation,
   simulateWorldCup2026ThirdPlaceMatchFoundation,
-  getWorldCup2026LiveGroupStandings
+  getWorldCup2026LiveGroupStandings,
+  getWorldCup2026EloIngestionFoundation
 };
