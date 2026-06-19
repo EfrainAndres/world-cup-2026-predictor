@@ -1099,6 +1099,73 @@ export interface WorldCup2026EloIngestionFoundationResponse {
   metadata: ApiMetadata;
 }
 
+export type WorldCup2026TournamentFormIssueCode =
+  | "record_rejected_non_finished"
+  | "fixture_not_found"
+  | "invalid_score"
+  | "duplicate_fixture_skipped"
+  | "cutoff_excluded"
+  | "future_record_excluded";
+
+export interface WorldCup2026TournamentFormIssue {
+  code: WorldCup2026TournamentFormIssueCode;
+  providerFixtureId?: string;
+  fixtureId?: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  message: string;
+}
+
+export interface WorldCup2026TournamentFormTeamSummary {
+  team: string;
+  matchesPlayed: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  mostRecentEligibleMatch?: string;
+  opponentsFaced: readonly string[];
+  formScore: number;
+  eloAdjustmentRecommendation: number;
+}
+
+export interface WorldCup2026TournamentFormMetadata {
+  cutoffAt?: string;
+  referenceAt: string;
+  totalRecordsReceived: number;
+  recordsAccepted: number;
+  recordsRejected: number;
+  futureRecordsExcluded: number;
+  duplicateFixturesSkipped: number;
+  teamsSummarized: number;
+  warnings: readonly string[];
+  formulaVersion: string;
+}
+
+export interface WorldCup2026TournamentFormResult {
+  status: "success";
+  summaries: readonly WorldCup2026TournamentFormTeamSummary[];
+  issues: readonly WorldCup2026TournamentFormIssue[];
+  metadata: WorldCup2026TournamentFormMetadata;
+}
+
+export interface GetWorldCup2026TournamentFormFoundationInput {
+  cutoffAt?: string;
+  referenceAt?: string;
+}
+
+export interface WorldCup2026TournamentFormFoundationResponse {
+  status: "success";
+  tournamentName: "FIFA World Cup 2026";
+  dataScope: "world_cup_2026_tournament_form_foundation";
+  form: WorldCup2026TournamentFormResult;
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
 export type PredictionSnapshotStatus = "pre_match_locked" | "foundation_unverified";
 
 export interface WorldCup2026PredictionSnapshotModelConfig {
@@ -1427,6 +1494,9 @@ export interface ApiRoutes {
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
   getWorldCup2026LiveGroupStandings: () => WorldCup2026LiveGroupStandingsResponse;
   getWorldCup2026EloIngestionFoundation: () => WorldCup2026EloIngestionFoundationResponse;
+  getWorldCup2026TournamentFormFoundation: (
+    input?: GetWorldCup2026TournamentFormFoundationInput
+  ) => WorldCup2026TournamentFormFoundationResponse;
   getWorldCup2026RoundOf32Foundation: () => WorldCup2026RoundOf32FoundationResponse;
   getWorldCup2026KnockoutBracketFoundation: () => WorldCup2026KnockoutBracketFoundationResponse;
   simulateWorldCup2026KnockoutFixturesFoundation: () => WorldCup2026KnockoutSimulationFoundationResponse;

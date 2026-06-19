@@ -29,6 +29,7 @@ export {
   getWorldCup2026ThirdPlaceMatchFoundation,
   simulateWorldCup2026ThirdPlaceMatchFoundation,
   getWorldCup2026EloIngestionFoundation,
+  getWorldCup2026TournamentFormFoundation,
   createWorldCup2026PredictionSnapshot,
   getWorldCup2026PredictionSnapshot,
   listWorldCup2026PredictionSnapshots,
@@ -55,6 +56,17 @@ export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
+export {
+  WORLD_CUP_2026_TOURNAMENT_FORM_FORMULA_VERSION,
+  WORLD_CUP_2026_TOURNAMENT_FORM_MINIMUM_MATCHES,
+  WORLD_CUP_2026_TOURNAMENT_FORM_MAX_ABSOLUTE_ADJUSTMENT,
+  WORLD_CUP_2026_TOURNAMENT_FORM_RESULT_WEIGHT,
+  WORLD_CUP_2026_TOURNAMENT_FORM_GOAL_DIFFERENCE_WEIGHT,
+  WORLD_CUP_2026_TOURNAMENT_FORM_GOAL_DIFFERENCE_CAP,
+  WORLD_CUP_2026_TOURNAMENT_FORM_OPPONENT_STRENGTH_WEIGHT,
+  calculateWorldCup2026TournamentForm
+} from "./tournament-form.js";
+export type { CalculateWorldCup2026TournamentFormInput } from "./tournament-form.js";
 export { canonicalizeForHash, computeContentHash, buildSnapshotIdempotencyKey, buildSnapshotId, buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
 export type { BuildSnapshotInput } from "./snapshot-service.js";
 export { createInMemorySnapshotStore, defaultSnapshotStore } from "./snapshot-store.js";
@@ -223,6 +235,13 @@ export type {
   WorldCup2026EloIngestionMetadata,
   WorldCup2026EloIngestionResult,
   WorldCup2026EloIngestionFoundationResponse,
+  WorldCup2026TournamentFormIssueCode,
+  WorldCup2026TournamentFormIssue,
+  WorldCup2026TournamentFormTeamSummary,
+  WorldCup2026TournamentFormMetadata,
+  WorldCup2026TournamentFormResult,
+  GetWorldCup2026TournamentFormFoundationInput,
+  WorldCup2026TournamentFormFoundationResponse,
   PredictionSnapshotStatus,
   WorldCup2026PredictionSnapshotModelConfig,
   WorldCup2026PredictionSnapshotInputs,
