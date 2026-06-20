@@ -6,6 +6,7 @@ import {
   getLiveEloRatingsFoundation,
   getModelInfo,
   getTeamRatingsFoundation,
+  getWorldCup2026DailyMatches,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026LiveGroupStandings,
@@ -46,6 +47,12 @@ import type {
   TeamRatingTier,
   TeamRatingsFoundationResponse,
   TournamentSimulationSuccessResponse,
+  GetWorldCup2026DailyMatchesInput,
+  WorldCup2026DailyMatchesResponse,
+  WorldCup2026DailyMatchesSuccessResponse,
+  WorldCup2026DailyMatchState,
+  WorldCup2026DailyMatchEntry,
+  WorldCup2026DailyMatchesProviderMetadata,
   WorldCup2026FixtureFoundationResponse,
   WorldCup2026GroupStandingsFoundationResponse,
   WorldCup2026LiveGroupStandingsResponse,
@@ -71,6 +78,14 @@ export type { EloXgPreset };
 export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
 export type { LiveEloRatedTeamEntry, LiveEloRatingsFoundationResponse };
 export type { PredictMatchFromLiveEloRequest, PredictMatchFromLiveEloResponse, PredictMatchFromLiveEloSuccessResponse };
+export type {
+  GetWorldCup2026DailyMatchesInput,
+  WorldCup2026DailyMatchesResponse,
+  WorldCup2026DailyMatchesSuccessResponse,
+  WorldCup2026DailyMatchState,
+  WorldCup2026DailyMatchEntry,
+  WorldCup2026DailyMatchesProviderMetadata
+};
 export type { WorldCup2026FixtureFoundationResponse };
 export type { WorldCup2026GroupStandingsFoundationResponse };
 export type { WorldCup2026LiveGroupStandingsResponse, WorldCup2026StandingsMode, WorldCup2026LiveStandingsSyncMetadata };
@@ -136,6 +151,18 @@ export function predictDashboardMatchFromLiveElo(request: PredictMatchFromLiveEl
 
 export function getDashboardAvailableLiveEloTeams(): string[] {
   return getAvailableLiveEloTeams();
+}
+
+export async function getDashboardDailyMatches(
+  input?: GetWorldCup2026DailyMatchesInput
+): Promise<WorldCup2026DailyMatchesSuccessResponse> {
+  const response = await getWorldCup2026DailyMatches(input);
+
+  if (response.status !== "success") {
+    throw new Error("Dashboard daily matches request must remain valid.");
+  }
+
+  return response;
 }
 
 export function getDashboardSnapshot(): DashboardSnapshot {

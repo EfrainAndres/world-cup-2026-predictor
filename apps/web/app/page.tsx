@@ -6,6 +6,7 @@ import { MatchSimulationForm } from "../src/components/MatchSimulationForm";
 import { ModelStatusCard } from "../src/components/ModelStatusCard";
 import { SectionHeader } from "../src/components/SectionHeader";
 import { TeamRatingsSection } from "../src/components/TeamRatingsSection";
+import { TodaysMatchesSection } from "../src/components/TodaysMatchesSection";
 import { TournamentSimulationSection } from "../src/components/TournamentSimulationSection";
 import { WorldCupFinalSimulationSection } from "../src/components/WorldCupFinalSimulationSection";
 import { WorldCupFinalMatchSimulationSection } from "../src/components/WorldCupFinalMatchSimulationSection";
@@ -25,10 +26,12 @@ import { WorldCupRoundOf32Section } from "../src/components/WorldCupRoundOf32Sec
 import { WorldCupSemifinalMatchSimulationSection } from "../src/components/WorldCupSemifinalMatchSimulationSection";
 import { WorldCupSemifinalSimulationSection } from "../src/components/WorldCupSemifinalSimulationSection";
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
-import { getDashboardSnapshot } from "../src/lib/api-client";
+import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../src/lib/daily-matches-ui";
+import { getDashboardDailyMatches, getDashboardSnapshot } from "../src/lib/api-client";
 
-export default function DashboardHomePage() {
+export default async function DashboardHomePage() {
   const snapshot = getDashboardSnapshot();
+  const dailyMatches = await getDashboardDailyMatches({ timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -91,6 +94,8 @@ export default function DashboardHomePage() {
             <MatchSimulationForm initialResult={snapshot.matchPreview} fixtureFoundation={snapshot.worldCup2026Fixtures} />
           </div>
         </section>
+
+        <TodaysMatchesSection initialData={dailyMatches} />
 
         <LiveEloRatingsSection liveEloRatings={snapshot.liveEloRatings} />
 
