@@ -8,6 +8,48 @@ async function selectTeamOption(page: Page, label: string, searchText: string, o
   await page.getByRole("option", { name: optionLabel, exact: true }).click();
 }
 
+function buildDailyMatchesSuccessResponse(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    status: "success",
+    requestedDate: "2026-06-20",
+    timezone: "UTC",
+    generatedAt: "2026-06-19T12:00:00Z",
+    matches: [],
+    unscheduledMatches: [],
+    counts: {
+      total: 0,
+      upcoming: 0,
+      live: 0,
+      halftime: 0,
+      final: 0,
+      postponed: 0,
+      cancelled: 0,
+      unknown: 0,
+      unavailableKickoff: 0
+    },
+    providerMetadata: {
+      configuredProvider: "football-data",
+      activeProvider: "football-data.org",
+      externalRequestAttempted: true,
+      cacheUsed: false,
+      localFallbackUsed: false,
+      lastSuccessfulSync: "2026-06-20T15:45:00Z",
+      stale: false
+    },
+    issues: [],
+    warnings: [],
+    metadata: {
+      apiVersion: "1.0.0",
+      mode: "pure_handlers",
+      serverEnabled: false,
+      databaseEnabled: false,
+      externalServicesEnabled: false,
+      notes: []
+    },
+    ...overrides
+  };
+}
+
 // ── Dashboard shell ───────────────────────────────────────────────────────────
 
 test("loads dashboard home with main heading", async ({ page }) => {
@@ -31,6 +73,261 @@ test("main dashboard sections are visible on load", async ({ page }) => {
   await expect(
     page.getByRole("heading", { level: 2, name: "Current model and API evidence" })
   ).toBeVisible();
+});
+
+test("dashboard renders Today's World Cup Matches with timezone, fallback source, and unscheduled warning", async ({ page }) => {
+  await page.goto("/");
+
+  const section = page.getByRole("region", { name: "Today's World Cup Matches" });
+  await expect(section).toBeVisible();
+  await expect(section.getByText("Selected date")).toBeVisible();
+  await expect(section.getByText("Timezone")).toBeVisible();
+  await expect(section.getByText("UTC", { exact: true })).toBeVisible();
+  await expect(section.getByText("Source: Local static fallback", { exact: true })).toBeVisible();
+  await expect(section.getByText("No scheduled matches are available for this date.")).toBeVisible();
+  await expect(section.getByText(/fixtures are available but do not yet have kickoff metadata/i)).toBeVisible();
+});
+
+test("daily match center navigation loads mocked live and final cards with snapshot metadata", async ({ page }) => {
+  let requestCount = 0;
+  await page.route("**/api/world-cup-2026/daily-matches**", async (route) => {
+    requestCount += 1;
+
+    if (requestCount === 1) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          buildDailyMatchesSuccessResponse({
+            requestedDate: "2026-06-20",
+            matches: [
+              {
+                fixtureId: "wc2026-group-a-md1-mex-rsa",
+                providerFixtureId: "provider-fixture-1",
+                group: "Group A",
+                matchday: 1,
+                kickoffAt: "2026-06-20T16:00:00Z",
+                localizedKickoff: "2026-06-20 16:00 UTC",
+                homeTeam: "Mexico",
+                awayTeam: "South Africa",
+                normalizedStatus: "final",
+                state: "final",
+                homeScore: 2,
+                awayScore: 0,
+                predictionSnapshot: {
+                  available: true,
+                  snapshotId: "snap-final-1",
+                  capturedAt: "2026-06-20T14:00:00Z",
+                  modelVersion: "model-v1"
+                }
+              },
+              {
+                fixtureId: "wc2026-group-c-md1-bra-mar",
+                providerFixtureId: "provider-fixture-2",
+                group: "Group C",
+                matchday: 1,
+                kickoffAt: "2026-06-20T19:00:00Z",
+                localizedKickoff: "2026-06-20 19:00 UTC",
+                homeTeam: "Brazil",
+                awayTeam: "Morocco",
+                normalizedStatus: "live",
+                state: "live",
+                homeScore: 1,
+                awayScore: 1,
+                predictionSnapshot: {
+                  available: false
+                }
+              }
+            ],
+            counts: {
+              total: 2,
+              upcoming: 0,
+              live: 1,
+              halftime: 0,
+              final: 1,
+              postponed: 0,
+              cancelled: 0,
+              unknown: 0,
+              unavailableKickoff: 0
+            }
+          })
+        )
+      });
+      return;
+    }
+
+    if (requestCount === 2) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          buildDailyMatchesSuccessResponse({
+            requestedDate: "2026-06-19",
+            matches: [],
+            providerMetadata: {
+              configuredProvider: "local",
+              activeProvider: "local_static_provider",
+              externalRequestAttempted: false,
+              cacheUsed: false,
+              localFallbackUsed: true,
+              stale: false
+            }
+          })
+        )
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(
+        buildDailyMatchesSuccessResponse({
+          requestedDate: "2026-06-18",
+          matches: [
+            {
+              fixtureId: "wc2026-group-d-md1-usa-par",
+              providerFixtureId: "provider-fixture-3",
+              group: "Group D",
+              matchday: 1,
+              kickoffAt: "2026-06-18T18:00:00Z",
+              localizedKickoff: "2026-06-18 18:00 UTC",
+              homeTeam: "United States",
+              awayTeam: "Paraguay",
+              normalizedStatus: "halftime",
+              state: "halftime",
+              homeScore: 2,
+              awayScore: 1,
+              predictionSnapshot: {
+                available: false
+              }
+            }
+          ],
+          counts: {
+            total: 1,
+            upcoming: 0,
+            live: 0,
+            halftime: 1,
+            final: 0,
+            postponed: 0,
+            cancelled: 0,
+            unknown: 0,
+            unavailableKickoff: 0
+          }
+        })
+      )
+    });
+  });
+
+  await page.goto("/");
+
+  const section = page.getByRole("region", { name: "Today's World Cup Matches" });
+  await section.getByRole("button", { name: "Next day" }).click();
+  await expect(section.getByText("2026-06-20", { exact: true })).toBeVisible();
+  await expect(section.getByText("Source: football-data.org")).toBeVisible();
+  await expect(section.getByText("Final", { exact: true })).toBeVisible();
+  await expect(section.getByText("Live", { exact: true })).toBeVisible();
+  await expect(section.getByText("2 - 0")).toBeVisible();
+  await expect(section.getByText("1 - 1")).toBeVisible();
+  await expect(section.getByText("Pre-match prediction saved")).toBeVisible();
+  await expect(section.getByText("Model: model-v1")).toBeVisible();
+
+  await section.getByRole("button", { name: "Today" }).click();
+  await expect(section.getByText("2026-06-19", { exact: true })).toBeVisible();
+
+  await section.getByRole("button", { name: "Previous day" }).click();
+  await expect(section.getByText("2026-06-18", { exact: true })).toBeVisible();
+  await expect(section.getByText("Halftime", { exact: true })).toBeVisible();
+});
+
+test("daily match center clears previous cards when a date change returns an API error", async ({ page }) => {
+  let requestCount = 0;
+  await page.route("**/api/world-cup-2026/daily-matches**", async (route) => {
+    requestCount += 1;
+
+    if (requestCount === 1) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          buildDailyMatchesSuccessResponse({
+            requestedDate: "2026-06-20",
+            matches: [
+              {
+                fixtureId: "wc2026-group-f-md1-ned-jpn",
+                providerFixtureId: "provider-fixture-4",
+                group: "Group F",
+                matchday: 1,
+                kickoffAt: "2026-06-20T14:00:00Z",
+                localizedKickoff: "2026-06-20 14:00 UTC",
+                homeTeam: "Netherlands",
+                awayTeam: "Japan",
+                normalizedStatus: "final",
+                state: "final",
+                homeScore: 1,
+                awayScore: 0,
+                predictionSnapshot: {
+                  available: false
+                }
+              }
+            ],
+            counts: {
+              total: 1,
+              upcoming: 0,
+              live: 0,
+              halftime: 0,
+              final: 1,
+              postponed: 0,
+              cancelled: 0,
+              unknown: 0,
+              unavailableKickoff: 0
+            }
+          })
+        )
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "validation_error",
+        issues: [{ field: "date", message: "Date is unavailable for the selected range." }],
+        metadata: {
+          apiVersion: "1.0.0",
+          mode: "pure_handlers",
+          serverEnabled: false,
+          databaseEnabled: false,
+          externalServicesEnabled: false,
+          notes: []
+        }
+      })
+    });
+  });
+
+  await page.goto("/");
+
+  const section = page.getByRole("region", { name: "Today's World Cup Matches" });
+  await section.getByRole("button", { name: "Next day" }).click();
+  await expect(section.getByText("Netherlands")).toBeVisible();
+  await expect(section.getByText("1 - 0")).toBeVisible();
+
+  await section.getByRole("button", { name: "Next day" }).click();
+  await expect(section.getByRole("alert")).toContainText("Date is unavailable for the selected range.");
+  await expect(section.getByText("Netherlands")).toHaveCount(0);
+});
+
+test("daily match center remains usable on mobile layouts", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const section = page.getByRole("region", { name: "Today's World Cup Matches" });
+  await expect(section).toBeVisible();
+  await expect(section.getByRole("button", { name: "Previous day" })).toBeVisible();
+  await expect(section.getByRole("button", { name: "Today" })).toBeVisible();
+  await expect(section.getByRole("button", { name: "Next day" })).toBeVisible();
+  await expect(section.getByText("Source: Local static fallback", { exact: true })).toBeVisible();
 });
 
 test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ page }) => {
