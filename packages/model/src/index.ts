@@ -396,6 +396,26 @@ export {
 } from "./historical-replay-accuracy-audit.js";
 
 export type {
+  BucketCompressionMetrics,
+  CalibrationExperimentReport,
+  CompetitionBreakdown,
+  DataSourceBreakdown,
+  NeutralSiteBreakdown,
+  ProductionFormulaSnapshot,
+  RunCalibrationExperimentInput,
+  SplitMetrics
+} from "./elo-to-xg-calibration-runner.js";
+
+export {
+  CALIBRATION_RUNNER_DEFAULT_PRESET,
+  CALIBRATION_RUNNER_POISSON_MAX_GOALS,
+  CALIBRATION_RUNNER_VERSION,
+  COMPRESSION_GAP_NOTE,
+  assertReportDeterminism,
+  runEloToXgCalibrationBaselineExperiment
+} from "./elo-to-xg-calibration-runner.js";
+
+export type {
   BuildCalibrationDatasetInput,
   CalibrationBaselineMetrics,
   CalibrationByCompetition,
