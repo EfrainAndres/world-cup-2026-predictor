@@ -526,6 +526,102 @@ export interface WorldCup2026LiveGroupStandingsResponse {
   metadata: ApiMetadata;
 }
 
+export type WorldCup2026DailyMatchState =
+  | "upcoming"
+  | "live"
+  | "halftime"
+  | "final"
+  | "postponed"
+  | "cancelled"
+  | "unknown";
+
+export type WorldCup2026DailyMatchIssueCode =
+  | "duplicate_fixture"
+  | "invalid_finished_score"
+  | "missing_kickoff";
+
+export interface WorldCup2026DailyMatchSnapshotSummary {
+  available: boolean;
+  snapshotId?: string;
+  capturedAt?: string;
+  modelVersion?: string;
+}
+
+export interface WorldCup2026DailyMatchIssue {
+  code: WorldCup2026DailyMatchIssueCode;
+  fixtureId?: string;
+  providerFixtureId?: string;
+  message: string;
+}
+
+export interface WorldCup2026DailyMatchEntry {
+  fixtureId: string;
+  providerFixtureId?: string;
+  group?: string;
+  matchday?: number;
+  kickoffAt?: string;
+  localizedKickoff?: string;
+  homeTeam: string;
+  awayTeam: string;
+  normalizedStatus: WorldCup2026ExternalMatchStatus;
+  state: WorldCup2026DailyMatchState;
+  homeScore?: number;
+  awayScore?: number;
+  venue?: string;
+  predictionSnapshot: WorldCup2026DailyMatchSnapshotSummary;
+}
+
+export interface WorldCup2026DailyMatchesCounts {
+  total: number;
+  upcoming: number;
+  live: number;
+  halftime: number;
+  final: number;
+  postponed: number;
+  cancelled: number;
+  unknown: number;
+  unavailableKickoff: number;
+}
+
+export interface WorldCup2026DailyMatchesProviderMetadata {
+  configuredProvider: WorldCup2026SyncProviderMode;
+  activeProvider: string;
+  externalRequestAttempted: boolean;
+  cacheUsed: boolean;
+  localFallbackUsed: boolean;
+  lastSuccessfulSync?: string;
+  stale: boolean;
+}
+
+export interface GetWorldCup2026DailyMatchesInput {
+  date?: string;
+  timezone?: string;
+}
+
+export interface WorldCup2026DailyMatchesSuccessResponse {
+  status: "success";
+  requestedDate: string;
+  timezone: string;
+  generatedAt: string;
+  matches: readonly WorldCup2026DailyMatchEntry[];
+  unscheduledMatches: readonly WorldCup2026DailyMatchEntry[];
+  counts: WorldCup2026DailyMatchesCounts;
+  providerMetadata: WorldCup2026DailyMatchesProviderMetadata;
+  issues: readonly WorldCup2026DailyMatchIssue[];
+  warnings: readonly string[];
+  metadata: ApiMetadata;
+}
+
+export interface WorldCup2026DailyMatchesValidationErrorResponse {
+  status: "validation_error";
+  issues: readonly ApiValidationIssue[];
+  metadata: ApiMetadata;
+}
+
+export type WorldCup2026DailyMatchesResponse =
+  | WorldCup2026DailyMatchesSuccessResponse
+  | WorldCup2026DailyMatchesValidationErrorResponse;
+
 export type WorldCup2026QualificationSource = "group_winner" | "group_runner_up" | "best_third_place";
 
 export interface WorldCup2026QualifiedTeamEntry extends WorldCup2026GroupStandingEntry {
@@ -1525,6 +1621,9 @@ export interface ApiRoutes {
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
+  getWorldCup2026DailyMatches: (
+    input?: GetWorldCup2026DailyMatchesInput
+  ) => Promise<WorldCup2026DailyMatchesResponse>;
   getWorldCup2026ResultsProviderFoundation: () => WorldCup2026ResultsProviderFoundationResponse;
   getWorldCup2026GroupStandingsFoundation: () => WorldCup2026GroupStandingsFoundationResponse;
   getWorldCup2026LiveGroupStandings: () => WorldCup2026LiveGroupStandingsResponse;

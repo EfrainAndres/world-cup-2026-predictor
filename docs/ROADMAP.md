@@ -107,7 +107,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.11D | Elo-to-xG V2 Candidate Production Decision | Review all eligible candidates, apply nine acceptance checks, conservative tie-breaking, and produce a typed production decision. | Done |
 | 12.11E | Elo-to-xG V2 Production Promotion | Safely promote steeper-0.15 to production: update balanced preset, preserve V1 rollback path, add formula-version metadata, run regression tests. | Done |
 | 12.11 | Elo-to-xG Calibration V2 | Recalibrate compressed Elo-to-xG behavior only after broader evaluation evidence and backtesting exist. | Planned |
-| 12.12 | Today’s Matches & Live Match Center | Add a daily experience for upcoming, live, and final matches with immutable pre-match predictions and result review. | Planned |
+| 12.12A | Today’s Matches Data Foundation | Add a deterministic daily-match API foundation with timezone-aware filtering, normalized states, fallback metadata, and optional snapshot association. | Done |
+| 12.12B | Today’s Matches & Live Match Center UI | Add the first daily dashboard experience for upcoming, live, halftime, and final World Cup 2026 matches using the daily-match foundation. | Planned |
 | 12.13 | Group Detail Prediction Pages | Build group-centered views that combine standings, results, live fixtures, confidence, and qualification context. | Planned |
 | 12.14 | Automatic Projection Refresh | Refresh standings, qualification, and knockout projections automatically as live results are processed. | Planned |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |

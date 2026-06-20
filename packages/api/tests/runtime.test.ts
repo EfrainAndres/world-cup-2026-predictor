@@ -19,6 +19,16 @@ interface RuntimeHistoricalSummaryResponse {
   };
 }
 
+interface RuntimeDailyMatchesResponse {
+  status: "success";
+  requestedDate: string;
+  timezone: string;
+  counts: {
+    total: number;
+    unavailableKickoff: number;
+  };
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -208,6 +218,21 @@ describe("api runtime foundation", () => {
     expect(body.status).toBe("success");
     expect(body.apiReadiness).toBe("ready_with_warnings");
     expect(body.metricAvailability.brierScore).toBe(true);
+  });
+
+  it("serves GET /world-cup-2026/daily-matches as JSON", async () => {
+    const response = await apiRuntime.fetch(
+      request("/world-cup-2026/daily-matches?date=2026-06-11&timezone=UTC")
+    );
+    const body = await readJson<RuntimeDailyMatchesResponse | ApiRuntimeFailureResponse>(response);
+
+    expect(response.status).toBe(200);
+    expectJsonResponse(response);
+    expect(body.status).toBe("success");
+    if (body.status !== "success") return;
+    expect(body.requestedDate).toBe("2026-06-11");
+    expect(body.timezone).toBe("UTC");
+    expect(typeof body.counts.total).toBe("number");
   });
 
   it("returns typed errors for unsupported methods and paths", async () => {

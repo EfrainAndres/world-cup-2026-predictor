@@ -133,6 +133,20 @@ export async function handleApiRuntimeRequest(request: Request, routes: ApiRoute
     return responseForHandlerResult(routes.simulateMatch(body as unknown as SimulateMatchRequest));
   }
 
+  if (url.pathname === "/world-cup-2026/daily-matches") {
+    if (request.method !== "GET") return methodNotAllowed(request.method, "GET");
+
+    const date = url.searchParams.get("date") ?? undefined;
+    const timezone = url.searchParams.get("timezone") ?? undefined;
+
+    return responseForHandlerResult(
+      await routes.getWorldCup2026DailyMatches({
+        ...(date === undefined ? {} : { date }),
+        ...(timezone === undefined ? {} : { timezone })
+      })
+    );
+  }
+
   const historicalYear = parseHistoricalYear(url.pathname);
 
   if (historicalYear !== undefined) {

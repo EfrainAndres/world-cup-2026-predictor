@@ -9,6 +9,7 @@ export {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026DailyMatches,
   getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026KnockoutBracketFoundation,
@@ -54,6 +55,8 @@ export {
 export type { FootballDataOrgProviderConfig, SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
 export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
+export { buildWorldCup2026DailyMatches } from "./daily-matches.js";
+export type { BuildWorldCup2026DailyMatchesInput } from "./daily-matches.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
 export {
@@ -184,6 +187,17 @@ export type {
   TournamentSimulationTeamResult,
   WorldCup2026Fixture,
   WorldCup2026FixtureFoundationResponse,
+  GetWorldCup2026DailyMatchesInput,
+  WorldCup2026DailyMatchEntry,
+  WorldCup2026DailyMatchIssue,
+  WorldCup2026DailyMatchIssueCode,
+  WorldCup2026DailyMatchSnapshotSummary,
+  WorldCup2026DailyMatchState,
+  WorldCup2026DailyMatchesCounts,
+  WorldCup2026DailyMatchesProviderMetadata,
+  WorldCup2026DailyMatchesResponse,
+  WorldCup2026DailyMatchesSuccessResponse,
+  WorldCup2026DailyMatchesValidationErrorResponse,
   WorldCup2026FixtureResult,
   WorldCup2026FixtureStatus,
   WorldCup2026Group,

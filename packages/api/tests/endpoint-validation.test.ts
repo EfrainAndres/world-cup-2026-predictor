@@ -39,6 +39,16 @@ interface EndpointHistoricalSummarySuccessResponse {
   };
 }
 
+interface EndpointDailyMatchesSuccessResponse {
+  status: "success";
+  requestedDate: string;
+  timezone: string;
+  counts: {
+    total: number;
+    unavailableKickoff: number;
+  };
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -101,6 +111,7 @@ describe("api endpoint validation", () => {
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026DailyMatches",
       "getWorldCup2026ResultsProviderFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
@@ -246,6 +257,21 @@ describe("api endpoint validation", () => {
     expect(body.componentAvailability.replayValidation).toBe(true);
     expect(body.warnings.join(" ")).toContain("must not be treated as a real predictive accuracy claim");
     expectFoundationMetadata(body.metadata);
+  });
+
+  it("validates GET /world-cup-2026/daily-matches endpoint shape", async () => {
+    const response = await apiRuntime.fetch(
+      endpointRequest("/world-cup-2026/daily-matches?date=2026-06-11&timezone=UTC")
+    );
+    const body = await readJson<EndpointDailyMatchesSuccessResponse>(response);
+
+    expect(response.status).toBe(200);
+    expectJson(response);
+    expect(body.status).toBe("success");
+    expect(body.requestedDate).toBe("2026-06-11");
+    expect(body.timezone).toBe("UTC");
+    expect(typeof body.counts.total).toBe("number");
+    expect(typeof body.counts.unavailableKickoff).toBe("number");
   });
 
   it("validates unsupported route and unsupported method error shapes", async () => {
