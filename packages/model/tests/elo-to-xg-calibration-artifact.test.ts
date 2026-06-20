@@ -1,9 +1,12 @@
 /**
  * Calibration experiment runner integration test.
  *
- * Loads actual historical fixture files, runs the V1 baseline experiment,
+ * Loads actual historical fixture files, runs the V2 baseline experiment,
  * validates all invariants, and writes the structured summary artifact to
- * docs/model-results/artifacts/elo-to-xg-v1-baseline-summary.json.
+ * docs/model-results/artifacts/elo-to-xg-v2-baseline-summary.json.
+ *
+ * The V1 baseline artifact (elo-to-xg-v1-baseline-summary.json) is a historical
+ * snapshot and is no longer regenerated here after V2 promotion in Phase 12.11E.
  *
  * Run with: pnpm --filter @world-cup-2026-predictor/model calibration:baseline
  * Or as part of the full test suite: pnpm --filter @world-cup-2026-predictor/model test
@@ -269,7 +272,7 @@ describe("elo-to-xg calibration artifact integration", () => {
     };
 
     const artifactDir = new URL("../../../docs/model-results/artifacts/", import.meta.url);
-    const artifactPath = new URL("elo-to-xg-v1-baseline-summary.json", artifactDir);
+    const artifactPath = new URL("elo-to-xg-v2-baseline-summary.json", artifactDir);
 
     mkdirSync(artifactDir, { recursive: true });
     writeFileSync(artifactPath, JSON.stringify(artifact, null, 2) + "\n", "utf8");

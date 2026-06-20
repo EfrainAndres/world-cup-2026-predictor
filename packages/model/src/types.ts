@@ -954,6 +954,8 @@ export interface LiveEloPipelineResult {
 
 export type EloXgPreset = "conservative" | "balanced" | "aggressive";
 
+export type EloToXgFormulaVersion = "v1" | "v2";
+
 export interface EloXgPresetConfig {
   name: EloXgPreset;
   description: string;
@@ -982,5 +984,9 @@ export interface EloToExpectedGoalsResult {
   attackDefenseAdjustmentAway: number;
   preset: EloXgPreset;
   presetDescription: string;
+  formulaVersion: EloToXgFormulaVersion;
+  adjustmentPer100: number;
+  maxAdjustment: number;
+  v1RollbackAvailable: boolean;
   warnings: readonly string[];
 }

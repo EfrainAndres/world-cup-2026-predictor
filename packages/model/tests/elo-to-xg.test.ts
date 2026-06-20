@@ -2,10 +2,15 @@ import { describe, expect, it } from "vitest";
 import {
   ELO_TO_XG_ATTACK_DEFENSE_ADJUSTMENT_WARNING,
   ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_FORMULA_VERSION,
   ELO_TO_XG_MAX_GOALS,
   ELO_TO_XG_MIN_GOALS,
   ELO_TO_XG_PRESET_WARNING,
   ELO_TO_XG_UNCALIBRATED_WARNING,
+  ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT,
+  ELO_TO_XG_V2_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V2_BALANCED_MAX_ADJUSTMENT,
   ELO_XG_PRESETS,
   eloToExpectedGoals
 } from "../src/elo-to-xg.js";
@@ -262,4 +267,70 @@ describe("eloToExpectedGoals — prediction presets", () => {
       expect(result.homeExpectedGoals).toBe(result.awayExpectedGoals);
     }
   });
+});
+
+describe("V2 formula metadata in result", () => {
+  const result = eloToExpectedGoals({ homeEloRating: 1600, awayEloRating: 1500 });
+
+  it("formulaVersion is v2", () => {
+    expect(result.formulaVersion).toBe("v2");
+    expect(result.formulaVersion).toBe(ELO_TO_XG_FORMULA_VERSION);
+  });
+
+  it("adjustmentPer100 matches V2 balanced constant", () => {
+    expect(result.adjustmentPer100).toBe(ELO_TO_XG_V2_BALANCED_ADJUSTMENT_PER_100);
+    expect(result.adjustmentPer100).toBe(0.15);
+  });
+
+  it("maxAdjustment matches V2 balanced constant", () => {
+    expect(result.maxAdjustment).toBe(ELO_TO_XG_V2_BALANCED_MAX_ADJUSTMENT);
+    expect(result.maxAdjustment).toBe(0.65);
+  });
+
+  it("v1RollbackAvailable is true", () => {
+    expect(result.v1RollbackAvailable).toBe(true);
+  });
+
+  it("V1 rollback constants are preserved and distinct from V2", () => {
+    expect(ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100).toBe(0.1);
+    expect(ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT).toBe(0.45);
+    expect(ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100).toBeLessThan(ELO_TO_XG_V2_BALANCED_ADJUSTMENT_PER_100);
+    expect(ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT).toBeLessThan(ELO_TO_XG_V2_BALANCED_MAX_ADJUSTMENT);
+  });
+
+  it("aggressive preset exposes its own adjustmentPer100 and maxAdjustment", () => {
+    const aggressive = eloToExpectedGoals({ homeEloRating: 1600, awayEloRating: 1500, preset: "aggressive" });
+    expect(aggressive.adjustmentPer100).toBe(ELO_XG_PRESETS.aggressive.adjustmentPer100);
+    expect(aggressive.maxAdjustment).toBe(ELO_XG_PRESETS.aggressive.maxAdjustment);
+    expect(aggressive.formulaVersion).toBe("v2");
+  });
+});
+
+describe("V2 balanced xG regression values", () => {
+  // V2: adjustmentPer100=0.15, maxAdjustment=0.65, base=1.25
+  // adj = round(eloDiff/100 * 0.15, 2), clamped to [-0.65, 0.65]
+  // home = base + adj, away = base - adj
+
+  const cases: Array<{ eloDiff: number; home: number; away: number }> = [
+    { eloDiff: 0,    home: 1.25, away: 1.25 },
+    { eloDiff: 25,   home: 1.29, away: 1.21 },
+    { eloDiff: 75,   home: 1.36, away: 1.14 },
+    { eloDiff: 150,  home: 1.47, away: 1.03 },
+    { eloDiff: 300,  home: 1.70, away: 0.80 },
+    { eloDiff: 500,  home: 1.90, away: 0.60 },
+    { eloDiff: -75,  home: 1.14, away: 1.36 },
+    { eloDiff: -150, home: 1.03, away: 1.47 },
+    { eloDiff: -300, home: 0.80, away: 1.70 }
+  ];
+
+  for (const { eloDiff, home, away } of cases) {
+    it(`eloDiff=${eloDiff}: home=${home}, away=${away}`, () => {
+      const result = eloToExpectedGoals({
+        homeEloRating: 1500 + eloDiff,
+        awayEloRating: 1500
+      });
+      expect(result.homeExpectedGoals).toBe(home);
+      expect(result.awayExpectedGoals).toBe(away);
+    });
+  }
 });

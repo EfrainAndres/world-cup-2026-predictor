@@ -1,0 +1,77 @@
+{
+  "schema_version": "1",
+  "artifact_type": "elo-to-xg-v2-production-verification",
+  "phase": "12.11E",
+  "generated_by": "Phase 12.11E — Elo-to-xG V2 Production Integration",
+  "formula_version": "v2",
+  "production_preset": "balanced",
+  "v2_constants": {
+    "base_goals": 1.25,
+    "adjustment_per_100": 0.15,
+    "max_elo_adjustment": 0.65
+  },
+  "v1_rollback_constants": {
+    "base_goals": 1.25,
+    "adjustment_per_100": 0.1,
+    "max_elo_adjustment": 0.45,
+    "note": "Preserved as named exports ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100 / ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT for rollback."
+  },
+  "promotion_basis": {
+    "phase_12_11c_artifact": "elo-to-xg-v2-steeper-linear-candidate-summary.json",
+    "phase_12_11d_artifact": "elo-to-xg-v2-production-decision.json",
+    "decision": "promote_to_production",
+    "selected_candidate_id": "steeper-0.15",
+    "conservative_preference_threshold_brier": 0.003
+  },
+  "holdout_comparison": {
+    "dataset": "WC2022 + international 2022+",
+    "records_evaluated": 120,
+    "v1_holdout_brier_score": 0.6321909388786933,
+    "v2_holdout_brier_score": 0.6249491919427992,
+    "brier_delta": -0.0072417469358941,
+    "v1_holdout_log_loss": 1.0479966522393562,
+    "v2_holdout_log_loss": 1.0383487380870535,
+    "log_loss_delta": -0.009647914152302699,
+    "note": "Negative delta = improvement. WC2026 holdout excluded from all evaluation."
+  },
+  "invariants_verified": {
+    "v1_rollback_constants_unchanged": true,
+    "formula_version_tag_set": true,
+    "balanced_preset_uses_v2_constants": true,
+    "preset_ordering_conservative_lt_balanced_lt_aggressive": true,
+    "aggressive_preset_adjusted": {
+      "old_adjustment_per_100": 0.14,
+      "new_adjustment_per_100": 0.17,
+      "old_max_adjustment": 0.65,
+      "new_max_adjustment": 0.75,
+      "reason": "Balanced promoted to 0.15/0.65; aggressive adjusted to maintain strict ordering."
+    },
+    "xg_bounds_respected": true,
+    "v1_rollback_available_in_result": true
+  },
+  "xg_regression_spot_checks": [
+    { "elo_diff": 0,    "home_xg": 1.25, "away_xg": 1.25 },
+    { "elo_diff": 25,   "home_xg": 1.29, "away_xg": 1.21 },
+    { "elo_diff": 75,   "home_xg": 1.36, "away_xg": 1.14 },
+    { "elo_diff": 150,  "home_xg": 1.47, "away_xg": 1.03 },
+    { "elo_diff": 300,  "home_xg": 1.70, "away_xg": 0.80 },
+    { "elo_diff": 500,  "home_xg": 1.90, "away_xg": 0.60 },
+    { "elo_diff": -75,  "home_xg": 1.14, "away_xg": 1.36 },
+    { "elo_diff": -150, "home_xg": 1.03, "away_xg": 1.47 },
+    { "elo_diff": -300, "home_xg": 0.80, "away_xg": 1.70 }
+  ],
+  "rollback_procedure": {
+    "step_1": "In elo-to-xg.ts, set ELO_TO_XG_ADJUSTMENT_PER_100 = ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100 (0.1)",
+    "step_2": "Set ELO_TO_XG_MAX_ELO_ADJUSTMENT = ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT (0.45)",
+    "step_3": "Set ELO_TO_XG_FORMULA_VERSION = 'v1'",
+    "step_4": "Restore aggressive preset to prior values (0.14/0.65) if desired",
+    "step_5": "Update regression snapshot tests to V1 values"
+  },
+  "limitations": [
+    "Calibration uses a simple deterministic Elo-to-xG mapping, not a learned goals model.",
+    "Holdout n=120 matches is small for robust calibration conclusions.",
+    "Goal MAE, outer bucket compression, and team-specific effects were not formally modeled.",
+    "V2 improvements measured against V1 on the same holdout; no true out-of-sample WC2026 evaluation yet.",
+    "WC2026 holdout was excluded from all evaluation and remains reserved."
+  ]
+}

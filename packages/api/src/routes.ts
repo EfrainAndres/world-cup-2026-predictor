@@ -1245,7 +1245,11 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       baseExpectedGoals: xgResult.baseGoals,
       goalsAdjustment: xgResult.eloAdjustment,
       preset: xgResult.preset,
-      presetDescription: xgResult.presetDescription
+      presetDescription: xgResult.presetDescription,
+      formulaVersion: xgResult.formulaVersion,
+      adjustmentPer100: xgResult.adjustmentPer100,
+      maxAdjustment: xgResult.maxAdjustment,
+      v1RollbackAvailable: xgResult.v1RollbackAvailable
     },
     liveElo: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
