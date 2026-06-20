@@ -395,6 +395,33 @@ export {
   auditHistoricalReplayAccuracy
 } from "./historical-replay-accuracy-audit.js";
 
+export type {
+  BuildCalibrationDatasetInput,
+  CalibrationBaselineMetrics,
+  CalibrationByCompetition,
+  CalibrationMatchInput,
+  CalibrationSplit,
+  EloGapBucket,
+  EloGapBucketAnalysis,
+  EloToXgCalibrationDataset,
+  EloToXgCalibrationRecord
+} from "./elo-to-xg-calibration.js";
+
+export {
+  CALIBRATION_DATASET_SAMPLE_WARNING,
+  CALIBRATION_NO_LOOKAHEAD_NOTE,
+  ELO_DIFFERENCE_BUCKETS,
+  ELO_TO_XG_CALIBRATION_HOLDOUT_YEARS,
+  ELO_TO_XG_CALIBRATION_TRAINING_YEARS,
+  ELO_TO_XG_CALIBRATION_VALIDATION_YEARS,
+  ELO_TO_XG_CALIBRATION_VERSION,
+  ELO_TO_XG_CALIBRATION_WC2026_HOLDOUT,
+  assignEloDifferenceBucket,
+  buildEloToXgCalibrationDataset,
+  evaluateEloToXgBaseline,
+  verifyProductionFormulaUnchanged
+} from "./elo-to-xg-calibration.js";
+
 export {
   COMPLETE_HISTORICAL_REPLAY_EXPECTED_YEARS,
   COMPLETE_HISTORICAL_REPLAY_FOUNDATION_WARNING,
