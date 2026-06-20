@@ -101,6 +101,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.10A | Tournament Form Calculation Foundation | Calculate bounded, deterministic tournament-form summaries and conservative Elo-adjustment recommendations from completed World Cup 2026 matches without integrating them into predictions yet. | Done |
 | 12.10B | Tournament Form Integration | Apply tournament-form recommendations carefully as an optional secondary signal in live prediction workflows after the calculation foundation is validated. | Done |
 | 12.10C | Tournament Form UI & Review | Expose the tournament-form opt-in control and provenance in the dashboard after the API integration is validated. | Done |
+| 12.11A | Elo-to-xG V2 Calibration Dataset & Experiment Plan | Build reproducible calibration dataset foundation, chronological splits, Elo-gap bucket analysis, baseline metrics, and documented experiment plan for V2 candidates. No formula change. | Done |
+| 12.11B | Elo-to-xG V2 Calibration Runner & Summary | Load all fixture files through the calibration builder, run baseline metrics across all splits, and produce a structured summary artifact revealing V1 compression gaps. | Planned |
 | 12.11 | Elo-to-xG Calibration V2 | Recalibrate compressed Elo-to-xG behavior only after broader evaluation evidence and backtesting exist. | Planned |
 | 12.12 | Today’s Matches & Live Match Center | Add a daily experience for upcoming, live, and final matches with immutable pre-match predictions and result review. | Planned |
 | 12.13 | Group Detail Prediction Pages | Build group-centered views that combine standings, results, live fixtures, confidence, and qualification context. | Planned |
