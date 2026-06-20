@@ -6,6 +6,7 @@ import {
   getHistoricalTournamentSummary,
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
+  getWorldCup2026DailyMatches,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
@@ -154,6 +155,7 @@ describe("api contract coverage", () => {
       "getTeamRatingsFoundation",
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
+      "getWorldCup2026DailyMatches",
       "getWorldCup2026ResultsProviderFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
@@ -237,6 +239,53 @@ describe("api contract coverage", () => {
     });
     expectScorelinesContract(fixture.mostLikelyScorelines);
     expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the daily matches contract", async () => {
+    const response = await getWorldCup2026DailyMatches({
+      date: "2026-06-11",
+      timezone: "UTC"
+    });
+
+    expect(response.status).toBe("success");
+    if (response.status !== "success") return;
+
+    expect(Object.keys(response).sort()).toEqual([
+      "counts",
+      "generatedAt",
+      "issues",
+      "matches",
+      "metadata",
+      "providerMetadata",
+      "requestedDate",
+      "status",
+      "timezone",
+      "unscheduledMatches",
+      "warnings"
+    ]);
+    expect(response.requestedDate).toBe("2026-06-11");
+    expect(response.timezone).toBe("UTC");
+    expect(response.counts).toEqual({
+      total: expect.any(Number),
+      upcoming: expect.any(Number),
+      live: expect.any(Number),
+      halftime: expect.any(Number),
+      final: expect.any(Number),
+      postponed: expect.any(Number),
+      cancelled: expect.any(Number),
+      unknown: expect.any(Number),
+      unavailableKickoff: expect.any(Number)
+    });
+    expect(response.providerMetadata).toEqual({
+      configuredProvider: expect.stringMatching(/^(football_data_org|local_static)$/),
+      activeProvider: expect.any(String),
+      externalRequestAttempted: expect.any(Boolean),
+      cacheUsed: expect.any(Boolean),
+      localFallbackUsed: expect.any(Boolean),
+      stale: expect.any(Boolean),
+      lastSuccessfulSync: expect.any(String)
+    });
     expectMetadataContract(response.metadata);
   });
 

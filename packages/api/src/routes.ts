@@ -31,6 +31,7 @@ import {
 } from "./results-provider-foundation.js";
 import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
+import { getWorldCup2026DailyMatches as getWorldCup2026DailyMatchesHandler } from "./daily-matches.js";
 import { buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
 import { defaultSnapshotStore } from "./snapshot-store.js";
 import {
@@ -560,6 +561,8 @@ export function getWorldCup2026FixtureFoundation(): WorldCup2026FixtureFoundatio
     ])
   };
 }
+
+export const getWorldCup2026DailyMatches = getWorldCup2026DailyMatchesHandler;
 
 export function getWorldCup2026GroupStandingsFoundation(): WorldCup2026GroupStandingsFoundationResponse {
   const completedFixtureCount = WORLD_CUP_2026_GROUP_STANDINGS.reduce((sum, group) => sum + group.completedFixtureCount, 0);
@@ -2651,6 +2654,7 @@ export const apiRoutes: ApiRoutes = {
   getHistoricalTournamentSummary,
   getHistoricalReplayAudit,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026DailyMatches,
   getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026RoundOf32Foundation,
