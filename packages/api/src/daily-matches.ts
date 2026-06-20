@@ -27,7 +27,7 @@ import type {
   WorldCup2026SyncResult
 } from "./schemas.js";
 
-const DEFAULT_DAILY_MATCHES_TIMEZONE = "UTC";
+export const DEFAULT_DAILY_MATCHES_TIMEZONE = "UTC";
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface BuildWorldCup2026DailyMatchesInput extends GetWorldCup2026DailyMatchesInput {
@@ -52,7 +52,7 @@ function validateDateString(date: string): boolean {
   );
 }
 
-function isValidTimeZone(timezone: string): boolean {
+export function isValidTimeZone(timezone: string): boolean {
   try {
     Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(new Date("2026-06-11T00:00:00Z"));
     return true;
@@ -80,7 +80,7 @@ function getLocalizedDateString(isoDate: string, timezone: string): string {
   return `${parts.year}-${parts.month}-${parts.day}`;
 }
 
-function getLocalizedKickoff(isoDate: string, timezone: string): string {
+export function getLocalizedKickoff(isoDate: string, timezone: string): string {
   const formatter = new Intl.DateTimeFormat("en-CA", {
     timeZone: timezone,
     year: "numeric",
@@ -101,7 +101,7 @@ function getLocalizedKickoff(isoDate: string, timezone: string): string {
   return `${year}-${month}-${day} ${hour}:${minute} ${zone}`;
 }
 
-function buildFixtureIndex(): {
+export function buildFixtureIndex(): {
   byId: Map<string, WorldCup2026Fixture>;
   byTeams: Map<string, WorldCup2026Fixture>;
 } {
@@ -116,14 +116,14 @@ function buildFixtureIndex(): {
   };
 }
 
-function resolveFixture(
+export function resolveFixture(
   record: WorldCup2026ExternalFixtureRecord,
   index: ReturnType<typeof buildFixtureIndex>
 ): WorldCup2026Fixture | undefined {
   return index.byId.get(record.providerFixtureId) ?? index.byTeams.get(`${record.homeTeam}|${record.awayTeam}`);
 }
 
-function mapDailyState(status: WorldCup2026ExternalMatchStatus): WorldCup2026DailyMatchState {
+export function mapDailyState(status: WorldCup2026ExternalMatchStatus): WorldCup2026DailyMatchState {
   switch (status) {
     case "scheduled":
       return "upcoming";
@@ -142,7 +142,7 @@ function mapDailyState(status: WorldCup2026ExternalMatchStatus): WorldCup2026Dai
   }
 }
 
-function isValidFinishedScore(record: WorldCup2026ExternalFixtureRecord): boolean {
+export function isValidFinishedScore(record: WorldCup2026ExternalFixtureRecord): boolean {
   return (
     Number.isInteger(record.homeScore) &&
     Number.isInteger(record.awayScore) &&
@@ -315,7 +315,7 @@ function resolveEvaluationSummary(
   };
 }
 
-function resolvePredictionHistory(
+export function resolvePredictionHistory(
   fixtureId: string,
   kickoffAt: string | undefined,
   record: WorldCup2026ExternalFixtureRecord,
@@ -373,7 +373,7 @@ function resolvePredictionHistory(
   };
 }
 
-function buildDailyMatchEntry(
+export function buildDailyMatchEntry(
   record: WorldCup2026ExternalFixtureRecord,
   fixture: WorldCup2026Fixture | undefined,
   timezone: string,
@@ -411,7 +411,7 @@ function buildDailyMatchEntry(
   };
 }
 
-function compareDailyEntries(a: WorldCup2026DailyMatchEntry, b: WorldCup2026DailyMatchEntry): number {
+export function compareDailyEntries(a: WorldCup2026DailyMatchEntry, b: WorldCup2026DailyMatchEntry): number {
   const aKickoff = a.kickoffAt ?? "";
   const bKickoff = b.kickoffAt ?? "";
   const kickoffCompare = aKickoff.localeCompare(bKickoff);

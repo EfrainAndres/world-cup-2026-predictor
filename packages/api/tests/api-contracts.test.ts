@@ -7,6 +7,7 @@ import {
   getLiveEloRatingsFoundation,
   getTeamRatingsFoundation,
   getWorldCup2026DailyMatches,
+  getWorldCup2026GroupDetail,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
@@ -156,6 +157,7 @@ describe("api contract coverage", () => {
       "getLiveEloRatingsFoundation",
       "getWorldCup2026FixtureFoundation",
       "getWorldCup2026DailyMatches",
+      "getWorldCup2026GroupDetail",
       "getWorldCup2026ResultsProviderFoundation",
       "getWorldCup2026GroupStandingsFoundation",
       "getWorldCup2026RoundOf32Foundation",
@@ -342,6 +344,52 @@ describe("api contract coverage", () => {
     });
     expectScorelinesContract(fixture.mostLikelyScorelines);
     expectWarningsContract(response.warnings);
+    expectMetadataContract(response.metadata);
+  });
+
+  it("validates the group detail contract", async () => {
+    const response = await getWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC"
+    });
+
+    if (response.status === "validation_error") {
+      throw new Error("Expected success response for valid group detail contract test.");
+    }
+
+    expect(Object.keys(response).sort()).toEqual([
+      "generatedAt",
+      "group",
+      "matches",
+      "metadata",
+      "providerMetadata",
+      "qualification",
+      "standings",
+      "status",
+      "teams",
+      "timezone",
+      "warnings"
+    ]);
+    expect(response.group).toBe("A");
+    expect(response.standings.official).toHaveLength(4);
+    expect(response.matches).toEqual({
+      cancelled: expect.any(Array),
+      completed: expect.any(Array),
+      live: expect.any(Array),
+      postponed: expect.any(Array),
+      upcoming: expect.any(Array),
+      unscheduled: expect.any(Array)
+    });
+    expect(response.providerMetadata).toEqual({
+      activeProvider: expect.any(String),
+      cacheUsed: expect.any(Boolean),
+      configuredProvider: expect.stringMatching(/football_data_org|local_static/),
+      localFallbackUsed: expect.any(Boolean),
+      stale: expect.any(Boolean),
+      ...(response.providerMetadata.lastSuccessfulSync === undefined
+        ? {}
+        : { lastSuccessfulSync: expect.any(String) })
+    });
     expectMetadataContract(response.metadata);
   });
 

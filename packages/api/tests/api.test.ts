@@ -21,6 +21,7 @@ import {
   getModelInfo,
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
+  getWorldCup2026GroupDetail,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026KnockoutBracketFoundation,
   getWorldCup2026RoundOf32Foundation,
@@ -336,12 +337,15 @@ describe("api foundation handlers", () => {
     expect(audit.warnings[0]).toContain("must not be treated as a real predictive accuracy claim");
   });
 
-  it("exposes the same handlers through apiRoutes", () => {
+  it("exposes the same handlers through apiRoutes", async () => {
     expect(apiRoutes.getHealth()).toEqual(getHealth());
     expect(apiRoutes.getModelInfo()).toEqual(getModelInfo());
     expect(apiRoutes.getHistoricalReplayAudit()).toEqual(getHistoricalReplayAudit());
     expect(apiRoutes.getWorldCup2026FixtureFoundation()).toEqual(getWorldCup2026FixtureFoundation());
     expect(apiRoutes.getWorldCup2026GroupStandingsFoundation()).toEqual(getWorldCup2026GroupStandingsFoundation());
+    const routeGroupDetail = await apiRoutes.getWorldCup2026GroupDetail({ group: "A", timezone: "UTC" });
+    const directGroupDetail = await getWorldCup2026GroupDetail({ group: "A", timezone: "UTC" });
+    expect(routeGroupDetail).toMatchObject({ ...directGroupDetail, generatedAt: expect.any(String) });
     expect(apiRoutes.getWorldCup2026RoundOf32Foundation()).toEqual(getWorldCup2026RoundOf32Foundation());
     expect(apiRoutes.getWorldCup2026KnockoutBracketFoundation()).toEqual(getWorldCup2026KnockoutBracketFoundation());
     expect(apiRoutes.simulateWorldCup2026KnockoutFixturesFoundation()).toEqual(simulateWorldCup2026KnockoutFixturesFoundation());
