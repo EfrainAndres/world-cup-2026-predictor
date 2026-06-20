@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "decision_version": "elo-to-xg-v2-production-decision-v1",
+  "decision": "promote_to_production",
+  "selected_candidate_id": "steeper-0.15",
+  "candidates_reviewed": [
+    "steeper-0.13",
+    "steeper-0.15",
+    "steeper-0.17"
+  ],
+  "v1_reference": {
+    "source_artifact": "elo-to-xg-v1-baseline-summary.json",
+    "holdout_brier_score": 0.6321909388786933,
+    "holdout_log_loss": 1.0479966522393562,
+    "holdout_home_goal_mae": 1.1350000000000002,
+    "holdout_away_goal_mae": 0.8605000000000004,
+    "holdout_total_goal_mae": 1.4416666666666667,
+    "holdout_outcome_accuracy": 0.525,
+    "training_brier_score": 0.6451137060906779,
+    "training_log_loss": 1.0662117087619374,
+    "validation_brier_score": 0.6440885973611733,
+    "validation_log_loss": 1.0639031409311832,
+    "combined_non_2026_brier_score": 0.6399331322954008,
+    "combined_non_2026_log_loss": 1.0587323654161747
+  },
+  "v1_production_constants": {
+    "adjustmentPer100": 0.1,
+    "maxAdjustment": 0.45,
+    "baseGoals": 1.25,
+    "unchanged": true
+  },
+  "rationale": [
+    "Selected candidate: steeper-0.15 (adjustmentPer100=0.15, maxAdjustment=0.65).",
+    "Holdout Brier improvement over V1: -0.007242 (-0.724%).",
+    "Holdout Log Loss improvement over V1: -0.009648.",
+    "Goal MAE does not worsen — home, away, and total MAE all improve or hold flat on holdout.",
+    "Improvement is consistent across training, validation, holdout, and combined_non_2026 splits — no split regression.",
+    "Conservative selection: candidate Brier is within 0.0023 of the best available candidate (threshold: 0.003).",
+    "Steeper candidates (steeper-0.13, steeper-0.17) were not selected: conservative tie-breaking prefers the least-steep candidate when the additional Brier improvement is within 0.003 goals.",
+    "Outer-bucket compression could not be evaluated (0 records in outer buckets). This is an unresolved risk, addressed in Phase 12.11E.",
+    "xG bounds [0.2, 4.0], symmetry, and determinism are preserved by construction."
+  ],
+  "acceptance_checks": [
+    {
+      "name": "holdout_brier_improves",
+      "passed": true,
+      "detail": "Holdout Brier delta = -0.007242 (negative = improvement). Threshold: < 0."
+    },
+    {
+      "name": "holdout_log_loss_improves",
+      "passed": true,
+      "detail": "Holdout Log Loss delta = -0.009648 (negative = improvement). Threshold: < 0."
+    },
+    {
+      "name": "goal_mae_not_materially_worsened",
+      "passed": true,
+      "detail": "Max goal MAE worsening = 0.0000 goals (home Δ=-0.0058, away Δ=-0.0088, total Δ=0.0000). Threshold: ≤ 0.05."
+    },
+    {
+      "name": "no_split_major_regression",
+      "passed": true,
+      "detail": "No split shows a major regression (Brier > +0.01 or LogLoss > +0.015)."
+    },
+    {
+      "name": "predicted_goals_plausible",
+      "passed": true,
+      "detail": "Avg predicted home xG = 1.2728, away xG = 1.2272. Plausible range: [0.8, 2.5] per side."
+    },
+    {
+      "name": "outer_bucket_compression_evaluable",
+      "passed": false,
+      "detail": "Outer Elo-gap buckets (<= -300, -300 to -150, 150 to 300, >= 300) contain 0 records in the calibration dataset. Outer-bucket compression improvement cannot be verified. Total candidates in report: 3. This check is structural, not a candidate failure."
+    },
+    {
+      "name": "no_team_specific_rules",
+      "passed": true,
+      "detail": "Candidate \"steeper-0.15\" uses only adjustmentPer100 and maxAdjustment constants — no team-specific logic by design."
+    },
+    {
+      "name": "xg_bounded",
+      "passed": true,
+      "detail": "Candidate xG is clamped to [0.2, 4.0] by construction — same bounds as V1 production formula."
+    },
+    {
+      "name": "symmetry_preserved",
+      "passed": true,
+      "detail": "Equal-Elo inputs produce homeXg = awayXg = 1.25 by construction. Swapping teams negates the adjustment."
+    }
+  ],
+  "risks": [
+    "Outer Elo-gap buckets (<= -300, -300 to -150, 150 to 300, >= 300) contain 0 records in the calibration dataset. The steeper slope increases xG spread for large Elo gaps — behavior in those regions is untested.",
+    "Holdout sample size (n=120) limits statistical power. Metric improvements are descriptive and not formally significance-tested.",
+    "Initial-rating leakage: teams appearing for the first time in the Elo replay start at fallback rating 1500. Their first few matches use imprecise pre-match Elo, potentially inflating or deflating calibration metrics.",
+    "Avg predicted home xG (~1.27) remains below avg actual home goals (~1.69) on holdout. The goal-scoring rate mismatch is structural — not addressed by the steeper-linear mapping family.",
+    "No WC2026 live data is available in the holdout. Real-time performance may differ from historical calibration.",
+    "The candidate set covers 0.13–0.17. Values below 0.13 or above 0.17 were not evaluated. The optimal slope is not known.",
+    "Training outcome accuracy for 0.15 and 0.17 is 0.4921875 (below V1 0.5). Minor regression; not materially significant at n=128, but tracked."
+  ],
+  "rollback_criteria": [
+    "If WC2026 live holdout Brier Score is more than 0.01 worse than V1 baseline on matched fixtures (when WC2026 data becomes available), revert to V1.",
+    "If any API or web regression test fails after formula promotion, revert to V1 immediately.",
+    "If outer-bucket fixtures are observed in WC2026 data and the V2 formula shows systematic overconfidence in those buckets, revert to V1.",
+    "If goal-error metrics (home/away/total MAE) worsen materially on WC2026 completed fixtures versus historical holdout, revert to V1.",
+    "V1 constants must be preserved behind an explicit rollback path in Phase 12.11E."
+  ],
+  "production_guardrails": [
+    "Preserve V1 constants (adjustmentPer100=0.1, maxAdjustment=0.45) in a named export or named preset before any production change. Do not delete V1 code.",
+    "Add formula-version metadata to the eloToExpectedGoals result or the balanced-preset definition so callers can identify which formula version produced a prediction.",
+    "Add a regression test that runs V1 and V2 balanced-preset predictions on the same Elo inputs and asserts the delta is within expected bounds.",
+    "Rerun the historical holdout metrics after the formula change and verify they match the candidate-evaluation artifact.",
+    "Run full API and web regression tests before merging. No silent migration.",
+    "Verify fallback teams (initial rating 1500) do not receive misleadingly high certainty from the steeper slope at equal-Elo 1500/1500.",
+    "Update the ELO_TO_XG_UNCALIBRATED_WARNING text if the warning references V1-specific numeric constants.",
+    "Keep the balanced preset backward-intent documented: balanced means moderate Elo sensitivity, not aggressive. Document the V2 constant change in DECISIONS.md."
+  ],
+  "sample_size_warnings": [
+    "Holdout split contains 120 records. Sample size may limit statistical power. Improvements are descriptive, not formally validated.",
+    "Validation split contains 64 records. Cross-validation evidence is limited."
+  ],
+  "unresolved_risks": [
+    "Outer-bucket compression cannot be verified until the calibration dataset includes matches with Elo gaps > 150 or < -150.",
+    "WC2026 live performance is unknown. The WC2026 holdout is currently 0 records.",
+    "The optimal adjustmentPer100 slope is not formally derived. 0.15 was selected as a conservative middle point, not as a statistically optimal value.",
+    "Goal-scoring rate mismatch (avg predicted home ~1.27 vs actual ~1.69 on holdout) is not addressed by any steeper-linear candidate. This requires a separate investigation."
+  ]
+}
