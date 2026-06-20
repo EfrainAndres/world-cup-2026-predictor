@@ -18,7 +18,8 @@ import {
 import {
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
-  buildWorldCup2026BestThirdPlaceRanking
+  buildWorldCup2026BestThirdPlaceRanking,
+  buildWorldCup2026GroupStandings
 } from "./world-cup-2026-teams.js";
 import type {
   ApiValidationIssue,
@@ -29,7 +30,12 @@ import type {
   WorldCup2026GroupDetailResponse,
   WorldCup2026GroupDetailSuccessResponse,
   WorldCup2026GroupStandings,
-  WorldCup2026SyncResult
+  WorldCup2026SyncResult,
+  WorldCup2026FixtureResult,
+  WorldCup2026GroupProjection,
+  WorldCup2026GroupProjectionFixture,
+  WorldCup2026GroupProjectionStatus,
+  PredictMatchFromLiveEloResponse
 } from "./schemas.js";
 
 const VALID_GROUPS = new Set(WORLD_CUP_2026_FIXTURE_GROUPS.map((group) => group.group));
@@ -38,6 +44,7 @@ const GROUP_INPUT_REGEX = /^Group\s+/i;
 export interface BuildWorldCup2026GroupDetailInput extends GetWorldCup2026GroupDetailInput {
   syncResult: WorldCup2026SyncResult;
   generatedAt?: string;
+  predictorFn?: (homeTeam: string, awayTeam: string) => PredictMatchFromLiveEloResponse;
   snapshotStore?: PredictionSnapshotStore;
   evaluationStore?: PredictionEvaluationStore;
 }
@@ -153,6 +160,231 @@ function buildStandingsTeams(officialGroup: WorldCup2026GroupStandings): WorldCu
   }));
 }
 
+function selectBestProjectionScoreline(
+  scorelines: readonly { homeGoals: number; awayGoals: number; probability: number }[]
+): { homeGoals: number; awayGoals: number } | undefined {
+  if (scorelines.length === 0) return undefined;
+  const sorted = [...scorelines].sort(
+    (a, b) =>
+      b.probability - a.probability ||
+      a.homeGoals - b.homeGoals ||
+      a.awayGoals - b.awayGoals
+  );
+  const best = sorted[0];
+  return best === undefined ? undefined : { homeGoals: best.homeGoals, awayGoals: best.awayGoals };
+}
+
+function buildGroupProjection(
+  group: string,
+  syncResult: WorldCup2026SyncResult,
+  snapshotStore: PredictionSnapshotStore,
+  predictorFn: ((homeTeam: string, awayTeam: string) => PredictMatchFromLiveEloResponse) | undefined
+): WorldCup2026GroupProjection {
+  const groupFixtures = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.filter((f) => f.group === group);
+  const fixtureIdx = buildFixtureIndex();
+
+  // Map each sync record to its internal fixture ID (where resolvable)
+  const statusByFixtureId = new Map<string, string>();
+  for (const record of syncResult.fixtures) {
+    const resolved = resolveFixture(record, fixtureIdx);
+    if (resolved !== undefined && resolved.group === group) {
+      statusByFixtureId.set(resolved.id, record.status);
+    } else if (resolved === undefined) {
+      const fallback = groupFixtures.find(
+        (f) => f.homeTeam === record.homeTeam && f.awayTeam === record.awayTeam
+      );
+      if (fallback !== undefined) {
+        statusByFixtureId.set(fallback.id, record.status);
+      }
+    }
+  }
+
+  // Build completed results for projected standings (using actual scores)
+  const completedResults: WorldCup2026FixtureResult[] = [];
+  for (const record of syncResult.fixtures) {
+    if (record.status !== "finished") continue;
+    if (!isValidFinishedScore(record)) continue;
+    const resolved = resolveFixture(record, fixtureIdx);
+    if (resolved === undefined || resolved.group !== group) continue;
+    completedResults.push({
+      fixtureId: resolved.id,
+      status: "completed",
+      homeScore: record.homeScore!,
+      awayScore: record.awayScore!,
+      resultSource: "external_api"
+    });
+  }
+  const completedFixtureIds = new Set(completedResults.map((r) => r.fixtureId));
+
+  const projectionFixtures: WorldCup2026GroupProjectionFixture[] = [];
+  const projectionWarnings: string[] = [];
+  let unavailableCount = 0;
+
+  for (const fixture of groupFixtures) {
+    const status = statusByFixtureId.get(fixture.id);
+
+    // Skip completed and live fixtures (not projected)
+    if (status === "finished") continue;
+    if (status === "live" || status === "halftime") continue;
+
+    // Exclude postponed/cancelled with warning
+    if (status === "postponed" || status === "cancelled") {
+      projectionWarnings.push(
+        `Fixture ${fixture.id} (${fixture.homeTeam} vs ${fixture.awayTeam}) is ${status} and excluded from projection.`
+      );
+      continue;
+    }
+
+    // Try stored snapshot first
+    const snapshots = snapshotStore
+      .getByFixtureId(fixture.id)
+      .filter((s) => s.status === "pre_match_locked" || s.status === "foundation_unverified")
+      .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt) || b.snapshotId.localeCompare(a.snapshotId));
+
+    const bestSnapshot = snapshots[0];
+
+    if (bestSnapshot !== undefined) {
+      const scoreline = selectBestProjectionScoreline(bestSnapshot.prediction.mostLikelyScorelines);
+      projectionFixtures.push({
+        fixtureId: fixture.id,
+        homeTeam: fixture.homeTeam,
+        awayTeam: fixture.awayTeam,
+        source: "stored_snapshot",
+        ...(scoreline !== undefined ? { projectedScoreline: scoreline } : {}),
+        homeWinProbability: bestSnapshot.prediction.homeWinProbability,
+        drawProbability: bestSnapshot.prediction.drawProbability,
+        awayWinProbability: bestSnapshot.prediction.awayWinProbability,
+        confidenceLevel: bestSnapshot.confidence.level,
+        coverageType: bestSnapshot.confidence.coverageType,
+        warnings: []
+      });
+      continue;
+    }
+
+    // Auto Predict fallback (if predictor is available)
+    if (predictorFn !== undefined) {
+      const predictResult = predictorFn(fixture.homeTeam, fixture.awayTeam);
+      if (predictResult.status === "success") {
+        const scoreline = selectBestProjectionScoreline(predictResult.mostLikelyScorelines);
+        const fixtureWarnings: string[] = [...predictResult.warnings];
+        if (
+          predictResult.liveElo.homeRatingSource === "fallback_seed" ||
+          predictResult.liveElo.awayRatingSource === "fallback_seed"
+        ) {
+          fixtureWarnings.push(
+            `Auto Predict used fallback seed rating for one or more teams (${fixture.homeTeam} vs ${fixture.awayTeam}).`
+          );
+        }
+        projectionFixtures.push({
+          fixtureId: fixture.id,
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          source: "auto_predict",
+          ...(scoreline !== undefined ? { projectedScoreline: scoreline } : {}),
+          homeWinProbability: predictResult.outcomeProbabilities.homeWinProbability,
+          drawProbability: predictResult.outcomeProbabilities.drawProbability,
+          awayWinProbability: predictResult.outcomeProbabilities.awayWinProbability,
+          confidenceLevel: predictResult.predictionConfidence.level,
+          coverageType: predictResult.predictionConfidence.coverageType,
+          warnings: fixtureWarnings
+        });
+        continue;
+      }
+    }
+
+    // Projection unavailable for this fixture
+    unavailableCount++;
+    projectionWarnings.push(
+      `Projection unavailable for ${fixture.homeTeam} vs ${fixture.awayTeam}.`
+    );
+    projectionFixtures.push({
+      fixtureId: fixture.id,
+      homeTeam: fixture.homeTeam,
+      awayTeam: fixture.awayTeam,
+      source: "unavailable",
+      warnings: [`Projection unavailable for ${fixture.homeTeam} vs ${fixture.awayTeam}.`]
+    });
+  }
+
+  // Determine projection status
+  const eligibleCount = projectionFixtures.length;
+  let projStatus: WorldCup2026GroupProjectionStatus;
+  if (eligibleCount === 0) {
+    projStatus = "complete";
+  } else if (unavailableCount === 0) {
+    projStatus = "complete";
+  } else if (unavailableCount === eligibleCount) {
+    projStatus = "unavailable";
+  } else {
+    projStatus = "partial";
+  }
+
+  const available = projStatus !== "unavailable";
+
+  if (!available) {
+    return {
+      available: false,
+      status: "unavailable",
+      fixtures: projectionFixtures,
+      warnings: projectionWarnings
+    };
+  }
+
+  // Build projected standings from completed results + projected scorelines
+  const projectedResults: WorldCup2026FixtureResult[] = [...completedResults];
+  for (const pf of projectionFixtures) {
+    if (pf.projectedScoreline === undefined) continue;
+    if (completedFixtureIds.has(pf.fixtureId)) continue;
+    projectedResults.push({
+      fixtureId: pf.fixtureId,
+      status: "completed",
+      homeScore: pf.projectedScoreline.homeGoals,
+      awayScore: pf.projectedScoreline.awayGoals,
+      resultSource: "external_api"
+    });
+  }
+
+  const allProjectedGroups = buildWorldCup2026GroupStandings({ results: projectedResults });
+  const projectedGroup = allProjectedGroups.find((g) => g.group === group);
+
+  if (projectedGroup === undefined) {
+    return {
+      available: false,
+      status: "unavailable",
+      fixtures: projectionFixtures,
+      warnings: [...projectionWarnings, "Projected standings could not be resolved for this group."]
+    };
+  }
+
+  const projectedStandings = projectedGroup.standings;
+
+  // Build projected qualification
+  const firstPlace = projectedStandings[0]?.team;
+  const secondPlace = projectedStandings[1]?.team;
+  const thirdPlace = projectedStandings[2]?.team;
+
+  let projectedThirdPlaceQualifying: boolean | undefined;
+  if (thirdPlace !== undefined) {
+    const ranking = buildWorldCup2026BestThirdPlaceRanking(allProjectedGroups);
+    const entry = ranking.find((e) => e.group === group && e.team === thirdPlace);
+    projectedThirdPlaceQualifying = entry !== undefined ? entry.qualificationRank <= 8 : undefined;
+  }
+
+  return {
+    available: true,
+    status: projStatus,
+    standings: projectedStandings,
+    qualification: {
+      ...(firstPlace !== undefined ? { projectedFirstPlace: firstPlace } : {}),
+      ...(secondPlace !== undefined ? { projectedSecondPlace: secondPlace } : {}),
+      ...(thirdPlace !== undefined ? { projectedThirdPlace: thirdPlace } : {}),
+      ...(projectedThirdPlaceQualifying !== undefined ? { projectedThirdPlaceQualifying } : {})
+    },
+    fixtures: projectionFixtures,
+    warnings: projectionWarnings
+  };
+}
+
 export function buildWorldCup2026GroupDetail(
   input: BuildWorldCup2026GroupDetailInput
 ): WorldCup2026GroupDetailResponse {
@@ -194,6 +426,7 @@ export function buildWorldCup2026GroupDetail(
   const fixtureIndex = buildFixtureIndex();
   const snapshotStore = input.snapshotStore ?? defaultSnapshotStore;
   const evaluationStore = input.evaluationStore ?? defaultPredictionEvaluationStore;
+  const projection = buildGroupProjection(group, input.syncResult, snapshotStore, input.predictorFn);
   const groupTeams = new Set(WORLD_CUP_2026_FIXTURE_GROUPS.find((entry) => entry.group === group)?.teams ?? []);
   const seenKeys = new Set<string>();
   const completed: WorldCup2026GroupDetailMatch[] = [];
@@ -320,6 +553,7 @@ export function buildWorldCup2026GroupDetail(
       provisionalGroup !== null,
       input.syncResult.localFallbackUsed
     ),
+    projection,
     providerMetadata: buildProviderMetadata(input.syncResult),
     warnings,
     metadata: buildApiMetadata([

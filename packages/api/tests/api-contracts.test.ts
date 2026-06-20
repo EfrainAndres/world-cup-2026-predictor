@@ -362,6 +362,7 @@ describe("api contract coverage", () => {
       "group",
       "matches",
       "metadata",
+      "projection",
       "providerMetadata",
       "qualification",
       "standings",

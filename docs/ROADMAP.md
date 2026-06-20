@@ -112,7 +112,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.12C | Today’s Matches Prediction & History Integration | Enrich Match Center cards with immutable pre-match prediction history and completed-match evaluation summaries without creating snapshots or evaluations automatically. | Done |
 | 12.13A | Group Detail Data Foundation | Add a deterministic single-group API foundation that composes standings, categorized fixtures, qualification context, prediction-history summaries, and provider metadata. | Done |
 | 12.13B | Group Detail Prediction Page UI | Build the group-centered dashboard page over the 12.13A data foundation, keeping standings, results, live fixtures, and qualification context in one compact workflow. | Done |
-| 12.13C | Group Detail Enhancement | Next phase — add enhanced qualification tracking, live refresh, or deeper prediction context to the group detail pages. | Next |
+| 12.13C | Group Detail Prediction & Qualification Integration | Extended group detail pages with optional projected view using stored snapshots or Auto Predict for unplayed fixtures; projected standings and qualification; per-fixture source labels; no snapshot creation or standings mutation. | Done |
 | 12.14 | Automatic Projection Refresh | Refresh standings, qualification, and knockout projections automatically as live results are processed. | Planned |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |

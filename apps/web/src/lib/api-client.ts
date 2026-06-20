@@ -81,7 +81,12 @@ import type {
   WorldCup2026GroupDetailQualificationSummary,
   WorldCup2026GroupDetailProviderMetadata,
   WorldCup2026GroupDetailValidationErrorResponse,
-  WorldCup2026GroupStandingEntry
+  WorldCup2026GroupStandingEntry,
+  WorldCup2026GroupProjection,
+  WorldCup2026GroupProjectionFixture,
+  WorldCup2026GroupProjectionQualification,
+  WorldCup2026GroupProjectionSource,
+  WorldCup2026GroupProjectionStatus
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -122,7 +127,12 @@ export type {
   WorldCup2026GroupDetailQualificationSummary,
   WorldCup2026GroupDetailProviderMetadata,
   WorldCup2026GroupDetailValidationErrorResponse,
-  WorldCup2026GroupStandingEntry
+  WorldCup2026GroupStandingEntry,
+  WorldCup2026GroupProjection,
+  WorldCup2026GroupProjectionFixture,
+  WorldCup2026GroupProjectionQualification,
+  WorldCup2026GroupProjectionSource,
+  WorldCup2026GroupProjectionStatus
 };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];

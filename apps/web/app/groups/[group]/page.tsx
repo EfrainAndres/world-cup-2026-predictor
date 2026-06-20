@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { AppHeader } from "../../../src/components/AppHeader";
 import { GroupDetailMatchCard } from "../../../src/components/GroupDetailMatchCard";
 import { GroupDetailProviderMetadata } from "../../../src/components/GroupDetailProviderMetadata";
+import { GroupDetailProjection } from "../../../src/components/GroupDetailProjection";
 import { GroupDetailQualificationSummary } from "../../../src/components/GroupDetailQualificationSummary";
 import { GroupDetailStandingsTable } from "../../../src/components/GroupDetailStandingsTable";
 import { GroupNav } from "../../../src/components/GroupNav";
@@ -80,7 +81,7 @@ export default async function GroupDetailPage({
     notFound();
   }
 
-  const { standings, matches, qualification, providerMetadata, warnings, generatedAt } = data;
+  const { standings, matches, qualification, projection, providerMetadata, warnings, generatedAt } = data;
   const hasPostponedOrCancelled = matches.postponed.length > 0 || matches.cancelled.length > 0;
 
   return (
@@ -143,6 +144,11 @@ export default async function GroupDetailPage({
             Qualification
           </h2>
           <GroupDetailQualificationSummary qualification={qualification} />
+        </section>
+
+        {/* Projected standings */}
+        <section aria-labelledby="projection-heading" className="mb-8">
+          <GroupDetailProjection projection={projection} />
         </section>
 
         {/* Match sections */}

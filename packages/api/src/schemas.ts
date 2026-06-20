@@ -698,6 +698,39 @@ export interface WorldCup2026GroupDetailProviderMetadata {
   lastSuccessfulSync?: string;
 }
 
+export type WorldCup2026GroupProjectionStatus = "complete" | "partial" | "unavailable";
+export type WorldCup2026GroupProjectionSource = "stored_snapshot" | "auto_predict" | "unavailable";
+
+export interface WorldCup2026GroupProjectionFixture {
+  fixtureId: string;
+  homeTeam: string;
+  awayTeam: string;
+  source: WorldCup2026GroupProjectionSource;
+  projectedScoreline?: { homeGoals: number; awayGoals: number };
+  homeWinProbability?: number;
+  drawProbability?: number;
+  awayWinProbability?: number;
+  confidenceLevel?: PredictionConfidenceLevel;
+  coverageType?: PredictionCoverageType;
+  warnings: readonly string[];
+}
+
+export interface WorldCup2026GroupProjectionQualification {
+  projectedFirstPlace?: string;
+  projectedSecondPlace?: string;
+  projectedThirdPlace?: string;
+  projectedThirdPlaceQualifying?: boolean;
+}
+
+export interface WorldCup2026GroupProjection {
+  available: boolean;
+  status: WorldCup2026GroupProjectionStatus;
+  standings?: readonly WorldCup2026GroupStandingEntry[];
+  qualification?: WorldCup2026GroupProjectionQualification;
+  fixtures: readonly WorldCup2026GroupProjectionFixture[];
+  warnings: readonly string[];
+}
+
 export interface WorldCup2026GroupDetailSuccessResponse {
   status: "success";
   group: string;
@@ -718,6 +751,7 @@ export interface WorldCup2026GroupDetailSuccessResponse {
     unscheduled: readonly WorldCup2026GroupDetailMatch[];
   };
   qualification: WorldCup2026GroupDetailQualificationSummary;
+  projection: WorldCup2026GroupProjection;
   providerMetadata: WorldCup2026GroupDetailProviderMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
