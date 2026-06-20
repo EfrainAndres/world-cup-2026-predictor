@@ -912,3 +912,232 @@ test("invalid xG value in manual mode shows field-level validation error", async
     page.getByText("Expected home goals must be 0 or greater.")
   ).toBeVisible();
 });
+
+// ── Tournament form adjustment toggle ─────────────────────────────────────────
+
+test("tournament form toggle defaults to Off in Auto Predict mode", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+
+  await expect(page.getByText("Tournament form adjustment")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Off" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "On", exact: true })).toHaveAttribute("aria-pressed", "false");
+});
+
+test("tournament form toggle is not visible in Manual xG mode", async ({ page }) => {
+  await page.goto("/");
+
+  // Default is manual mode — toggle should not be visible
+  await expect(page.getByText("Tournament form adjustment")).not.toBeVisible();
+});
+
+test("switching to Manual xG mode hides tournament form toggle", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await expect(page.getByText("Tournament form adjustment")).toBeVisible();
+
+  await page.getByRole("button", { name: "Manual xG" }).click();
+  await expect(page.getByText("Tournament form adjustment")).not.toBeVisible();
+});
+
+test("tournament form help text is visible when toggle is shown", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+
+  await expect(
+    page.getByText("Uses completed World Cup 2026 matches as a bounded secondary Elo signal.")
+  ).toBeVisible();
+});
+
+test("enabling tournament form toggle clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByRole("button", { name: "On", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("disabling tournament form toggle clears stale results", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Off" }).click();
+
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).not.toBeVisible();
+  await expect(page.getByText("Prediction unavailable")).toBeVisible();
+});
+
+test("running Auto Predict with tournament form Off does not show tournament form section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  // Off is the default — no need to click Off
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection).toBeVisible();
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).not.toBeVisible();
+});
+
+test("running Auto Predict with tournament form On shows tournament form section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).toBeVisible();
+});
+
+test("tournament form section shows Applied or Not applied status", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).toBeVisible();
+  // Accept either Applied or Not applied — depends on local completed-results data
+  const hasApplied = await resultsSection.getByText("Applied", { exact: true }).isVisible();
+  const hasNotApplied = await resultsSection.getByText("Not applied", { exact: true }).isVisible();
+  expect(hasApplied || hasNotApplied).toBe(true);
+});
+
+test("tournament form Not applied shows explanatory text", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByLabel("World Cup group").selectOption("G");
+  // Group G: Belgium, Egypt, Iran, New Zealand — may have few completed matches
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: /Belgium vs Egypt/ });
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).toBeVisible();
+
+  const notApplied = await resultsSection.getByText("Not applied", { exact: true }).isVisible();
+  const applied = await resultsSection.getByText("Applied", { exact: true }).isVisible();
+
+  if (notApplied) {
+    await expect(
+      resultsSection.getByText("Not enough completed tournament matches yet to apply a secondary Elo adjustment.")
+    ).toBeVisible();
+  } else {
+    // Applied path is also valid
+    expect(applied).toBe(true);
+  }
+});
+
+test("tournament form Applied shows Baseline Elo, Adjustment, Effective Elo and Matches for both teams", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  // Group A - Mexico and South Africa — most likely to have completed matches
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  const isApplied = await resultsSection.getByText("Applied", { exact: true }).isVisible();
+
+  if (isApplied) {
+    await expect(resultsSection.getByText("Baseline Elo").first()).toBeVisible();
+    await expect(resultsSection.getByText("Adjustment").first()).toBeVisible();
+    await expect(resultsSection.getByText("Effective Elo").first()).toBeVisible();
+    await expect(resultsSection.getByText("Matches").first()).toBeVisible();
+    await expect(
+      resultsSection.getByText("Secondary Elo adjustment from completed World Cup 2026 matches.")
+    ).toBeVisible();
+  } else {
+    // Not applied is valid given sparse local data
+    await expect(resultsSection.getByText("Not applied", { exact: true })).toBeVisible();
+  }
+});
+
+test("tournament form section always shows secondary signal disclaimer", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(
+    resultsSection.getByText(
+      "Tournament form is an optional secondary signal, not a separate prediction model. It does not automatically increase confidence."
+    )
+  ).toBeVisible();
+});
+
+test("Manual xG result does not show tournament form section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Brazil vs Germany" });
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).not.toBeVisible();
+});
+
+test("switching from tournament form On back to Off and re-predicting removes tournament form section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Off" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).not.toBeVisible();
+});
+
+test("scheduled fixture and custom matchup flows remain functional with tournament form enabled", async ({ page }) => {
+  await page.goto("/");
+
+  // Scheduled fixture flow with tournament form On
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByLabel("World Cup group").selectOption("C");
+  await page.getByLabel("Official fixture").selectOption("wc2026-group-c-md1-01-brazil-vs-morocco");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Morocco" })).toBeVisible();
+
+  // Custom matchup flow
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "France", "France · Group I");
+  await selectTeamOption(page, "Away team", "Netherlands", "Netherlands · Group F");
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await expect(page.getByRole("heading", { name: "France vs Netherlands" })).toBeVisible();
+});
+
+test("prediction confidence section still visible alongside tournament form section", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "On", exact: true }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).toBeVisible();
+  await expect(resultsSection.getByText("Tournament form", { exact: true })).toBeVisible();
+});

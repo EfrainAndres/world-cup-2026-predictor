@@ -3,6 +3,7 @@
 import type { SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
 import type { PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
 import { formatElo, formatPercent } from "../lib/api-client";
+import { getTournamentFormDisplayState } from "../lib/tournament-form-helpers";
 import { StatusPill } from "./StatusPill";
 
 interface MatchSimulationResultsProps {
@@ -33,6 +34,104 @@ function formatCoverageType(coverageType: PredictMatchFromLiveEloSuccessResponse
     case "full":
       return "Full";
   }
+}
+
+function TournamentFormAdjustmentSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
+  const displayState = getTournamentFormDisplayState(result.tournamentFormAdjustment);
+
+  if (displayState.status === "disabled") {
+    return null;
+  }
+
+  return (
+    <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900">
+      <div className="flex items-center justify-between">
+        <h4 className="text-sm font-semibold text-slate-950">Tournament form</h4>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            displayState.status === "applied"
+              ? "bg-slate-200 text-slate-800"
+              : "bg-amber-100 text-amber-800"
+          }`}
+        >
+          {displayState.status === "applied" ? "Applied" : "Not applied"}
+        </span>
+      </div>
+
+      {displayState.status === "applied" ? (
+        <>
+          <p className="mt-1 text-xs text-slate-600">
+            Secondary Elo adjustment from completed World Cup 2026 matches.
+          </p>
+
+          {displayState.adj.formulaVersion !== undefined ? (
+            <p className="mt-1 text-xs text-slate-500">Formula: {displayState.adj.formulaVersion}</p>
+          ) : null}
+
+          {displayState.adj.cutoffAt !== undefined ? (
+            <p className="mt-1 text-xs text-slate-500">Cutoff: {displayState.adj.cutoffAt}</p>
+          ) : null}
+
+          <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                { label: result.liveElo.homeTeam, side: displayState.adj.home },
+                { label: result.liveElo.awayTeam, side: displayState.adj.away }
+              ] as const
+            ).map(({ label, side }) => (
+              <div key={label} className="rounded-md border border-slate-200 bg-white px-3 py-2">
+                <p className="text-xs font-semibold text-slate-700">{label}</p>
+                <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                  <dt className="text-slate-500">Baseline Elo</dt>
+                  <dd className="tabular-nums text-slate-950">{formatElo(side.baselineElo)}</dd>
+                  <dt className="text-slate-500">Adjustment</dt>
+                  <dd className="tabular-nums text-slate-950">
+                    {side.adjustment >= 0 ? "+" : ""}
+                    {side.adjustment.toFixed(1)}
+                  </dd>
+                  <dt className="text-slate-500">Effective Elo</dt>
+                  <dd className="tabular-nums font-semibold text-slate-950">{formatElo(side.effectiveElo)}</dd>
+                  <dt className="text-slate-500">Matches</dt>
+                  <dd className="tabular-nums text-slate-950">{side.matchesIncluded}</dd>
+                  {side.formScore !== undefined ? (
+                    <>
+                      <dt className="text-slate-500">Form score</dt>
+                      <dd className="tabular-nums text-slate-950">{side.formScore.toFixed(1)}</dd>
+                    </>
+                  ) : null}
+                </dl>
+              </div>
+            ))}
+          </dl>
+
+          {displayState.adj.warnings.length > 0 ? (
+            <ul className="mt-3 space-y-1 text-xs text-amber-800">
+              {displayState.adj.warnings.map((w) => (
+                <li key={w}>- {w}</li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : (
+        <>
+          <p className="mt-1 text-xs text-slate-600">
+            Not enough completed tournament matches yet to apply a secondary Elo adjustment.
+          </p>
+          {displayState.warnings.length > 0 ? (
+            <ul className="mt-2 space-y-1 text-xs text-slate-500">
+              {displayState.warnings.map((w) => (
+                <li key={w}>- {w}</li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      )}
+
+      <p className="mt-3 text-xs text-slate-500">
+        Tournament form is an optional secondary signal, not a separate prediction model. It does not automatically increase confidence.
+      </p>
+    </div>
+  );
 }
 
 export function MatchSimulationResults({ result }: MatchSimulationResultsProps) {
@@ -160,6 +259,8 @@ export function MatchSimulationResults({ result }: MatchSimulationResultsProps) 
           ) : null}
         </div>
       ) : null}
+
+      {isLiveEloPrediction ? <TournamentFormAdjustmentSection result={result} /> : null}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {probabilityCards.map((item) => (

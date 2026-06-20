@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import type { ApiValidationIssue, SimulateMatchSuccessResponse, WorldCup2026FixtureFoundationResponse } from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import { buildTournamentFormRequestField } from "../lib/tournament-form-helpers";
 import { getGroupedTeamOptions } from "../lib/grouped-team-options";
 import {
   formatFixtureStatus,
@@ -109,6 +110,7 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
   const [matchSelectionMode, setMatchSelectionMode] = useState<MatchSelectionMode>("scheduled");
   const [predictionMode, setPredictionMode] = useState<PredictionMode>("manual");
   const [preset, setPreset] = useState<EloXgPreset>("balanced");
+  const [tournamentFormEnabled, setTournamentFormEnabled] = useState(false);
   const [scheduledGroup, setScheduledGroup] = useState(defaultScheduledSelection.group);
   const [scheduledFixtureId, setScheduledFixtureId] = useState(defaultScheduledSelection.fixtureId);
   const [formState, setFormState] = useState<MatchSimulationFormState>(() => buildInitialFormState(initialResult));
@@ -181,6 +183,15 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
     clearInteractiveState();
   }
 
+  function handleTournamentFormToggle(enabled: boolean): void {
+    if (tournamentFormEnabled === enabled) {
+      return;
+    }
+
+    setTournamentFormEnabled(enabled);
+    clearInteractiveState();
+  }
+
   function handlePredictionModeChange(nextMode: PredictionMode): void {
     if (nextMode === predictionMode) {
       return;
@@ -231,6 +242,7 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
             seed: 2026,
             mostCommonScorelineLimit: 3
           };
+    const tournamentFormRequest = buildTournamentFormRequestField(tournamentFormEnabled);
     const response =
       predictionMode === "elo"
         ? predictDashboardMatchFromLiveElo({
@@ -239,7 +251,8 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
             maxGoals: parseNumber(formState.maxGoals),
             mostLikelyScorelineLimit: 5,
             preset,
-            ...(monteCarlo === undefined ? {} : { monteCarlo })
+            ...(monteCarlo === undefined ? {} : { monteCarlo }),
+            ...(tournamentFormRequest === undefined ? {} : { tournamentFormAdjustment: tournamentFormRequest })
           })
         : simulateDashboardMatch({
             homeTeam: formState.homeTeam,
@@ -492,6 +505,39 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
                     </button>
                   ))}
                 </div>
+              </fieldset>
+
+              <fieldset className="mt-4">
+                <legend className="text-xs font-semibold uppercase text-teal-700">Tournament form adjustment</legend>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={!tournamentFormEnabled}
+                    className={`rounded-md border px-2 py-1.5 text-xs font-semibold ${
+                      !tournamentFormEnabled
+                        ? "border-teal-700 bg-teal-100 text-teal-950"
+                        : "border-teal-200 bg-white/70 text-teal-800"
+                    }`}
+                    onClick={() => handleTournamentFormToggle(false)}
+                  >
+                    Off
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={tournamentFormEnabled}
+                    className={`rounded-md border px-2 py-1.5 text-xs font-semibold ${
+                      tournamentFormEnabled
+                        ? "border-teal-700 bg-teal-100 text-teal-950"
+                        : "border-teal-200 bg-white/70 text-teal-800"
+                    }`}
+                    onClick={() => handleTournamentFormToggle(true)}
+                  >
+                    On
+                  </button>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-teal-800">
+                  Uses completed World Cup 2026 matches as a bounded secondary Elo signal.
+                </p>
               </fieldset>
 
               <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
