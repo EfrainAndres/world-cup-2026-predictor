@@ -7,6 +7,7 @@ import {
 } from "../src/index.js";
 import type {
   PredictionConfidenceAssessment,
+  PredictMatchFromLiveEloResponse,
   WorldCup2026ExternalFixtureRecord,
   WorldCup2026PredictionEvaluation,
   WorldCup2026PredictionSnapshot,
@@ -510,6 +511,250 @@ describe("buildWorldCup2026GroupDetail", () => {
     });
 
     expect(result.status).toBe("success");
+    expect(buildWorldCup2026GroupStandings()).toEqual(standingsBefore);
+  });
+});
+
+// Group A fixtures:
+// MD1: Mexico vs South Africa      (wc2026-group-a-md1-01-mexico-vs-south-africa)
+// MD1: South Korea vs Czechia       (wc2026-group-a-md1-02-south-korea-vs-czechia)
+// MD2: Mexico vs South Korea        (wc2026-group-a-md2-03-mexico-vs-south-korea)
+// MD2: South Africa vs Czechia      (wc2026-group-a-md2-04-south-africa-vs-czechia)
+// MD3: Mexico vs Czechia            (wc2026-group-a-md3-05-mexico-vs-czechia)
+// MD3: South Africa vs South Korea  (wc2026-group-a-md3-06-south-africa-vs-south-korea)
+
+function makeAutoPredict(homeWin = 0.5, draw = 0.25, awayWin = 0.25): PredictMatchFromLiveEloResponse {
+  return {
+    status: "success",
+    outcomeProbabilities: {
+      homeWinProbability: homeWin,
+      drawProbability: draw,
+      awayWinProbability: awayWin
+    },
+    mostLikelyScorelines: [
+      { homeGoals: 1, awayGoals: 0, probability: 0.15 },
+      { homeGoals: 0, awayGoals: 0, probability: 0.10 }
+    ],
+    predictionConfidence: BASE_CONFIDENCE,
+    liveElo: { homeRatingSource: "live_elo", awayRatingSource: "live_elo" },
+    warnings: []
+  } as unknown as PredictMatchFromLiveEloResponse;
+}
+
+describe("buildWorldCup2026GroupDetail — projection", () => {
+  it("returns complete projection when all group fixtures are finished", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({
+        fixtures: [
+          record({ providerFixtureId: "f1", homeTeam: "Mexico", awayTeam: "South Africa", status: "finished", homeScore: 2, awayScore: 0 }),
+          record({ providerFixtureId: "f2", homeTeam: "South Korea", awayTeam: "Czechia", status: "finished", homeScore: 1, awayScore: 1 }),
+          record({ providerFixtureId: "f3", homeTeam: "Mexico", awayTeam: "South Korea", status: "finished", homeScore: 1, awayScore: 0 }),
+          record({ providerFixtureId: "f4", homeTeam: "South Africa", awayTeam: "Czechia", status: "finished", homeScore: 0, awayScore: 1 }),
+          record({ providerFixtureId: "f5", homeTeam: "Mexico", awayTeam: "Czechia", status: "finished", homeScore: 2, awayScore: 1 }),
+          record({ providerFixtureId: "f6", homeTeam: "South Africa", awayTeam: "South Korea", status: "finished", homeScore: 0, awayScore: 1 })
+        ],
+        completedResults: []
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.projection.available).toBe(true);
+    expect(result.projection.status).toBe("complete");
+    expect(result.projection.fixtures).toHaveLength(0);
+  });
+
+  it("prefers stored snapshot over auto_predict for an unplayed fixture", () => {
+    const snapshotStore = createInMemorySnapshotStore();
+    snapshotStore.create(
+      snapshot({
+        snapshotId: "snap-md2",
+        fixtureId: "wc2026-group-a-md2-03-mexico-vs-south-korea",
+        status: "pre_match_locked",
+        capturedAt: "2026-06-15T10:00:00Z",
+        homeTeam: "Mexico",
+        awayTeam: "South Korea",
+        prediction: {
+          homeExpectedGoals: 1.4,
+          awayExpectedGoals: 0.8,
+          homeWinProbability: 0.6,
+          drawProbability: 0.22,
+          awayWinProbability: 0.18,
+          mostLikelyScorelines: [{ homeGoals: 1, awayGoals: 0, probability: 0.18 }]
+        }
+      }),
+      "snap-md2"
+    );
+    const predictorCalls: string[] = [];
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      snapshotStore,
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: (home, away) => {
+        predictorCalls.push(`${home} vs ${away}`);
+        return makeAutoPredict();
+      }
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    const md2Fixture = result.projection.fixtures.find(
+      (f) => f.fixtureId === "wc2026-group-a-md2-03-mexico-vs-south-korea"
+    );
+    expect(md2Fixture?.source).toBe("stored_snapshot");
+    expect(predictorCalls).not.toContain("Mexico vs South Korea");
+  });
+
+  it("falls back to auto_predict when no stored snapshot exists", () => {
+    const predictorCalls: string[] = [];
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: (home, away) => {
+        predictorCalls.push(`${home} vs ${away}`);
+        return makeAutoPredict();
+      }
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.projection.fixtures.length).toBeGreaterThan(0);
+    expect(result.projection.fixtures.every((f) => f.source === "auto_predict")).toBe(true);
+    expect(predictorCalls.length).toBe(result.projection.fixtures.length);
+  });
+
+  it("does not include completed fixtures in projection fixtures list", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({
+        fixtures: [
+          record({ providerFixtureId: "f1", homeTeam: "Mexico", awayTeam: "South Africa", status: "finished", homeScore: 2, awayScore: 0 })
+        ],
+        completedResults: []
+      }),
+      predictorFn: () => makeAutoPredict()
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    const ids = result.projection.fixtures.map((f) => f.fixtureId);
+    expect(ids).not.toContain("wc2026-group-a-md1-01-mexico-vs-south-africa");
+  });
+
+  it("excludes postponed and cancelled fixtures from projection with warnings", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({
+        fixtures: [
+          record({ providerFixtureId: "f1", homeTeam: "Mexico", awayTeam: "South Africa", status: "postponed" }),
+          record({ providerFixtureId: "f2", homeTeam: "South Korea", awayTeam: "Czechia", status: "cancelled" })
+        ],
+        completedResults: []
+      }),
+      predictorFn: () => makeAutoPredict()
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    const ids = result.projection.fixtures.map((f) => f.fixtureId);
+    expect(ids).not.toContain("wc2026-group-a-md1-01-mexico-vs-south-africa");
+    expect(ids).not.toContain("wc2026-group-a-md1-02-south-korea-vs-czechia");
+    expect(result.projection.warnings.some((w) => w.includes("postponed"))).toBe(true);
+    expect(result.projection.warnings.some((w) => w.includes("cancelled"))).toBe(true);
+  });
+
+  it("selects the scoreline with the highest probability", () => {
+    const snapshotStore = createInMemorySnapshotStore();
+    snapshotStore.create(
+      snapshot({
+        snapshotId: "snap-multi",
+        fixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+        status: "pre_match_locked",
+        capturedAt: "2026-06-11T10:00:00Z",
+        homeTeam: "Mexico",
+        awayTeam: "South Africa",
+        prediction: {
+          homeExpectedGoals: 1.5,
+          awayExpectedGoals: 0.9,
+          homeWinProbability: 0.55,
+          drawProbability: 0.25,
+          awayWinProbability: 0.2,
+          mostLikelyScorelines: [
+            { homeGoals: 0, awayGoals: 0, probability: 0.09 },
+            { homeGoals: 2, awayGoals: 1, probability: 0.11 },
+            { homeGoals: 1, awayGoals: 0, probability: 0.14 }
+          ]
+        }
+      }),
+      "snap-multi"
+    );
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      snapshotStore,
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: () => makeAutoPredict()
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    const f = result.projection.fixtures.find(
+      (x) => x.fixtureId === "wc2026-group-a-md1-01-mexico-vs-south-africa"
+    );
+    expect(f?.projectedScoreline).toEqual({ homeGoals: 1, awayGoals: 0 });
+  });
+
+  it("returns partial status when some but not all fixtures can be projected", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: (home, away) => {
+        if (home === "Mexico" && away === "South Africa") {
+          return { status: "validation_error", issues: [{ field: "homeTeam", message: "unavailable" }] } as unknown as PredictMatchFromLiveEloResponse;
+        }
+        return makeAutoPredict();
+      }
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    const unavailable = result.projection.fixtures.filter((f) => f.source === "unavailable");
+    expect(unavailable.length).toBeGreaterThan(0);
+    expect(result.projection.status).toBe("partial");
+  });
+
+  it("includes projected standings and qualification when projection is available", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: () => makeAutoPredict()
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.projection.available).toBe(true);
+    expect(result.projection.standings).toBeDefined();
+    expect(result.projection.standings?.length).toBe(4);
+    expect(result.projection.qualification).toBeDefined();
+    expect(result.projection.qualification?.projectedFirstPlace).toBeDefined();
+  });
+
+  it("does not mutate official standings when building projection", () => {
+    const standingsBefore = buildWorldCup2026GroupStandings();
+    buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({ fixtures: [], completedResults: [] }),
+      predictorFn: () => makeAutoPredict()
+    });
     expect(buildWorldCup2026GroupStandings()).toEqual(standingsBefore);
   });
 });

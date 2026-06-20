@@ -62,6 +62,23 @@ function buildGroupDetailSuccessResponse(group: string, overrides: Record<string
       thirdPlaceCurrentlyQualifying: false,
       status: "official"
     },
+    projection: {
+      available: true,
+      status: "complete",
+      standings: [
+        { team: "Mexico", points: 9, played: 3, wins: 3, draws: 0, losses: 0, goalsFor: 7, goalsAgainst: 1, goalDifference: 6 },
+        { team: "Canada", points: 6, played: 3, wins: 2, draws: 0, losses: 1, goalsFor: 4, goalsAgainst: 3, goalDifference: 1 },
+        { team: "Honduras", points: 3, played: 3, wins: 1, draws: 0, losses: 2, goalsFor: 2, goalsAgainst: 5, goalDifference: -3 },
+        { team: "Jamaica", points: 0, played: 3, wins: 0, draws: 0, losses: 3, goalsFor: 1, goalsAgainst: 5, goalDifference: -4 }
+      ],
+      qualification: {
+        projectedFirstPlace: "Mexico",
+        projectedSecondPlace: "Canada",
+        projectedThirdPlace: "Honduras"
+      },
+      fixtures: [],
+      warnings: []
+    },
     providerMetadata: {
       configuredProvider: "football-data",
       activeProvider: "football-data.org",
@@ -206,4 +223,64 @@ test("breadcrumb link back to dashboard is visible", async ({ page }) => {
   await expect(backLink).toBeVisible();
   await backLink.click();
   await expect(page).toHaveURL("/");
+});
+
+// ── Projection section ────────────────────────────────────────────────────────
+
+test("projected standings heading appears on group detail page", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+});
+
+test("projection section shows a status badge", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const badge = page.getByText(/Complete projection|Partial projection/);
+  await expect(badge).toBeVisible();
+});
+
+test("projected standings table renders in projection section", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const projectionSection = page.getByRole("region", { name: "Projected standings" });
+  const standingsTable = projectionSection.getByRole("table", { name: "Projected standings" });
+  await expect(standingsTable).toBeVisible();
+});
+
+test("projected qualification section renders with team names", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  await expect(page.getByText("Projected qualification")).toBeVisible();
+  await expect(page.getByText("Projected 1st")).toBeVisible();
+  await expect(page.getByText("Projected 2nd")).toBeVisible();
+  await expect(page.getByText("Projected 3rd")).toBeVisible();
+});
+
+test("per-fixture projections appear for unplayed Group A fixtures", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  await expect(page.getByText("Per-fixture projections")).toBeVisible();
+  const fixtureRows = page.getByText(/Auto Predict|Stored prediction/);
+  await expect(fixtureRows.first()).toBeVisible();
+});
+
+test("projected fixture shows scoreline when available", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const projectedLabel = page.getByText("Projected:").first();
+  await expect(projectedLabel).toBeVisible();
+});
+
+test("projection section is included in mobile viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/groups/A");
+
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+});
+
+test("projection section renders for a group other than A (Group B)", async ({ page }) => {
+  await page.goto("/groups/B");
+
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
 });
