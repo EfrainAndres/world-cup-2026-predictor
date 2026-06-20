@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "calibration:baseline": "vitest run tests/elo-to-xg-calibration-artifact.test.ts",
-    "calibration:v2-candidate": "vitest run tests/elo-to-xg-v2-candidate-artifact.test.ts"
+    "calibration:v2-candidate": "vitest run tests/elo-to-xg-v2-candidate-artifact.test.ts",
+    "calibration:v2-decision": "vitest run tests/elo-to-xg-v2-production-decision-artifact.test.ts"
   },
   "devDependencies": {
     "typescript": "^5.7.2",

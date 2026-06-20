@@ -450,6 +450,19 @@ export {
 } from "./complete-historical-replay-validation.js";
 
 export type {
+  AcceptanceCheck,
+  EloToXgCandidateProductionDecision,
+  ProductionDecision,
+  RunProductionDecisionInput
+} from "./elo-to-xg-v2-production-decision.js";
+
+export {
+  V2_PRODUCTION_DECISION_VERSION,
+  evaluateCandidateProductionDecision,
+  verifyV1ProductionConstantsUnchangedForDecision
+} from "./elo-to-xg-v2-production-decision.js";
+
+export type {
   V2AcceptanceGate,
   V2AcceptanceGateVerdict,
   V2BaselineReference,
