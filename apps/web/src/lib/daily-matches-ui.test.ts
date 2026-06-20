@@ -2,7 +2,13 @@ import { describe, expect, test } from "vitest";
 
 import {
   DAILY_MATCHES_DISPLAY_TIMEZONE,
+  formatDailyMatchProbability,
+  formatEvaluationExactScoreLabel,
+  formatEvaluationOutcomeLabel,
   formatUtcTimestamp,
+  getDailyMatchHistoryState,
+  getDailyMatchPredictionLabel,
+  getDailyMatchScoreLabel,
   getDailyMatchStateLabel,
   getDailyMatchesSourceLabel,
   getTodayDateForTimezone,
@@ -81,5 +87,51 @@ describe("daily matches UI helpers", () => {
   test("formats sync timestamps in explicit UTC and handles missing values", () => {
     expect(formatUtcTimestamp(undefined)).toBe("unavailable");
     expect(formatUtcTimestamp("2026-06-19T14:05:00Z")).toContain("UTC");
+  });
+
+  test("derives history states for missing prediction, live pre-match, and final evaluation", () => {
+    expect(
+      getDailyMatchHistoryState({
+        state: "upcoming",
+        predictionHistory: {
+          snapshot: { available: false },
+          evaluation: { available: false },
+          warnings: []
+        }
+      })
+    ).toBe("no_snapshot");
+
+    expect(
+      getDailyMatchHistoryState({
+        state: "live",
+        predictionHistory: {
+          snapshot: { available: true },
+          evaluation: { available: false },
+          warnings: []
+        }
+      })
+    ).toBe("live_pre_match_prediction");
+
+    expect(
+      getDailyMatchHistoryState({
+        state: "final",
+        predictionHistory: {
+          snapshot: { available: true },
+          evaluation: { available: true },
+          warnings: []
+        }
+      })
+    ).toBe("final_evaluated");
+  });
+
+  test("formats prediction and evaluation labels consistently", () => {
+    expect(getDailyMatchScoreLabel("final")).toBe("Final result");
+    expect(getDailyMatchScoreLabel("live")).toBe("Current score");
+    expect(getDailyMatchPredictionLabel("final_evaluation_pending")).toBe("Prediction saved");
+    expect(formatDailyMatchProbability(0.4123)).toBe("41.2%");
+    expect(formatEvaluationOutcomeLabel(true)).toBe("Correct");
+    expect(formatEvaluationOutcomeLabel(false)).toBe("Incorrect");
+    expect(formatEvaluationExactScoreLabel(true)).toBe("Correct");
+    expect(formatEvaluationExactScoreLabel(false)).toBe("Miss");
   });
 });

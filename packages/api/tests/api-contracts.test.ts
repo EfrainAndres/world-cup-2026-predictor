@@ -286,6 +286,13 @@ describe("api contract coverage", () => {
       stale: expect.any(Boolean),
       lastSuccessfulSync: expect.any(String)
     });
+    const sampleMatch = response.matches[0] ?? response.unscheduledMatches[0];
+    if (sampleMatch !== undefined) {
+      expect(sampleMatch.predictionSnapshot.available).toEqual(expect.any(Boolean));
+      expect(sampleMatch.predictionHistory.snapshot.available).toEqual(expect.any(Boolean));
+      expect(sampleMatch.predictionHistory.evaluation.available).toEqual(expect.any(Boolean));
+      expect(sampleMatch.predictionHistory.warnings).toEqual(expect.any(Array));
+    }
     expectMetadataContract(response.metadata);
   });
 
