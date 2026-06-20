@@ -448,3 +448,27 @@ export {
   COMPLETE_HISTORICAL_REPLAY_VALIDATION_VERSION,
   validateCompleteHistoricalReplay
 } from "./complete-historical-replay-validation.js";
+
+export type {
+  V2AcceptanceGate,
+  V2AcceptanceGateVerdict,
+  V2BaselineReference,
+  V2CandidateEvaluation,
+  V2CandidateRecord,
+  V2CandidateReport,
+  V2CandidateSplitMetrics,
+  V2SplitDelta,
+  V2SteepLinearParams,
+  RunV2CandidateEvaluationInput
+} from "./elo-to-xg-v2-candidate.js";
+
+export {
+  V2_CANDIDATE_POISSON_MAX_GOALS,
+  V2_CANDIDATE_V1_ADJUSTMENT_PER_100,
+  V2_CANDIDATE_V1_BASE_GOALS,
+  V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT,
+  V2_CANDIDATE_VERSION,
+  V2_STEEPER_LINEAR_CANDIDATES,
+  runV2CandidateEvaluation,
+  v2SteepLinearXg
+} from "./elo-to-xg-v2-candidate.js";
