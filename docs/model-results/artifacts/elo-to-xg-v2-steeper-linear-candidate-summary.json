@@ -1,0 +1,370 @@
+{
+  "schema_version": "1",
+  "candidate_version": "elo-to-xg-v2-steeper-linear-candidate-v1",
+  "v1_reference": {
+    "source_artifact": "elo-to-xg-v1-baseline-summary.json",
+    "holdout_brier_score": 0.6321909388786933,
+    "holdout_log_loss": 1.0479966522393562,
+    "holdout_home_goal_mae": 1.1350000000000002,
+    "holdout_away_goal_mae": 0.8605000000000004,
+    "holdout_total_goal_mae": 1.4416666666666667,
+    "holdout_outcome_accuracy": 0.525,
+    "training_brier_score": 0.6451137060906779,
+    "training_log_loss": 1.0662117087619374,
+    "validation_brier_score": 0.6440885973611733,
+    "validation_log_loss": 1.0639031409311832,
+    "combined_non_2026_brier_score": 0.6399331322954008,
+    "combined_non_2026_log_loss": 1.0587323654161747
+  },
+  "candidate_set": [
+    {
+      "adjustmentPer100": 0.13,
+      "maxAdjustment": 0.55,
+      "label": "steeper-0.13"
+    },
+    {
+      "adjustmentPer100": 0.15,
+      "maxAdjustment": 0.65,
+      "label": "steeper-0.15"
+    },
+    {
+      "adjustmentPer100": 0.17,
+      "maxAdjustment": 0.75,
+      "label": "steeper-0.17"
+    }
+  ],
+  "evaluations": [
+    {
+      "params": {
+        "adjustmentPer100": 0.13,
+        "maxAdjustment": 0.55,
+        "label": "steeper-0.13"
+      },
+      "splits": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "mean_brier_score": 0.6430289948019088,
+          "mean_log_loss": 1.063367170379086,
+          "mean_home_goal_mae": 0.926953125,
+          "mean_away_goal_mae": 0.9458593749999997,
+          "mean_total_goal_mae": 1.359375,
+          "outcome_accuracy": 0.5,
+          "avg_predicted_home_xg": 1.2544531250000006,
+          "avg_predicted_away_xg": 1.2455468749999994
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "mean_brier_score": 0.6427429134837624,
+          "mean_log_loss": 1.0621096257347253,
+          "mean_home_goal_mae": 1.00765625,
+          "mean_away_goal_mae": 0.7648437499999999,
+          "mean_total_goal_mae": 1.1875,
+          "outcome_accuracy": 0.5,
+          "avg_predicted_home_xg": 1.26015625,
+          "avg_predicted_away_xg": 1.23984375
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "mean_brier_score": 0.6274992140838053,
+          "mean_log_loss": 1.0417141692360212,
+          "mean_home_goal_mae": 1.1309166666666668,
+          "mean_away_goal_mae": 0.8550833333333332,
+          "mean_total_goal_mae": 1.4416666666666667,
+          "outcome_accuracy": 0.525,
+          "avg_predicted_home_xg": 1.2700833333333332,
+          "avg_predicted_away_xg": 1.2299166666666665
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "mean_brier_score": 0.6369973188707106,
+          "mean_log_loss": 1.0547811351406018,
+          "mean_home_goal_mae": 1.021955128205128,
+          "mean_away_goal_mae": 0.8738141025641024,
+          "mean_total_goal_mae": 1.3557692307692308,
+          "outcome_accuracy": 0.5096153846153846,
+          "avg_predicted_home_xg": 1.2616346153846156,
+          "avg_predicted_away_xg": 1.2383653846153844
+        }
+      },
+      "deltas": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "brier_score_delta": -0.002084711288769081,
+          "log_loss_delta": -0.0028445383828514803,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "brier_score_delta": -0.0013456838774108526,
+          "log_loss_delta": -0.0017935151964578733,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "brier_score_delta": -0.004691724794887997,
+          "log_loss_delta": -0.006282483003335004,
+          "home_goal_mae_delta": -0.004083333333333439,
+          "away_goal_mae_delta": -0.00541666666666718,
+          "total_goal_mae_delta": 0,
+          "outcome_accuracy_delta": 0
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "brier_score_delta": -0.0029358134246901813,
+          "log_loss_delta": -0.00395123027557287,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        }
+      },
+      "acceptance_gate": {
+        "verdict": "eligible_for_review",
+        "reason": "Holdout Brier Score and Log Loss improved over V1 baseline without materially worsening goal MAE.",
+        "holdout_brier_improves": true,
+        "holdout_log_loss_improves": true,
+        "goal_mae_materially_worsened": false
+      }
+    },
+    {
+      "params": {
+        "adjustmentPer100": 0.15,
+        "maxAdjustment": 0.65,
+        "label": "steeper-0.15"
+      },
+      "splits": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "mean_brier_score": 0.6420478745254419,
+          "mean_log_loss": 1.0620234336828074,
+          "mean_home_goal_mae": 0.9271093750000005,
+          "mean_away_goal_mae": 0.9446093750000001,
+          "mean_total_goal_mae": 1.359375,
+          "outcome_accuracy": 0.4921875,
+          "avg_predicted_home_xg": 1.2557031250000008,
+          "avg_predicted_away_xg": 1.2442968749999992
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "mean_brier_score": 0.6425997759450144,
+          "mean_log_loss": 1.061971636444349,
+          "mean_home_goal_mae": 1.0071875,
+          "mean_away_goal_mae": 0.765,
+          "mean_total_goal_mae": 1.1875,
+          "outcome_accuracy": 0.5,
+          "avg_predicted_home_xg": 1.2606249999999999,
+          "avg_predicted_away_xg": 1.2393750000000003
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "mean_brier_score": 0.6249491919427992,
+          "mean_log_loss": 1.0383487380870535,
+          "mean_home_goal_mae": 1.1291666666666662,
+          "mean_away_goal_mae": 0.8516666666666672,
+          "mean_total_goal_mae": 1.4416666666666667,
+          "outcome_accuracy": 0.525,
+          "avg_predicted_home_xg": 1.2728333333333333,
+          "avg_predicted_away_xg": 1.2271666666666667
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "mean_brier_score": 0.6355846686951067,
+          "mean_log_loss": 1.0529071564560382,
+          "mean_home_goal_mae": 1.0212500000000009,
+          "mean_away_goal_mae": 0.8720192307692304,
+          "mean_total_goal_mae": 1.3557692307692308,
+          "outcome_accuracy": 0.5064102564102564,
+          "avg_predicted_home_xg": 1.2633012820512821,
+          "avg_predicted_away_xg": 1.2366987179487177
+        }
+      },
+      "deltas": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "brier_score_delta": -0.003065831565235988,
+          "log_loss_delta": -0.004188275079129999,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "brier_score_delta": -0.0014888214161589142,
+          "log_loss_delta": -0.0019315044868342124,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "brier_score_delta": -0.007241746935894078,
+          "log_loss_delta": -0.009647914152302706,
+          "home_goal_mae_delta": -0.005833333333334023,
+          "away_goal_mae_delta": -0.008833333333333138,
+          "total_goal_mae_delta": 0,
+          "outcome_accuracy_delta": 0
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "brier_score_delta": -0.004348463600294172,
+          "log_loss_delta": -0.0058252089601364965,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        }
+      },
+      "acceptance_gate": {
+        "verdict": "eligible_for_review",
+        "reason": "Holdout Brier Score and Log Loss improved over V1 baseline without materially worsening goal MAE.",
+        "holdout_brier_improves": true,
+        "holdout_log_loss_improves": true,
+        "goal_mae_materially_worsened": false
+      }
+    },
+    {
+      "params": {
+        "adjustmentPer100": 0.17,
+        "maxAdjustment": 0.75,
+        "label": "steeper-0.17"
+      },
+      "splits": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "mean_brier_score": 0.6408390528699869,
+          "mean_log_loss": 1.0603752975636096,
+          "mean_home_goal_mae": 0.9264062500000004,
+          "mean_away_goal_mae": 0.9432812500000001,
+          "mean_total_goal_mae": 1.359375,
+          "outcome_accuracy": 0.4921875,
+          "avg_predicted_home_xg": 1.2559375000000004,
+          "avg_predicted_away_xg": 1.2440624999999996
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "mean_brier_score": 0.641318987598718,
+          "mean_log_loss": 1.0602868535302452,
+          "mean_home_goal_mae": 1.00703125,
+          "mean_away_goal_mae": 0.7632812499999997,
+          "mean_total_goal_mae": 1.1875,
+          "outcome_accuracy": 0.5,
+          "avg_predicted_home_xg": 1.26296875,
+          "avg_predicted_away_xg": 1.23703125
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "mean_brier_score": 0.6226511358690406,
+          "mean_log_loss": 1.0353180729530034,
+          "mean_home_goal_mae": 1.1270833333333339,
+          "mean_away_goal_mae": 0.8480833333333332,
+          "mean_total_goal_mae": 1.4416666666666667,
+          "outcome_accuracy": 0.525,
+          "avg_predicted_home_xg": 1.2759166666666668,
+          "avg_predicted_away_xg": 1.2240833333333336
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "mean_brier_score": 0.6339421483267981,
+          "mean_log_loss": 1.050719761116788,
+          "mean_home_goal_mae": 1.0201282051282057,
+          "mean_away_goal_mae": 0.8697435897435892,
+          "mean_total_goal_mae": 1.3557692307692308,
+          "outcome_accuracy": 0.5064102564102564,
+          "avg_predicted_home_xg": 1.2650641025641027,
+          "avg_predicted_away_xg": 1.2349358974358973
+        }
+      },
+      "deltas": {
+        "training": {
+          "split": "training",
+          "records_evaluated": 128,
+          "brier_score_delta": -0.004274653220690983,
+          "log_loss_delta": -0.005836411198327784,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "validation": {
+          "split": "validation",
+          "records_evaluated": 64,
+          "brier_score_delta": -0.0027696097624553273,
+          "log_loss_delta": -0.003616287400938001,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        },
+        "holdout": {
+          "split": "holdout",
+          "records_evaluated": 120,
+          "brier_score_delta": -0.009539803009652625,
+          "log_loss_delta": -0.012678579286352853,
+          "home_goal_mae_delta": -0.00791666666666635,
+          "away_goal_mae_delta": -0.012416666666667187,
+          "total_goal_mae_delta": 0,
+          "outcome_accuracy_delta": 0
+        },
+        "combined_non_2026": {
+          "split": "combined_non_2026",
+          "records_evaluated": 312,
+          "brier_score_delta": -0.005990983968602759,
+          "log_loss_delta": -0.00801260429938666,
+          "home_goal_mae_delta": null,
+          "away_goal_mae_delta": null,
+          "total_goal_mae_delta": null,
+          "outcome_accuracy_delta": null
+        }
+      },
+      "acceptance_gate": {
+        "verdict": "eligible_for_review",
+        "reason": "Holdout Brier Score and Log Loss improved over V1 baseline without materially worsening goal MAE.",
+        "holdout_brier_improves": true,
+        "holdout_log_loss_improves": true,
+        "goal_mae_materially_worsened": false
+      }
+    }
+  ],
+  "summary": {
+    "total_candidates": 3,
+    "eligible_for_review": 3,
+    "rejected": 0,
+    "inconclusive": 0
+  },
+  "limitations": [
+    "Candidate evaluation uses the same calibration dataset as V1 baseline. No new data was introduced.",
+    "Holdout split contains WC2022 + international 2022+ matches only. Sample size may limit statistical power.",
+    "No statistical significance testing is performed. Metrics are descriptive.",
+    "The acceptance gate uses fixed thresholds (MAE worsening > 0.05 goals). These are heuristic, not theoretically derived.",
+    "WC2026 holdout is always excluded from candidate evaluation.",
+    "The candidate does not modify the production formula. It is isolated in this module only."
+  ]
+}
