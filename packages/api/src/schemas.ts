@@ -1,4 +1,5 @@
 import type {
+  EloToXgFormulaVersion,
   EloXgPreset,
   LiveEloAttackDefenseConfig,
   LiveEloAttackDefenseMetadata,
@@ -155,6 +156,10 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     goalsAdjustment: number;
     preset: EloXgPreset;
     presetDescription: string;
+    formulaVersion: EloToXgFormulaVersion;
+    adjustmentPer100: number;
+    maxAdjustment: number;
+    v1RollbackAvailable: boolean;
   };
   liveElo: {
     homeTeam: string;

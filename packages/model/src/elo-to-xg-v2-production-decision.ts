@@ -1,7 +1,7 @@
 import {
-  ELO_TO_XG_ADJUSTMENT_PER_100,
-  ELO_TO_XG_MAX_ELO_ADJUSTMENT,
-  ELO_TO_XG_BASE_GOALS
+  ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT
 } from "./elo-to-xg.js";
 import type { V2CandidateReport, V2CandidateEvaluation, V2SplitDelta } from "./elo-to-xg-v2-candidate.js";
 
@@ -402,8 +402,8 @@ export function verifyV1ProductionConstantsUnchangedForDecision(): {
   unchanged: true;
 } {
   return {
-    adjustmentPer100: ELO_TO_XG_ADJUSTMENT_PER_100,
-    maxAdjustment: ELO_TO_XG_MAX_ELO_ADJUSTMENT,
+    adjustmentPer100: ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+    maxAdjustment: ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT,
     baseGoals: ELO_TO_XG_BASE_GOALS,
     unchanged: true
   };

@@ -8,9 +8,9 @@ import {
   runV2CandidateEvaluation
 } from "../src/elo-to-xg-v2-candidate.js";
 import {
-  ELO_TO_XG_ADJUSTMENT_PER_100,
-  ELO_TO_XG_MAX_ELO_ADJUSTMENT,
-  ELO_TO_XG_BASE_GOALS
+  ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT
 } from "../src/index.js";
 import type { V2CandidateRecord, V2BaselineReference } from "../src/elo-to-xg-v2-candidate.js";
 
@@ -79,12 +79,12 @@ describe("V2_STEEPER_LINEAR_CANDIDATES", () => {
 // --- V1 reference constants unchanged ---
 
 describe("V1 reference constants", () => {
-  it("V2_CANDIDATE_V1_ADJUSTMENT_PER_100 matches production", () => {
-    expect(V2_CANDIDATE_V1_ADJUSTMENT_PER_100).toBe(ELO_TO_XG_ADJUSTMENT_PER_100);
+  it("V2_CANDIDATE_V1_ADJUSTMENT_PER_100 matches V1 rollback constant", () => {
+    expect(V2_CANDIDATE_V1_ADJUSTMENT_PER_100).toBe(ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100);
   });
 
-  it("V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT matches production", () => {
-    expect(V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT).toBe(ELO_TO_XG_MAX_ELO_ADJUSTMENT);
+  it("V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT matches V1 rollback constant", () => {
+    expect(V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT).toBe(ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT);
   });
 
   it("V2_CANDIDATE_V1_BASE_GOALS matches production", () => {

@@ -5,9 +5,9 @@ import {
   V2_PRODUCTION_DECISION_VERSION
 } from "../src/elo-to-xg-v2-production-decision.js";
 import {
-  ELO_TO_XG_ADJUSTMENT_PER_100,
-  ELO_TO_XG_MAX_ELO_ADJUSTMENT,
-  ELO_TO_XG_BASE_GOALS
+  ELO_TO_XG_BASE_GOALS,
+  ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT
 } from "../src/index.js";
 import type { V2CandidateReport, V2BaselineReference } from "../src/elo-to-xg-v2-candidate.js";
 
@@ -170,10 +170,10 @@ function makeReport(evaluations: V2CandidateReport["evaluations"]): V2CandidateR
 // --- Tests ---
 
 describe("verifyV1ProductionConstantsUnchangedForDecision", () => {
-  it("returns V1 constants matching production", () => {
+  it("returns V1 rollback constants", () => {
     const result = verifyV1ProductionConstantsUnchangedForDecision();
-    expect(result.adjustmentPer100).toBe(ELO_TO_XG_ADJUSTMENT_PER_100);
-    expect(result.maxAdjustment).toBe(ELO_TO_XG_MAX_ELO_ADJUSTMENT);
+    expect(result.adjustmentPer100).toBe(ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100);
+    expect(result.maxAdjustment).toBe(ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT);
     expect(result.baseGoals).toBe(ELO_TO_XG_BASE_GOALS);
     expect(result.unchanged).toBe(true);
   });

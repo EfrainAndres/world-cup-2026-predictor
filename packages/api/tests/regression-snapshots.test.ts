@@ -106,8 +106,8 @@ describe("regression snapshot: Canada vs Bosnia-Herzegovina prediction", () => {
   it("Elo difference is -30.37 and Bosnia-Herzegovina has the xG edge", () => {
     if (result.status !== "success") return;
     expect(result.expectedGoals.eloDifference).toBe(-30.37);
-    expect(result.expectedGoals.home).toBe(1.22);
-    expect(result.expectedGoals.away).toBe(1.28);
+    expect(result.expectedGoals.home).toBe(1.20);
+    expect(result.expectedGoals.away).toBe(1.30);
   });
 
   it("xG values are finite and within the [0.2, 4.0] model bounds", () => {
@@ -128,7 +128,7 @@ describe("regression snapshot: Canada vs Bosnia-Herzegovina prediction", () => {
 
   it("home win probability matches expected value", () => {
     if (result.status !== "success") return;
-    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.3507, 4);
+    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.3413, 4);
   });
 
   it("most likely scoreline is 1-1", () => {
@@ -162,7 +162,7 @@ describe("regression snapshot: South Korea vs Czechia prediction", () => {
     expect(result.liveElo.awayRank).toBe(34);
   });
 
-  it("xG snapshot: home 1.22, away 1.28 with Czechia holding the edge", () => {
+  it("xG snapshot: home 1.21, away 1.29 with Czechia holding the edge", () => {
     if (result.status !== "success") return;
     const { home, away } = result.expectedGoals;
     expect(Number.isFinite(home)).toBe(true);
@@ -171,8 +171,8 @@ describe("regression snapshot: South Korea vs Czechia prediction", () => {
     expect(away).toBeGreaterThanOrEqual(0.2);
     expect(home).toBeLessThanOrEqual(4.0);
     expect(away).toBeLessThanOrEqual(4.0);
-    expect(home).toBe(1.22);
-    expect(away).toBe(1.28);
+    expect(home).toBe(1.21);
+    expect(away).toBe(1.29);
   });
 
   it("probabilities sum to 1 and Czechia is favored", () => {
@@ -184,7 +184,7 @@ describe("regression snapshot: South Korea vs Czechia prediction", () => {
 
   it("home win probability matches expected value", () => {
     if (result.status !== "success") return;
-    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.3507, 4);
+    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.3460, 4);
   });
 });
 
@@ -208,8 +208,8 @@ describe("regression snapshot: Germany vs New Zealand prediction", () => {
   it("Elo difference is 70 and home xG exceeds away xG", () => {
     if (result.status !== "success") return;
     expect(result.expectedGoals.eloDifference).toBe(70);
-    expect(result.expectedGoals.home).toBe(1.32);
-    expect(result.expectedGoals.away).toBe(1.18);
+    expect(result.expectedGoals.home).toBe(1.36);
+    expect(result.expectedGoals.away).toBe(1.14);
   });
 
   it("xG values are finite and within model bounds", () => {
@@ -230,7 +230,7 @@ describe("regression snapshot: Germany vs New Zealand prediction", () => {
 
   it("Germany home win probability matches expected value", () => {
     if (result.status !== "success") return;
-    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.3985, 4);
+    expect(result.outcomeProbabilities.homeWinProbability).toBeCloseTo(0.4181, 4);
   });
 });
 

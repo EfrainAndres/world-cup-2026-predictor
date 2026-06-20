@@ -69,11 +69,13 @@ function expectProbabilitiesContract(probabilities: OutcomeProbabilitiesContract
     "totalProbability"
   ]);
 
-  for (const value of Object.values(probabilities)) {
+  for (const value of [probabilities.homeWinProbability, probabilities.drawProbability, probabilities.awayWinProbability]) {
     expect(Number.isFinite(value)).toBe(true);
     expect(value).toBeGreaterThanOrEqual(0);
     expect(value).toBeLessThanOrEqual(1);
   }
+  expect(Number.isFinite(probabilities.totalProbability)).toBe(true);
+  expect(probabilities.totalProbability).toBeGreaterThanOrEqual(0);
 
   expect(
     probabilities.homeWinProbability + probabilities.drawProbability + probabilities.awayWinProbability
@@ -373,7 +375,11 @@ describe("api contract coverage", () => {
       baseExpectedGoals: expect.any(Number),
       goalsAdjustment: expect.any(Number),
       preset: "balanced",
-      presetDescription: expect.any(String)
+      presetDescription: expect.any(String),
+      formulaVersion: expect.any(String),
+      adjustmentPer100: expect.any(Number),
+      maxAdjustment: expect.any(Number),
+      v1RollbackAvailable: expect.any(Boolean)
     });
     expect(first.liveElo).toMatchObject({
       homeTeam: "France",

@@ -361,10 +361,10 @@ describe("runEloToXgCalibrationBaselineExperiment", () => {
     }
   });
 
-  it("production V1 constants remain unchanged from documented values", () => {
+  it("V2 production constants are set correctly", () => {
     expect(ELO_TO_XG_BASE_GOALS).toBe(1.25);
-    expect(ELO_TO_XG_ADJUSTMENT_PER_100).toBe(0.1);
-    expect(ELO_TO_XG_MAX_ELO_ADJUSTMENT).toBe(0.45);
+    expect(ELO_TO_XG_ADJUSTMENT_PER_100).toBe(0.15);
+    expect(ELO_TO_XG_MAX_ELO_ADJUSTMENT).toBe(0.65);
   });
 
   it("handles draws correctly in outcome accuracy", () => {

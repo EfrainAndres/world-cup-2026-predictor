@@ -5,8 +5,8 @@ import {
   ELO_TO_XG_BASE_GOALS,
   ELO_TO_XG_MIN_GOALS,
   ELO_TO_XG_MAX_GOALS,
-  ELO_TO_XG_ADJUSTMENT_PER_100,
-  ELO_TO_XG_MAX_ELO_ADJUSTMENT
+  ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100,
+  ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT
 } from "./elo-to-xg.js";
 import type { EloResult } from "./types.js";
 
@@ -15,9 +15,9 @@ import type { EloResult } from "./types.js";
 export const V2_CANDIDATE_VERSION = "elo-to-xg-v2-steeper-linear-candidate-v1";
 export const V2_CANDIDATE_POISSON_MAX_GOALS = 7;
 
-// V1 reference constants (unchanged in production)
-export const V2_CANDIDATE_V1_ADJUSTMENT_PER_100 = ELO_TO_XG_ADJUSTMENT_PER_100;
-export const V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT = ELO_TO_XG_MAX_ELO_ADJUSTMENT;
+// V1 reference constants — point to named V1 rollback exports, not the current production defaults
+export const V2_CANDIDATE_V1_ADJUSTMENT_PER_100 = ELO_TO_XG_V1_BALANCED_ADJUSTMENT_PER_100;
+export const V2_CANDIDATE_V1_MAX_ELO_ADJUSTMENT = ELO_TO_XG_V1_BALANCED_MAX_ADJUSTMENT;
 export const V2_CANDIDATE_V1_BASE_GOALS = ELO_TO_XG_BASE_GOALS;
 
 // --- Types ---
