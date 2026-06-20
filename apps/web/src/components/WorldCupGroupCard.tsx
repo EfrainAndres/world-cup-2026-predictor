@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { WorldCup2026FixtureFoundationResponse } from "../lib/api-client";
 
 type WorldCup2026Group = WorldCup2026FixtureFoundationResponse["groups"][number];
@@ -41,6 +42,12 @@ export function WorldCupGroupCard({ group, fixtures }: WorldCupGroupCardProps) {
             </li>
           ))}
         </ol>
+      </div>
+
+      <div className="mt-3 border-t border-slate-200 pt-3">
+        <Link href={`/groups/${group.group}`} className="text-sm font-medium text-teal-700 hover:underline">
+          View group details →
+        </Link>
       </div>
     </article>
   );

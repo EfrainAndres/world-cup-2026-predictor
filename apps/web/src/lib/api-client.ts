@@ -1,6 +1,7 @@
 import {
   getAvailableLiveEloTeams,
   getHealth,
+  getWorldCup2026GroupDetail,
   getHistoricalReplayAudit,
   getHistoricalTournamentSummary,
   getLiveEloRatingsFoundation,
@@ -30,6 +31,7 @@ import {
 } from "@world-cup-2026-predictor/api";
 import type {
   EloXgPreset,
+  GetWorldCup2026GroupDetailInput,
   HealthResponse,
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
@@ -71,7 +73,15 @@ import type {
   WorldCup2026RoundOf32FoundationResponse,
   WorldCup2026KnockoutWinnerResolutionResponse,
   WorldCup2026ThirdPlaceMatchFoundationResponse,
-  WorldCup2026ThirdPlaceMatchSimulationFoundationResponse
+  WorldCup2026ThirdPlaceMatchSimulationFoundationResponse,
+  WorldCup2026GroupDetailResponse,
+  WorldCup2026GroupDetailSuccessResponse,
+  WorldCup2026GroupDetailMatch,
+  WorldCup2026GroupDetailTeamEntry,
+  WorldCup2026GroupDetailQualificationSummary,
+  WorldCup2026GroupDetailProviderMetadata,
+  WorldCup2026GroupDetailValidationErrorResponse,
+  WorldCup2026GroupStandingEntry
 } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
@@ -103,6 +113,17 @@ export type { WorldCup2026SemifinalMatchSimulationFoundationResponse };
 export type { WorldCup2026KnockoutWinnerResolutionResponse };
 export type { WorldCup2026ThirdPlaceMatchFoundationResponse };
 export type { WorldCup2026ThirdPlaceMatchSimulationFoundationResponse };
+export type {
+  GetWorldCup2026GroupDetailInput,
+  WorldCup2026GroupDetailResponse,
+  WorldCup2026GroupDetailSuccessResponse,
+  WorldCup2026GroupDetailMatch,
+  WorldCup2026GroupDetailTeamEntry,
+  WorldCup2026GroupDetailQualificationSummary,
+  WorldCup2026GroupDetailProviderMetadata,
+  WorldCup2026GroupDetailValidationErrorResponse,
+  WorldCup2026GroupStandingEntry
+};
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 
@@ -227,4 +248,14 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     worldCup2026ThirdPlaceMatch: getWorldCup2026ThirdPlaceMatchFoundation(),
     worldCup2026ThirdPlaceMatchSimulation: simulateWorldCup2026ThirdPlaceMatchFoundation()
   };
+}
+
+export async function getDashboardGroupDetail(
+  input: GetWorldCup2026GroupDetailInput
+): Promise<WorldCup2026GroupDetailSuccessResponse> {
+  const response = await getWorldCup2026GroupDetail(input);
+  if (response.status !== "success") {
+    throw new Error(`Group detail request failed for group ${input.group}.`);
+  }
+  return response;
 }
