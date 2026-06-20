@@ -10,6 +10,7 @@ export {
   getTeamRatingsFoundation,
   getWorldCup2026FixtureFoundation,
   getWorldCup2026DailyMatches,
+  getWorldCup2026GroupDetail,
   getWorldCup2026ResultsProviderFoundation,
   getWorldCup2026GroupStandingsFoundation,
   getWorldCup2026KnockoutBracketFoundation,
@@ -57,6 +58,8 @@ export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
 export { buildWorldCup2026DailyMatches } from "./daily-matches.js";
 export type { BuildWorldCup2026DailyMatchesInput } from "./daily-matches.js";
+export { buildWorldCup2026GroupDetail } from "./group-detail.js";
+export type { BuildWorldCup2026GroupDetailInput } from "./group-detail.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
 export {
@@ -188,6 +191,7 @@ export type {
   WorldCup2026Fixture,
   WorldCup2026FixtureFoundationResponse,
   GetWorldCup2026DailyMatchesInput,
+  GetWorldCup2026GroupDetailInput,
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchIssue,
   WorldCup2026DailyMatchIssueCode,
@@ -198,6 +202,13 @@ export type {
   WorldCup2026DailyMatchesResponse,
   WorldCup2026DailyMatchesSuccessResponse,
   WorldCup2026DailyMatchesValidationErrorResponse,
+  WorldCup2026GroupDetailMatch,
+  WorldCup2026GroupDetailProviderMetadata,
+  WorldCup2026GroupDetailQualificationSummary,
+  WorldCup2026GroupDetailResponse,
+  WorldCup2026GroupDetailSuccessResponse,
+  WorldCup2026GroupDetailTeamEntry,
+  WorldCup2026GroupDetailValidationErrorResponse,
   WorldCup2026FixtureResult,
   WorldCup2026FixtureStatus,
   WorldCup2026Group,
