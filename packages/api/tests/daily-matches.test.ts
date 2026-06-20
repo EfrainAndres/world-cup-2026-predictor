@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildWorldCup2026DailyMatches,
+  createInMemoryPredictionEvaluationStore,
   createInMemorySnapshotStore,
   getWorldCup2026DailyMatches,
   getWorldCup2026LiveGroupStandings,
@@ -9,6 +10,7 @@ import {
 import type {
   PredictionConfidenceAssessment,
   WorldCup2026ExternalFixtureRecord,
+  WorldCup2026PredictionEvaluation,
   WorldCup2026PredictionSnapshot,
   WorldCup2026SyncResult
 } from "../src/index.js";
@@ -112,6 +114,59 @@ function snapshot(overrides: Partial<WorldCup2026PredictionSnapshot>): WorldCup2
     confidence: overrides.confidence ?? BASE_CONFIDENCE,
     provenance: overrides.provenance ?? {},
     contentHash: overrides.contentHash ?? "hash"
+  };
+}
+
+function evaluation(
+  overrides: Partial<WorldCup2026PredictionEvaluation>
+): WorldCup2026PredictionEvaluation {
+  return {
+    evaluationId: overrides.evaluationId ?? "eval-1",
+    snapshotId: overrides.snapshotId ?? "snap-1",
+    fixtureId: overrides.fixtureId ?? "wc2026-group-a-md1-01-mexico-vs-south-africa",
+    providerFixtureId: overrides.providerFixtureId ?? "wc2026-group-a-md1-01-mexico-vs-south-africa",
+    evaluatedAt: overrides.evaluatedAt ?? "2026-06-11T20:00:00Z",
+    modelVersion: overrides.modelVersion ?? "wc2026-model-v1",
+    metricVersion: overrides.metricVersion ?? "wc2026-model-vs-reality-v1",
+    predicted: overrides.predicted ?? {
+      homeExpectedGoals: 1.5,
+      awayExpectedGoals: 0.9,
+      homeWinProbability: 0.55,
+      drawProbability: 0.25,
+      awayWinProbability: 0.2,
+      mostLikelyScorelines: [{ homeGoals: 1, awayGoals: 0, probability: 0.12 }],
+      predictedOutcome: "home_win",
+      predictedScoreline: {
+        homeGoals: 1,
+        awayGoals: 0
+      }
+    },
+    actual: overrides.actual ?? {
+      homeGoals: 2,
+      awayGoals: 0,
+      outcome: "home_win"
+    },
+    metrics: overrides.metrics ?? {
+      outcomeCorrect: true,
+      drawCorrect: false,
+      exactScoreCorrect: false,
+      homeGoalAbsoluteError: 1,
+      awayGoalAbsoluteError: 0,
+      totalGoalAbsoluteError: 1,
+      goalDifferenceAbsoluteError: 1,
+      brierScore: 0.342,
+      logLoss: 0.578,
+      predictedOutcomeProbability: 0.55,
+      actualOutcomeProbability: 0.55
+    },
+    confidence: overrides.confidence ?? {
+      level: "medium",
+      coverageType: "partial",
+      fallbackUsed: false
+    },
+    provenance: overrides.provenance ?? {
+      snapshotContentHash: "hash"
+    }
   };
 }
 
@@ -324,6 +379,14 @@ describe("buildWorldCup2026DailyMatches", () => {
   it("associates the latest valid pre-kickoff snapshot deterministically", () => {
     const store = createInMemorySnapshotStore();
     store.create(snapshot({ snapshotId: "snap-older", capturedAt: "2026-06-11T15:00:00Z" }), "older");
+    store.create(
+      snapshot({
+        snapshotId: "snap-foundation",
+        capturedAt: "2026-06-11T17:00:00Z",
+        status: "foundation_unverified"
+      }),
+      "foundation"
+    );
     store.create(snapshot({ snapshotId: "snap-newer", capturedAt: "2026-06-11T16:00:00Z" }), "newer");
     store.create(
       snapshot({
@@ -355,9 +418,23 @@ describe("buildWorldCup2026DailyMatches", () => {
     if (result.status !== "success") return;
     expect(result.matches[0]?.predictionSnapshot).toEqual({
       available: true,
+      status: "pre_match_locked",
       snapshotId: "snap-newer",
       capturedAt: "2026-06-11T16:00:00Z",
       modelVersion: "wc2026-model-v1"
+    });
+    expect(result.matches[0]?.predictionHistory.snapshot.prediction).toMatchObject({
+      homeExpectedGoals: 1.5,
+      awayExpectedGoals: 0.9,
+      homeWinProbability: 0.55,
+      drawProbability: 0.25,
+      awayWinProbability: 0.2,
+      projectedScoreline: {
+        homeGoals: 1,
+        awayGoals: 0
+      },
+      confidenceLevel: "medium",
+      coverageType: "partial"
     });
   });
 
@@ -383,7 +460,136 @@ describe("buildWorldCup2026DailyMatches", () => {
     expect(result.status).toBe("success");
     if (result.status !== "success") return;
     expect(result.matches[0]?.predictionSnapshot).toEqual({ available: false });
+    expect(result.matches[0]?.predictionHistory).toEqual({
+      snapshot: { available: false },
+      evaluation: { available: false },
+      warnings: []
+    });
     expect(store.list()).toHaveLength(0);
+  });
+
+  it("attaches an evaluation only for the selected snapshot on final matches", () => {
+    const snapshotStore = createInMemorySnapshotStore();
+    const evaluationStore = createInMemoryPredictionEvaluationStore();
+    snapshotStore.create(snapshot({ snapshotId: "snap-a", capturedAt: "2026-06-11T16:00:00Z" }), "snap-a");
+    snapshotStore.create(
+      snapshot({ snapshotId: "snap-b", capturedAt: "2026-06-11T15:00:00Z" }),
+      "snap-b"
+    );
+    evaluationStore.create(evaluation({ evaluationId: "eval-a", snapshotId: "snap-a" }), "eval-a");
+    evaluationStore.create(evaluation({ evaluationId: "eval-b", snapshotId: "snap-b" }), "eval-b");
+
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-11",
+      timezone: "UTC",
+      snapshotStore,
+      evaluationStore,
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "finished",
+            kickoffAt: "2026-06-11T18:00:00Z",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches[0]?.predictionHistory.evaluation).toEqual({
+      available: true,
+      evaluationId: "eval-a",
+      evaluatedAt: "2026-06-11T20:00:00Z",
+      metrics: {
+        outcomeCorrect: true,
+        exactScoreCorrect: false,
+        brierScore: 0.342,
+        logLoss: 0.578,
+        totalGoalAbsoluteError: 1
+      }
+    });
+  });
+
+  it("does not attach mismatched evaluations and returns a deterministic warning", () => {
+    const snapshotStore = createInMemorySnapshotStore();
+    const evaluationStore = createInMemoryPredictionEvaluationStore();
+    snapshotStore.create(snapshot({ snapshotId: "snap-a", capturedAt: "2026-06-11T16:00:00Z" }), "snap-a");
+    evaluationStore.create(
+      evaluation({
+        evaluationId: "eval-mismatch",
+        snapshotId: "snap-a",
+        actual: {
+          homeGoals: 3,
+          awayGoals: 1,
+          outcome: "home_win"
+        }
+      }),
+      "eval-mismatch"
+    );
+
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-11",
+      timezone: "UTC",
+      snapshotStore,
+      evaluationStore,
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "finished",
+            kickoffAt: "2026-06-11T18:00:00Z",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches[0]?.predictionHistory.evaluation).toEqual({ available: false });
+    expect(result.matches[0]?.predictionHistory.warnings).toHaveLength(1);
+  });
+
+  it("does not mutate snapshot or evaluation stores while building read-only history", () => {
+    const snapshotStore = createInMemorySnapshotStore();
+    const evaluationStore = createInMemoryPredictionEvaluationStore();
+    snapshotStore.create(snapshot({ snapshotId: "snap-a" }), "snap-a");
+    evaluationStore.create(evaluation({ evaluationId: "eval-a", snapshotId: "snap-a" }), "eval-a");
+
+    const snapshotsBefore = snapshotStore.list();
+    const evaluationsBefore = evaluationStore.list();
+
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-11",
+      timezone: "UTC",
+      snapshotStore,
+      evaluationStore,
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "finished",
+            kickoffAt: "2026-06-11T18:00:00Z",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    expect(snapshotStore.list()).toEqual(snapshotsBefore);
+    expect(evaluationStore.list()).toEqual(evaluationsBefore);
   });
 });
 

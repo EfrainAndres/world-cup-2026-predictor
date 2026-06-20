@@ -542,9 +542,53 @@ export type WorldCup2026DailyMatchIssueCode =
 
 export interface WorldCup2026DailyMatchSnapshotSummary {
   available: boolean;
+  status?: PredictionSnapshotStatus;
   snapshotId?: string;
   capturedAt?: string;
   modelVersion?: string;
+}
+
+export interface WorldCup2026DailyMatchProjectedScoreline {
+  homeGoals: number;
+  awayGoals: number;
+}
+
+export interface WorldCup2026DailyMatchPredictionSummary {
+  homeExpectedGoals: number;
+  awayExpectedGoals: number;
+  homeWinProbability: number;
+  drawProbability: number;
+  awayWinProbability: number;
+  projectedScoreline?: WorldCup2026DailyMatchProjectedScoreline;
+  confidenceLevel?: PredictionConfidenceLevel;
+  coverageType?: PredictionCoverageType;
+}
+
+export interface WorldCup2026DailyMatchHistorySnapshotSummary
+  extends WorldCup2026DailyMatchSnapshotSummary {
+  formulaVersion?: EloToXgFormulaVersion;
+  prediction?: WorldCup2026DailyMatchPredictionSummary;
+}
+
+export interface WorldCup2026DailyMatchHistoryEvaluationMetricsSummary {
+  outcomeCorrect: boolean;
+  exactScoreCorrect: boolean;
+  brierScore: number;
+  logLoss: number;
+  totalGoalAbsoluteError: number;
+}
+
+export interface WorldCup2026DailyMatchHistoryEvaluationSummary {
+  available: boolean;
+  evaluationId?: string;
+  evaluatedAt?: string;
+  metrics?: WorldCup2026DailyMatchHistoryEvaluationMetricsSummary;
+}
+
+export interface WorldCup2026DailyMatchPredictionHistorySummary {
+  snapshot: WorldCup2026DailyMatchHistorySnapshotSummary;
+  evaluation: WorldCup2026DailyMatchHistoryEvaluationSummary;
+  warnings: readonly string[];
 }
 
 export interface WorldCup2026DailyMatchIssue {
@@ -569,6 +613,7 @@ export interface WorldCup2026DailyMatchEntry {
   awayScore?: number;
   venue?: string;
   predictionSnapshot: WorldCup2026DailyMatchSnapshotSummary;
+  predictionHistory: WorldCup2026DailyMatchPredictionHistorySummary;
 }
 
 export interface WorldCup2026DailyMatchesCounts {

@@ -1,12 +1,18 @@
 import { buildApiMetadata } from "./schemas.js";
 import { synchronizeWorldCup2026Results } from "./live-results-sync.js";
 import { defaultSnapshotStore, type PredictionSnapshotStore } from "./snapshot-store.js";
+import {
+  defaultPredictionEvaluationStore,
+  type PredictionEvaluationStore
+} from "./prediction-evaluation-store.js";
 import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
 import type {
   ApiValidationIssue,
   GetWorldCup2026DailyMatchesInput,
   WorldCup2026DailyMatchEntry,
+  WorldCup2026DailyMatchHistoryEvaluationSummary,
   WorldCup2026DailyMatchIssue,
+  WorldCup2026DailyMatchPredictionHistorySummary,
   WorldCup2026DailyMatchSnapshotSummary,
   WorldCup2026DailyMatchState,
   WorldCup2026DailyMatchesCounts,
@@ -15,7 +21,9 @@ import type {
   WorldCup2026ExternalFixtureRecord,
   WorldCup2026ExternalMatchStatus,
   WorldCup2026Fixture,
+  WorldCup2026PredictionEvaluation,
   WorldCup2026PredictionSnapshot,
+  PredictionSnapshotStatus,
   WorldCup2026SyncResult
 } from "./schemas.js";
 
@@ -26,6 +34,7 @@ export interface BuildWorldCup2026DailyMatchesInput extends GetWorldCup2026Daily
   syncResult: WorldCup2026SyncResult;
   generatedAt?: string;
   snapshotStore?: PredictionSnapshotStore;
+  evaluationStore?: PredictionEvaluationStore;
 }
 
 function validateDateString(date: string): boolean {
@@ -142,36 +151,225 @@ function isValidFinishedScore(record: WorldCup2026ExternalFixtureRecord): boolea
   );
 }
 
+function snapshotPriority(status: PredictionSnapshotStatus): number {
+  return status === "pre_match_locked" ? 0 : 1;
+}
+
 function compareSnapshots(a: WorldCup2026PredictionSnapshot, b: WorldCup2026PredictionSnapshot): number {
+  const statusCompare = snapshotPriority(a.status) - snapshotPriority(b.status);
+  if (statusCompare !== 0) return statusCompare;
+
   const timeCompare = b.capturedAt.localeCompare(a.capturedAt);
   if (timeCompare !== 0) return timeCompare;
   return b.snapshotId.localeCompare(a.snapshotId);
 }
 
-function resolveSnapshotSummary(
+function compareScorelineCandidates(
+  a: WorldCup2026PredictionSnapshot["prediction"]["mostLikelyScorelines"][number],
+  b: WorldCup2026PredictionSnapshot["prediction"]["mostLikelyScorelines"][number]
+): number {
+  const probabilityCompare = b.probability - a.probability;
+  if (probabilityCompare !== 0) return probabilityCompare;
+
+  const totalGoalsCompare = a.homeGoals + a.awayGoals - (b.homeGoals + b.awayGoals);
+  if (totalGoalsCompare !== 0) return totalGoalsCompare;
+  if (a.homeGoals !== b.homeGoals) return a.homeGoals - b.homeGoals;
+  return a.awayGoals - b.awayGoals;
+}
+
+function selectProjectedScoreline(snapshot: WorldCup2026PredictionSnapshot):
+  | { homeGoals: number; awayGoals: number }
+  | undefined {
+  const selected = [...snapshot.prediction.mostLikelyScorelines].sort(compareScorelineCandidates)[0];
+  return selected === undefined
+    ? undefined
+    : {
+        homeGoals: selected.homeGoals,
+        awayGoals: selected.awayGoals
+      };
+}
+
+function isEligibleSnapshotForMatchHistory(
+  snapshot: WorldCup2026PredictionSnapshot,
+  kickoffAt: string | undefined
+): boolean {
+  if (kickoffAt === undefined) {
+    return false;
+  }
+
+  if (snapshot.status !== "pre_match_locked" && snapshot.status !== "foundation_unverified") {
+    return false;
+  }
+
+  return snapshot.capturedAt < kickoffAt;
+}
+
+function resolveSelectedSnapshot(
   fixtureId: string,
   kickoffAt: string | undefined,
   snapshotStore: PredictionSnapshotStore
-): WorldCup2026DailyMatchSnapshotSummary {
-  if (kickoffAt === undefined) {
-    return { available: false };
-  }
-
+): WorldCup2026PredictionSnapshot | undefined {
   const valid = snapshotStore
     .getByFixtureId(fixtureId)
-    .filter((snapshot) => snapshot.status === "pre_match_locked" && snapshot.capturedAt < kickoffAt)
+    .filter((snapshot) => isEligibleSnapshotForMatchHistory(snapshot, kickoffAt))
     .sort(compareSnapshots);
 
-  const selected = valid[0];
+  return valid[0];
+}
+
+function buildSnapshotSummary(
+  selected: WorldCup2026PredictionSnapshot | undefined
+): WorldCup2026DailyMatchSnapshotSummary {
   if (selected === undefined) {
     return { available: false };
   }
 
   return {
     available: true,
+    status: selected.status,
     snapshotId: selected.snapshotId,
     capturedAt: selected.capturedAt,
     modelVersion: selected.modelVersion
+  };
+}
+
+function compareEvaluations(
+  a: WorldCup2026PredictionEvaluation,
+  b: WorldCup2026PredictionEvaluation
+): number {
+  const evaluatedAtCompare = b.evaluatedAt.localeCompare(a.evaluatedAt);
+  if (evaluatedAtCompare !== 0) return evaluatedAtCompare;
+  return b.evaluationId.localeCompare(a.evaluationId);
+}
+
+function resolveEvaluationSummary(
+  snapshot: WorldCup2026PredictionSnapshot | undefined,
+  fixtureId: string,
+  record: WorldCup2026ExternalFixtureRecord,
+  evaluationStore: PredictionEvaluationStore
+): {
+  summary: WorldCup2026DailyMatchHistoryEvaluationSummary;
+  warnings: string[];
+} {
+  if (
+    snapshot === undefined ||
+    record.status !== "finished" ||
+    !isValidFinishedScore(record)
+  ) {
+    return {
+      summary: { available: false },
+      warnings: []
+    };
+  }
+
+  const candidates = evaluationStore
+    .getByFixtureId(fixtureId)
+    .filter((evaluation) => evaluation.snapshotId === snapshot.snapshotId)
+    .sort(compareEvaluations);
+
+  const matching = candidates.filter((evaluation) => {
+    if (evaluation.fixtureId !== fixtureId) {
+      return false;
+    }
+
+    if (
+      evaluation.providerFixtureId !== undefined &&
+      evaluation.providerFixtureId !== record.providerFixtureId
+    ) {
+      return false;
+    }
+
+    return (
+      evaluation.actual.homeGoals === record.homeScore &&
+      evaluation.actual.awayGoals === record.awayScore
+    );
+  });
+
+  const selected = matching[0];
+  if (selected === undefined) {
+    return {
+      summary: { available: false },
+      warnings:
+        candidates.length === 0
+          ? []
+          : [
+              `Stored evaluation history for fixture '${fixtureId}' did not match the selected snapshot or final result and was not attached.`
+            ]
+    };
+  }
+
+  return {
+    summary: {
+      available: true,
+      evaluationId: selected.evaluationId,
+      evaluatedAt: selected.evaluatedAt,
+      metrics: {
+        outcomeCorrect: selected.metrics.outcomeCorrect,
+        exactScoreCorrect: selected.metrics.exactScoreCorrect,
+        brierScore: selected.metrics.brierScore,
+        logLoss: selected.metrics.logLoss,
+        totalGoalAbsoluteError: selected.metrics.totalGoalAbsoluteError
+      }
+    },
+    warnings: []
+  };
+}
+
+function resolvePredictionHistory(
+  fixtureId: string,
+  kickoffAt: string | undefined,
+  record: WorldCup2026ExternalFixtureRecord,
+  snapshotStore: PredictionSnapshotStore,
+  evaluationStore: PredictionEvaluationStore
+): {
+  snapshotSummary: WorldCup2026DailyMatchSnapshotSummary;
+  history: WorldCup2026DailyMatchPredictionHistorySummary;
+} {
+  const selectedSnapshot = resolveSelectedSnapshot(fixtureId, kickoffAt, snapshotStore);
+  const snapshotSummary = buildSnapshotSummary(selectedSnapshot);
+  const evaluation = resolveEvaluationSummary(
+    selectedSnapshot,
+    fixtureId,
+    record,
+    evaluationStore
+  );
+
+  if (selectedSnapshot === undefined) {
+    return {
+      snapshotSummary,
+      history: {
+        snapshot: { available: false },
+        evaluation: evaluation.summary,
+        warnings: evaluation.warnings
+      }
+    };
+  }
+
+  const projectedScoreline = selectProjectedScoreline(selectedSnapshot);
+
+  return {
+    snapshotSummary,
+    history: {
+      snapshot: {
+        available: true,
+        status: selectedSnapshot.status,
+        snapshotId: selectedSnapshot.snapshotId,
+        capturedAt: selectedSnapshot.capturedAt,
+        modelVersion: selectedSnapshot.modelVersion,
+        prediction: {
+          homeExpectedGoals: selectedSnapshot.prediction.homeExpectedGoals,
+          awayExpectedGoals: selectedSnapshot.prediction.awayExpectedGoals,
+          homeWinProbability: selectedSnapshot.prediction.homeWinProbability,
+          drawProbability: selectedSnapshot.prediction.drawProbability,
+          awayWinProbability: selectedSnapshot.prediction.awayWinProbability,
+          ...(projectedScoreline === undefined ? {} : { projectedScoreline }),
+          confidenceLevel: selectedSnapshot.confidence.level,
+          coverageType: selectedSnapshot.confidence.coverageType
+        }
+      },
+      evaluation: evaluation.summary,
+      warnings: evaluation.warnings
+    }
   };
 }
 
@@ -179,9 +377,18 @@ function buildDailyMatchEntry(
   record: WorldCup2026ExternalFixtureRecord,
   fixture: WorldCup2026Fixture | undefined,
   timezone: string,
-  snapshotStore: PredictionSnapshotStore
+  snapshotStore: PredictionSnapshotStore,
+  evaluationStore: PredictionEvaluationStore
 ): WorldCup2026DailyMatchEntry {
   const fixtureId = fixture?.id ?? record.providerFixtureId;
+  const history = resolvePredictionHistory(
+    fixtureId,
+    record.kickoffAt,
+    record,
+    snapshotStore,
+    evaluationStore
+  );
+
   return {
     fixtureId,
     providerFixtureId: record.providerFixtureId,
@@ -199,7 +406,8 @@ function buildDailyMatchEntry(
     ...(record.homeScore !== undefined ? { homeScore: record.homeScore } : {}),
     ...(record.awayScore !== undefined ? { awayScore: record.awayScore } : {}),
     ...(record.venue !== undefined ? { venue: record.venue } : {}),
-    predictionSnapshot: resolveSnapshotSummary(fixtureId, record.kickoffAt, snapshotStore)
+    predictionSnapshot: history.snapshotSummary,
+    predictionHistory: history.history
   };
 }
 
@@ -296,6 +504,7 @@ export function buildWorldCup2026DailyMatches(
 
   const fixtureIndex = buildFixtureIndex();
   const snapshotStore = input.snapshotStore ?? defaultSnapshotStore;
+  const evaluationStore = input.evaluationStore ?? defaultPredictionEvaluationStore;
   const seenKeys = new Set<string>();
   const issues: WorldCup2026DailyMatchIssue[] = [];
   const matches: WorldCup2026DailyMatchEntry[] = [];
@@ -326,7 +535,7 @@ export function buildWorldCup2026DailyMatches(
       continue;
     }
 
-    const entry = buildDailyMatchEntry(record, fixture, timezone, snapshotStore);
+    const entry = buildDailyMatchEntry(record, fixture, timezone, snapshotStore, evaluationStore);
 
     if (record.kickoffAt === undefined) {
       issues.push({
@@ -349,7 +558,11 @@ export function buildWorldCup2026DailyMatches(
   matches.sort(compareDailyEntries);
   unscheduledMatches.sort(compareDailyEntries);
   const providerMetadata = buildProviderMetadata(input.syncResult);
-  const warnings: string[] = [...input.syncResult.warnings];
+  const warnings: string[] = [
+    ...input.syncResult.warnings,
+    ...matches.flatMap((match) => match.predictionHistory.warnings),
+    ...unscheduledMatches.flatMap((match) => match.predictionHistory.warnings)
+  ];
 
   if (unscheduledMatches.length > 0) {
     warnings.push(
@@ -376,10 +589,10 @@ export function buildWorldCup2026DailyMatches(
     providerMetadata,
     issues,
     warnings,
-    metadata: buildApiMetadata([
+      metadata: buildApiMetadata([
       "Daily matches groups synchronized World Cup 2026 fixtures by localized calendar date using normalized provider data.",
       "Status mapping uses provider-normalized fixture status as the source of truth.",
-      "No snapshots are created automatically; snapshot association is read-only."
+      "No snapshots or evaluations are created automatically; history association is read-only."
     ])
   };
 }

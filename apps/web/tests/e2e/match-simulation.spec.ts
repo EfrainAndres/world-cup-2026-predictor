@@ -119,6 +119,41 @@ test("daily match center navigation loads mocked live and final cards with snaps
                   snapshotId: "snap-final-1",
                   capturedAt: "2026-06-20T14:00:00Z",
                   modelVersion: "model-v1"
+                },
+                predictionHistory: {
+                  snapshot: {
+                    available: true,
+                    status: "pre_match_locked",
+                    snapshotId: "snap-final-1",
+                    capturedAt: "2026-06-20T14:00:00Z",
+                    modelVersion: "model-v1",
+                    prediction: {
+                      homeExpectedGoals: 1.42,
+                      awayExpectedGoals: 0.88,
+                      homeWinProbability: 0.56,
+                      drawProbability: 0.26,
+                      awayWinProbability: 0.18,
+                      projectedScoreline: {
+                        homeGoals: 1,
+                        awayGoals: 0
+                      },
+                      confidenceLevel: "medium",
+                      coverageType: "partial"
+                    }
+                  },
+                  evaluation: {
+                    available: true,
+                    evaluationId: "eval-final-1",
+                    evaluatedAt: "2026-06-20T18:15:00Z",
+                    metrics: {
+                      outcomeCorrect: true,
+                      exactScoreCorrect: false,
+                      brierScore: 0.342,
+                      logLoss: 0.578,
+                      totalGoalAbsoluteError: 1
+                    }
+                  },
+                  warnings: []
                 }
               },
               {
@@ -136,6 +171,15 @@ test("daily match center navigation loads mocked live and final cards with snaps
                 awayScore: 1,
                 predictionSnapshot: {
                   available: false
+                },
+                predictionHistory: {
+                  snapshot: {
+                    available: false
+                  },
+                  evaluation: {
+                    available: false
+                  },
+                  warnings: []
                 }
               }
             ],
@@ -200,6 +244,15 @@ test("daily match center navigation loads mocked live and final cards with snaps
               awayScore: 1,
               predictionSnapshot: {
                 available: false
+              },
+              predictionHistory: {
+                snapshot: {
+                  available: false
+                },
+                evaluation: {
+                  available: false
+                },
+                warnings: []
               }
             }
           ],
@@ -227,9 +280,12 @@ test("daily match center navigation loads mocked live and final cards with snaps
   await expect(section.getByText("Source: football-data.org")).toBeVisible();
   await expect(section.getByText("Final", { exact: true })).toBeVisible();
   await expect(section.getByText("Live", { exact: true })).toBeVisible();
-  await expect(section.getByText("2 - 0")).toBeVisible();
-  await expect(section.getByText("1 - 1")).toBeVisible();
-  await expect(section.getByText("Pre-match prediction saved")).toBeVisible();
+  await expect(section.getByText("2 - 0", { exact: true })).toBeVisible();
+  await expect(section.getByText("1 - 1", { exact: true })).toBeVisible();
+  await expect(section.getByText("Pre-match prediction", { exact: true })).toBeVisible();
+  await expect(section.getByText("Projected score: 1 - 0")).toBeVisible();
+  await expect(section.getByText("Outcome prediction: Correct")).toBeVisible();
+  await expect(section.getByText("No pre-match prediction saved").nth(1)).toBeVisible();
   await expect(section.getByText("Model: model-v1")).toBeVisible();
 
   await section.getByRole("button", { name: "Today" }).click();
@@ -238,6 +294,98 @@ test("daily match center navigation loads mocked live and final cards with snaps
   await section.getByRole("button", { name: "Previous day" }).click();
   await expect(section.getByText("2026-06-18", { exact: true })).toBeVisible();
   await expect(section.getByText("Halftime", { exact: true })).toBeVisible();
+});
+
+test("daily match center shows evaluation pending for final fixtures without stored evaluation", async ({ page }) => {
+  let requestCount = 0;
+  await page.route("**/api/world-cup-2026/daily-matches**", async (route) => {
+    requestCount += 1;
+
+    if (requestCount === 1) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(
+          buildDailyMatchesSuccessResponse({
+            requestedDate: "2026-06-20",
+            matches: [
+              {
+                fixtureId: "wc2026-group-h-md1-esp-cpv",
+                providerFixtureId: "provider-fixture-5",
+                group: "Group H",
+                matchday: 1,
+                kickoffAt: "2026-06-20T12:00:00Z",
+                localizedKickoff: "2026-06-20 12:00 UTC",
+                homeTeam: "Spain",
+                awayTeam: "Cape Verde",
+                normalizedStatus: "final",
+                state: "final",
+                homeScore: 1,
+                awayScore: 0,
+                predictionSnapshot: {
+                  available: true,
+                  status: "pre_match_locked",
+                  snapshotId: "snap-pending-1",
+                  capturedAt: "2026-06-20T09:00:00Z",
+                  modelVersion: "wc2026-model-v1"
+                },
+                predictionHistory: {
+                  snapshot: {
+                    available: true,
+                    status: "pre_match_locked",
+                    snapshotId: "snap-pending-1",
+                    capturedAt: "2026-06-20T09:00:00Z",
+                    modelVersion: "wc2026-model-v1",
+                    prediction: {
+                      homeExpectedGoals: 1.55,
+                      awayExpectedGoals: 0.72,
+                      homeWinProbability: 0.62,
+                      drawProbability: 0.23,
+                      awayWinProbability: 0.15,
+                      projectedScoreline: { homeGoals: 2, awayGoals: 0 },
+                      confidenceLevel: "medium",
+                      coverageType: "partial"
+                    }
+                  },
+                  evaluation: {
+                    available: false
+                  },
+                  warnings: []
+                }
+              }
+            ],
+            counts: {
+              total: 1,
+              upcoming: 0,
+              live: 0,
+              halftime: 0,
+              final: 1,
+              postponed: 0,
+              cancelled: 0,
+              unknown: 0,
+              unavailableKickoff: 0
+            }
+          })
+        )
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(buildDailyMatchesSuccessResponse())
+    });
+  });
+
+  await page.goto("/");
+
+  const section = page.getByRole("region", { name: "Today's World Cup Matches" });
+  await section.getByRole("button", { name: "Next day" }).click();
+  await expect(section.getByText("Evaluation pending")).toBeVisible();
+  await expect(section.getByText("Prediction saved").nth(1)).toBeVisible();
+  await expect(section.getByText("Final result")).toBeVisible();
+  await expect(section.getByText("1 - 0", { exact: true })).toBeVisible();
 });
 
 test("daily match center clears previous cards when a date change returns an API error", async ({ page }) => {
@@ -268,6 +416,15 @@ test("daily match center clears previous cards when a date change returns an API
                 awayScore: 0,
                 predictionSnapshot: {
                   available: false
+                },
+                predictionHistory: {
+                  snapshot: {
+                    available: false
+                  },
+                  evaluation: {
+                    available: false
+                  },
+                  warnings: []
                 }
               }
             ],

@@ -3,8 +3,15 @@ import type {
   WorldCup2026DailyMatchState,
   WorldCup2026DailyMatchesProviderMetadata
 } from "./api-client";
+import { formatPercent } from "./api-client";
 
 export const DAILY_MATCHES_DISPLAY_TIMEZONE = "UTC";
+export type DailyMatchHistoryState =
+  | "no_snapshot"
+  | "upcoming_with_prediction"
+  | "live_pre_match_prediction"
+  | "final_evaluation_pending"
+  | "final_evaluated";
 
 function getDateParts(date: string): { year: number; month: number; day: number } {
   const [yearText, monthText, dayText] = date.split("-");
@@ -129,4 +136,59 @@ export function formatUtcTimestamp(timestamp: string | undefined): string {
     hour12: false,
     timeZoneName: "short"
   }).format(value);
+}
+
+export function formatDailyMatchProbability(probability: number): string {
+  return formatPercent(probability);
+}
+
+export function getDailyMatchScoreLabel(state: WorldCup2026DailyMatchState): string {
+  if (state === "final") {
+    return "Final result";
+  }
+
+  if (state === "live" || state === "halftime") {
+    return "Current score";
+  }
+
+  return "Score";
+}
+
+export function getDailyMatchHistoryState(match: Pick<WorldCup2026DailyMatchEntry, "state" | "predictionHistory">): DailyMatchHistoryState {
+  if (!match.predictionHistory.snapshot.available) {
+    return "no_snapshot";
+  }
+
+  if (match.state === "final") {
+    return match.predictionHistory.evaluation.available ? "final_evaluated" : "final_evaluation_pending";
+  }
+
+  if (match.state === "live" || match.state === "halftime") {
+    return "live_pre_match_prediction";
+  }
+
+  return "upcoming_with_prediction";
+}
+
+export function getDailyMatchPredictionLabel(state: DailyMatchHistoryState): string {
+  switch (state) {
+    case "live_pre_match_prediction":
+      return "Pre-match prediction";
+    case "final_evaluation_pending":
+      return "Prediction saved";
+    case "final_evaluated":
+      return "Pre-match prediction";
+    case "upcoming_with_prediction":
+      return "Pre-match prediction";
+    default:
+      return "No pre-match prediction saved";
+  }
+}
+
+export function formatEvaluationOutcomeLabel(isCorrect: boolean): string {
+  return isCorrect ? "Correct" : "Incorrect";
+}
+
+export function formatEvaluationExactScoreLabel(isCorrect: boolean): string {
+  return isCorrect ? "Correct" : "Miss";
 }

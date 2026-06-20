@@ -109,6 +109,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.11 | Elo-to-xG Calibration V2 | Recalibrate compressed Elo-to-xG behavior only after broader evaluation evidence and backtesting exist. | Planned |
 | 12.12A | Today’s Matches Data Foundation | Add a deterministic daily-match API foundation with timezone-aware filtering, normalized states, fallback metadata, and optional snapshot association. | Done |
 | 12.12B | Today’s Matches & Live Match Center UI | Add the first daily dashboard experience for upcoming, live, halftime, and final World Cup 2026 matches using the daily-match foundation. | Done |
+| 12.12C | Today’s Matches Prediction & History Integration | Enrich Match Center cards with immutable pre-match prediction history and completed-match evaluation summaries without creating snapshots or evaluations automatically. | Done |
 | 12.13 | Group Detail Prediction Pages | Build group-centered views that combine standings, results, live fixtures, confidence, and qualification context. | Planned |
 | 12.14 | Automatic Projection Refresh | Refresh standings, qualification, and knockout projections automatically as live results are processed. | Planned |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
