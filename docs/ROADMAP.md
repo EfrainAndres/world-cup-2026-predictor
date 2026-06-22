@@ -118,6 +118,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.14C | Group Detail UI: Projection Refresh Display | Surface `refreshExecution` metadata and refreshed assessment state in the group detail projection UI. In-memory server-side cache threads `previousProjection` across SSR renders; per-fixture refresh status badges (Current/Stale/Invalidated/Unavailable); stored-snapshot immutable label; failure alert; no browser polling, no database. | Done |
 | 12.T1 | AI Token Efficiency Baseline | Establish a reproducible token-usage measurement method, selective-reading manifest, compact shell helpers, and reduced instruction duplication for Codex CLI and Claude Code. | Done |
 | 12.T2 | Controlled Token Efficiency Comparison | Run one controlled documentation consistency task against the Phase 12.T1 baseline and record the measured workflow, output, and limitations. | Done |
+| 12.T3 | Repeated Task Token Measurement | Define paired run prompts for the same low-risk documentation task so a later before/after comparison can use the same branch/task structure with and without the optimized workflow. | Done |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
 
