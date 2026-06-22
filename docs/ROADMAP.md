@@ -122,6 +122,38 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
 
+## Phase 12.15A - Persistence Architecture Decision
+
+Define the persistence architecture for immutable prediction snapshots, immutable Model-vs-Reality evaluations, and the mutable projection cache before any database or migration work begins.
+
+Deliverables:
+
+- `docs/architecture/ADR-0010-persistent-prediction-history.md`
+- `docs/data-quality/PERSISTENT_PREDICTION_HISTORY_SCHEMA.md`
+- Updated roadmap and changelog summaries that record the persistence direction without adding implementation code.
+
+Exit criteria:
+
+- The persistence direction is documented as relational PostgreSQL for history, with the projection cache initially sharing the same provider unless a later operational review justifies a separate cache technology.
+- Domain and model packages remain storage-agnostic.
+- No database client, ORM, migration, environment variable, or production behavior change is introduced.
+
+## Phase 12.15B - Persistent History Adapter Implementation
+
+Add the first database-backed adapters and migration plan for persistent prediction history after the architecture decision is approved.
+
+Deliverables:
+
+- PostgreSQL adapters for snapshots, evaluations, and projection cache
+- Migration plan and contract tests
+- Runtime provider selection behind a flag
+
+Exit criteria:
+
+- Persistent adapters exist behind an explicit provider choice.
+- In-memory behavior remains available for tests and local development.
+- No product behavior changes leak from persistence wiring.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.
