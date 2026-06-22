@@ -92,15 +92,6 @@ import type {
   WorldCup2026GroupProjectionSource,
   WorldCup2026GroupProjectionStatus
 } from "@world-cup-2026-predictor/api";
-import {
-  resolvePredictionHistoryPersistence,
-  PROJECTION_CACHE_TTL_MS,
-  buildProjectionCacheKey,
-  computeProjectionCacheExpiresAt,
-  CURRENT_MODEL_VERSION,
-  CURRENT_FORMULA_VERSION
-} from "@world-cup-2026-predictor/api";
-import type { GroupProjectionCacheStore } from "@world-cup-2026-predictor/api";
 
 export type { EloXgPreset };
 export type { TeamRatingFoundationEntry, TeamRatingTier, TeamRatingsFoundationResponse };
@@ -149,16 +140,7 @@ export type {
   ProjectionRefreshState,
   ProjectionRefreshAssessment,
   ProjectionRefreshExecution,
-  ProjectionInputSummary,
-  GroupProjectionCacheStore
-};
-export {
-  resolvePredictionHistoryPersistence,
-  PROJECTION_CACHE_TTL_MS,
-  buildProjectionCacheKey,
-  computeProjectionCacheExpiresAt,
-  CURRENT_MODEL_VERSION,
-  CURRENT_FORMULA_VERSION
+  ProjectionInputSummary
 };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];

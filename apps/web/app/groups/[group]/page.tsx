@@ -9,19 +9,18 @@ import { GroupDetailQualificationSummary } from "../../../src/components/GroupDe
 import { GroupDetailStandingsTable } from "../../../src/components/GroupDetailStandingsTable";
 import { GroupNav } from "../../../src/components/GroupNav";
 import {
-  getDashboardGroupDetail,
+  getDashboardGroupDetail
+} from "../../../src/lib/api-client";
+import {
   resolvePredictionHistoryPersistence,
   PROJECTION_CACHE_TTL_MS,
   computeProjectionCacheExpiresAt,
   CURRENT_MODEL_VERSION,
   CURRENT_FORMULA_VERSION
-} from "../../../src/lib/api-client";
+} from "@world-cup-2026-predictor/api";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../../../src/lib/daily-matches-ui";
-import type {
-  WorldCup2026GroupDetailMatch,
-  WorldCup2026GroupProjection,
-  GroupProjectionCacheStore
-} from "../../../src/lib/api-client";
+import type { WorldCup2026GroupDetailMatch, WorldCup2026GroupProjection } from "../../../src/lib/api-client";
+import type { GroupProjectionCacheStore } from "@world-cup-2026-predictor/api";
 
 const VALID_GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] as const;
 type ValidGroup = (typeof VALID_GROUPS)[number];

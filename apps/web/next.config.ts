@@ -16,11 +16,23 @@ function isWorkspaceSourceContext(context: string): boolean {
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@world-cup-2026-predictor/api"],
+  // postgres uses node: built-in imports (node:fs, node:path, node:net, etc.)
+  // that webpack cannot bundle. Mark it as a server-only external so Next.js
+  // requires it at runtime rather than attempting to bundle it.
+  serverExternalPackages: ["postgres"],
   webpack(config, { webpack, isServer }) {
     if (!isServer) {
+      // These Node.js built-ins are used by server-only packages (e.g. postgres).
+      // They are never called in client code; providing empty modules prevents
+      // webpack from failing when it encounters them while tree-shaking the
+      // transpiled API package.
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        crypto: false
+        crypto: false,
+        fs: false,
+        net: false,
+        tls: false,
+        perf_hooks: false
       };
     }
 

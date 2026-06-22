@@ -100,7 +100,9 @@ Recommended branch naming:
 
 ## Current Phase
 
-The current implementation track is executing the Phase 12 backlog, including immutable prediction snapshots, synchronized World Cup 2026 result ingestion into Elo, the Phase 12.9 Model vs Reality tracker for post-match evaluation, the Phase 12.11 Elo-to-xG calibration series, and the Phase 12.15 persistence work that now includes the runtime resolver for memory-versus-PostgreSQL prediction-history storage.
+The current implementation track is executing the Phase 12 backlog, including immutable prediction snapshots, synchronized World Cup 2026 result ingestion into Elo, the Phase 12.9 Model vs Reality tracker for post-match evaluation, the Phase 12.11 Elo-to-xG calibration series, and the Phase 12.15 persistence work.
+
+**Phase 12.15D (complete):** The full PostgreSQL persistence layer is implemented and QA-validated. Three migrations (`prediction_snapshots`, `prediction_evaluations`, `projection_cache`) are idempotent and ready to apply. The runtime resolver selects memory or PostgreSQL adapters via `PERSISTENCE_PROVIDER`. The Group Detail SSR page uses the async projection cache with safe degradation. A webpack build regression caused by server-only `postgres` Node.js built-ins was fixed via `"sideEffects": false` in the API package and `serverExternalPackages`/`resolve.fallback` in the Next.js config. QA verdict: `ready_for_non_production`. See `docs/qa/PERSISTENCE_MIGRATION_DEPLOYMENT_QA.md` and `docs/qa/PERSISTENCE_DEPLOYMENT_CHECKLIST.md`.
 
 **Phase 12.11E (complete):** The production Elo-to-xG formula was promoted from V1 (`adjustmentPer100=0.10`, `maxAdjustment=0.45`) to V2 (`adjustmentPer100=0.15`, `maxAdjustment=0.65`) following a three-phase calibration evaluation (Phases 12.11A–D). V2 improves holdout Brier Score by −0.0072 and Log Loss by −0.0097 over n=120 holdout matches. V1 rollback constants are preserved as named exports. Formula version metadata (`formulaVersion: "v2"`) is exposed in all prediction responses.
 
