@@ -120,7 +120,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.T2 | Controlled Token Efficiency Comparison | Run one controlled documentation consistency task against the Phase 12.T1 baseline and record the measured workflow, output, and limitations. | Done |
 | 12.T3 | Repeated Task Token Measurement | Define paired run prompts for the same low-risk documentation task so a later before/after comparison can use the same branch/task structure with and without the optimized workflow. | Done |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
-| 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
+| 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
+| 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 

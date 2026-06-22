@@ -36,6 +36,9 @@ import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
 import { getWorldCup2026DailyMatches as getWorldCup2026DailyMatchesHandler } from "./daily-matches.js";
 import { buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
 import {
+  validatePredictionHistoryListQuery
+} from "./prediction-history.js";
+import {
   evaluateWorldCup2026PredictionSnapshotAsync,
   evaluateWorldCup2026PredictionSnapshot,
   summarizeWorldCup2026ModelReality
@@ -77,6 +80,8 @@ import type {
   HistoricalTournamentSummary,
   HistoricalTournamentSummaryResponse,
   ListWorldCup2026PredictionEvaluationsResponse,
+  PredictionHistoryListQuery,
+  PredictionHistoryListResponse,
   ListWorldCup2026PredictionSnapshotsResponse,
   LiveEloRatingSource,
   LiveEloRatingsFoundationOptions,
@@ -2909,6 +2914,60 @@ export async function getWorldCup2026ModelRealitySummary(): Promise<GetWorldCup2
   };
 }
 
+export async function listWorldCup2026PredictionHistory(
+  query: PredictionHistoryListQuery = {}
+): Promise<PredictionHistoryListResponse> {
+  const validation = validatePredictionHistoryListQuery(query);
+
+  if (validation.issues.length > 0 || validation.value === undefined) {
+    return {
+      status: "validation_error",
+      issues: validation.issues,
+      metadata: buildApiMetadata([
+        "Prediction history list query failed validation."
+      ])
+    };
+  }
+
+  let persistence: PredictionHistoryPersistenceResolution;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction history list could not start because persistence configuration is invalid."
+    ]);
+  }
+
+  let result;
+
+  try {
+    result = await persistence.historyStore.list(validation.value);
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction history list failed while reading persistent storage."
+    ], persistence);
+  }
+
+  return {
+    status: "success",
+    items: result.items,
+    summary: result.summary,
+    pagination: result.pagination,
+    filters: result.filters,
+    metadata: buildPredictionHistoryMetadata(persistence, [
+      `Prediction history list returned ${result.items.length} item(s) on page ${result.pagination.page} of ${result.pagination.totalPages}.`,
+      result.summary.evaluatedSnapshots === 0
+        ? "No evaluations matched the current filter set."
+        : `Prediction history summary is based on ${result.summary.evaluatedSnapshots} evaluated snapshot(s) within the current filter scope.`,
+      persistence.metadata.persistent
+        ? "Prediction history was read from the configured PostgreSQL-backed store."
+        : "In-memory storage only. Prediction history does not persist across serverless invocations or restarts."
+    ]),
+    persistenceMetadata: persistence.metadata
+  };
+}
+
 export const apiRoutes: ApiRoutes = {
   getHealth,
   getModelInfo,
@@ -2944,5 +3003,6 @@ export const apiRoutes: ApiRoutes = {
   createWorldCup2026PredictionEvaluation,
   getWorldCup2026PredictionEvaluation,
   listWorldCup2026PredictionEvaluations,
-  getWorldCup2026ModelRealitySummary
+  getWorldCup2026ModelRealitySummary,
+  listWorldCup2026PredictionHistory
 };

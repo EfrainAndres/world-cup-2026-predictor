@@ -38,7 +38,8 @@ export {
   createWorldCup2026PredictionEvaluation,
   getWorldCup2026PredictionEvaluation,
   listWorldCup2026PredictionEvaluations,
-  getWorldCup2026ModelRealitySummary
+  getWorldCup2026ModelRealitySummary,
+  listWorldCup2026PredictionHistory
 } from "./routes.js";
 export {
   createCachedResultsProvider,
@@ -148,6 +149,20 @@ export type {
   PredictionHistoryPersistenceResolution,
   ResolvePredictionHistoryPersistenceInput
 } from "./persistence-runtime.js";
+export {
+  PREDICTION_HISTORY_ALLOWED_PAGE_SIZES,
+  PREDICTION_HISTORY_DEFAULT_PAGE,
+  PREDICTION_HISTORY_DEFAULT_PAGE_SIZE,
+  PREDICTION_HISTORY_DEFAULT_SORT,
+  createInMemoryPredictionHistoryReadStore,
+  createPostgresPredictionHistoryReadStore,
+  validatePredictionHistoryListQuery
+} from "./prediction-history.js";
+export type {
+  PredictionHistoryReadStore,
+  PredictionHistoryListResult,
+  ValidatedPredictionHistoryListQuery
+} from "./prediction-history.js";
 export {
   WORLD_CUP_2026_EVALUATION_METRIC_VERSION,
   buildWorldCup2026PredictionEvaluationId,
@@ -393,7 +408,22 @@ export type {
   WorldCup2026ModelRealityCoverageSummary,
   WorldCup2026ModelRealityFallbackSummary,
   WorldCup2026ModelRealitySummary,
-  GetWorldCup2026ModelRealitySummaryResponse
+  GetWorldCup2026ModelRealitySummaryResponse,
+  PredictionHistoryEvaluationState,
+  PredictionHistoryListSort,
+  PredictionHistoryProjectedScore,
+  PredictionHistoryExpectedGoals,
+  PredictionHistoryOutcomeProbabilities,
+  PredictionHistoryConfidenceSummary,
+  PredictionHistoryEvaluationSummary,
+  PredictionHistoryListItem,
+  PredictionHistoryListQuery,
+  PredictionHistoryListSummary,
+  PredictionHistoryListPagination,
+  PredictionHistoryListFilters,
+  PredictionHistoryListSuccessResponse,
+  PredictionHistoryListValidationErrorResponse,
+  PredictionHistoryListResponse
 } from "./schemas.js";
 
 export type {
