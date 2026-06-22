@@ -156,6 +156,8 @@ Exit criteria:
 
 ## Phase 12.15B1 - PostgreSQL Stack Selection
 
+**Status:** Done
+
 Choose the concrete PostgreSQL provider category, SQL client, and migration strategy for the persistent prediction-history work before any adapter implementation begins.
 
 Deliverables:
@@ -170,6 +172,32 @@ Exit criteria:
 - One migration strategy is selected.
 - Serverless connection behavior, local development, and test behavior are documented.
 - No dependency or runtime behavior change is introduced.
+
+## Phase 12.15B2 - Persistent Snapshot Store
+
+**Status:** Done
+
+Add the PostgreSQL adapter foundation for immutable prediction snapshots, preserving the existing in-memory adapter for deterministic unit tests.
+
+Deliverables:
+
+- `packages/api/migrations/0001_prediction_snapshots.sql` — `prediction_snapshots` table with all constraints and indexes
+- `packages/api/src/async-snapshot-store.ts` — `AsyncPredictionSnapshotStore` interface, `SnapshotStorageError`, `createAsyncInMemorySnapshotStore`
+- `packages/api/src/postgres-snapshot-store.ts` — `createPostgresPredictionSnapshotStore`, row mapping helpers
+- `packages/api/src/migration-runner.ts` — minimal migration runner for test setup
+- `packages/api/tests/prediction-snapshot-store.test.ts` — shared contract tests + row mapping tests
+- `packages/api/tests/postgres-prediction-snapshot-store.test.ts` — PostgreSQL contract tests (opt-in via `TEST_DATABASE_URL`)
+- `docs/data-quality/PERSISTENT_SNAPSHOT_STORE.md`
+- `postgres ^3.4.5` added to `packages/api` dependencies
+
+Exit criteria:
+
+- `AsyncPredictionSnapshotStore` interface exported and tested.
+- In-memory async adapter passes all contract tests.
+- PostgreSQL adapter exported and ready for composition.
+- PostgreSQL tests skip cleanly when `TEST_DATABASE_URL` is absent.
+- All 772 existing API tests pass.
+- Production runtime unchanged.
 
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 

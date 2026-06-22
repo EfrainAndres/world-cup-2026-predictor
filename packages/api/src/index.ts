@@ -91,6 +91,22 @@ export type { BuildSnapshotInput } from "./snapshot-service.js";
 export { createInMemorySnapshotStore, defaultSnapshotStore } from "./snapshot-store.js";
 export type { PredictionSnapshotStore } from "./snapshot-store.js";
 export {
+  SNAPSHOT_SCHEMA_VERSION,
+  SnapshotStorageError,
+  createAsyncInMemorySnapshotStore
+} from "./async-snapshot-store.js";
+export type {
+  AsyncPredictionSnapshotStore,
+  SnapshotStorageErrorCode
+} from "./async-snapshot-store.js";
+export {
+  createPostgresPredictionSnapshotStore,
+  snapshotToInsertParams,
+  rowToSnapshot
+} from "./postgres-snapshot-store.js";
+export type { SnapshotInsertParams } from "./postgres-snapshot-store.js";
+export { runMigrations } from "./migration-runner.js";
+export {
   WORLD_CUP_2026_EVALUATION_METRIC_VERSION,
   buildWorldCup2026PredictionEvaluationId,
   buildWorldCup2026PredictionCalibrationBuckets,
