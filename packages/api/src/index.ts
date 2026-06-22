@@ -228,6 +228,8 @@ export type {
   ProjectionRefreshSourceVersions,
   ProjectionRefreshAssessment,
   ProjectionFingerprintInput,
+  ProjectionInputSummary,
+  ProjectionRefreshExecution,
   WorldCup2026FixtureResult,
   WorldCup2026FixtureStatus,
   WorldCup2026Group,
