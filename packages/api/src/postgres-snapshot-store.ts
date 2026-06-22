@@ -85,9 +85,9 @@ export interface SnapshotInsertParams {
   snapshot_schema_version: string;
   idempotency_key: string;
   content_hash: string;
-  prediction_payload: string;
-  confidence_payload: string;
-  provenance_payload: string;
+  prediction_payload: unknown;
+  confidence_payload: unknown;
+  provenance_payload: unknown;
 }
 
 export function snapshotToInsertParams(
@@ -128,9 +128,9 @@ export function snapshotToInsertParams(
     snapshot_schema_version: SNAPSHOT_SCHEMA_VERSION,
     idempotency_key: idempotencyKey,
     content_hash: snapshot.contentHash,
-    prediction_payload: JSON.stringify(predictionPayload),
-    confidence_payload: JSON.stringify(confidencePayload),
-    provenance_payload: JSON.stringify(provenancePayload)
+    prediction_payload: predictionPayload,
+    confidence_payload: confidencePayload,
+    provenance_payload: provenancePayload
   };
 }
 
@@ -287,9 +287,9 @@ export function createPostgresPredictionSnapshotStore(sql: Sql): AsyncPrediction
             ${params.home_team}, ${params.away_team}, ${params.model_version},
             ${params.formula_version}, ${params.snapshot_schema_version},
             ${params.idempotency_key}, ${params.content_hash},
-            ${params.prediction_payload}::jsonb,
-            ${params.confidence_payload}::jsonb,
-            ${params.provenance_payload}::jsonb
+            ${sql.json(params.prediction_payload as Parameters<typeof sql.json>[0])},
+            ${sql.json(params.confidence_payload as Parameters<typeof sql.json>[0])},
+            ${sql.json(params.provenance_payload as Parameters<typeof sql.json>[0])}
           )
           ON CONFLICT (idempotency_key) DO NOTHING
           RETURNING *

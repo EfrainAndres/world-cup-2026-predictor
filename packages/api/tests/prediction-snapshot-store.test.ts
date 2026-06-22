@@ -85,6 +85,7 @@ function makeSnapshotB(): WorldCup2026PredictionSnapshot {
     awayTeam: "Bosnia-Herzegovina",
     contentHash: "def456contenthash",
     capturedAt: "2026-06-12T10:00:00.000Z",
+    kickoffAt: "2026-06-12T18:00:00.000Z",
     group: "B"
   };
 }
@@ -95,14 +96,14 @@ function makeSnapshotB(): WorldCup2026PredictionSnapshot {
 
 export function runSnapshotStoreContractTests(
   storeName: string,
-  makeStore: () => Promise<AsyncPredictionSnapshotStore & { reset?(): void }>
+  makeStore: () => Promise<AsyncPredictionSnapshotStore & { reset?(): void | Promise<void> }>
 ): void {
   describe(`${storeName} — AsyncPredictionSnapshotStore contract`, () => {
-    let store: AsyncPredictionSnapshotStore & { reset?(): void };
+    let store: AsyncPredictionSnapshotStore & { reset?(): void | Promise<void> };
 
     beforeEach(async () => {
       store = await makeStore();
-      store.reset?.();
+      await store.reset?.();
     });
 
     // -----------------------------------------------------------------------
@@ -318,24 +319,24 @@ describe("snapshotToInsertParams", () => {
     expect(params.matchday).toBeNull();
   });
 
-  it("prediction_payload is valid JSON containing schemaVersion", () => {
+  it("prediction_payload is an object containing schemaVersion", () => {
     const snapshot = makeSnapshot();
     const params = snapshotToInsertParams(snapshot, IDEM_KEY_A1);
-    const parsed = JSON.parse(params.prediction_payload) as { schemaVersion: string };
+    const parsed = params.prediction_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(SNAPSHOT_SCHEMA_VERSION);
   });
 
-  it("confidence_payload is valid JSON containing schemaVersion", () => {
+  it("confidence_payload is an object containing schemaVersion", () => {
     const snapshot = makeSnapshot();
     const params = snapshotToInsertParams(snapshot, IDEM_KEY_A1);
-    const parsed = JSON.parse(params.confidence_payload) as { schemaVersion: string };
+    const parsed = params.confidence_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(SNAPSHOT_SCHEMA_VERSION);
   });
 
-  it("provenance_payload is valid JSON containing schemaVersion", () => {
+  it("provenance_payload is an object containing schemaVersion", () => {
     const snapshot = makeSnapshot();
     const params = snapshotToInsertParams(snapshot, IDEM_KEY_A1);
-    const parsed = JSON.parse(params.provenance_payload) as { schemaVersion: string };
+    const parsed = params.provenance_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(SNAPSHOT_SCHEMA_VERSION);
   });
 
@@ -372,9 +373,9 @@ describe("rowToSnapshot — row deserialization", () => {
       snapshot_schema_version: params.snapshot_schema_version,
       idempotency_key: params.idempotency_key,
       content_hash: params.content_hash,
-      prediction_payload: JSON.parse(params.prediction_payload) as unknown,
-      confidence_payload: JSON.parse(params.confidence_payload) as unknown,
-      provenance_payload: JSON.parse(params.provenance_payload) as unknown,
+      prediction_payload: params.prediction_payload,
+      confidence_payload: params.confidence_payload,
+      provenance_payload: params.provenance_payload,
       created_at: new Date("2026-06-11T10:01:00.000Z")
     };
   }
@@ -429,7 +430,7 @@ describe("rowToSnapshot — row deserialization", () => {
   it("throws unsupported_schema_version for unknown payload schemaVersion", () => {
     const params = makeValidParams();
     const row = paramsToRow(params);
-    const payload = JSON.parse(params.prediction_payload) as Record<string, unknown>;
+    const payload = { ...(params.prediction_payload as Record<string, unknown>) };
     payload["schemaVersion"] = "999";
     row.prediction_payload = payload;
     expect(() => rowToSnapshot(row)).toThrowError(

@@ -308,6 +308,34 @@ Exit criteria:
 - QA report documents verdict as `ready_for_non_production`.
 - Deployment checklist is ready for operator use.
 
+## Phase 12.15E - Real PostgreSQL Environment Validation
+
+**Status:** Done
+
+Run the complete prediction-history persistence layer against a real non-production PostgreSQL instance and produce a factual production-readiness verdict.
+
+Deliverables:
+
+- `packages/api/vitest.config.ts` — created with `pool: "forks"`, `singleFork: true` to prevent concurrent TRUNCATE deadlocks across contract test files
+- `packages/api/src/postgres-snapshot-store.ts` — fixed JSONB double-encoding: changed `SnapshotInsertParams` payload fields from `string` to `unknown`; removed `JSON.stringify` from `snapshotToInsertParams`; used `sql.json()` at INSERT call sites
+- `packages/api/src/postgres-evaluation-store.ts` — same JSONB fix for `EvaluationInsertParams`
+- `packages/api/src/postgres-projection-cache.ts` — removed `JSON.stringify` from `set()`; used `sql.json()` at INSERT call site
+- `packages/api/tests/prediction-snapshot-store.test.ts` — fixed `makeSnapshotB` kickoffAt constraint; updated `JSON.parse` call sites to use objects directly; added `await store.reset?.()` and updated type to `void | Promise<void>`
+- `packages/api/tests/prediction-evaluation-store.test.ts` — updated `JSON.parse` call sites to use objects; fixed type annotations
+- `packages/api/tests/projection-cache-store.test.ts` — added `await store.reset?.()` and updated type
+- `packages/api/tests/postgres-prediction-evaluation-store.test.ts` — added `kickoffAt` to `makeTestSnapshot`; updated `registerSnapshotId` type
+- `packages/api/tests/postgres-process-boundary.test.ts` — NEW: process-boundary test proving DB persistence across two independent SQL client instances
+- `docs/qa/REAL_POSTGRESQL_ENVIRONMENT_VALIDATION.md` — full QA report: migration execution, defects found and resolved, PostgreSQL contract test results, process-boundary test results, full regression, security review, verdict
+
+Exit criteria:
+
+- All 28 PostgreSQL contract tests pass with `TEST_DATABASE_URL` set.
+- All 6 process-boundary tests pass.
+- 1008 API tests pass; 72 web tests pass; `pnpm build` succeeds.
+- TypeScript typecheck passes with zero errors.
+- `git diff --check` passes.
+- QA report documents verdict as `production_ready`.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.

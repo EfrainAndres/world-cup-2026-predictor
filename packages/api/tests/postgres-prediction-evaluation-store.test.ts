@@ -53,6 +53,7 @@ if (TEST_DATABASE_URL === undefined || TEST_DATABASE_URL === "") {
       status: "pre_match_locked",
       capturedAt: "2026-06-22T09:00:00.000Z",
       cutoffAt: "2026-06-22T09:00:00.000Z",
+      kickoffAt: "2026-06-22T18:00:00.000Z",
       group: "A",
       matchday: 1,
       homeTeam: "Mexico",
@@ -168,7 +169,7 @@ if (TEST_DATABASE_URL === undefined || TEST_DATABASE_URL === "") {
   runEvaluationStoreContractTests("postgres prediction evaluation adapter", async () => {
     const store = createPostgresPredictionEvaluationStore(sql) as AsyncPredictionEvaluationStore & {
       reset?(): void;
-      registerSnapshotId?: (id: string) => void;
+      registerSnapshotId?: (id: string) => void | Promise<void>;
     };
 
     // The contract tests call reset() before each test.
