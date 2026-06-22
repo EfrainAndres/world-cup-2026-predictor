@@ -33,6 +33,10 @@ import type {
   EloXgPreset,
   GetWorldCup2026GroupDetailInput,
   HealthResponse,
+  ProjectionRefreshState,
+  ProjectionRefreshAssessment,
+  ProjectionRefreshExecution,
+  ProjectionInputSummary,
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   LiveEloRatedTeamEntry,
@@ -132,7 +136,11 @@ export type {
   WorldCup2026GroupProjectionFixture,
   WorldCup2026GroupProjectionQualification,
   WorldCup2026GroupProjectionSource,
-  WorldCup2026GroupProjectionStatus
+  WorldCup2026GroupProjectionStatus,
+  ProjectionRefreshState,
+  ProjectionRefreshAssessment,
+  ProjectionRefreshExecution,
+  ProjectionInputSummary
 };
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];

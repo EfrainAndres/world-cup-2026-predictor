@@ -4,7 +4,10 @@ import { describe, expect, test } from "vitest";
 import { GroupDetailProjection } from "./GroupDetailProjection";
 import type {
   WorldCup2026GroupProjection,
-  WorldCup2026GroupStandingEntry
+  WorldCup2026GroupProjectionFixture,
+  WorldCup2026GroupStandingEntry,
+  ProjectionRefreshAssessment,
+  ProjectionRefreshExecution
 } from "../lib/api-client";
 
 const standings: WorldCup2026GroupStandingEntry[] = [
@@ -80,6 +83,64 @@ const partialProjection: WorldCup2026GroupProjection = {
   warnings: ["One fixture could not be projected."]
 };
 
+function makeAssessment(state: ProjectionRefreshAssessment["state"]): ProjectionRefreshAssessment {
+  return {
+    state,
+    shouldRefresh: state === "stale",
+    evaluatedAt: "2026-06-21T10:00:00Z",
+    reasons: [`Test reason for ${state}`],
+    triggers: {
+      providerDataChanged: false,
+      completedResultAdded: state === "stale",
+      liveStatusChanged: false,
+      eloInputChanged: false,
+      tournamentFormChanged: false,
+      formulaVersionChanged: false,
+      fixtureStatusChanged: false,
+      snapshotAvailable: false
+    },
+    sourceVersions: {
+      formulaVersion: "v2",
+      modelVersion: "wc2026-prediction-v1"
+    }
+  };
+}
+
+function makeExecution(partial: Partial<ProjectionRefreshExecution> = {}): ProjectionRefreshExecution {
+  return {
+    attempted: partial.attempted ?? false,
+    completed: partial.completed ?? false,
+    reasonCodes: partial.reasonCodes ?? [],
+    warnings: partial.warnings ?? []
+  };
+}
+
+function makeFixtureWithRefresh(
+  source: "stored_snapshot" | "auto_predict" | "unavailable",
+  state: ProjectionRefreshAssessment["state"],
+  execution: Partial<ProjectionRefreshExecution> = {}
+): WorldCup2026GroupProjectionFixture {
+  return {
+    fixtureId: "test-fixture-id",
+    homeTeam: "Mexico",
+    awayTeam: "South Africa",
+    source,
+    warnings: [],
+    refreshAssessment: makeAssessment(state),
+    refreshExecution: makeExecution(execution)
+  };
+}
+
+function wrapInProjection(fixture: WorldCup2026GroupProjectionFixture): WorldCup2026GroupProjection {
+  return {
+    available: true,
+    status: "complete",
+    standings,
+    fixtures: [fixture],
+    warnings: []
+  };
+}
+
 describe("GroupDetailProjection", () => {
   test("renders projected standings heading when projection is available", () => {
     const html = renderToStaticMarkup(<GroupDetailProjection projection={completeProjection} />);
@@ -148,5 +209,105 @@ describe("GroupDetailProjection", () => {
     const html = renderToStaticMarkup(<GroupDetailProjection projection={partialProjection} />);
     expect(html).toContain("One fixture could not be projected.");
     expect(html).toContain("Projection notes");
+  });
+
+  // ── Refresh status UI ───────────────────────────────────────────────────────
+
+  test("renders Current badge for state 'current'", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("auto_predict", "current"))} />
+    );
+    expect(html).toContain("Current");
+    expect(html).toContain("Projection status: Current");
+  });
+
+  test("renders Stale badge for state 'stale'", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("auto_predict", "stale"))} />
+    );
+    expect(html).toContain("Stale");
+    expect(html).toContain("Projection status: Stale");
+  });
+
+  test("renders Invalidated badge for state 'invalidated'", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("auto_predict", "invalidated"))} />
+    );
+    expect(html).toContain("Invalidated");
+    expect(html).toContain("Projection status: Invalidated");
+  });
+
+  test("renders Unavailable badge for state 'unavailable'", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("unavailable", "unavailable"))} />
+    );
+    expect(html).toContain("Unavailable");
+    expect(html).toContain("Projection status: Unavailable");
+  });
+
+  test("renders refresh description when attempted and completed", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection
+        projection={wrapInProjection(
+          makeFixtureWithRefresh("auto_predict", "current", { attempted: true, completed: true })
+        )}
+      />
+    );
+    expect(html).toContain("Projection refreshed from updated model inputs.");
+  });
+
+  test("renders failure warning and description when attempted but not completed", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection
+        projection={wrapInProjection(
+          makeFixtureWithRefresh("auto_predict", "stale", { attempted: true, completed: false })
+        )}
+      />
+    );
+    expect(html).toContain("Projection refresh failed. Previous projection preserved.");
+    expect(html).toContain("Refresh failed: previous projection preserved.");
+  });
+
+  test("renders Immutable pre-match snapshot label for stored_snapshot source", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("stored_snapshot", "current"))} />
+    );
+    expect(html).toContain("Immutable pre-match snapshot");
+    expect(html).toContain("Projection source type: Immutable pre-match snapshot");
+    expect(html).not.toContain("Projection status: Current");
+  });
+
+  test("does not render refresh status when refreshAssessment is undefined", () => {
+    const fixture: WorldCup2026GroupProjectionFixture = {
+      fixtureId: "no-refresh",
+      homeTeam: "Mexico",
+      awayTeam: "Canada",
+      source: "auto_predict",
+      warnings: []
+    };
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(fixture)} />
+    );
+    expect(html).not.toContain("Projection status:");
+    expect(html).not.toContain("Immutable pre-match snapshot");
+  });
+
+  test("badge has aria-label containing state name", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection projection={wrapInProjection(makeFixtureWithRefresh("auto_predict", "stale"))} />
+    );
+    expect(html).toContain('aria-label="Projection status: Stale"');
+  });
+
+  test("renders formula version detail when refresh succeeded", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection
+        projection={wrapInProjection(
+          makeFixtureWithRefresh("auto_predict", "current", { attempted: true, completed: true })
+        )}
+      />
+    );
+    expect(html).toContain("Formula: v2");
+    expect(html).toContain("wc2026-prediction-v1");
   });
 });

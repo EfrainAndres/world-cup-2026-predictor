@@ -670,6 +670,7 @@ export type WorldCup2026DailyMatchesResponse =
 export interface GetWorldCup2026GroupDetailInput {
   group: string;
   timezone?: string;
+  previousProjection?: WorldCup2026GroupProjection;
 }
 
 export interface WorldCup2026GroupDetailMatch extends Omit<WorldCup2026DailyMatchEntry, "predictionSnapshot"> {

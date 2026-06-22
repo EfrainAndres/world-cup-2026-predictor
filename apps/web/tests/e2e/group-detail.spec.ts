@@ -284,3 +284,84 @@ test("projection section renders for a group other than A (Group B)", async ({ p
 
   await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
 });
+
+// ── Projection refresh status UI ──────────────────────────────────────────────
+
+test("per-fixture projections section renders in Group A projection", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  await expect(page.getByText("Per-fixture projections")).toBeVisible();
+});
+
+test("projection fixture rows contain a source badge", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const sourceBadge = page.getByLabel(/^Projection source:/).first();
+  await expect(sourceBadge).toBeVisible();
+});
+
+test("stored snapshot fixture shows immutable pre-match snapshot label", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const immutableLabel = page.getByLabel("Projection source type: Immutable pre-match snapshot").first();
+  if (await immutableLabel.count() > 0) {
+    await expect(immutableLabel).toBeVisible();
+  }
+});
+
+test("auto_predict fixture shows a projection status badge when refreshAssessment is present", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const statusBadge = page.getByLabel(/^Projection status:/).first();
+  if (await statusBadge.count() > 0) {
+    await expect(statusBadge).toBeVisible();
+  }
+});
+
+test("projection section still renders correctly on Group C", async ({ page }) => {
+  await page.goto("/groups/C");
+
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+  await expect(page.getByText("Per-fixture projections")).toBeVisible();
+});
+
+test("official standings render alongside projection refresh section", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  await expect(page.getByRole("heading", { name: "Official standings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+});
+
+test("projection section renders without error on all groups A through D", async ({ page }) => {
+  for (const group of ["A", "B", "C", "D"]) {
+    await page.goto(`/groups/${group}`);
+    await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+  }
+});
+
+test("mobile layout renders projection refresh section on 390px viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/groups/A");
+
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+  await expect(page.getByText("Per-fixture projections")).toBeVisible();
+});
+
+test("projection refresh failure alert role is accessible when present", async ({ page }) => {
+  await page.goto("/groups/A");
+
+  const alerts = page.getByRole("alert");
+  const count = await alerts.count();
+  if (count > 0) {
+    await expect(alerts.first()).toBeVisible();
+  }
+});
+
+test("breadcrumb, standings, and projection all coexist without layout overflow on narrow viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/groups/A");
+
+  await expect(page.getByRole("link", { name: "← Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Official standings" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
+});

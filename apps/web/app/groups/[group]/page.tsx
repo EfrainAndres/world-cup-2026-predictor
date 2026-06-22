@@ -10,6 +10,7 @@ import { GroupDetailStandingsTable } from "../../../src/components/GroupDetailSt
 import { GroupNav } from "../../../src/components/GroupNav";
 import { getDashboardGroupDetail } from "../../../src/lib/api-client";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../../../src/lib/daily-matches-ui";
+import { getGroupProjectionFromCache, setGroupProjectionInCache } from "../../../src/lib/group-projection-cache";
 import type { WorldCup2026GroupDetailMatch } from "../../../src/lib/api-client";
 
 const VALID_GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] as const;
@@ -76,7 +77,13 @@ export default async function GroupDetailPage({
 
   let data;
   try {
-    data = await getDashboardGroupDetail({ group: normalized, timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
+    const previousProjection = getGroupProjectionFromCache(normalized, DAILY_MATCHES_DISPLAY_TIMEZONE);
+    data = await getDashboardGroupDetail({
+      group: normalized,
+      timezone: DAILY_MATCHES_DISPLAY_TIMEZONE,
+      ...(previousProjection !== undefined ? { previousProjection } : {})
+    });
+    setGroupProjectionInCache(normalized, DAILY_MATCHES_DISPLAY_TIMEZONE, data.projection);
   } catch {
     notFound();
   }

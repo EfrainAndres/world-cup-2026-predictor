@@ -56,7 +56,6 @@ export interface BuildWorldCup2026GroupDetailInput extends GetWorldCup2026GroupD
   predictorFn?: (homeTeam: string, awayTeam: string) => PredictMatchFromLiveEloResponse;
   snapshotStore?: PredictionSnapshotStore;
   evaluationStore?: PredictionEvaluationStore;
-  previousProjection?: WorldCup2026GroupProjection;
 }
 
 function normalizeGroupInput(group: string): string {
