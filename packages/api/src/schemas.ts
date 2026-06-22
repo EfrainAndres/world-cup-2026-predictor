@@ -713,6 +713,9 @@ export interface WorldCup2026GroupProjectionFixture {
   confidenceLevel?: PredictionConfidenceLevel;
   coverageType?: PredictionCoverageType;
   warnings: readonly string[];
+  currentFingerprint?: string;
+  storedFingerprint?: string;
+  refreshAssessment?: ProjectionRefreshAssessment;
 }
 
 export interface WorldCup2026GroupProjectionQualification {
@@ -729,6 +732,52 @@ export interface WorldCup2026GroupProjection {
   qualification?: WorldCup2026GroupProjectionQualification;
   fixtures: readonly WorldCup2026GroupProjectionFixture[];
   warnings: readonly string[];
+}
+
+export type ProjectionRefreshState = "current" | "stale" | "invalidated" | "unavailable";
+
+export interface ProjectionRefreshTriggers {
+  providerDataChanged: boolean;
+  completedResultAdded: boolean;
+  liveStatusChanged: boolean;
+  eloInputChanged: boolean;
+  tournamentFormChanged: boolean;
+  formulaVersionChanged: boolean;
+  fixtureStatusChanged: boolean;
+  snapshotAvailable: boolean;
+}
+
+export interface ProjectionRefreshSourceVersions {
+  providerSyncId?: string;
+  lastSuccessfulSync?: string;
+  formulaVersion?: string;
+  modelVersion?: string;
+  tournamentFormVersion?: string;
+}
+
+export interface ProjectionRefreshAssessment {
+  state: ProjectionRefreshState;
+  shouldRefresh: boolean;
+  projectionGeneratedAt?: string;
+  evaluatedAt: string;
+  reasons: readonly string[];
+  triggers: ProjectionRefreshTriggers;
+  sourceVersions: ProjectionRefreshSourceVersions;
+}
+
+export interface ProjectionFingerprintInput {
+  fixtureId: string;
+  homeTeam: string;
+  awayTeam: string;
+  preset: string;
+  formulaVersion: string;
+  modelVersion: string;
+  homeElo: number;
+  awayElo: number;
+  tournamentMatchesIncluded: number;
+  tournamentFormVersion?: string;
+  lastSuccessfulSync?: string;
+  projectionCutoffAt?: string;
 }
 
 export interface WorldCup2026GroupDetailSuccessResponse {
