@@ -60,6 +60,15 @@ export { buildWorldCup2026DailyMatches } from "./daily-matches.js";
 export type { BuildWorldCup2026DailyMatchesInput } from "./daily-matches.js";
 export { buildWorldCup2026GroupDetail } from "./group-detail.js";
 export type { BuildWorldCup2026GroupDetailInput } from "./group-detail.js";
+export {
+  assessProjectionRefresh,
+  buildProjectionFingerprint,
+  CURRENT_FORMULA_VERSION,
+  CURRENT_MODEL_VERSION,
+  PROJECTION_FRESHNESS_UPCOMING_MS,
+  PROJECTION_FRESHNESS_THRESHOLDS
+} from "./projection-refresh-policy.js";
+export type { AssessProjectionRefreshInput } from "./projection-refresh-policy.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
 export {
@@ -214,6 +223,11 @@ export type {
   WorldCup2026GroupProjectionQualification,
   WorldCup2026GroupProjectionSource,
   WorldCup2026GroupProjectionStatus,
+  ProjectionRefreshState,
+  ProjectionRefreshTriggers,
+  ProjectionRefreshSourceVersions,
+  ProjectionRefreshAssessment,
+  ProjectionFingerprintInput,
   WorldCup2026FixtureResult,
   WorldCup2026FixtureStatus,
   WorldCup2026Group,

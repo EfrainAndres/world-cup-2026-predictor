@@ -113,7 +113,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.13A | Group Detail Data Foundation | Add a deterministic single-group API foundation that composes standings, categorized fixtures, qualification context, prediction-history summaries, and provider metadata. | Done |
 | 12.13B | Group Detail Prediction Page UI | Build the group-centered dashboard page over the 12.13A data foundation, keeping standings, results, live fixtures, and qualification context in one compact workflow. | Done |
 | 12.13C | Group Detail Prediction & Qualification Integration | Extended group detail pages with optional projected view using stored snapshots or Auto Predict for unplayed fixtures; projected standings and qualification; per-fixture source labels; no snapshot creation or standings mutation. | Done |
-| 12.14 | Automatic Projection Refresh | Refresh standings, qualification, and knockout projections automatically as live results are processed. | Planned |
+| 12.14A | Projection Refresh Policy Foundation | Pure deterministic policy layer assessing whether a group projection is current, stale, invalidated, or unavailable. No prediction execution, no polling, no snapshot mutation. | Done |
+| 12.14B | Automatic Projection Refresh | Wire `shouldRefresh: true` assessments to a re-prediction trigger; replace stale auto_predict fixtures in group projections on the next request without creating snapshots. | Planned |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
 

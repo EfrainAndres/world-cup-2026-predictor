@@ -345,7 +345,24 @@ describe("api foundation handlers", () => {
     expect(apiRoutes.getWorldCup2026GroupStandingsFoundation()).toEqual(getWorldCup2026GroupStandingsFoundation());
     const routeGroupDetail = await apiRoutes.getWorldCup2026GroupDetail({ group: "A", timezone: "UTC" });
     const directGroupDetail = await getWorldCup2026GroupDetail({ group: "A", timezone: "UTC" });
-    expect(routeGroupDetail).toMatchObject({ ...directGroupDetail, generatedAt: expect.any(String) });
+    // Strip time-varying refreshAssessment fields before comparing (two separate async calls have different timestamps)
+    function stripRefreshTimestamps(r: typeof directGroupDetail): unknown {
+      if (r.status !== "success") return r;
+      return {
+        ...r,
+        generatedAt: "<stripped>",
+        projection: {
+          ...r.projection,
+          fixtures: r.projection.fixtures.map((f) => ({
+            ...f,
+            refreshAssessment: f.refreshAssessment
+              ? { ...f.refreshAssessment, evaluatedAt: "<stripped>", projectionGeneratedAt: "<stripped>" }
+              : f.refreshAssessment
+          }))
+        }
+      };
+    }
+    expect(stripRefreshTimestamps(routeGroupDetail)).toEqual(stripRefreshTimestamps(directGroupDetail));
     expect(apiRoutes.getWorldCup2026RoundOf32Foundation()).toEqual(getWorldCup2026RoundOf32Foundation());
     expect(apiRoutes.getWorldCup2026KnockoutBracketFoundation()).toEqual(getWorldCup2026KnockoutBracketFoundation());
     expect(apiRoutes.simulateWorldCup2026KnockoutFixturesFoundation()).toEqual(simulateWorldCup2026KnockoutFixturesFoundation());
