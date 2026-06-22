@@ -2,7 +2,9 @@ import React from "react";
 import type {
   WorldCup2026GroupProjection,
   WorldCup2026GroupProjectionFixture,
-  WorldCup2026GroupProjectionSource
+  WorldCup2026GroupProjectionSource,
+  ProjectionRefreshAssessment,
+  ProjectionRefreshExecution
 } from "../lib/api-client";
 import { GroupDetailStandingsTable } from "./GroupDetailStandingsTable";
 
@@ -30,6 +32,99 @@ function sourceClasses(source: WorldCup2026GroupProjectionSource): string {
     case "unavailable":
       return "border-slate-200 bg-slate-100 text-slate-600";
   }
+}
+
+function refreshStateLabel(state: ProjectionRefreshAssessment["state"]): string {
+  switch (state) {
+    case "current": return "Current";
+    case "stale": return "Stale";
+    case "invalidated": return "Invalidated";
+    case "unavailable": return "Unavailable";
+  }
+}
+
+function refreshStateClasses(state: ProjectionRefreshAssessment["state"]): string {
+  switch (state) {
+    case "current": return "border-teal-200 bg-teal-50 text-teal-800";
+    case "stale": return "border-amber-200 bg-amber-50 text-amber-800";
+    case "invalidated": return "border-slate-200 bg-slate-100 text-slate-600";
+    case "unavailable": return "border-slate-200 bg-slate-100 text-slate-500";
+  }
+}
+
+function refreshStatusDescription(
+  state: ProjectionRefreshAssessment["state"],
+  execution: ProjectionRefreshExecution | undefined
+): string {
+  if (execution?.attempted === true && execution.completed === true) {
+    return "Projection refreshed from updated model inputs.";
+  }
+  if (execution?.attempted === true && execution.completed === false) {
+    return "Projection refresh failed. Previous projection preserved.";
+  }
+  switch (state) {
+    case "current": return "Projection status: Current";
+    case "stale": return "Projection may be outdated";
+    case "invalidated": return "Projection no longer applies to this fixture";
+    case "unavailable": return "No projection available";
+  }
+}
+
+function ProjectionRefreshStatus({
+  assessment,
+  execution,
+  source
+}: {
+  assessment: ProjectionRefreshAssessment | undefined;
+  execution: ProjectionRefreshExecution | undefined;
+  source: WorldCup2026GroupProjectionSource;
+}) {
+  if (source === "stored_snapshot") {
+    return (
+      <p
+        className="mt-1 text-xs text-slate-500"
+        aria-label="Projection source type: Immutable pre-match snapshot"
+      >
+        Immutable pre-match snapshot
+      </p>
+    );
+  }
+
+  if (assessment === undefined) return null;
+
+  const stateLabel = refreshStateLabel(assessment.state);
+  const stateClasses = refreshStateClasses(assessment.state);
+  const description = refreshStatusDescription(assessment.state, execution);
+  const showFailureWarning = execution?.attempted === true && execution.completed === false;
+
+  return (
+    <div className="mt-1 space-y-0.5">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span
+          className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${stateClasses}`}
+          aria-label={`Projection status: ${stateLabel}`}
+        >
+          {stateLabel}
+        </span>
+        <span className="text-xs text-slate-500">{description}</span>
+      </div>
+      {showFailureWarning && (
+        <p className="text-xs text-amber-700" role="alert">
+          Refresh failed: previous projection preserved.
+        </p>
+      )}
+      {execution?.attempted === true &&
+        execution.completed === true &&
+        assessment.sourceVersions?.formulaVersion !== undefined && (
+          <p className="text-xs text-slate-400">
+            Formula: {assessment.sourceVersions.formulaVersion}
+            {assessment.sourceVersions.modelVersion !== undefined && (
+              <> · {assessment.sourceVersions.modelVersion}</>
+            )}
+          </p>
+        )}
+    </div>
+  );
 }
 
 function formatProbability(value: number | undefined): string {
@@ -91,6 +186,12 @@ function ProjectionFixtureRow({ fixture }: { fixture: WorldCup2026GroupProjectio
           ))}
         </ul>
       )}
+
+      <ProjectionRefreshStatus
+        assessment={fixture.refreshAssessment}
+        execution={fixture.refreshExecution}
+        source={fixture.source}
+      />
     </li>
   );
 }
