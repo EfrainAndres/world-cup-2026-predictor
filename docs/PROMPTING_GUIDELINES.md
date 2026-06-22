@@ -2,6 +2,8 @@
 
 This document defines how to write efficient prompts for Codex CLI and Claude Code sessions in this repository. The goal is to get accurate, focused results while minimizing token usage and credit cost.
 
+Operational rules such as required startup files, merge verification, and session handoff format live in `AGENTS.md`, `CLAUDE.md`, and `docs/AI_COLLABORATION_WORKFLOW.md`. This document focuses on prompt construction only.
+
 ## Core Principles
 
 - **Phase-scope every prompt.** State the phase name and number at the start.
@@ -23,6 +25,8 @@ Scope: <what is in scope>
 Out of scope: <what to leave untouched>
 Output: <what to produce or return>
 ```
+
+Prefer the smallest task-specific file list that satisfies `docs/ai/TASK_CONTEXT_MANIFEST.md`.
 
 ## Low-Token Prompt Examples
 
@@ -89,17 +93,6 @@ Output: updated file, session handoff block
 | "Fix anything else you see" | Invites unbounded refactoring | Be explicit about out-of-scope files |
 | Asking for explanations and changes in one prompt | Forces a long reasoning pass before acting | Ask for explanation first, then act in a follow-up |
 | "Update all related docs" | Unclear scope, triggers wide reads | Name the specific docs to update |
-
-## When to Use Each Tool
-
-| Situation | Preferred Tool |
-| --- | --- |
-| Creating or rewriting documentation files | Claude Code |
-| Multi-file architecture or design changes | Claude Code |
-| Phase planning and exit criteria review | Claude Code |
-| Iterative shell tasks and script execution | Codex CLI |
-| Fixing a failing test with tight file scope | Codex CLI |
-| Debugging a build or lint error | Codex CLI |
 
 ## Checks Reminder
 
