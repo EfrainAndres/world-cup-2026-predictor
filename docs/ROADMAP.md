@@ -199,6 +199,31 @@ Exit criteria:
 - All 772 existing API tests pass.
 - Production runtime unchanged.
 
+## Phase 12.15B3 - Persistent Evaluation Store
+
+**Status:** Done
+
+Add the PostgreSQL adapter foundation for immutable Model-vs-Reality prediction evaluations, tied to prediction snapshots via a foreign key.
+
+Deliverables:
+
+- `packages/api/migrations/0002_prediction_evaluations.sql` — `prediction_evaluations` table with FK to `prediction_snapshots`, identity uniqueness constraint, goal/outcome constraints, and indexes
+- `packages/api/src/async-evaluation-store.ts` — `AsyncPredictionEvaluationStore` interface, `EVALUATION_SCHEMA_VERSION`, `createAsyncInMemoryEvaluationStore`
+- `packages/api/src/postgres-evaluation-store.ts` — `createPostgresPredictionEvaluationStore`, row-mapping helpers
+- `packages/api/src/async-snapshot-store.ts` — `foreign_key_violation` added to `SnapshotStorageErrorCode`
+- `packages/api/tests/prediction-evaluation-store.test.ts` — shared contract tests + row-mapping tests
+- `packages/api/tests/postgres-prediction-evaluation-store.test.ts` — PostgreSQL contract tests (opt-in via `TEST_DATABASE_URL`)
+- `docs/data-quality/PERSISTENT_EVALUATION_STORE.md`
+
+Exit criteria:
+
+- `AsyncPredictionEvaluationStore` interface exported and tested.
+- In-memory async adapter passes all contract tests.
+- PostgreSQL adapter exported and ready for composition.
+- PostgreSQL tests skip cleanly when `TEST_DATABASE_URL` is absent.
+- All 846 existing API tests pass.
+- Production runtime unchanged.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.
