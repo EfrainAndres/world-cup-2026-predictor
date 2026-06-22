@@ -1863,6 +1863,126 @@ export interface GetWorldCup2026ModelRealitySummaryResponse {
   persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
+export type PredictionHistoryEvaluationState = "all" | "evaluated" | "pending";
+export type PredictionHistoryListSort =
+  | "captured_desc"
+  | "captured_asc"
+  | "kickoff_desc"
+  | "kickoff_asc";
+
+export interface PredictionHistoryProjectedScore {
+  home: number;
+  away: number;
+}
+
+export interface PredictionHistoryExpectedGoals {
+  home: number;
+  away: number;
+}
+
+export interface PredictionHistoryOutcomeProbabilities {
+  homeWin: number;
+  draw: number;
+  awayWin: number;
+}
+
+export interface PredictionHistoryConfidenceSummary {
+  level: PredictionConfidenceLevel;
+  coverage: PredictionCoverageType;
+}
+
+export interface PredictionHistoryEvaluationSummary {
+  evaluationId: string;
+  evaluatedAt: string;
+  actualScore: {
+    home: number;
+    away: number;
+  };
+  actualOutcome: PredictionOutcome;
+  brierScore: number;
+  logLoss: number;
+  homeGoalAbsoluteError: number;
+  awayGoalAbsoluteError: number;
+  scorelineCorrect: boolean;
+  outcomeCorrect: boolean;
+}
+
+export interface PredictionHistoryListItem {
+  snapshotId: string;
+  fixtureId: string;
+  group: string;
+  matchday: number;
+  homeTeam: string;
+  awayTeam: string;
+  kickoffAt: string | null;
+  capturedAt: string;
+  snapshotStatus: PredictionSnapshotStatus;
+  projectedScore: PredictionHistoryProjectedScore;
+  expectedGoals: PredictionHistoryExpectedGoals;
+  outcomeProbabilities: PredictionHistoryOutcomeProbabilities;
+  confidence: PredictionHistoryConfidenceSummary;
+  evaluation: PredictionHistoryEvaluationSummary | null;
+}
+
+export interface PredictionHistoryListQuery {
+  group?: string;
+  team?: string;
+  fixtureId?: string;
+  status?: PredictionSnapshotStatus;
+  evaluationState?: PredictionHistoryEvaluationState;
+  page?: number;
+  pageSize?: number;
+  sort?: PredictionHistoryListSort;
+}
+
+export interface PredictionHistoryListSummary {
+  totalSnapshots: number;
+  evaluatedSnapshots: number;
+  pendingSnapshots: number;
+  outcomeAccuracy: number | null;
+  exactScoreAccuracy: number | null;
+  averageBrierScore: number | null;
+}
+
+export interface PredictionHistoryListPagination {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+export interface PredictionHistoryListFilters {
+  group: string | null;
+  team: string | null;
+  fixtureId: string | null;
+  status: PredictionSnapshotStatus | null;
+  evaluationState: PredictionHistoryEvaluationState;
+  sort: PredictionHistoryListSort;
+}
+
+export interface PredictionHistoryListSuccessResponse {
+  status: "success";
+  items: readonly PredictionHistoryListItem[];
+  summary: PredictionHistoryListSummary;
+  pagination: PredictionHistoryListPagination;
+  filters: PredictionHistoryListFilters;
+  metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
+}
+
+export interface PredictionHistoryListValidationErrorResponse {
+  status: "validation_error";
+  issues: readonly ApiValidationIssue[];
+  metadata: ApiMetadata;
+}
+
+export type PredictionHistoryListResponse =
+  | PredictionHistoryListSuccessResponse
+  | PredictionHistoryListValidationErrorResponse
+  | PredictionHistoryPersistenceErrorResponse;
+
 export interface ApiRoutes {
   getHealth: () => HealthResponse;
   getModelInfo: () => ModelInfoResponse;
@@ -1875,6 +1995,9 @@ export interface ApiRoutes {
   getWorldCup2026PredictionEvaluation: (evaluationId: string) => Promise<GetWorldCup2026PredictionEvaluationResponse>;
   listWorldCup2026PredictionEvaluations: (fixtureId?: string) => Promise<ListWorldCup2026PredictionEvaluationsResponse | PredictionHistoryPersistenceErrorResponse>;
   getWorldCup2026ModelRealitySummary: () => Promise<GetWorldCup2026ModelRealitySummaryResponse | PredictionHistoryPersistenceErrorResponse>;
+  listWorldCup2026PredictionHistory: (
+    query?: PredictionHistoryListQuery
+  ) => Promise<PredictionHistoryListResponse>;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;

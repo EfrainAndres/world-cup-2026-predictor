@@ -9,6 +9,7 @@ const navigationItems = [
   { label: "Round of 32", href: "#world-cup-knockout-simulation" },
   { label: "Third Place", href: "#world-cup-third-place-match-simulation" },
   { label: "Match Preview", href: "#match-preview" },
+  { label: "Prediction History", href: "/prediction-history" },
   { label: "Replay Audit", href: "#replay-audit" },
   { label: "Historical", href: "#historical" }
 ];

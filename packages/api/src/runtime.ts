@@ -167,6 +167,42 @@ export async function handleApiRuntimeRequest(request: Request, routes: ApiRoute
     );
   }
 
+  if (url.pathname === "/world-cup-2026/prediction-history") {
+    if (request.method !== "GET") return methodNotAllowed(request.method, "GET");
+
+    const group = url.searchParams.get("group") ?? undefined;
+    const team = url.searchParams.get("team") ?? undefined;
+    const fixtureId = url.searchParams.get("fixtureId") ?? undefined;
+    const status = url.searchParams.get("status") ?? undefined;
+    const evaluationState = url.searchParams.get("evaluationState") ?? undefined;
+    const sort = url.searchParams.get("sort") ?? undefined;
+    const pageText = url.searchParams.get("page");
+    const pageSizeText = url.searchParams.get("pageSize");
+
+    return responseForHandlerResult(
+      await routes.listWorldCup2026PredictionHistory({
+        ...(group === undefined ? {} : { group }),
+        ...(team === undefined ? {} : { team }),
+        ...(fixtureId === undefined ? {} : { fixtureId }),
+        ...(status === undefined ? {} : { status: status as "pre_match_locked" | "foundation_unverified" }),
+        ...(evaluationState === undefined
+          ? {}
+          : { evaluationState: evaluationState as "all" | "evaluated" | "pending" }),
+        ...(sort === undefined
+          ? {}
+          : {
+              sort: sort as
+                | "captured_desc"
+                | "captured_asc"
+                | "kickoff_desc"
+                | "kickoff_asc"
+            }),
+        ...(pageText === null ? {} : { page: Number(pageText) }),
+        ...(pageSizeText === null ? {} : { pageSize: Number(pageSizeText) })
+      })
+    );
+  }
+
   const historicalYear = parseHistoricalYear(url.pathname);
 
   if (historicalYear !== undefined) {

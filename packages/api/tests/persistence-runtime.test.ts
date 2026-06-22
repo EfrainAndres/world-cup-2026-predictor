@@ -149,6 +149,8 @@ describe("prediction history persistence runtime", () => {
 
   it("memory resolution includes projectionCache", async () => {
     const resolution = await resolvePredictionHistoryPersistence();
+    expect(resolution.historyStore).toBeDefined();
+    expect(typeof resolution.historyStore.list).toBe("function");
     expect(resolution.projectionCache).toBeDefined();
     expect(typeof resolution.projectionCache.get).toBe("function");
     expect(typeof resolution.projectionCache.set).toBe("function");
@@ -174,6 +176,8 @@ describe("prediction history persistence runtime", () => {
 
     const resolution = await resolvePredictionHistoryPersistence({ sqlFactory });
 
+    expect(resolution.historyStore).toBeDefined();
+    expect(typeof resolution.historyStore.list).toBe("function");
     expect(resolution.projectionCache).toBeDefined();
     expect(typeof resolution.projectionCache.get).toBe("function");
     // SQL factory was called only once (shared client).

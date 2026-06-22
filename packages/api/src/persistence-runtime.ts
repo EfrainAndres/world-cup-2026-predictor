@@ -14,6 +14,11 @@ import {
 } from "./postgres-evaluation-store.js";
 import { createPostgresGroupProjectionCacheStore } from "./postgres-projection-cache.js";
 import {
+  createInMemoryPredictionHistoryReadStore,
+  createPostgresPredictionHistoryReadStore,
+  type PredictionHistoryReadStore
+} from "./prediction-history.js";
+import {
   defaultSnapshotStore,
   type PredictionSnapshotStore
 } from "./snapshot-store.js";
@@ -38,6 +43,7 @@ export interface PredictionHistoryPersistenceResolution {
   provider: PredictionHistoryPersistenceProvider;
   snapshotStore: AsyncPredictionSnapshotStore;
   evaluationStore: AsyncPredictionEvaluationStore;
+  historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
   metadata: PredictionHistoryPersistenceMetadata;
 }
@@ -69,6 +75,7 @@ export interface ResolvePredictionHistoryPersistenceInput {
 interface MemoryResolutionCache {
   snapshotStore: AsyncPredictionSnapshotStore;
   evaluationStore: AsyncPredictionEvaluationStore;
+  historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
 }
 
@@ -76,6 +83,7 @@ interface PostgresResolutionCache {
   sql: Sql;
   snapshotStore: AsyncPredictionSnapshotStore;
   evaluationStore: AsyncPredictionEvaluationStore;
+  historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
 }
 
@@ -217,17 +225,25 @@ export async function resolvePredictionHistoryPersistence(
 
   if (config.provider === "memory") {
     if (memoryResolutionCache === undefined) {
+      const syncSnapshotStore = input.snapshotStore ?? defaultSnapshotStore;
+      const syncEvaluationStore =
+        input.evaluationStore ?? defaultPredictionEvaluationStore;
       const snapshotStore = adaptPredictionSnapshotStore(
-        input.snapshotStore ?? defaultSnapshotStore
+        syncSnapshotStore
       );
       const evaluationStore = adaptPredictionEvaluationStore(
-        input.evaluationStore ?? defaultPredictionEvaluationStore
+        syncEvaluationStore
+      );
+      const historyStore = createInMemoryPredictionHistoryReadStore(
+        syncSnapshotStore,
+        syncEvaluationStore
       );
       const projectionCache = createInMemoryGroupProjectionCacheStore();
 
       memoryResolutionCache = {
         snapshotStore,
         evaluationStore,
+        historyStore,
         projectionCache
       };
     }
@@ -236,6 +252,7 @@ export async function resolvePredictionHistoryPersistence(
       provider: "memory",
       snapshotStore: memoryResolutionCache.snapshotStore,
       evaluationStore: memoryResolutionCache.evaluationStore,
+      historyStore: memoryResolutionCache.historyStore,
       projectionCache: memoryResolutionCache.projectionCache,
       metadata: {
         provider: "memory",
@@ -255,6 +272,7 @@ export async function resolvePredictionHistoryPersistence(
       sql,
       snapshotStore: createPostgresPredictionSnapshotStore(sql),
       evaluationStore: createPostgresPredictionEvaluationStore(sql),
+      historyStore: createPostgresPredictionHistoryReadStore(sql),
       projectionCache: createPostgresGroupProjectionCacheStore(sql)
     };
     postgresResolutionUrl = config.databaseUrl;
@@ -264,6 +282,7 @@ export async function resolvePredictionHistoryPersistence(
     provider: "postgres",
     snapshotStore: postgresResolutionCache.snapshotStore,
     evaluationStore: postgresResolutionCache.evaluationStore,
+    historyStore: postgresResolutionCache.historyStore,
     projectionCache: postgresResolutionCache.projectionCache,
     metadata: {
       provider: "postgres",

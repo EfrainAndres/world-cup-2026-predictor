@@ -29,6 +29,19 @@ interface RuntimeDailyMatchesResponse {
   };
 }
 
+interface RuntimePredictionHistoryResponse {
+  status: "success";
+  items: unknown[];
+  pagination: {
+    page: number;
+    pageSize: number;
+  };
+  filters: {
+    group: string | null;
+    evaluationState: string;
+  };
+}
+
 async function readJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -233,6 +246,23 @@ describe("api runtime foundation", () => {
     expect(body.requestedDate).toBe("2026-06-11");
     expect(body.timezone).toBe("UTC");
     expect(typeof body.counts.total).toBe("number");
+  });
+
+  it("serves GET /world-cup-2026/prediction-history as JSON", async () => {
+    const response = await apiRuntime.fetch(
+      request("/world-cup-2026/prediction-history?group=A&evaluationState=all&page=1&pageSize=20&sort=captured_desc")
+    );
+    const body = await readJson<RuntimePredictionHistoryResponse | ApiRuntimeFailureResponse>(response);
+
+    expect(response.status).toBe(200);
+    expectJsonResponse(response);
+    expect(body.status).toBe("success");
+    if (body.status !== "success") return;
+    expect(Array.isArray(body.items)).toBe(true);
+    expect(body.pagination.page).toBe(1);
+    expect(body.pagination.pageSize).toBe(20);
+    expect(body.filters.group).toBe("A");
+    expect(body.filters.evaluationState).toBe("all");
   });
 
   it("returns typed errors for unsupported methods and paths", async () => {
