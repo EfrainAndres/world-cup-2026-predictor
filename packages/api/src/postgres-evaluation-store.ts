@@ -76,9 +76,9 @@ export interface EvaluationInsertParams {
   actual_home_goals: number;
   actual_away_goals: number;
   actual_outcome: string;
-  metrics_payload: string;
-  confidence_payload: string;
-  provenance_payload: string;
+  metrics_payload: unknown;
+  confidence_payload: unknown;
+  provenance_payload: unknown;
 }
 
 export function evaluationToInsertParams(
@@ -115,9 +115,9 @@ export function evaluationToInsertParams(
     actual_home_goals: evaluation.actual.homeGoals,
     actual_away_goals: evaluation.actual.awayGoals,
     actual_outcome: evaluation.actual.outcome,
-    metrics_payload: JSON.stringify(metricsPayload),
-    confidence_payload: JSON.stringify(confidencePayload),
-    provenance_payload: JSON.stringify(provenancePayload)
+    metrics_payload: metricsPayload,
+    confidence_payload: confidencePayload,
+    provenance_payload: provenancePayload
   };
 }
 
@@ -343,9 +343,9 @@ export function createPostgresPredictionEvaluationStore(sql: Sql): AsyncPredicti
             ${params.metric_version}, ${params.evaluation_schema_version},
             ${params.result_identity}, ${params.evaluated_at},
             ${params.actual_home_goals}, ${params.actual_away_goals}, ${params.actual_outcome},
-            ${params.metrics_payload}::jsonb,
-            ${params.confidence_payload}::jsonb,
-            ${params.provenance_payload}::jsonb
+            ${sql.json(params.metrics_payload as Parameters<typeof sql.json>[0])},
+            ${sql.json(params.confidence_payload as Parameters<typeof sql.json>[0])},
+            ${sql.json(params.provenance_payload as Parameters<typeof sql.json>[0])}
           )
           ON CONFLICT (snapshot_id, result_identity, metric_version) DO NOTHING
           RETURNING *

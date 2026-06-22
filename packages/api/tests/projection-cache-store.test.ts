@@ -56,14 +56,14 @@ function makeSetInput(group = GROUP_A, timezone = TZ_NYC, overrides: Record<stri
 
 export function runProjectionCacheStoreContractTests(
   storeName: string,
-  makeStore: () => Promise<GroupProjectionCacheStore & { reset?(): void }>
+  makeStore: () => Promise<GroupProjectionCacheStore & { reset?(): void | Promise<void> }>
 ): void {
   describe(`${storeName} — GroupProjectionCacheStore contract`, () => {
-    let store: GroupProjectionCacheStore & { reset?(): void };
+    let store: GroupProjectionCacheStore & { reset?(): void | Promise<void> };
 
     beforeEach(async () => {
       store = await makeStore();
-      store.reset?.();
+      await store.reset?.();
     });
 
     // -----------------------------------------------------------------------

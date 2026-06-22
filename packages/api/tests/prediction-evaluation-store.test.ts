@@ -93,18 +93,18 @@ export function runEvaluationStoreContractTests(
   storeName: string,
   makeStore: () => Promise<AsyncPredictionEvaluationStore & {
     reset?(): void;
-    registerSnapshotId?: (id: string) => void;
+    registerSnapshotId?: (id: string) => void | Promise<void>;
   }>
 ): void {
   describe(`${storeName} — AsyncPredictionEvaluationStore contract`, () => {
     let store: AsyncPredictionEvaluationStore & {
       reset?(): void;
-      registerSnapshotId?: (id: string) => void;
+      registerSnapshotId?: (id: string) => void | Promise<void>;
     };
 
     beforeEach(async () => {
       store = await makeStore();
-      store.reset?.();
+      await store.reset?.();
     });
 
     // -----------------------------------------------------------------------
@@ -112,7 +112,7 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("create returns result=created on first insert", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       const result = await store.create(ev, IDEM_A1);
       expect(result.result).toBe("created");
@@ -122,7 +122,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("create returns result=existing on duplicate identity with same evaluation id", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       await store.create(ev, IDEM_A1);
       const result = await store.create(ev, IDEM_A1);
@@ -131,7 +131,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("create throws SnapshotStorageError(duplicate_conflict) on identity collision with different evaluation id", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       const conflicting = makeEvaluation({ evaluationId: "eval-conflicting-id-0000" });
       await store.create(ev, IDEM_A1);
@@ -140,7 +140,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("create returns defensive copies", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       const result = await store.create(ev, IDEM_A1);
       (result.evaluation as unknown as Record<string, unknown>)["fixtureId"] = "mutated";
@@ -153,7 +153,7 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("getById returns evaluation after create", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       await store.create(ev, IDEM_A1);
       const fetched = await store.getById(ev.evaluationId);
@@ -166,7 +166,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("getById returns defensive copy", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       await store.create(ev, IDEM_A1);
       const first = await store.getById(ev.evaluationId);
@@ -180,7 +180,7 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("getByIdentity returns evaluation after create", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const ev = makeEvaluation();
       await store.create(ev, IDEM_A1);
       const fetched = await store.getByIdentity({
@@ -209,8 +209,8 @@ export function runEvaluationStoreContractTests(
     });
 
     it("list returns all evaluations ordered by evaluatedAt ascending", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
-      store.registerSnapshotId?.(SNAP_ID_B1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_B1);
       const evA = makeEvaluation({ evaluatedAt: "2026-06-22T10:00:00.000Z" });
       const evB = makeEvaluationB();  // evaluatedAt: "2026-06-23T10:00:00.000Z"
       await store.create(evB, IDEM_B1);
@@ -222,7 +222,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("list breaks evaluatedAt ties by evaluationId ascending", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       const evZ = makeEvaluation({ evaluationId: "eval-zzz", evaluatedAt: "2026-06-22T10:00:00.000Z" });
       const evA = makeEvaluation({ evaluationId: "eval-aaa", evaluatedAt: "2026-06-22T10:00:00.000Z" });
       await store.create(evZ, IDEM_A1);
@@ -237,8 +237,8 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("list with snapshotId filters to matching evaluations", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
-      store.registerSnapshotId?.(SNAP_ID_B1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_B1);
       await store.create(makeEvaluation(), IDEM_A1);
       await store.create(makeEvaluationB(), IDEM_B1);
       const result = await store.list({ snapshotId: SNAP_ID_A1 });
@@ -251,8 +251,8 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("list with fixtureId filters to matching evaluations", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
-      store.registerSnapshotId?.(SNAP_ID_B1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_B1);
       await store.create(makeEvaluation(), IDEM_A1);
       await store.create(makeEvaluationB(), IDEM_B1);
       const result = await store.list({ fixtureId: FIXTURE_A1 });
@@ -261,7 +261,7 @@ export function runEvaluationStoreContractTests(
     });
 
     it("list with fixtureId returns empty array when no match", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
       await store.create(makeEvaluation(), IDEM_A1);
       const result = await store.list({ fixtureId: FIXTURE_B1 });
       expect(result).toHaveLength(0);
@@ -272,8 +272,8 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("list respects limit parameter", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
-      store.registerSnapshotId?.(SNAP_ID_B1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_B1);
       await store.create(makeEvaluation(), IDEM_A1);
       await store.create(makeEvaluationB(), IDEM_B1);
       const result = await store.list({ limit: 1 });
@@ -297,8 +297,8 @@ export function runEvaluationStoreContractTests(
     // -----------------------------------------------------------------------
 
     it("list returns consistent order across repeated calls", async () => {
-      store.registerSnapshotId?.(SNAP_ID_A1);
-      store.registerSnapshotId?.(SNAP_ID_B1);
+      await store.registerSnapshotId?.(SNAP_ID_A1);
+      await store.registerSnapshotId?.(SNAP_ID_B1);
       await store.create(makeEvaluation(), IDEM_A1);
       await store.create(makeEvaluationB(), IDEM_B1);
       const first = await store.list();
@@ -340,21 +340,21 @@ describe("evaluationToInsertParams", () => {
     expect(params.provider_fixture_id).toBe("provider-123");
   });
 
-  it("metrics_payload is valid JSON with schemaVersion", () => {
+  it("metrics_payload is an object with schemaVersion", () => {
     const params = evaluationToInsertParams(makeEvaluation(), IDEM_A1);
-    const parsed = JSON.parse(params.metrics_payload) as { schemaVersion: string };
+    const parsed = params.metrics_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(EVALUATION_SCHEMA_VERSION);
   });
 
-  it("confidence_payload is valid JSON with schemaVersion", () => {
+  it("confidence_payload is an object with schemaVersion", () => {
     const params = evaluationToInsertParams(makeEvaluation(), IDEM_A1);
-    const parsed = JSON.parse(params.confidence_payload) as { schemaVersion: string };
+    const parsed = params.confidence_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(EVALUATION_SCHEMA_VERSION);
   });
 
-  it("provenance_payload is valid JSON with schemaVersion", () => {
+  it("provenance_payload is an object with schemaVersion", () => {
     const params = evaluationToInsertParams(makeEvaluation(), IDEM_A1);
-    const parsed = JSON.parse(params.provenance_payload) as { schemaVersion: string };
+    const parsed = params.provenance_payload as { schemaVersion: string };
     expect(parsed.schemaVersion).toBe(EVALUATION_SCHEMA_VERSION);
   });
 
@@ -388,9 +388,9 @@ describe("rowToEvaluation — row deserialization", () => {
       actual_home_goals: params.actual_home_goals,
       actual_away_goals: params.actual_away_goals,
       actual_outcome: params.actual_outcome,
-      metrics_payload: JSON.parse(params.metrics_payload) as unknown,
-      confidence_payload: JSON.parse(params.confidence_payload) as unknown,
-      provenance_payload: JSON.parse(params.provenance_payload) as unknown,
+      metrics_payload: params.metrics_payload,
+      confidence_payload: params.confidence_payload,
+      provenance_payload: params.provenance_payload,
       created_at: new Date("2026-06-22T10:01:00.000Z")
     };
   }
@@ -440,7 +440,7 @@ describe("rowToEvaluation — row deserialization", () => {
   it("throws unsupported_schema_version for unknown payload schemaVersion", () => {
     const params = makeValidParams();
     const row = paramsToRow(params);
-    const payload = JSON.parse(params.metrics_payload) as Record<string, unknown>;
+    const payload = { ...(params.metrics_payload as Record<string, unknown>) };
     payload["schemaVersion"] = "999";
     row.metrics_payload = payload;
     expect(() => rowToEvaluation(row)).toThrowError(
@@ -478,8 +478,9 @@ describe("rowToEvaluation — row deserialization", () => {
   it("throws invalid_stored_record for non-finite brierScore", () => {
     const params = makeValidParams();
     const row = paramsToRow(params);
-    const payload = JSON.parse(params.metrics_payload) as Record<string, unknown>;
-    const metrics = payload["metrics"] as Record<string, unknown>;
+    const payload = { ...(params.metrics_payload as Record<string, unknown>) };
+    const metrics = { ...(payload["metrics"] as Record<string, unknown>) };
+    payload["metrics"] = metrics;
     metrics["brierScore"] = Number.POSITIVE_INFINITY;
     row.metrics_payload = payload;
     expect(() => rowToEvaluation(row)).toThrowError(
@@ -514,7 +515,7 @@ runEvaluationStoreContractTests("in-memory async evaluation adapter", async () =
     snapshotExists: async (id) => knownSnapshots.has(id)
   }) as AsyncPredictionEvaluationStore & {
     reset(): void;
-    registerSnapshotId?: (id: string) => void;
+    registerSnapshotId?: (id: string) => void | Promise<void>;
   };
 
   (store as unknown as Record<string, unknown>)["registerSnapshotId"] = (id: string) => {

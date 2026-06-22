@@ -100,8 +100,6 @@ export function createPostgresGroupProjectionCacheStore(sql: Sql): GroupProjecti
         schemaVersion: PROJECTION_CACHE_SCHEMA_VERSION,
         projection
       };
-      const payloadJson = JSON.stringify(payload);
-
       try {
         await sql`
           INSERT INTO projection_cache (
@@ -112,7 +110,7 @@ export function createPostgresGroupProjectionCacheStore(sql: Sql): GroupProjecti
             generated_at, expires_at, updated_at
           ) VALUES (
             ${cacheKey}, ${upperGroup}, ${timezone},
-            ${payloadJson}::jsonb, ${inputFingerprint},
+            ${sql.json(payload as unknown as Parameters<typeof sql.json>[0])}, ${inputFingerprint},
             ${modelVersion}, ${formulaVersion},
             ${PROJECTION_CACHE_SCHEMA_VERSION},
             ${generatedAt}, ${expiresAt}, now()
