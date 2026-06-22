@@ -105,6 +105,20 @@ export {
   rowToSnapshot
 } from "./postgres-snapshot-store.js";
 export type { SnapshotInsertParams } from "./postgres-snapshot-store.js";
+export {
+  EVALUATION_SCHEMA_VERSION,
+  createAsyncInMemoryEvaluationStore
+} from "./async-evaluation-store.js";
+export type {
+  AsyncPredictionEvaluationStore,
+  AsyncInMemoryEvaluationStoreOptions
+} from "./async-evaluation-store.js";
+export {
+  createPostgresPredictionEvaluationStore,
+  evaluationToInsertParams,
+  rowToEvaluation
+} from "./postgres-evaluation-store.js";
+export type { EvaluationInsertParams } from "./postgres-evaluation-store.js";
 export { runMigrations } from "./migration-runner.js";
 export {
   WORLD_CUP_2026_EVALUATION_METRIC_VERSION,
