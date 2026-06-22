@@ -119,7 +119,6 @@ export {
   rowToEvaluation
 } from "./postgres-evaluation-store.js";
 export type { EvaluationInsertParams } from "./postgres-evaluation-store.js";
-export { runMigrations } from "./migration-runner.js";
 export {
   PROJECTION_CACHE_SCHEMA_VERSION,
   PROJECTION_CACHE_TTL_MS,

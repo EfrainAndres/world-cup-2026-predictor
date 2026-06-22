@@ -281,6 +281,33 @@ Exit criteria:
 - All 920 existing API tests pass and 83 web tests pass.
 - Production does not silently fall back to memory on cache read/write failures.
 
+## Phase 12.15D - Migration, Deployment & Persistence QA
+
+**Status:** Done
+
+Validate the complete PostgreSQL persistence implementation end-to-end: fix production build regressions, confirm migration idempotency, document the deployment runbook and CI strategy, and produce a QA verdict.
+
+Deliverables:
+
+- `packages/api/package.json` — added `"sideEffects": false` to enable webpack tree-shaking of server-only `persistence-runtime.ts` from client bundles
+- `apps/web/next.config.ts` — added `serverExternalPackages: ["postgres"]` and client-side `resolve.fallback` entries for `net`, `tls`, `fs`, `perf_hooks` to prevent webpack from failing when it encounters server-only Node.js built-ins transitively imported by `postgres`
+- `apps/web/app/groups/[group]/page.tsx` — updated to import `resolvePredictionHistoryPersistence`, `PROJECTION_CACHE_TTL_MS`, `computeProjectionCacheExpiresAt`, `CURRENT_MODEL_VERSION`, `CURRENT_FORMULA_VERSION` directly from `@world-cup-2026-predictor/api` rather than through `api-client.ts` (server-only symbols must not transit client components)
+- `apps/web/src/lib/api-client.ts` — removed server-only persistence re-exports to prevent client bundle pull-in via `MatchSimulationForm.tsx`
+- `packages/api/src/index.ts` — removed `runMigrations` export to prevent webpack from bundling `node:fs`/`node:path` into the web bundle
+- `.env.example` — added `TEST_DATABASE_URL` placeholder with isolation warning
+- `docs/qa/PERSISTENCE_MIGRATION_DEPLOYMENT_QA.md` — full QA report: preflight audit, build validation, TypeScript results, test counts, migration structural checks, security audit, CI strategy, verdict
+- `docs/qa/PERSISTENCE_DEPLOYMENT_CHECKLIST.md` — copy-ready operator runbook for provisioning, migration, validation, and rollback
+
+Exit criteria:
+
+- `pnpm build` succeeds with zero webpack errors across all four packages.
+- `pnpm typecheck` passes.
+- 920 API tests pass; 28 PostgreSQL contract tests skip cleanly without `TEST_DATABASE_URL`.
+- 72 web tests pass.
+- `git diff --check` passes.
+- QA report documents verdict as `ready_for_non_production`.
+- Deployment checklist is ready for operator use.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.

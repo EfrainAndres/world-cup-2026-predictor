@@ -1,5 +1,6 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Sql } from "postgres";
 
 // --------------------------------------------------------------------------
@@ -19,7 +20,7 @@ import type { Sql } from "postgres";
 // --------------------------------------------------------------------------
 
 export async function runMigrations(sql: Sql, migrationsDir?: string): Promise<void> {
-  const dir = migrationsDir ?? join(new URL(".", import.meta.url).pathname, "../../migrations");
+  const dir = migrationsDir ?? fileURLToPath(new URL("../migrations", import.meta.url));
 
   let files: string[];
   try {

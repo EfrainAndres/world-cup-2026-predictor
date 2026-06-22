@@ -43,8 +43,8 @@ function assertTestDatabaseUrl(url: string): void {
   if (looksProduction) {
     throw new Error(
       `TEST_DATABASE_URL appears to reference a production database. ` +
-        `Refusing to run test migrations against it. ` +
-        `URL hint: ${url.slice(0, 40)}...`
+      `Refusing to run test migrations against it. ` +
+      `URL hint: ${url.slice(0, 40)}...`
     );
   }
 }
@@ -63,7 +63,6 @@ describe.skipIf(SKIP)(
     let postgresImport: PostgresModule;
     let sql: ReturnType<PostgresModule>;
     let pgStore: AsyncPredictionSnapshotStore & { reset?(): void };
-    const MIGRATIONS_DIR = join(new URL(".", import.meta.url).pathname, "../../migrations");
 
     beforeAll(async () => {
       if (!TEST_DATABASE_URL) return;
@@ -77,7 +76,9 @@ describe.skipIf(SKIP)(
         { max: 2 }
       );
 
-      await runMigrations(sql as unknown as Parameters<typeof runMigrations>[0], MIGRATIONS_DIR);
+      await runMigrations(
+        sql as unknown as Parameters<typeof runMigrations>[0],
+      );
     });
 
     afterAll(async () => {
