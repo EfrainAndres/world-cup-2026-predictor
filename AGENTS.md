@@ -9,6 +9,7 @@ Claude Code sessions must also read `CLAUDE.md` before starting any work.
 
 For the full collaboration protocol between Codex CLI and Claude Code, see `docs/AI_COLLABORATION_WORKFLOW.md`.
 For token-efficient prompt patterns and examples, see `docs/PROMPTING_GUIDELINES.md`.
+For task-scoped selective reading, see `docs/ai/TASK_CONTEXT_MANIFEST.md`.
 
 ## Required Reading
 
@@ -21,6 +22,7 @@ Before making changes, always read:
 5. Existing code and tests related to the requested change, when code exists
 
 Use those files as the project context before planning or editing.
+Then narrow the read set using `docs/ai/TASK_CONTEXT_MANIFEST.md` unless the task explicitly requires broader context.
 
 For architecture-sensitive work, also read:
 

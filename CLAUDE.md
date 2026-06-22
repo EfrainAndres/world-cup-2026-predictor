@@ -12,14 +12,13 @@ Before making any changes, always read these files in order:
 4. `docs/ROADMAP.md`
 
 Then read **only** the documents relevant to the current phase or task. Do not scan the full repository.
-
-For phase-specific work, also read the files listed in the relevant section of `AGENTS.md`.
+Use `docs/ai/TASK_CONTEXT_MANIFEST.md` to keep the read set minimal. For phase-specific work, also read the files listed in the relevant section of `AGENTS.md`.
 
 ## Working Rules
 
 - Do not change application code, install dependencies, or create UI, API, or model logic unless the task explicitly requires it.
 - Do not refactor files unrelated to the current task.
-- Before starting a new phase, fetch `origin`, compare with `origin/main`, inspect open pull requests when GitHub tooling is available, and verify the previous completed branch was actually merged. A pushed branch is not the same as a merged branch.
+- Before starting a new phase, follow the merge-verification workflow defined in `AGENTS.md`.
 - Do not run `git checkout`, `git pull`, `git commit`, `git push`, `git branch`, or `git merge` — the user handles all git operations.
 - Keep each change focused on the requested phase or task.
 - Run only the checks required by the current phase.
@@ -72,9 +71,7 @@ This handoff is required before closing a session so that Codex or another Claud
 
 - Codex CLI handles shell-first, iterative implementation tasks.
 - Claude Code handles structured documentation, planning, design reviews, and multi-file changes.
-- Both tools read the same four required files before starting any session.
-- Neither tool changes files outside the scope of the current task.
-- Token usage is minimized by reading only phase-related files.
+- Both tools read the same required startup files and then narrow context using `docs/ai/TASK_CONTEXT_MANIFEST.md`.
 
 See `docs/AI_COLLABORATION_WORKFLOW.md` for the full handoff protocol.
 See `docs/PROMPTING_GUIDELINES.md` for token-efficient prompt patterns and examples.
