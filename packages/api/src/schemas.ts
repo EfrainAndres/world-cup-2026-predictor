@@ -59,7 +59,9 @@ export type PredictionHistoryPersistenceErrorCode =
   | "foreign_key_violation"
   | "invalid_stored_record"
   | "unsupported_schema_version"
-  | "query_failed";
+  | "query_failed"
+  | "invalid_cache_key"
+  | "invalid_expiration";
 
 export interface PredictionHistoryPersistenceMetadata {
   provider: PredictionHistoryPersistenceProvider;

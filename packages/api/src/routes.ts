@@ -2455,6 +2455,10 @@ function mapPredictionHistoryErrorMessage(
       return "Stored prediction history schema version is not supported.";
     case "query_failed":
       return "Prediction history storage query failed.";
+    case "invalid_cache_key":
+      return "Projection cache key is invalid.";
+    case "invalid_expiration":
+      return "Projection cache expiration timestamp is invalid.";
   }
 }
 

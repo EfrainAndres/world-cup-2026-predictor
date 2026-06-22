@@ -121,6 +121,20 @@ export {
 export type { EvaluationInsertParams } from "./postgres-evaluation-store.js";
 export { runMigrations } from "./migration-runner.js";
 export {
+  PROJECTION_CACHE_SCHEMA_VERSION,
+  PROJECTION_CACHE_TTL_MS,
+  buildProjectionCacheKey,
+  computeProjectionCacheExpiresAt,
+  createInMemoryGroupProjectionCacheStore
+} from "./async-projection-cache.js";
+export type {
+  GroupProjectionCacheStore,
+  GroupProjectionCacheGetInput,
+  GroupProjectionCacheSetInput,
+  GroupProjectionCacheDeleteInput
+} from "./async-projection-cache.js";
+export { createPostgresGroupProjectionCacheStore } from "./postgres-projection-cache.js";
+export {
   PredictionHistoryPersistenceConfigError,
   getPredictionHistoryPersistenceConfig,
   isPredictionHistoryPersistenceError,
