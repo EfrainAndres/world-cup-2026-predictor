@@ -8,10 +8,20 @@ import { GroupDetailProjection } from "../../../src/components/GroupDetailProjec
 import { GroupDetailQualificationSummary } from "../../../src/components/GroupDetailQualificationSummary";
 import { GroupDetailStandingsTable } from "../../../src/components/GroupDetailStandingsTable";
 import { GroupNav } from "../../../src/components/GroupNav";
-import { getDashboardGroupDetail } from "../../../src/lib/api-client";
+import {
+  getDashboardGroupDetail,
+  resolvePredictionHistoryPersistence,
+  PROJECTION_CACHE_TTL_MS,
+  computeProjectionCacheExpiresAt,
+  CURRENT_MODEL_VERSION,
+  CURRENT_FORMULA_VERSION
+} from "../../../src/lib/api-client";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../../../src/lib/daily-matches-ui";
-import { getGroupProjectionFromCache, setGroupProjectionInCache } from "../../../src/lib/group-projection-cache";
-import type { WorldCup2026GroupDetailMatch } from "../../../src/lib/api-client";
+import type {
+  WorldCup2026GroupDetailMatch,
+  WorldCup2026GroupProjection,
+  GroupProjectionCacheStore
+} from "../../../src/lib/api-client";
 
 const VALID_GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] as const;
 type ValidGroup = (typeof VALID_GROUPS)[number];
@@ -76,19 +86,57 @@ export default async function GroupDetailPage({
   }
 
   let data;
+  const cacheWarnings: string[] = [];
+  let projectionCacheStore: GroupProjectionCacheStore | undefined;
+
+  // Read previous projection from the persistence-resolved cache (memory or PostgreSQL-backed).
+  // Cache failures degrade to a cache miss — they must not fail the page.
+  let previousProjection: WorldCup2026GroupProjection | undefined;
   try {
-    const previousProjection = getGroupProjectionFromCache(normalized, DAILY_MATCHES_DISPLAY_TIMEZONE);
+    const persistence = await resolvePredictionHistoryPersistence();
+    projectionCacheStore = persistence.projectionCache;
+    const cached = await projectionCacheStore.get({
+      group: normalized,
+      timezone: DAILY_MATCHES_DISPLAY_TIMEZONE
+    });
+    if (cached !== null) previousProjection = cached;
+  } catch {
+    cacheWarnings.push("Projection cache unavailable — generating fresh projection.");
+  }
+
+  try {
     data = await getDashboardGroupDetail({
       group: normalized,
       timezone: DAILY_MATCHES_DISPLAY_TIMEZONE,
       ...(previousProjection !== undefined ? { previousProjection } : {})
     });
-    setGroupProjectionInCache(normalized, DAILY_MATCHES_DISPLAY_TIMEZONE, data.projection);
   } catch {
     notFound();
   }
 
+  // Write generated projection back to cache — non-critical, degrade safely on failure.
+  if (projectionCacheStore !== undefined) {
+    const generatedAtTs = data.generatedAt;
+    const expiresAt = computeProjectionCacheExpiresAt(generatedAtTs, PROJECTION_CACHE_TTL_MS);
+    const inputFingerprint = `${CURRENT_MODEL_VERSION}:${CURRENT_FORMULA_VERSION}`;
+    try {
+      await projectionCacheStore.set({
+        group: normalized,
+        timezone: DAILY_MATCHES_DISPLAY_TIMEZONE,
+        projection: data.projection,
+        inputFingerprint,
+        modelVersion: CURRENT_MODEL_VERSION,
+        formulaVersion: CURRENT_FORMULA_VERSION,
+        generatedAt: generatedAtTs,
+        expiresAt
+      });
+    } catch {
+      cacheWarnings.push("Projection was generated but could not be durably cached.");
+    }
+  }
+
   const { standings, matches, qualification, projection, providerMetadata, warnings, generatedAt } = data;
+  const allWarnings = [...warnings, ...cacheWarnings];
   const hasPostponedOrCancelled = matches.postponed.length > 0 || matches.cancelled.length > 0;
 
   return (
@@ -216,14 +264,14 @@ export default async function GroupDetailPage({
           )}
         </section>
 
-        {/* Provider and fallback warnings */}
-        {warnings.length > 0 && (
+        {/* Provider, cache, and fallback warnings */}
+        {allWarnings.length > 0 && (
           <section aria-labelledby="warnings-heading" className="mb-8">
             <h2 id="warnings-heading" className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
               Data warnings
             </h2>
             <ul className="space-y-1.5 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              {warnings.map((warning, i) => (
+              {allWarnings.map((warning, i) => (
                 <li key={i} className="text-sm text-amber-900">
                   {warning}
                 </li>

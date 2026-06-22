@@ -248,6 +248,39 @@ Exit criteria:
 - Production does not silently fall back to memory on history-write failures.
 - No projection-cache persistence, UI changes, or prediction changes are introduced.
 
+## Phase 12.15B5 - Persistent Projection Cache
+
+**Status:** Done
+
+Replace the synchronous in-memory server-side projection cache with a PostgreSQL-backed async store that persists generated `WorldCup2026GroupProjection` values across SSR requests and process restarts.
+
+Deliverables:
+
+- `packages/api/migrations/0003_projection_cache.sql` — `projection_cache` table with primary key on `cache_key`, natural-key unique constraint on `(group_code, timezone)`, expiry/fingerprint/version constraints, and three indexes
+- `packages/api/src/async-projection-cache.ts` — `GroupProjectionCacheStore` interface, `PROJECTION_CACHE_SCHEMA_VERSION`, `PROJECTION_CACHE_TTL_MS`, `buildProjectionCacheKey`, `computeProjectionCacheExpiresAt`, `createInMemoryGroupProjectionCacheStore`
+- `packages/api/src/postgres-projection-cache.ts` — `createPostgresGroupProjectionCacheStore` factory using upsert + lazy expired-row deletion
+- `packages/api/src/async-snapshot-store.ts` — `invalid_cache_key` and `invalid_expiration` added to `SnapshotStorageErrorCode`
+- `packages/api/src/schemas.ts` — two new codes added to `PredictionHistoryPersistenceErrorCode`
+- `packages/api/src/routes.ts` — two new case handlers in `mapPredictionHistoryErrorMessage`
+- `packages/api/src/persistence-runtime.ts` — `projectionCache: GroupProjectionCacheStore` included in all resolutions
+- `packages/api/src/index.ts` — all new cache symbols exported
+- `packages/api/tests/projection-cache-store.test.ts` — 31 tests: shared contract suite, `buildProjectionCacheKey` unit tests, `computeProjectionCacheExpiresAt` unit tests
+- `packages/api/tests/postgres-projection-cache-store.test.ts` — PostgreSQL contract tests (opt-in via `TEST_DATABASE_URL`)
+- `packages/api/tests/persistence-runtime.test.ts` — 3 new tests for `projectionCache` presence and referential stability
+- `apps/web/src/lib/api-client.ts` — cache symbols re-exported
+- `apps/web/app/groups/[group]/page.tsx` — async cache flow replaces synchronous in-memory cache; read failure → cache miss + warning; write failure → warning only; never crashes page
+- `docs/data-quality/PERSISTENT_PROJECTION_CACHE.md`
+
+Exit criteria:
+
+- `GroupProjectionCacheStore` interface exported and tested.
+- In-memory adapter passes all contract tests.
+- PostgreSQL adapter exported and ready for composition.
+- PostgreSQL tests skip cleanly when `TEST_DATABASE_URL` is absent.
+- Group Detail SSR path uses async projection cache with safe degradation on failure.
+- All 920 existing API tests pass and 83 web tests pass.
+- Production does not silently fall back to memory on cache read/write failures.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.

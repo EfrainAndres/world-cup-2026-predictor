@@ -147,6 +147,39 @@ describe("prediction history persistence runtime", () => {
     expect(JSON.stringify(evaluationCreated)).not.toContain("postgresql://");
   });
 
+  it("memory resolution includes projectionCache", async () => {
+    const resolution = await resolvePredictionHistoryPersistence();
+    expect(resolution.projectionCache).toBeDefined();
+    expect(typeof resolution.projectionCache.get).toBe("function");
+    expect(typeof resolution.projectionCache.set).toBe("function");
+    expect(typeof resolution.projectionCache.delete).toBe("function");
+  });
+
+  it("projectionCache is referentially stable across repeated memory resolutions", async () => {
+    const first = await resolvePredictionHistoryPersistence();
+    const second = await resolvePredictionHistoryPersistence();
+    expect(first.projectionCache).toBe(second.projectionCache);
+  });
+
+  it("postgres resolution includes projectionCache sharing the same SQL client", async () => {
+    process.env.PERSISTENCE_PROVIDER = "postgres";
+    process.env.DATABASE_URL = "postgresql://example.test:5432/wc2026";
+
+    let factoryCalls = 0;
+    const fakeSql = { end: async () => undefined } as unknown as Sql;
+    const sqlFactory = () => {
+      factoryCalls += 1;
+      return fakeSql;
+    };
+
+    const resolution = await resolvePredictionHistoryPersistence({ sqlFactory });
+
+    expect(resolution.projectionCache).toBeDefined();
+    expect(typeof resolution.projectionCache.get).toBe("function");
+    // SQL factory was called only once (shared client).
+    expect(factoryCalls).toBe(1);
+  });
+
   it("does not report success when persistence configuration fails", async () => {
     process.env.PERSISTENCE_PROVIDER = "postgres";
 

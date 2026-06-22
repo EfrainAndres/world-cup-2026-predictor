@@ -9,7 +9,9 @@ export type SnapshotStorageErrorCode =
   | "foreign_key_violation"
   | "invalid_stored_record"
   | "unsupported_schema_version"
-  | "query_failed";
+  | "query_failed"
+  | "invalid_cache_key"
+  | "invalid_expiration";
 
 export class SnapshotStorageError extends Error {
   readonly code: SnapshotStorageErrorCode;
