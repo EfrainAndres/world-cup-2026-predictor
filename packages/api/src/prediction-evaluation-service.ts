@@ -6,6 +6,7 @@ import { canonicalizeTeamName, normalizeTeamSearchText } from "./team-aliases.js
 import { computeContentHash } from "./snapshot-service.js";
 import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
 import type { PredictionEvaluationStore } from "./prediction-evaluation-store.js";
+import type { AsyncPredictionEvaluationStore } from "./async-evaluation-store.js";
 import type {
   PredictionConfidenceLevel,
   PredictionCoverageType,
@@ -60,10 +61,25 @@ export interface EvaluateWorldCup2026PredictionSnapshotInput {
   evaluatedAt?: string;
 }
 
+export interface EvaluateWorldCup2026PredictionSnapshotAsyncInput {
+  snapshot: WorldCup2026PredictionSnapshot;
+  completedResults: readonly WorldCup2026ExternalFixtureRecord[];
+  evaluationStore: AsyncPredictionEvaluationStore;
+  resultSource?: string;
+  cacheUsed?: boolean;
+  localFallbackUsed?: boolean;
+  evaluatedAt?: string;
+}
+
 export interface EvaluateWorldCup2026PredictionSnapshotResult {
   status: PredictionEvaluationStatus;
   evaluation?: WorldCup2026PredictionEvaluation;
   issues: readonly WorldCup2026PredictionEvaluationIssue[];
+}
+
+interface BuiltWorldCup2026PredictionEvaluation {
+  evaluation: WorldCup2026PredictionEvaluation;
+  identityKey: string;
 }
 
 function makeIssue(
@@ -528,9 +544,13 @@ export function summarizeWorldCup2026ModelReality(
   };
 }
 
-export function evaluateWorldCup2026PredictionSnapshot(
-  input: EvaluateWorldCup2026PredictionSnapshotInput
-): EvaluateWorldCup2026PredictionSnapshotResult {
+function buildEvaluationFromSnapshot(
+  input:
+    | EvaluateWorldCup2026PredictionSnapshotInput
+    | EvaluateWorldCup2026PredictionSnapshotAsyncInput
+): EvaluateWorldCup2026PredictionSnapshotResult & {
+  built?: BuiltWorldCup2026PredictionEvaluation;
+} {
   const snapshot = input.snapshot;
 
   if (
@@ -729,11 +749,55 @@ export function evaluateWorldCup2026PredictionSnapshot(
     }
   };
 
-  const storeResult = input.evaluationStore.create(evaluation, identityKey);
+  return {
+    evaluation,
+    issues: [],
+    status: "evaluated",
+    built: {
+      evaluation,
+      identityKey
+    }
+  };
+}
+
+export function evaluateWorldCup2026PredictionSnapshot(
+  input: EvaluateWorldCup2026PredictionSnapshotInput
+): EvaluateWorldCup2026PredictionSnapshotResult {
+  const built = buildEvaluationFromSnapshot(input);
+
+  if (built.built === undefined || built.evaluation === undefined) {
+    return built;
+  }
+
+  const storeResult = input.evaluationStore.create(
+    built.built.evaluation,
+    built.built.identityKey
+  );
 
   return {
     status: storeResult.duplicate ? "duplicate" : "evaluated",
     evaluation: storeResult.evaluation,
-    issues: []
+    issues: built.issues
+  };
+}
+
+export async function evaluateWorldCup2026PredictionSnapshotAsync(
+  input: EvaluateWorldCup2026PredictionSnapshotAsyncInput
+): Promise<EvaluateWorldCup2026PredictionSnapshotResult> {
+  const built = buildEvaluationFromSnapshot(input);
+
+  if (built.built === undefined || built.evaluation === undefined) {
+    return built;
+  }
+
+  const storeResult = await input.evaluationStore.create(
+    built.built.evaluation,
+    built.built.identityKey
+  );
+
+  return {
+    status: storeResult.duplicate ? "duplicate" : "evaluated",
+    evaluation: storeResult.evaluation,
+    issues: built.issues
   };
 }

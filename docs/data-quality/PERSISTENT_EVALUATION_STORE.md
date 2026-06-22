@@ -6,6 +6,8 @@ The persistent evaluation store provides an immutable, append-only PostgreSQL ad
 
 Evaluations are never updated or deleted. Each record is tied to a specific `prediction_snapshot` row via a foreign key, making the full evidence trail from model input → snapshot → evaluation auditable from the database.
 
+Runtime provider selection, environment policy, and handler integration are documented separately in `docs/data-quality/PERSISTENCE_RUNTIME_INTEGRATION.md`.
+
 ## Files
 
 | File | Role |

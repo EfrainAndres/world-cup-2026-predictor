@@ -1,8 +1,37 @@
 import { HISTORICAL_REPLAY_ACCURACY_AUDIT_VERSION } from "../../model/src/index.js";
 import { buildApiMetadata } from "./schemas.js";
 import type { ModelInfoResponse } from "./schemas.js";
+import {
+  PredictionHistoryPersistenceConfigError,
+  getPredictionHistoryPersistenceConfig
+} from "./persistence-runtime.js";
 
 export function getModelInfo(): ModelInfoResponse {
+  let persistenceNote =
+    "Prediction history persistence provider: memory (default in-memory mode).";
+  let persistenceLimitation = "No database or external services are used.";
+  let databaseEnabled = false;
+
+  try {
+    const persistence = getPredictionHistoryPersistenceConfig();
+
+    if (persistence.provider === "postgres") {
+      persistenceNote =
+        "Prediction history persistence provider: postgres (server-side persistent history enabled when configured).";
+      persistenceLimitation =
+        "Persistent prediction history requires server-side PostgreSQL availability and compatible migrations.";
+      databaseEnabled = true;
+    }
+  } catch (error) {
+    if (error instanceof PredictionHistoryPersistenceConfigError) {
+      persistenceNote = `Prediction history persistence configuration is invalid: ${error.message}`;
+      persistenceLimitation =
+        "Prediction history persistence is misconfigured and history writes will not succeed until server-side configuration is corrected.";
+    } else {
+      throw error;
+    }
+  }
+
   return {
     status: "ok",
     modelPackage: "@world-cup-2026-predictor/model",
@@ -80,10 +109,15 @@ export function getModelInfo(): ModelInfoResponse {
     ],
     limitations: [
       "No HTTP server is created in Phase 5.0.",
-      "No database or external services are used.",
+      persistenceLimitation,
       "Historical replay outputs are foundation evidence, not final predictive accuracy.",
       "Expected-goals inputs are caller supplied and are not calibrated by this API package."
     ],
-    metadata: buildApiMetadata(["Model info is static package metadata for the API foundation."])
+    metadata: buildApiMetadata([
+      "Model info is static package metadata for the API foundation.",
+      persistenceNote
+    ], {
+      databaseEnabled
+    })
   };
 }

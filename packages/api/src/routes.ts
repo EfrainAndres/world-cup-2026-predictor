@@ -35,12 +35,17 @@ import { synchronizeWorldCup2026Results } from "./live-results-sync.js";
 import { ingestWorldCup2026ResultsIntoLiveElo } from "./elo-ingestion.js";
 import { getWorldCup2026DailyMatches as getWorldCup2026DailyMatchesHandler } from "./daily-matches.js";
 import { buildWorldCup2026PredictionSnapshot, WORLD_CUP_2026_PREDICTION_MODEL_VERSION } from "./snapshot-service.js";
-import { defaultSnapshotStore } from "./snapshot-store.js";
 import {
+  evaluateWorldCup2026PredictionSnapshotAsync,
   evaluateWorldCup2026PredictionSnapshot,
   summarizeWorldCup2026ModelReality
 } from "./prediction-evaluation-service.js";
-import { defaultPredictionEvaluationStore } from "./prediction-evaluation-store.js";
+import {
+  PredictionHistoryPersistenceConfigError,
+  isPredictionHistoryPersistenceError,
+  resolvePredictionHistoryPersistence
+} from "./persistence-runtime.js";
+import type { PredictionHistoryPersistenceResolution } from "./persistence-runtime.js";
 import { calculateWorldCup2026TournamentForm } from "./tournament-form.js";
 import { resolveTournamentFormPredictionAdjustment } from "./tournament-form-prediction-integration.js";
 import { buildApiMetadata } from "./schemas.js";
@@ -62,14 +67,23 @@ import {
 import type { WorldCup2026CoverageEntry } from "./world-cup-2026-teams.js";
 import type {
   ApiRoutes,
+  CreateWorldCup2026PredictionEvaluationResponse,
   ApiValidationIssue,
+  CreateWorldCup2026PredictionSnapshotResponse,
+  GetWorldCup2026ModelRealitySummaryResponse,
+  GetWorldCup2026PredictionEvaluationResponse,
+  GetWorldCup2026PredictionSnapshotResponse,
   HistoricalReplayAuditResponse,
   HistoricalTournamentSummary,
   HistoricalTournamentSummaryResponse,
+  ListWorldCup2026PredictionEvaluationsResponse,
+  ListWorldCup2026PredictionSnapshotsResponse,
   LiveEloRatingSource,
   LiveEloRatingsFoundationOptions,
   LiveEloRatedTeamEntry,
   LiveEloRatingsFoundationResponse,
+  PredictionHistoryPersistenceErrorCode,
+  PredictionHistoryPersistenceErrorResponse,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
   PredictMatchFromLiveEloSuccessResponse,
@@ -116,14 +130,7 @@ import type {
   WorldCup2026RoundOf32FoundationResponse,
   WorldCup2026EloIngestionFoundationResponse,
   CreateWorldCup2026PredictionSnapshotRequest,
-  CreateWorldCup2026PredictionSnapshotResponse,
-  GetWorldCup2026PredictionSnapshotResponse,
-  ListWorldCup2026PredictionSnapshotsResponse,
   CreateWorldCup2026PredictionEvaluationRequest,
-  CreateWorldCup2026PredictionEvaluationResponse,
-  GetWorldCup2026PredictionEvaluationResponse,
-  ListWorldCup2026PredictionEvaluationsResponse,
-  GetWorldCup2026ModelRealitySummaryResponse,
   GetWorldCup2026TournamentFormFoundationInput,
   WorldCup2026TournamentFormFoundationResponse,
   GetWorldCup2026GroupDetailInput,
@@ -2403,9 +2410,79 @@ export function getAvailableLiveEloTeams(): string[] {
   return getAvailableTeamCoverage(buildWorldCup2026CoverageEntries(pipeline.rankedRatings));
 }
 
-export function createWorldCup2026PredictionSnapshot(
+function buildPredictionHistoryMetadata(
+  resolution: PredictionHistoryPersistenceResolution,
+  notes: readonly string[]
+) {
+  return buildApiMetadata(notes, {
+    databaseEnabled: resolution.metadata.persistent
+  });
+}
+
+function mapPredictionHistoryErrorCode(
+  error: unknown
+): PredictionHistoryPersistenceErrorCode {
+  if (error instanceof PredictionHistoryPersistenceConfigError) {
+    return error.code;
+  }
+
+  if (isPredictionHistoryPersistenceError(error)) {
+    return error.code;
+  }
+
+  return "query_failed";
+}
+
+function mapPredictionHistoryErrorMessage(
+  code: PredictionHistoryPersistenceErrorCode
+): string {
+  switch (code) {
+    case "invalid_provider":
+      return 'PERSISTENCE_PROVIDER must be "memory" or "postgres".';
+    case "missing_database_url":
+      return "A server-side database connection string is required when prediction history persistence uses postgres.";
+    case "connection_unavailable":
+      return "Prediction history persistence is currently unavailable.";
+    case "migration_missing":
+      return "Prediction history persistence schema is missing or out of date.";
+    case "duplicate_conflict":
+      return "Prediction history record conflicts with an existing immutable record.";
+    case "foreign_key_violation":
+      return "Referenced prediction snapshot was not found.";
+    case "invalid_stored_record":
+      return "Stored prediction history record is invalid.";
+    case "unsupported_schema_version":
+      return "Stored prediction history schema version is not supported.";
+    case "query_failed":
+      return "Prediction history storage query failed.";
+  }
+}
+
+function buildPredictionHistoryErrorResponse(
+  error: unknown,
+  notes: readonly string[],
+  resolution?: PredictionHistoryPersistenceResolution
+): PredictionHistoryPersistenceErrorResponse {
+  const code = mapPredictionHistoryErrorCode(error);
+
+  return {
+    status: "error",
+    error: {
+      code,
+      message: mapPredictionHistoryErrorMessage(code)
+    },
+    metadata: buildApiMetadata(notes, {
+      databaseEnabled: resolution?.metadata.persistent ?? false
+    }),
+    ...(resolution === undefined
+      ? {}
+      : { persistenceMetadata: resolution.metadata })
+  };
+}
+
+export async function createWorldCup2026PredictionSnapshot(
   request: CreateWorldCup2026PredictionSnapshotRequest
-): CreateWorldCup2026PredictionSnapshotResponse {
+): Promise<CreateWorldCup2026PredictionSnapshotResponse> {
   const { fixtureId, capturedAt: rawCapturedAt, cutoffAt: rawCutoffAt, kickoffAt, tournamentResultsAdjustmentEnabled = false } = request;
   const issues: import("./schemas.js").ApiValidationIssue[] = [];
 
@@ -2465,7 +2542,25 @@ export function createWorldCup2026PredictionSnapshot(
     tournamentResultsAdjustmentEnabled
   });
 
-  const storeResult = defaultSnapshotStore.create(snapshot, idempotencyKey);
+  let persistence: PredictionHistoryPersistenceResolution;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction snapshot persistence configuration failed before the snapshot could be stored."
+    ]);
+  }
+
+  let storeResult;
+
+  try {
+    storeResult = await persistence.snapshotStore.create(snapshot, idempotencyKey);
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction snapshot persistence failed and the snapshot was not stored."
+    ], persistence);
+  }
 
   const warnings: string[] = [];
 
@@ -2485,52 +2580,108 @@ export function createWorldCup2026PredictionSnapshot(
       `Snapshot model version: ${WORLD_CUP_2026_PREDICTION_MODEL_VERSION}.`,
       `Snapshot status: ${storeResult.snapshot.status}.`,
       storeResult.duplicate ? "Idempotency key matched an existing snapshot. Returned existing record." : "New snapshot created and stored.",
-      "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
-    ])
+      persistence.metadata.persistent
+        ? "Snapshot persisted through the configured server-side PostgreSQL adapter."
+        : "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
+    ], {
+      databaseEnabled: persistence.metadata.persistent
+    }),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function getWorldCup2026PredictionSnapshot(snapshotId: string): GetWorldCup2026PredictionSnapshotResponse {
-  const snapshot = defaultSnapshotStore.getById(snapshotId);
+export async function getWorldCup2026PredictionSnapshot(
+  snapshotId: string
+): Promise<GetWorldCup2026PredictionSnapshotResponse> {
+  let persistence: PredictionHistoryPersistenceResolution;
 
-  if (snapshot === undefined) {
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      `Prediction snapshot "${snapshotId}" could not be loaded because persistence configuration is invalid.`
+    ]);
+  }
+
+  let snapshot;
+
+  try {
+    snapshot = await persistence.snapshotStore.getById(snapshotId);
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      `Prediction snapshot "${snapshotId}" could not be read from persistent storage.`
+    ], persistence);
+  }
+
+  if (snapshot === null) {
     return {
       status: "not_found",
       snapshotId,
-      metadata: buildApiMetadata([`No snapshot found with id "${snapshotId}".`])
+      metadata: buildPredictionHistoryMetadata(persistence, [
+        `No snapshot found with id "${snapshotId}".`
+      ])
     };
   }
 
   return {
     status: "success",
     snapshot,
-    metadata: buildApiMetadata([`Snapshot "${snapshotId}" retrieved from in-memory store.`])
+    metadata: buildPredictionHistoryMetadata(persistence, [
+      persistence.metadata.persistent
+        ? `Snapshot "${snapshotId}" retrieved from PostgreSQL-backed persistent storage.`
+        : `Snapshot "${snapshotId}" retrieved from in-memory store.`
+    ]),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function listWorldCup2026PredictionSnapshots(fixtureId?: string): ListWorldCup2026PredictionSnapshotsResponse {
-  const snapshots = fixtureId !== undefined
-    ? defaultSnapshotStore.getByFixtureId(fixtureId)
-    : defaultSnapshotStore.list();
+export async function listWorldCup2026PredictionSnapshots(
+  fixtureId?: string
+): Promise<ListWorldCup2026PredictionSnapshotsResponse | PredictionHistoryPersistenceErrorResponse> {
+  let persistence: PredictionHistoryPersistenceResolution;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction snapshot listing could not start because persistence configuration is invalid."
+    ]);
+  }
+
+  let snapshots;
+
+  try {
+    snapshots = await persistence.snapshotStore.list({
+      ...(fixtureId === undefined ? {} : { fixtureId }),
+      limit: 1000
+    });
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction snapshot listing failed while reading persistent storage."
+    ], persistence);
+  }
 
   return {
     status: "success",
     snapshots,
     totalCount: snapshots.length,
     ...(fixtureId !== undefined ? { fixtureId } : {}),
-    metadata: buildApiMetadata([
+    metadata: buildPredictionHistoryMetadata(persistence, [
       fixtureId !== undefined
         ? `Listed ${snapshots.length} snapshot(s) for fixture "${fixtureId}".`
-        : `Listed all ${snapshots.length} snapshot(s) from in-memory store.`,
+        : `Listed all ${snapshots.length} snapshot(s).`,
       "Snapshots are ordered by capturedAt ascending, then snapshotId ascending.",
-      "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
-    ])
+      persistence.metadata.persistent
+        ? "Snapshots were read from the configured PostgreSQL-backed store."
+        : "In-memory storage only. Snapshots do not persist across serverless invocations or restarts."
+    ]),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function createWorldCup2026PredictionEvaluation(
+export async function createWorldCup2026PredictionEvaluation(
   request: CreateWorldCup2026PredictionEvaluationRequest
-): CreateWorldCup2026PredictionEvaluationResponse {
+): Promise<CreateWorldCup2026PredictionEvaluationResponse> {
   if (typeof request.snapshotId !== "string" || request.snapshotId.trim() === "") {
     return {
       status: "not_eligible",
@@ -2546,9 +2697,27 @@ export function createWorldCup2026PredictionEvaluation(
     };
   }
 
-  const snapshot = defaultSnapshotStore.getById(request.snapshotId.trim());
+  let persistence: PredictionHistoryPersistenceResolution;
 
-  if (snapshot === undefined) {
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction evaluation persistence configuration failed before the snapshot could be loaded."
+    ]);
+  }
+
+  let snapshot;
+
+  try {
+    snapshot = await persistence.snapshotStore.getById(request.snapshotId.trim());
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      `Prediction snapshot "${request.snapshotId.trim()}" could not be loaded for evaluation.`
+    ], persistence);
+  }
+
+  if (snapshot === null) {
     return {
       status: "not_eligible",
       issues: [
@@ -2566,16 +2735,24 @@ export function createWorldCup2026PredictionEvaluation(
 
   const localResults = createLocalStaticResultsProvider().getCompletedResults();
 
-  const evaluationResult = evaluateWorldCup2026PredictionSnapshot({
-    snapshot,
-    completedResults:
-      localResults.status === "success" ? localResults.records : [],
-    evaluationStore: defaultPredictionEvaluationStore,
-    resultSource: "local_static",
-    cacheUsed: false,
-    localFallbackUsed: true,
-    ...(request.evaluatedAt === undefined ? {} : { evaluatedAt: request.evaluatedAt })
-  });
+  let evaluationResult;
+
+  try {
+    evaluationResult = await evaluateWorldCup2026PredictionSnapshotAsync({
+      snapshot,
+      completedResults:
+        localResults.status === "success" ? localResults.records : [],
+      evaluationStore: persistence.evaluationStore,
+      resultSource: "local_static",
+      cacheUsed: false,
+      localFallbackUsed: true,
+      ...(request.evaluatedAt === undefined ? {} : { evaluatedAt: request.evaluatedAt })
+    });
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction evaluation persistence failed and the immutable evaluation was not stored."
+    ], persistence);
+  }
 
   if (evaluationResult.status === "not_eligible") {
     return {
@@ -2596,21 +2773,44 @@ export function createWorldCup2026PredictionEvaluation(
         ? "Existing immutable evaluation returned for the same snapshot/result identity."
         : "Immutable model-vs-reality evaluation created from stored pre-match snapshot and completed local result.",
       "Evaluation uses stored snapshot probabilities only. No prediction was regenerated.",
-      "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
-    ])
+      persistence.metadata.persistent
+        ? "Evaluation persisted through the configured server-side PostgreSQL adapter."
+        : "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
+    ], {
+      databaseEnabled: persistence.metadata.persistent
+    }),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function getWorldCup2026PredictionEvaluation(
+export async function getWorldCup2026PredictionEvaluation(
   evaluationId: string
-): GetWorldCup2026PredictionEvaluationResponse {
-  const evaluation = defaultPredictionEvaluationStore.getById(evaluationId);
+): Promise<GetWorldCup2026PredictionEvaluationResponse> {
+  let persistence: PredictionHistoryPersistenceResolution;
 
-  if (evaluation === undefined) {
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      `Prediction evaluation "${evaluationId}" could not be loaded because persistence configuration is invalid.`
+    ]);
+  }
+
+  let evaluation;
+
+  try {
+    evaluation = await persistence.evaluationStore.getById(evaluationId);
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      `Prediction evaluation "${evaluationId}" could not be read from persistent storage.`
+    ], persistence);
+  }
+
+  if (evaluation === null) {
     return {
       status: "not_found",
       evaluationId,
-      metadata: buildApiMetadata([
+      metadata: buildPredictionHistoryMetadata(persistence, [
         `No model-vs-reality evaluation found with id "${evaluationId}".`
       ])
     };
@@ -2619,46 +2819,89 @@ export function getWorldCup2026PredictionEvaluation(
   return {
     status: "success",
     evaluation,
-    metadata: buildApiMetadata([
-      `Model-vs-reality evaluation "${evaluationId}" retrieved from in-memory store.`
-    ])
+    metadata: buildPredictionHistoryMetadata(persistence, [
+      persistence.metadata.persistent
+        ? `Model-vs-reality evaluation "${evaluationId}" retrieved from PostgreSQL-backed persistent storage.`
+        : `Model-vs-reality evaluation "${evaluationId}" retrieved from in-memory store.`
+    ]),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function listWorldCup2026PredictionEvaluations(
+export async function listWorldCup2026PredictionEvaluations(
   fixtureId?: string
-): ListWorldCup2026PredictionEvaluationsResponse {
-  const evaluations =
-    fixtureId !== undefined
-      ? defaultPredictionEvaluationStore.getByFixtureId(fixtureId)
-      : defaultPredictionEvaluationStore.list();
+): Promise<ListWorldCup2026PredictionEvaluationsResponse | PredictionHistoryPersistenceErrorResponse> {
+  let persistence: PredictionHistoryPersistenceResolution;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction evaluation listing could not start because persistence configuration is invalid."
+    ]);
+  }
+
+  let evaluations;
+
+  try {
+    evaluations = await persistence.evaluationStore.list({
+      ...(fixtureId === undefined ? {} : { fixtureId }),
+      limit: 1000
+    });
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Prediction evaluation listing failed while reading persistent storage."
+    ], persistence);
+  }
 
   return {
     status: "success",
     evaluations,
     totalCount: evaluations.length,
     ...(fixtureId !== undefined ? { fixtureId } : {}),
-    metadata: buildApiMetadata([
+    metadata: buildPredictionHistoryMetadata(persistence, [
       fixtureId !== undefined
         ? `Listed ${evaluations.length} evaluation(s) for fixture "${fixtureId}".`
         : `Listed all ${evaluations.length} model-vs-reality evaluation(s).`,
       "Evaluations are ordered by evaluatedAt ascending, then evaluationId ascending.",
-      "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
-    ])
+      persistence.metadata.persistent
+        ? "Evaluations were read from the configured PostgreSQL-backed store."
+        : "In-memory storage only. Evaluations do not persist across serverless invocations or restarts."
+    ]),
+    persistenceMetadata: persistence.metadata
   };
 }
 
-export function getWorldCup2026ModelRealitySummary(): GetWorldCup2026ModelRealitySummaryResponse {
-  const evaluations = defaultPredictionEvaluationStore.list();
+export async function getWorldCup2026ModelRealitySummary(): Promise<GetWorldCup2026ModelRealitySummaryResponse | PredictionHistoryPersistenceErrorResponse> {
+  let persistence: PredictionHistoryPersistenceResolution;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Model-vs-reality summary could not start because persistence configuration is invalid."
+    ]);
+  }
+
+  let evaluations;
+
+  try {
+    evaluations = await persistence.evaluationStore.list({ limit: 1000 });
+  } catch (error) {
+    return buildPredictionHistoryErrorResponse(error, [
+      "Model-vs-reality summary could not load stored evaluations."
+    ], persistence);
+  }
 
   return {
     status: "success",
     summary: summarizeWorldCup2026ModelReality(evaluations),
-    metadata: buildApiMetadata([
+    metadata: buildPredictionHistoryMetadata(persistence, [
       `Model-vs-reality summary computed from ${evaluations.length} immutable evaluation(s).`,
       "Aggregate metrics are descriptive only and do not guarantee future predictive performance.",
       "Small samples should be treated cautiously."
-    ])
+    ]),
+    persistenceMetadata: persistence.metadata
   };
 }
 
