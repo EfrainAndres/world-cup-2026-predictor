@@ -26,9 +26,9 @@ export type PredictionCoverageType = "full" | "partial" | "fallback" | "fallback
 export interface ApiMetadata {
   apiVersion: string;
   mode: "pure_handlers";
-  serverEnabled: false;
-  databaseEnabled: false;
-  externalServicesEnabled: false;
+  serverEnabled: boolean;
+  databaseEnabled: boolean;
+  externalServicesEnabled: boolean;
   notes: readonly string[];
 }
 
@@ -46,6 +46,35 @@ export interface ModelInfoResponse {
   supportedHandlers: readonly string[];
   limitations: readonly string[];
   metadata: ApiMetadata;
+}
+
+export type PredictionHistoryPersistenceProvider = "memory" | "postgres";
+
+export type PredictionHistoryPersistenceErrorCode =
+  | "invalid_provider"
+  | "missing_database_url"
+  | "connection_unavailable"
+  | "migration_missing"
+  | "duplicate_conflict"
+  | "foreign_key_violation"
+  | "invalid_stored_record"
+  | "unsupported_schema_version"
+  | "query_failed";
+
+export interface PredictionHistoryPersistenceMetadata {
+  provider: PredictionHistoryPersistenceProvider;
+  persistent: boolean;
+  configuredProvider: string;
+}
+
+export interface PredictionHistoryPersistenceErrorResponse {
+  status: "error";
+  error: {
+    code: PredictionHistoryPersistenceErrorCode;
+    message: string;
+  };
+  metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface SimulateMatchMonteCarloRequest {
@@ -1590,6 +1619,7 @@ export interface CreateWorldCup2026PredictionSnapshotSuccessResponse {
   snapshot: WorldCup2026PredictionSnapshot;
   warnings: readonly string[];
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface CreateWorldCup2026PredictionSnapshotValidationErrorResponse {
@@ -1600,12 +1630,14 @@ export interface CreateWorldCup2026PredictionSnapshotValidationErrorResponse {
 
 export type CreateWorldCup2026PredictionSnapshotResponse =
   | CreateWorldCup2026PredictionSnapshotSuccessResponse
-  | CreateWorldCup2026PredictionSnapshotValidationErrorResponse;
+  | CreateWorldCup2026PredictionSnapshotValidationErrorResponse
+  | PredictionHistoryPersistenceErrorResponse;
 
 export interface GetWorldCup2026PredictionSnapshotSuccessResponse {
   status: "success";
   snapshot: WorldCup2026PredictionSnapshot;
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface GetWorldCup2026PredictionSnapshotNotFoundResponse {
@@ -1616,7 +1648,8 @@ export interface GetWorldCup2026PredictionSnapshotNotFoundResponse {
 
 export type GetWorldCup2026PredictionSnapshotResponse =
   | GetWorldCup2026PredictionSnapshotSuccessResponse
-  | GetWorldCup2026PredictionSnapshotNotFoundResponse;
+  | GetWorldCup2026PredictionSnapshotNotFoundResponse
+  | PredictionHistoryPersistenceErrorResponse;
 
 export interface ListWorldCup2026PredictionSnapshotsResponse {
   status: "success";
@@ -1624,6 +1657,7 @@ export interface ListWorldCup2026PredictionSnapshotsResponse {
   totalCount: number;
   fixtureId?: string;
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export type PredictionOutcome = "home_win" | "draw" | "away_win";
@@ -1731,6 +1765,7 @@ export interface CreateWorldCup2026PredictionEvaluationSuccessResponse {
   evaluation: WorldCup2026PredictionEvaluation;
   issues: readonly WorldCup2026PredictionEvaluationIssue[];
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface CreateWorldCup2026PredictionEvaluationNotEligibleResponse {
@@ -1741,12 +1776,14 @@ export interface CreateWorldCup2026PredictionEvaluationNotEligibleResponse {
 
 export type CreateWorldCup2026PredictionEvaluationResponse =
   | CreateWorldCup2026PredictionEvaluationSuccessResponse
-  | CreateWorldCup2026PredictionEvaluationNotEligibleResponse;
+  | CreateWorldCup2026PredictionEvaluationNotEligibleResponse
+  | PredictionHistoryPersistenceErrorResponse;
 
 export interface GetWorldCup2026PredictionEvaluationSuccessResponse {
   status: "success";
   evaluation: WorldCup2026PredictionEvaluation;
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface GetWorldCup2026PredictionEvaluationNotFoundResponse {
@@ -1757,7 +1794,8 @@ export interface GetWorldCup2026PredictionEvaluationNotFoundResponse {
 
 export type GetWorldCup2026PredictionEvaluationResponse =
   | GetWorldCup2026PredictionEvaluationSuccessResponse
-  | GetWorldCup2026PredictionEvaluationNotFoundResponse;
+  | GetWorldCup2026PredictionEvaluationNotFoundResponse
+  | PredictionHistoryPersistenceErrorResponse;
 
 export interface ListWorldCup2026PredictionEvaluationsResponse {
   status: "success";
@@ -1765,6 +1803,7 @@ export interface ListWorldCup2026PredictionEvaluationsResponse {
   totalCount: number;
   fixtureId?: string;
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface WorldCup2026PredictionCalibrationBucket {
@@ -1819,6 +1858,7 @@ export interface GetWorldCup2026ModelRealitySummaryResponse {
   status: "success";
   summary: WorldCup2026ModelRealitySummary;
   metadata: ApiMetadata;
+  persistenceMetadata?: PredictionHistoryPersistenceMetadata;
 }
 
 export interface ApiRoutes {
@@ -1826,13 +1866,13 @@ export interface ApiRoutes {
   getModelInfo: () => ModelInfoResponse;
   simulateMatch: (request: SimulateMatchRequest) => SimulateMatchResponse;
   predictMatchFromLiveElo: (request: PredictMatchFromLiveEloRequest) => PredictMatchFromLiveEloResponse;
-  createWorldCup2026PredictionSnapshot: (request: CreateWorldCup2026PredictionSnapshotRequest) => CreateWorldCup2026PredictionSnapshotResponse;
-  getWorldCup2026PredictionSnapshot: (snapshotId: string) => GetWorldCup2026PredictionSnapshotResponse;
-  listWorldCup2026PredictionSnapshots: (fixtureId?: string) => ListWorldCup2026PredictionSnapshotsResponse;
-  createWorldCup2026PredictionEvaluation: (request: CreateWorldCup2026PredictionEvaluationRequest) => CreateWorldCup2026PredictionEvaluationResponse;
-  getWorldCup2026PredictionEvaluation: (evaluationId: string) => GetWorldCup2026PredictionEvaluationResponse;
-  listWorldCup2026PredictionEvaluations: (fixtureId?: string) => ListWorldCup2026PredictionEvaluationsResponse;
-  getWorldCup2026ModelRealitySummary: () => GetWorldCup2026ModelRealitySummaryResponse;
+  createWorldCup2026PredictionSnapshot: (request: CreateWorldCup2026PredictionSnapshotRequest) => Promise<CreateWorldCup2026PredictionSnapshotResponse>;
+  getWorldCup2026PredictionSnapshot: (snapshotId: string) => Promise<GetWorldCup2026PredictionSnapshotResponse>;
+  listWorldCup2026PredictionSnapshots: (fixtureId?: string) => Promise<ListWorldCup2026PredictionSnapshotsResponse | PredictionHistoryPersistenceErrorResponse>;
+  createWorldCup2026PredictionEvaluation: (request: CreateWorldCup2026PredictionEvaluationRequest) => Promise<CreateWorldCup2026PredictionEvaluationResponse>;
+  getWorldCup2026PredictionEvaluation: (evaluationId: string) => Promise<GetWorldCup2026PredictionEvaluationResponse>;
+  listWorldCup2026PredictionEvaluations: (fixtureId?: string) => Promise<ListWorldCup2026PredictionEvaluationsResponse | PredictionHistoryPersistenceErrorResponse>;
+  getWorldCup2026ModelRealitySummary: () => Promise<GetWorldCup2026ModelRealitySummaryResponse | PredictionHistoryPersistenceErrorResponse>;
   getHistoricalTournamentSummary: (year: number) => HistoricalTournamentSummaryResponse;
   getHistoricalReplayAudit: () => HistoricalReplayAuditResponse;
   getWorldCup2026FixtureFoundation: () => WorldCup2026FixtureFoundationResponse;
@@ -1868,13 +1908,16 @@ export interface ApiRoutes {
 export const API_VERSION = "api-foundation-v1";
 export const API_MODE = "pure_handlers" as const;
 
-export function buildApiMetadata(notes: readonly string[] = []): ApiMetadata {
+export function buildApiMetadata(
+  notes: readonly string[] = [],
+  overrides: Partial<Pick<ApiMetadata, "serverEnabled" | "databaseEnabled" | "externalServicesEnabled">> = {}
+): ApiMetadata {
   return {
     apiVersion: API_VERSION,
     mode: API_MODE,
-    serverEnabled: false,
-    databaseEnabled: false,
-    externalServicesEnabled: false,
+    serverEnabled: overrides.serverEnabled ?? false,
+    databaseEnabled: overrides.databaseEnabled ?? false,
+    externalServicesEnabled: overrides.externalServicesEnabled ?? false,
     notes
   };
 }

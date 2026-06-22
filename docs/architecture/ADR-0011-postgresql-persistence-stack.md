@@ -184,3 +184,5 @@ Required behavior:
 ## Notes
 
 This ADR selects the stack direction, not the implementation. Phase 12.15B can now add adapters and migrations without revisiting the provider, SQL-client, or migration strategy unless new evidence appears.
+
+Phase 12.15B4 implemented the runtime-side interpretation of this ADR through one server-only persistence resolver, explicit `PERSISTENCE_PROVIDER` / `DATABASE_URL` configuration, and a dedicated `db:migrate` command that stays outside request handling.

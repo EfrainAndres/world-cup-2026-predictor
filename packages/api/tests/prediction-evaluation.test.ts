@@ -566,7 +566,7 @@ describe("prediction evaluation handlers", () => {
     defaultPredictionEvaluationStore.reset();
   });
 
-  it("creates, gets, lists, and summarizes evaluations through pure handlers", () => {
+  it("creates, gets, lists, and summarizes evaluations through pure handlers", async () => {
     const snapshotResult = predictMatchFromLiveElo({
       homeTeam: "Mexico",
       awayTeam: "South Africa"
@@ -595,31 +595,34 @@ describe("prediction evaluation handlers", () => {
       awayTeam: "Croatia"
     });
 
-    const created = createWorldCup2026PredictionEvaluation({
+    const created = await createWorldCup2026PredictionEvaluation({
       snapshotId: "snap-handler-1",
       evaluatedAt: "2026-06-11T22:10:00.000Z"
     });
     expect(created.status).toBe("evaluated");
-    if (created.status === "not_eligible") return;
+    if (created.status === "not_eligible" || created.status === "error") return;
 
-    const duplicate = createWorldCup2026PredictionEvaluation({
+    const duplicate = await createWorldCup2026PredictionEvaluation({
       snapshotId: "snap-handler-1",
       evaluatedAt: "2026-06-11T22:10:00.000Z"
     });
     expect(duplicate.status).toBe("duplicate");
+    if (duplicate.status === "not_eligible" || duplicate.status === "error") return;
 
-    const fetched = getWorldCup2026PredictionEvaluation(
+    const fetched = await getWorldCup2026PredictionEvaluation(
       created.evaluation.evaluationId
     );
     expect(fetched.status).toBe("success");
     if (fetched.status !== "success") return;
 
-    const listed = listWorldCup2026PredictionEvaluations(FIXTURE_A1);
+    const listed = await listWorldCup2026PredictionEvaluations(FIXTURE_A1);
+    if (listed.status !== "success") return;
     expect(listed.totalCount).toBe(1);
     expect(listed.evaluations[0]?.snapshotId).toBe("snap-handler-1");
 
-    const summary = getWorldCup2026ModelRealitySummary();
+    const summary = await getWorldCup2026ModelRealitySummary();
     expect(summary.status).toBe("success");
+    if (summary.status !== "success") return;
     expect(summary.summary.evaluationsCount).toBe(1);
     expect(JSON.stringify(summary)).not.toContain("token");
 
@@ -634,12 +637,13 @@ describe("prediction evaluation handlers", () => {
     expect(defaultSnapshotStore.getById("snap-handler-1")).toEqual(snapshot);
   });
 
-  it("returns typed not-eligible issues for missing snapshots", () => {
-    const result = createWorldCup2026PredictionEvaluation({
+  it("returns typed not-eligible issues for missing snapshots", async () => {
+    const result = await createWorldCup2026PredictionEvaluation({
       snapshotId: "snap-missing"
     });
 
     expect(result.status).toBe("not_eligible");
+    if (result.status !== "not_eligible") return;
     expect(result.issues[0]?.code).toBe("missing_snapshot");
   });
 });

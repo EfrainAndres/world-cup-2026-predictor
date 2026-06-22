@@ -15,7 +15,7 @@ Phase 12.15B2 introduces the PostgreSQL adapter foundation for immutable World C
 - Shared contract tests run against both adapters.
 - A minimal migration runner (`runMigrations`) for test setup.
 
-PostgreSQL is **not** enabled in the production runtime. The in-memory stores remain active until Phase 12.15B4.
+PostgreSQL is **not** enabled in the production runtime by this phase alone. Runtime provider selection, environment policy, and handler wiring are documented separately in `docs/data-quality/PERSISTENCE_RUNTIME_INTEGRATION.md`.
 
 ## Migration
 

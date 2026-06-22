@@ -224,6 +224,30 @@ Exit criteria:
 - All 846 existing API tests pass.
 - Production runtime unchanged.
 
+## Phase 12.15B4 - Persistence Runtime Resolver & Integration
+
+**Status:** Done
+
+Connect the async snapshot and evaluation stores to the API runtime through one server-side resolver that selects memory or PostgreSQL without changing prediction or evaluation behavior.
+
+Deliverables:
+
+- `packages/api/src/persistence-runtime.ts` — provider/config parser, lazy SQL client resolver, shared async store composition
+- `packages/api/src/db-migrate.ts` and `packages/api/package.json` `db:migrate` command
+- async integration of snapshot and evaluation handlers plus Model-vs-Reality summary reads
+- `.env.example` persistence placeholders
+- `packages/api/tests/persistence-runtime.test.ts`
+- `docs/data-quality/PERSISTENCE_RUNTIME_INTEGRATION.md`
+
+Exit criteria:
+
+- `PERSISTENCE_PROVIDER=memory | postgres` is parsed deterministically.
+- PostgreSQL mode requires `DATABASE_URL`.
+- Snapshot and evaluation handlers use the selected async stores.
+- Memory remains the default deterministic mode for tests and local development.
+- Production does not silently fall back to memory on history-write failures.
+- No projection-cache persistence, UI changes, or prediction changes are introduced.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.

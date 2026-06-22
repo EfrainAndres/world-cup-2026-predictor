@@ -327,8 +327,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     defaultSnapshotStore.reset();
   });
 
-  it("creates a snapshot for an official scheduled fixture with no kickoffAt (foundation_unverified)", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("creates a snapshot for an official scheduled fixture with no kickoffAt (foundation_unverified)", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF
     });
@@ -345,8 +345,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.warnings.length).toBeGreaterThan(0);
   });
 
-  it("creates a snapshot with status pre_match_locked when capturedAt is before kickoffAt", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("creates a snapshot with status pre_match_locked when capturedAt is before kickoffAt", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -360,8 +360,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.warnings).toHaveLength(0);
   });
 
-  it("rejects post-kickoff snapshot creation with a capturedAt validation error", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("rejects post-kickoff snapshot creation with a capturedAt validation error", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: AFTER_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -373,8 +373,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.issues.some((i) => i.field === "capturedAt")).toBe(true);
   });
 
-  it("rejects an unknown fixtureId with a validation error", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("rejects an unknown fixtureId with a validation error", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: "not-a-real-fixture-id",
       capturedAt: BEFORE_KICKOFF
     });
@@ -385,8 +385,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.issues.some((i) => i.field === "fixtureId")).toBe(true);
   });
 
-  it("rejects a missing fixtureId with a validation error on fixtureId field", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("rejects a missing fixtureId with a validation error on fixtureId field", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: "",
       capturedAt: BEFORE_KICKOFF
     });
@@ -397,8 +397,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.issues.some((i) => i.field === "fixtureId")).toBe(true);
   });
 
-  it("preserves official fixture team identity (homeTeam and awayTeam from the fixture registry)", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("preserves official fixture team identity (homeTeam and awayTeam from the fixture registry)", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -411,8 +411,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.awayTeam).toBe("South Africa");
   });
 
-  it("preserves group and matchday metadata from the official fixture", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("preserves group and matchday metadata from the official fixture", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -425,15 +425,15 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.matchday).toBe(1);
   });
 
-  it("returns an existing snapshot for a duplicate request (idempotency)", () => {
+  it("returns an existing snapshot for a duplicate request (idempotency)", async () => {
     const request = {
       fixtureId: FIXTURE_A2,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
     };
 
-    const first = createWorldCup2026PredictionSnapshot(request);
-    const second = createWorldCup2026PredictionSnapshot(request);
+    const first = await createWorldCup2026PredictionSnapshot(request);
+    const second = await createWorldCup2026PredictionSnapshot(request);
 
     expect(first.status).toBe("success");
     expect(second.status).toBe("success");
@@ -447,13 +447,13 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(second.snapshot.contentHash).toBe(first.snapshot.contentHash);
   });
 
-  it("creates distinct snapshots for different fixtures", () => {
-    const r1 = createWorldCup2026PredictionSnapshot({
+  it("creates distinct snapshots for different fixtures", async () => {
+    const r1 = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
     });
-    const r2 = createWorldCup2026PredictionSnapshot({
+    const r2 = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A2,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -468,8 +468,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(r1.snapshot.contentHash).not.toBe(r2.snapshot.contentHash);
   });
 
-  it("snapshot includes a content hash that is a 64-character hex string", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("snapshot includes a content hash that is a 64-character hex string", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_B1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -481,8 +481,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.contentHash).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it("snapshot inputs reflect live Elo ratings for the fixture teams", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("snapshot inputs reflect live Elo ratings for the fixture teams", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -500,8 +500,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.inputs.tournamentMatchesIncluded).toBe(0);
   });
 
-  it("snapshot prediction includes valid outcome probabilities summing to ~1", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("snapshot prediction includes valid outcome probabilities summing to ~1", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -514,8 +514,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(homeWinProbability + drawProbability + awayWinProbability).toBeCloseTo(1, 8);
   });
 
-  it("tournament-adjusted snapshot records non-zero tournamentMatchesIncluded when enabled", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("tournament-adjusted snapshot records non-zero tournamentMatchesIncluded when enabled", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF,
@@ -529,8 +529,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.inputs.tournamentMatchesIncluded).toBeGreaterThanOrEqual(0);
   });
 
-  it("defaultsTo false for tournamentResultsAdjustmentEnabled when not provided", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("defaultsTo false for tournamentResultsAdjustmentEnabled when not provided", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -542,8 +542,8 @@ describe("createWorldCup2026PredictionSnapshot handler", () => {
     expect(result.snapshot.modelConfiguration.tournamentResultsAdjustmentEnabled).toBe(false);
   });
 
-  it("snapshot model configuration reflects live_elo predictionMode", () => {
-    const result = createWorldCup2026PredictionSnapshot({
+  it("snapshot model configuration reflects live_elo predictionMode", async () => {
+    const result = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF
     });
@@ -562,8 +562,8 @@ describe("getWorldCup2026PredictionSnapshot handler", () => {
     defaultSnapshotStore.reset();
   });
 
-  it("returns the snapshot for a known snapshotId", () => {
-    const created = createWorldCup2026PredictionSnapshot({
+  it("returns the snapshot for a known snapshotId", async () => {
+    const created = await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
@@ -572,7 +572,7 @@ describe("getWorldCup2026PredictionSnapshot handler", () => {
     expect(created.status).toBe("success");
     if (created.status !== "success") return;
 
-    const retrieved = getWorldCup2026PredictionSnapshot(created.snapshot.snapshotId);
+    const retrieved = await getWorldCup2026PredictionSnapshot(created.snapshot.snapshotId);
 
     expect(retrieved.status).toBe("success");
     if (retrieved.status !== "success") return;
@@ -582,8 +582,8 @@ describe("getWorldCup2026PredictionSnapshot handler", () => {
     expect(retrieved.snapshot.contentHash).toBe(created.snapshot.contentHash);
   });
 
-  it("returns not_found for an unknown snapshotId", () => {
-    const result = getWorldCup2026PredictionSnapshot("snap-doesnotexist00");
+  it("returns not_found for an unknown snapshotId", async () => {
+    const result = await getWorldCup2026PredictionSnapshot("snap-doesnotexist00");
 
     expect(result.status).toBe("not_found");
     if (result.status !== "not_found") return;
@@ -597,84 +597,89 @@ describe("listWorldCup2026PredictionSnapshots handler", () => {
     defaultSnapshotStore.reset();
   });
 
-  it("returns an empty list when no snapshots exist", () => {
-    const result = listWorldCup2026PredictionSnapshots();
+  it("returns an empty list when no snapshots exist", async () => {
+    const result = await listWorldCup2026PredictionSnapshots();
 
     expect(result.status).toBe("success");
+    if (result.status !== "success") return;
     expect(result.snapshots).toHaveLength(0);
     expect(result.totalCount).toBe(0);
   });
 
-  it("lists all snapshots in deterministic capturedAt order", () => {
-    createWorldCup2026PredictionSnapshot({
+  it("lists all snapshots in deterministic capturedAt order", async () => {
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A2,
       capturedAt: "2026-06-12T10:00:00.000Z",
       kickoffAt: KNOWN_KICKOFF
     });
-    createWorldCup2026PredictionSnapshot({
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: "2026-06-11T10:00:00.000Z",
       kickoffAt: KNOWN_KICKOFF
     });
 
-    const result = listWorldCup2026PredictionSnapshots();
+    const result = await listWorldCup2026PredictionSnapshots();
 
     expect(result.status).toBe("success");
+    if (result.status !== "success") return;
     expect(result.snapshots).toHaveLength(2);
     expect(result.snapshots[0]?.capturedAt).toBe("2026-06-11T10:00:00.000Z");
     expect(result.snapshots[1]?.capturedAt).toBe("2026-06-12T10:00:00.000Z");
     expect(result.totalCount).toBe(2);
   });
 
-  it("filters by fixtureId when provided", () => {
-    createWorldCup2026PredictionSnapshot({
+  it("filters by fixtureId when provided", async () => {
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
     });
-    createWorldCup2026PredictionSnapshot({
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_B1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
     });
 
-    const filtered = listWorldCup2026PredictionSnapshots(FIXTURE_A1);
+    const filtered = await listWorldCup2026PredictionSnapshots(FIXTURE_A1);
 
     expect(filtered.status).toBe("success");
+    if (filtered.status !== "success") return;
     expect(filtered.snapshots).toHaveLength(1);
     expect(filtered.snapshots[0]?.fixtureId).toBe(FIXTURE_A1);
     expect(filtered.totalCount).toBe(1);
   });
 
-  it("returns empty list when filtering by a fixtureId with no snapshots", () => {
-    createWorldCup2026PredictionSnapshot({
+  it("returns empty list when filtering by a fixtureId with no snapshots", async () => {
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF
     });
 
-    const result = listWorldCup2026PredictionSnapshots(FIXTURE_B1);
+    const result = await listWorldCup2026PredictionSnapshots(FIXTURE_B1);
 
     expect(result.status).toBe("success");
+    if (result.status !== "success") return;
     expect(result.snapshots).toHaveLength(0);
     expect(result.totalCount).toBe(0);
   });
 
-  it("list result is stable across repeated calls with no changes", () => {
-    createWorldCup2026PredictionSnapshot({
+  it("list result is stable across repeated calls with no changes", async () => {
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF,
       kickoffAt: KNOWN_KICKOFF
     });
 
-    const first = listWorldCup2026PredictionSnapshots();
-    const second = listWorldCup2026PredictionSnapshots();
+    const first = await listWorldCup2026PredictionSnapshots();
+    const second = await listWorldCup2026PredictionSnapshots();
 
+    if (first.status !== "success" || second.status !== "success") return;
     expect(first.snapshots[0]?.snapshotId).toBe(second.snapshots[0]?.snapshotId);
     expect(first.totalCount).toBe(second.totalCount);
   });
 
-  it("snapshot operations do not affect World Cup group standings", () => {
-    createWorldCup2026PredictionSnapshot({
+  it("snapshot operations do not affect World Cup group standings", async () => {
+    await createWorldCup2026PredictionSnapshot({
       fixtureId: FIXTURE_A1,
       capturedAt: BEFORE_KICKOFF
     });

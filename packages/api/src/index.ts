@@ -121,6 +121,21 @@ export {
 export type { EvaluationInsertParams } from "./postgres-evaluation-store.js";
 export { runMigrations } from "./migration-runner.js";
 export {
+  PredictionHistoryPersistenceConfigError,
+  getPredictionHistoryPersistenceConfig,
+  isPredictionHistoryPersistenceError,
+  resolvePredictionHistoryPersistence,
+  shutdownPredictionHistoryPersistenceForTests
+} from "./persistence-runtime.js";
+export type {
+  PredictionHistoryPersistenceConfig,
+  PredictionHistoryPersistenceErrorCode,
+  PredictionHistoryPersistenceMetadata,
+  PredictionHistoryPersistenceProvider,
+  PredictionHistoryPersistenceResolution,
+  ResolvePredictionHistoryPersistenceInput
+} from "./persistence-runtime.js";
+export {
   WORLD_CUP_2026_EVALUATION_METRIC_VERSION,
   buildWorldCup2026PredictionEvaluationId,
   buildWorldCup2026PredictionCalibrationBuckets,
@@ -128,11 +143,13 @@ export {
   calculateThreeWayBrierScore,
   deriveActualOutcome,
   derivePredictionOutcome,
+  evaluateWorldCup2026PredictionSnapshotAsync,
   evaluateWorldCup2026PredictionSnapshot,
   selectTopPredictedScoreline,
   summarizeWorldCup2026ModelReality
 } from "./prediction-evaluation-service.js";
 export type {
+  EvaluateWorldCup2026PredictionSnapshotAsyncInput,
   EvaluateWorldCup2026PredictionSnapshotInput,
   EvaluateWorldCup2026PredictionSnapshotResult
 } from "./prediction-evaluation-service.js";

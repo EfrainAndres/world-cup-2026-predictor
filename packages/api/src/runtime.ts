@@ -77,8 +77,28 @@ function validationError(field: string, message: string): Response {
   );
 }
 
-function responseForHandlerResult(result: { status?: string }): Response {
-  return jsonResponse(result, result.status === "validation_error" ? 400 : 200);
+function responseForHandlerResult(result: { status?: string; error?: { code?: string } }): Response {
+  if (result.status === "validation_error") {
+    return jsonResponse(result, 400);
+  }
+
+  if (result.status === "not_found") {
+    return jsonResponse(result, 404);
+  }
+
+  if (result.status === "error") {
+    const status =
+      result.error?.code === "invalid_provider" ||
+      result.error?.code === "missing_database_url"
+        ? 500
+        : result.error?.code === "connection_unavailable" ||
+            result.error?.code === "migration_missing"
+          ? 503
+          : 500;
+    return jsonResponse(result, status);
+  }
+
+  return jsonResponse(result, 200);
 }
 
 async function parseJsonBody(request: Request): Promise<unknown> {
