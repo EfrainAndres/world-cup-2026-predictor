@@ -42,7 +42,9 @@ import type {
   WorldCup2026GroupProjectionFixture,
   WorldCup2026GroupProjectionStatus,
   PredictMatchFromLiveEloResponse,
-  ProjectionFingerprintInput
+  ProjectionFingerprintInput,
+  ProjectionInputSummary,
+  ProjectionRefreshExecution
 } from "./schemas.js";
 
 const VALID_GROUPS = new Set(WORLD_CUP_2026_FIXTURE_GROUPS.map((group) => group.group));
@@ -54,6 +56,7 @@ export interface BuildWorldCup2026GroupDetailInput extends GetWorldCup2026GroupD
   predictorFn?: (homeTeam: string, awayTeam: string) => PredictMatchFromLiveEloResponse;
   snapshotStore?: PredictionSnapshotStore;
   evaluationStore?: PredictionEvaluationStore;
+  previousProjection?: WorldCup2026GroupProjection;
 }
 
 function normalizeGroupInput(group: string): string {
@@ -186,7 +189,8 @@ function buildGroupProjection(
   syncResult: WorldCup2026SyncResult,
   snapshotStore: PredictionSnapshotStore,
   predictorFn: ((homeTeam: string, awayTeam: string) => PredictMatchFromLiveEloResponse) | undefined,
-  generatedAt: string
+  generatedAt: string,
+  previousProjection: WorldCup2026GroupProjection | undefined
 ): WorldCup2026GroupProjection {
   const groupFixtures = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.filter((f) => f.group === group);
   const fixtureIdx = buildFixtureIndex();
@@ -233,6 +237,14 @@ function buildGroupProjection(
   const projectionFixtures: WorldCup2026GroupProjectionFixture[] = [];
   const projectionWarnings: string[] = [];
   let unavailableCount = 0;
+
+  // Build O(1) lookup from previous projection for refresh comparison
+  const previousFixtureMap = new Map<string, WorldCup2026GroupProjectionFixture>();
+  if (previousProjection !== undefined) {
+    for (const pf of previousProjection.fixtures) {
+      previousFixtureMap.set(pf.fixtureId, pf);
+    }
+  }
 
   const syncMeta = {
     cacheUsed: syncResult.cacheUsed,
@@ -342,7 +354,88 @@ function buildGroupProjection(
 
     // Auto Predict fallback (if predictor is available)
     if (predictorFn !== undefined) {
+      const prevFixture = previousFixtureMap.get(fixture.id);
+      const prevSummary =
+        prevFixture?.source === "auto_predict" ? prevFixture.projectionInputSummary : undefined;
+      const prevFingerprint =
+        prevFixture?.source === "auto_predict" ? prevFixture.currentFingerprint : undefined;
+
+      // Build pre-check fingerprint using previous Elo values (avoids calling predictor just for staleness check)
+      const preCheckHomeElo = prevSummary?.homeElo ?? 1500;
+      const preCheckAwayElo = prevSummary?.awayElo ?? 1500;
+      const preCheckFpInput: ProjectionFingerprintInput = {
+        fixtureId: fixture.id,
+        homeTeam: fixture.homeTeam,
+        awayTeam: fixture.awayTeam,
+        preset: "balanced",
+        formulaVersion: CURRENT_FORMULA_VERSION,
+        modelVersion: CURRENT_MODEL_VERSION,
+        homeElo: preCheckHomeElo,
+        awayElo: preCheckAwayElo,
+        tournamentMatchesIncluded: currentGroupCompletedCount,
+        ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {})
+      };
+      const preCheckFingerprint = buildProjectionFingerprint(preCheckFpInput);
+
+      const preCheckAssessment = assessProjectionRefresh({
+        fixtureId: fixture.id,
+        currentFixtureStatus: fixtureStatus,
+        projectionSource: "auto_predict",
+        ...(prevFixture?.refreshAssessment?.projectionGeneratedAt !== undefined
+          ? { projectionGeneratedAt: prevFixture.refreshAssessment.projectionGeneratedAt }
+          : {}),
+        evaluatedAt: generatedAt,
+        currentFingerprint: preCheckFingerprint,
+        ...(prevFingerprint !== undefined ? { storedFingerprint: prevFingerprint } : {}),
+        isImmutableSnapshot: false,
+        syncMetadata: syncMeta,
+        ...(prevSummary?.formulaVersion !== undefined ? { storedFormulaVersion: prevSummary.formulaVersion } : {}),
+        currentFormulaVersion: CURRENT_FORMULA_VERSION,
+        ...(prevSummary?.modelVersion !== undefined ? { storedModelVersion: prevSummary.modelVersion } : {}),
+        currentModelVersion: CURRENT_MODEL_VERSION,
+        ...(prevSummary?.tournamentMatchesIncluded !== undefined
+          ? { storedTournamentMatchesIncluded: prevSummary.tournamentMatchesIncluded }
+          : {}),
+        currentTournamentMatchesIncluded: currentGroupCompletedCount,
+        ...(prevSummary?.homeElo !== undefined ? { storedHomeElo: prevSummary.homeElo } : {}),
+        ...(prevSummary?.awayElo !== undefined ? { storedAwayElo: prevSummary.awayElo } : {})
+      });
+
+      // Reuse previous projection when it's still current (no predictor call)
+      const needsFreshPrediction = prevSummary === undefined || preCheckAssessment.shouldRefresh;
+
+      if (!needsFreshPrediction && prevFixture !== undefined) {
+        const refreshExecution: ProjectionRefreshExecution = {
+          attempted: false,
+          completed: false,
+          reasonCodes: [],
+          warnings: []
+        };
+        projectionFixtures.push({
+          fixtureId: fixture.id,
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          source: "auto_predict",
+          ...(prevFixture.projectedScoreline !== undefined ? { projectedScoreline: prevFixture.projectedScoreline } : {}),
+          ...(prevFixture.homeWinProbability !== undefined ? { homeWinProbability: prevFixture.homeWinProbability } : {}),
+          ...(prevFixture.drawProbability !== undefined ? { drawProbability: prevFixture.drawProbability } : {}),
+          ...(prevFixture.awayWinProbability !== undefined ? { awayWinProbability: prevFixture.awayWinProbability } : {}),
+          ...(prevFixture.confidenceLevel !== undefined ? { confidenceLevel: prevFixture.confidenceLevel } : {}),
+          ...(prevFixture.coverageType !== undefined ? { coverageType: prevFixture.coverageType } : {}),
+          warnings: [...prevFixture.warnings],
+          currentFingerprint: preCheckFingerprint,
+          ...(prevFingerprint !== undefined ? { storedFingerprint: prevFingerprint } : {}),
+          refreshAssessment: preCheckAssessment,
+          projectionInputSummary: prevSummary,
+          refreshExecution
+        });
+        continue;
+      }
+
+      // Call predictor — first generation or stale refresh (one attempt only)
+      const isRefresh = prevSummary !== undefined;
       const predictResult = predictorFn(fixture.homeTeam, fixture.awayTeam);
+
       if (predictResult.status === "success") {
         const scoreline = selectBestProjectionScoreline(predictResult.mostLikelyScorelines);
         const fixtureWarnings: string[] = [...predictResult.warnings];
@@ -355,16 +448,28 @@ function buildGroupProjection(
           );
         }
 
+        const freshSummary: ProjectionInputSummary = {
+          ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {}),
+          // Use currentGroupCompletedCount (what the predictor was given access to), not the
+          // predictor's own tournament-adjustment count (which is 0 when adjustment is disabled).
+          // This prevents infinite refresh loops: the next call sees storedCount == currentCount.
+          tournamentMatchesIncluded: currentGroupCompletedCount,
+          formulaVersion: predictResult.expectedGoals?.formulaVersion ?? CURRENT_FORMULA_VERSION,
+          modelVersion: CURRENT_MODEL_VERSION,
+          homeElo: predictResult.liveElo?.homeEloRating ?? 1500,
+          awayElo: predictResult.liveElo?.awayEloRating ?? 1500
+        };
+
         const fpInput: ProjectionFingerprintInput = {
           fixtureId: fixture.id,
           homeTeam: fixture.homeTeam,
           awayTeam: fixture.awayTeam,
           preset: predictResult.expectedGoals?.preset ?? "balanced",
-          formulaVersion: predictResult.expectedGoals?.formulaVersion ?? CURRENT_FORMULA_VERSION,
-          modelVersion: CURRENT_MODEL_VERSION,
-          homeElo: predictResult.liveElo?.homeEloRating ?? 1500,
-          awayElo: predictResult.liveElo?.awayEloRating ?? 1500,
-          tournamentMatchesIncluded: predictResult.tournamentAdjustment?.matchesIncluded ?? 0,
+          formulaVersion: freshSummary.formulaVersion,
+          modelVersion: freshSummary.modelVersion,
+          homeElo: freshSummary.homeElo,
+          awayElo: freshSummary.awayElo,
+          tournamentMatchesIncluded: freshSummary.tournamentMatchesIncluded,
           ...(predictResult.tournamentFormAdjustment !== undefined &&
           predictResult.predictionConfidence.dataPoints.tournamentFormFormulaVersion !== undefined
             ? { tournamentFormVersion: predictResult.predictionConfidence.dataPoints.tournamentFormFormulaVersion }
@@ -372,18 +477,52 @@ function buildGroupProjection(
           ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {})
         };
         const currentFingerprint = buildProjectionFingerprint(fpInput);
+
+        // Post-refresh: compare the freshly generated projection against itself.
+        // storedXxx = freshSummary (what was just computed) so all delta checks are zero → "current".
         const refreshAssessment = assessProjectionRefresh({
           fixtureId: fixture.id,
           currentFixtureStatus: fixtureStatus,
           projectionSource: "auto_predict",
           evaluatedAt: generatedAt,
           currentFingerprint,
+          // Omit storedFingerprint: the fingerprint just changed (intentional refresh),
+          // so providerDataChanged would fire spuriously if we compared old vs new.
           isImmutableSnapshot: false,
           syncMetadata: syncMeta,
+          storedFormulaVersion: freshSummary.formulaVersion,
           currentFormulaVersion: CURRENT_FORMULA_VERSION,
+          storedModelVersion: freshSummary.modelVersion,
           currentModelVersion: CURRENT_MODEL_VERSION,
-          currentTournamentMatchesIncluded: currentGroupCompletedCount
+          storedTournamentMatchesIncluded: freshSummary.tournamentMatchesIncluded,
+          currentTournamentMatchesIncluded: currentGroupCompletedCount,
+          storedHomeElo: freshSummary.homeElo,
+          currentHomeElo: freshSummary.homeElo,
+          storedAwayElo: freshSummary.awayElo,
+          currentAwayElo: freshSummary.awayElo
         });
+
+        const reasonCodes: string[] = [];
+        if (isRefresh) {
+          const t = preCheckAssessment.triggers;
+          if (t.completedResultAdded) reasonCodes.push("completed_result_added");
+          if (t.formulaVersionChanged) reasonCodes.push("formula_version_changed");
+          if (t.eloInputChanged) reasonCodes.push("elo_input_changed");
+          if (t.tournamentFormChanged) reasonCodes.push("tournament_form_changed");
+          if (t.providerDataChanged) reasonCodes.push("provider_data_changed");
+          if (preCheckAssessment.state === "stale" && reasonCodes.length === 0) {
+            reasonCodes.push("stale_threshold_exceeded");
+          }
+        }
+
+        const refreshExecution: ProjectionRefreshExecution = {
+          attempted: isRefresh,
+          completed: isRefresh,
+          ...(isRefresh && prevFingerprint !== undefined ? { previousFingerprint: prevFingerprint } : {}),
+          ...(isRefresh ? { refreshedFingerprint: currentFingerprint } : {}),
+          reasonCodes,
+          warnings: fixtureWarnings
+        };
 
         projectionFixtures.push({
           fixtureId: fixture.id,
@@ -398,7 +537,42 @@ function buildGroupProjection(
           coverageType: predictResult.predictionConfidence.coverageType,
           warnings: fixtureWarnings,
           currentFingerprint,
-          refreshAssessment
+          ...(prevFingerprint !== undefined ? { storedFingerprint: prevFingerprint } : {}),
+          refreshAssessment,
+          projectionInputSummary: freshSummary,
+          refreshExecution
+        });
+        continue;
+      }
+
+      // Predictor failed — preserve previous projection if available
+      if (prevFixture !== undefined && prevFixture.source === "auto_predict") {
+        const failureWarning = `Auto Predict refresh failed for ${fixture.homeTeam} vs ${fixture.awayTeam}. Previous projection preserved.`;
+        projectionWarnings.push(failureWarning);
+        const refreshExecution: ProjectionRefreshExecution = {
+          attempted: true,
+          completed: false,
+          ...(prevFingerprint !== undefined ? { previousFingerprint: prevFingerprint } : {}),
+          reasonCodes: ["prediction_failed"],
+          warnings: [failureWarning]
+        };
+        projectionFixtures.push({
+          fixtureId: fixture.id,
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          source: "auto_predict",
+          ...(prevFixture.projectedScoreline !== undefined ? { projectedScoreline: prevFixture.projectedScoreline } : {}),
+          ...(prevFixture.homeWinProbability !== undefined ? { homeWinProbability: prevFixture.homeWinProbability } : {}),
+          ...(prevFixture.drawProbability !== undefined ? { drawProbability: prevFixture.drawProbability } : {}),
+          ...(prevFixture.awayWinProbability !== undefined ? { awayWinProbability: prevFixture.awayWinProbability } : {}),
+          ...(prevFixture.confidenceLevel !== undefined ? { confidenceLevel: prevFixture.confidenceLevel } : {}),
+          ...(prevFixture.coverageType !== undefined ? { coverageType: prevFixture.coverageType } : {}),
+          warnings: [...prevFixture.warnings, failureWarning],
+          currentFingerprint: preCheckFingerprint,
+          ...(prevFingerprint !== undefined ? { storedFingerprint: prevFingerprint } : {}),
+          refreshAssessment: preCheckAssessment,
+          ...(prevSummary !== undefined ? { projectionInputSummary: prevSummary } : {}),
+          refreshExecution
         });
         continue;
       }
@@ -563,7 +737,7 @@ export function buildWorldCup2026GroupDetail(
   const fixtureIndex = buildFixtureIndex();
   const snapshotStore = input.snapshotStore ?? defaultSnapshotStore;
   const evaluationStore = input.evaluationStore ?? defaultPredictionEvaluationStore;
-  const projection = buildGroupProjection(group, input.syncResult, snapshotStore, input.predictorFn, generatedAt);
+  const projection = buildGroupProjection(group, input.syncResult, snapshotStore, input.predictorFn, generatedAt, input.previousProjection);
   const groupTeams = new Set(WORLD_CUP_2026_FIXTURE_GROUPS.find((entry) => entry.group === group)?.teams ?? []);
   const seenKeys = new Set<string>();
   const completed: WorldCup2026GroupDetailMatch[] = [];

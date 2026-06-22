@@ -716,6 +716,8 @@ export interface WorldCup2026GroupProjectionFixture {
   currentFingerprint?: string;
   storedFingerprint?: string;
   refreshAssessment?: ProjectionRefreshAssessment;
+  projectionInputSummary?: ProjectionInputSummary;
+  refreshExecution?: ProjectionRefreshExecution;
 }
 
 export interface WorldCup2026GroupProjectionQualification {
@@ -731,6 +733,24 @@ export interface WorldCup2026GroupProjection {
   standings?: readonly WorldCup2026GroupStandingEntry[];
   qualification?: WorldCup2026GroupProjectionQualification;
   fixtures: readonly WorldCup2026GroupProjectionFixture[];
+  warnings: readonly string[];
+}
+
+export interface ProjectionInputSummary {
+  lastSuccessfulSync?: string;
+  tournamentMatchesIncluded: number;
+  formulaVersion: string;
+  modelVersion: string;
+  homeElo: number;
+  awayElo: number;
+}
+
+export interface ProjectionRefreshExecution {
+  attempted: boolean;
+  completed: boolean;
+  previousFingerprint?: string;
+  refreshedFingerprint?: string;
+  reasonCodes: readonly string[];
   warnings: readonly string[];
 }
 
