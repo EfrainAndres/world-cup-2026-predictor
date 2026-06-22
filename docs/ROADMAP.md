@@ -121,7 +121,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.T3 | Repeated Task Token Measurement | Define paired run prompts for the same low-risk documentation task so a later before/after comparison can use the same branch/task structure with and without the optimized workflow. | Done |
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
-| 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | Planned |
+| 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -308,6 +308,38 @@ Exit criteria:
 - `git diff --check` passes.
 - QA report documents verdict as `ready_for_non_production`.
 - Deployment checklist is ready for operator use.
+
+## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
+
+**Status:** Done
+
+Documentation and architecture-decision phase. Produce an architecture proposal for eventual multi-tournament support without generalizing any application code, persistence schema, migration, runtime route, provider, model, or UI. Per the phase acceptance criteria, no multi-tournament generalization happens before the live World Cup 2026 workflow is validated.
+
+Deliverables:
+
+- `docs/architecture/ADR-0012-multi-tournament-architecture-after-validation.md` — decision record: defer generalization until after live-WC validation; adopt a staged, evidence-gated roadmap; require strictly additive, backward-compatible generalization; define the compatibility policy
+- `docs/architecture/MULTI_TOURNAMENT_ARCHITECTURE_PROPOSAL.md` — full coupling audit (citation-anchored across tournament identity, fixtures/groups, standings/qualification, providers/ingestion, snapshots/evaluations, projection cache, runtime routes, dashboard routes/navigation, model assumptions, persistence constraints), per-area classification (`keep_specific` / `generalize_later` / `adapter_required` / `defer`), proposed future boundaries, future database-migration strategy, immutable-hash/idempotency-key impact analysis, route-compatibility policy, staged roadmap (12.17A–D), required evidence gate, and risks of premature abstraction
+
+Staged roadmap (defined, not implemented):
+
+- **12.17A** — architecture proposal (this phase)
+- **12.17B** — tournament-aware persistence migration plan (not applied)
+- **12.17C** — generic tournament identity and adapter contracts (WC2026 as sole concrete adapter)
+- **12.17D** — first additional tournament proof of concept (backend only)
+- **later** — UI tournament selection, only after backend validation
+
+Key findings:
+
+- The Elo/Poisson/Dixon-Coles/xG model core is already tournament-agnostic; coupling lives in identity strings, fixtures, qualification rules, providers, routes, and branding.
+- No `tournament_id` column exists in any table; `group_code IN ('A'..'L')` checks are hardcoded in all three tables; the critical constraint to change is `projection_cache`'s `UNIQUE (group_code, timezone)`.
+- `prediction_evaluations` identity is already transitively tournament-scoped via the globally unique `snapshot_id`.
+- Distinct tournaments already produce distinct snapshot/evaluation hashes (via `modelVersion` / `metricVersion` / `fixtureId`), so future tournament scoping can be additive and must never rehash historical rows.
+
+Exit criteria:
+
+- ADR-0012 and the proposal document exist and are internally consistent with the roadmap, CHANGELOG, and PROJECT_BRIEF.
+- No application code, schema, migration, test, dependency, route, or UI changed.
+- `git diff --check` passes.
 
 ## Phase 12.15E - Real PostgreSQL Environment Validation
 
