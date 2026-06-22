@@ -154,6 +154,23 @@ Exit criteria:
 - In-memory behavior remains available for tests and local development.
 - No product behavior changes leak from persistence wiring.
 
+## Phase 12.15B1 - PostgreSQL Stack Selection
+
+Choose the concrete PostgreSQL provider category, SQL client, and migration strategy for the persistent prediction-history work before any adapter implementation begins.
+
+Deliverables:
+
+- `docs/architecture/ADR-0011-postgresql-persistence-stack.md`
+- Small reference updates linking ADR 0010 and the persistent schema document back to ADR 0011
+
+Exit criteria:
+
+- One PostgreSQL provider category is selected.
+- One SQL access strategy is selected.
+- One migration strategy is selected.
+- Serverless connection behavior, local development, and test behavior are documented.
+- No dependency or runtime behavior change is introduced.
+
 ## Phase 10.1 - Bugfix: Stale Results on Validation Error
 
 Fix the UI bug where a previously successful prediction remained visible in the results panel after the user submitted a form that failed validation.

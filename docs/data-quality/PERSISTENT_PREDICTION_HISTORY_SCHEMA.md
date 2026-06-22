@@ -10,6 +10,8 @@ This document defines the future relational schema for three storage concerns:
 
 The current codebase still uses in-memory stores. This schema is the persistence target for future phases and must remain compatible with the existing store interfaces.
 
+The concrete PostgreSQL stack recommendation is documented in [ADR 0011: Use Neon, `postgres`, and SQL-First Migrations for Persistent Prediction History](../architecture/ADR-0011-postgresql-persistence-stack.md).
+
 ## Architecture Boundary
 
 Future persistence should follow this shape:
@@ -263,6 +265,8 @@ Recommended behavior:
 - production history writes: persistent provider required
 - projection-cache failure: safe regeneration fallback
 - history-store failure: integrity failure, never silently reported as success
+
+The selected stack, provider category, SQL client, and migration strategy are defined in ADR 0011.
 
 ## Failure Behavior
 

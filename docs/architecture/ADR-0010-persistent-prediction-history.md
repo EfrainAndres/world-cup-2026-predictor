@@ -106,3 +106,5 @@ No migrations are introduced in this phase.
 ## Notes
 
 This ADR intentionally does not pick a vendor or ORM. It sets the persistence direction and the contract boundaries first so the implementation phase can add adapters without changing product behavior.
+
+For the concrete PostgreSQL stack selection, see [ADR 0011: Use Neon, `postgres`, and SQL-First Migrations for Persistent Prediction History](./ADR-0011-postgresql-persistence-stack.md).
