@@ -122,6 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful (1-1 frequency, draw bias, favorite separation, xG compression, modal-vs-aggregate, top-N coverage) and recommend keep / presentation-change / recalibration. | 12.18A Done; 12.18B–C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -308,6 +309,35 @@ Exit criteria:
 - `git diff --check` passes.
 - QA report documents verdict as `ready_for_non_production`.
 - Deployment checklist is ready for operator use.
+
+## Phase 12.18A - Prediction Usefulness Audit
+
+**Status:** Done
+
+Read-only analysis phase. Add a pure, deterministic audit service that measures whether stored World Cup 2026 predictions are practically useful for match-by-match forecasting, plus a CLI artifact generator and a human-readable report. No production formula, model constant, preset, provider, standings, persistence schema, runtime behaviour, or UI prediction logic was changed. The audit reuses immutable stored snapshots/evaluations and never reruns the prediction model.
+
+Deliverables:
+
+- `packages/api/src/prediction-usefulness-audit.ts` — pure `runWorldCup2026PredictionUsefulnessAudit` service: per-fixture snapshot selection policy, core usefulness metrics, scoreline-frequency (incl. explicit 1-1 over-prediction), draw-bias calibration, favorite-separation buckets + `FavoriteStrength`, xG-compression analysis, modal-vs-aggregate cases, top-N coverage, upset/blowout detection, documented thresholds, findings, and a typed recommendation. Returns `null` (never `NaN`) for uncomputable metrics.
+- `packages/api/src/prediction-usefulness-audit-cli.ts` — deterministic CLI that gathers snapshots/evaluations + completed results and writes a JSON artifact; requires an explicit database URL in postgres mode and never falls back to memory silently or prints secrets. Kept out of `index.ts` (fs/I/O).
+- `packages/api/package.json` — `audit:prediction-usefulness` script.
+- `packages/api/src/index.ts` — exports the pure audit service + types (fs-free, bundle-safe).
+- `packages/api/tests/prediction-usefulness-audit.test.ts` — 31 tests: selection policy, all exclusion reasons, 1-1/draw/favorite/xG sections, modal-vs-aggregate, top-N, upset/blowout, recommendation branches, null-safety, no NaN/Infinity, determinism, snapshot immutability, reuse-not-recompute, and a hand-computed integration set.
+- `docs/model-results/artifacts/world-cup-2026-prediction-usefulness-audit.json` — generated artifact.
+- `docs/model-results/PREDICTION_USEFULNESS_AUDIT.md` — human-readable report with methodology, thresholds, current result, limitations, and the evidence required for Phases 12.18B/12.18C.
+
+Current measured result: with no pre-match snapshots stored in the queried runtime, `eligiblePredictions = 0` over 8 completed fixtures → recommendation `insufficient_evidence`. The harness is validated; an empirical verdict requires a persistence source containing real stored snapshots.
+
+Staged follow-ups (defined, not implemented):
+
+- **12.18B** — scoreline-selection / presentation change (gated on `presentation_change_only` or `recalibrate_scoreline_selection` over a sufficient sample).
+- **12.18C** — Elo-to-xG recalibration (gated on `recalibrate_elo_to_xg` with under-separated favorites; evaluated on a holdout via the existing V1/V2 workflow).
+
+Exit criteria:
+
+- API tests, typecheck, and build pass; model tests/typecheck and the full monorepo build pass as regression.
+- Audit output is deterministic with no `NaN`/`Infinity`; stored snapshots are not mutated.
+- `git diff --check` passes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

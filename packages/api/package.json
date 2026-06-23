@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "node --experimental-strip-types ./src/db-migrate.ts",
+    "audit:prediction-usefulness": "node --experimental-strip-types ./src/prediction-usefulness-audit-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
