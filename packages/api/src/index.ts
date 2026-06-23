@@ -187,6 +187,35 @@ export {
 } from "./prediction-evaluation-store.js";
 export type { PredictionEvaluationStore } from "./prediction-evaluation-store.js";
 export {
+  FAVORITE_STRENGTH_THRESHOLDS,
+  PREDICTION_USEFULNESS_AUDIT_THRESHOLDS,
+  buildAuditCompletedFixtures,
+  classifyFavoriteStrength,
+  runWorldCup2026PredictionUsefulnessAudit,
+  selectAuditSnapshotForFixture
+} from "./prediction-usefulness-audit.js";
+export type {
+  AuditCompletedFixture,
+  DrawBiasAudit,
+  DrawCalibrationBucket,
+  FavoriteBucketAudit,
+  FavoriteStrength,
+  ModalVsAggregateCase,
+  PredictionUsefulnessAuditInput,
+  PredictionUsefulnessAuditRecord,
+  PredictionUsefulnessAuditReport,
+  PredictionUsefulnessExclusionReason,
+  PredictionUsefulnessFinding,
+  PredictionUsefulnessRecommendation,
+  ScorelineFrequencyAudit,
+  SnapshotSelectionResult,
+  TopNUsefulnessAudit,
+  UpsetAndBlowoutAudit,
+  UpsetBlowoutExample,
+  XgCompressionAudit,
+  XgEloBucketAudit
+} from "./prediction-usefulness-audit.js";
+export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,

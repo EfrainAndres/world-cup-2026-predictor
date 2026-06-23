@@ -1,0 +1,388 @@
+{
+  "generatedAt": "2026-06-22T00:00:00.000Z",
+  "dataset": {
+    "completedFixtures": 8,
+    "eligiblePredictions": 0,
+    "excludedFixtures": 8,
+    "coverageRate": 0,
+    "exclusionReasons": {
+      "no_snapshot": 8,
+      "no_completed_result": 0,
+      "post_kickoff_snapshot": 0,
+      "malformed_data": 0,
+      "mismatched_teams": 0,
+      "unsupported_schema_version": 0
+    }
+  },
+  "usefulness": {
+    "outcomeAccuracy": null,
+    "exactScorelineAccuracy": null,
+    "homeWinPrecision": null,
+    "drawPrecision": null,
+    "awayWinPrecision": null,
+    "top3ExactScoreCoverage": null,
+    "top5ExactScoreCoverage": null,
+    "averageBrierScore": null,
+    "averageLogLoss": null,
+    "averageHomeGoalError": null,
+    "averageAwayGoalError": null,
+    "averageGoalDifferenceError": null,
+    "averageTotalGoalsError": null
+  },
+  "oneOneScoreline": {
+    "modalRate": null,
+    "actualRate": null,
+    "overpredictionDelta": null
+  },
+  "scorelineFrequency": [
+    {
+      "scoreline": "0-0",
+      "home": 0,
+      "away": 0,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "1-0",
+      "home": 1,
+      "away": 0,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "0-1",
+      "home": 0,
+      "away": 1,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "1-1",
+      "home": 1,
+      "away": 1,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "2-0",
+      "home": 2,
+      "away": 0,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "0-2",
+      "home": 0,
+      "away": 2,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "2-1",
+      "home": 2,
+      "away": 1,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "1-2",
+      "home": 1,
+      "away": 2,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "2-2",
+      "home": 2,
+      "away": 2,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "3-0",
+      "home": 3,
+      "away": 0,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    },
+    {
+      "scoreline": "0-3",
+      "home": 0,
+      "away": 3,
+      "modalCount": 0,
+      "modalRate": null,
+      "actualCount": 0,
+      "actualRate": null,
+      "exactHitCount": 0,
+      "overpredictionDelta": null
+    }
+  ],
+  "drawBias": {
+    "averagePredictedDrawProbability": null,
+    "actualDrawRate": null,
+    "drawHighestProbabilityCount": 0,
+    "modalDrawButWinHighestCount": 0,
+    "modalDrawAgainstStrongFavoriteCount": 0,
+    "calibrationBuckets": [
+      {
+        "bucket": "0.00-0.19",
+        "predictions": 0,
+        "meanPredictedDrawProbability": null,
+        "observedDrawRate": null,
+        "calibrationGap": null
+      },
+      {
+        "bucket": "0.20-0.29",
+        "predictions": 0,
+        "meanPredictedDrawProbability": null,
+        "observedDrawRate": null,
+        "calibrationGap": null
+      },
+      {
+        "bucket": "0.30-0.39",
+        "predictions": 0,
+        "meanPredictedDrawProbability": null,
+        "observedDrawRate": null,
+        "calibrationGap": null
+      },
+      {
+        "bucket": "0.40-0.49",
+        "predictions": 0,
+        "meanPredictedDrawProbability": null,
+        "observedDrawRate": null,
+        "calibrationGap": null
+      },
+      {
+        "bucket": "0.50+",
+        "predictions": 0,
+        "meanPredictedDrawProbability": null,
+        "observedDrawRate": null,
+        "calibrationGap": null
+      }
+    ]
+  },
+  "favoriteSeparation": [
+    {
+      "bucket": "0-49",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    },
+    {
+      "bucket": "50-99",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    },
+    {
+      "bucket": "100-149",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    },
+    {
+      "bucket": "150-199",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    },
+    {
+      "bucket": "200-299",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    },
+    {
+      "bucket": "300+",
+      "matchCount": 0,
+      "averageFavoriteWinProbability": null,
+      "actualFavoriteWinRate": null,
+      "averagePredictedXgDifference": null,
+      "averageActualGoalDifference": null,
+      "modal11Rate": null,
+      "drawPredictionRate": null,
+      "exactScoreAccuracy": null,
+      "outcomeAccuracy": null
+    }
+  ],
+  "favoriteStrengthCounts": {
+    "balanced": 0,
+    "slight_favorite": 0,
+    "moderate_favorite": 0,
+    "strong_favorite": 0,
+    "heavy_favorite": 0
+  },
+  "xgCompression": {
+    "averageHomeXg": null,
+    "averageAwayXg": null,
+    "minXg": null,
+    "maxXg": null,
+    "averageAbsoluteXgDifference": null,
+    "medianAbsoluteXgDifference": null,
+    "shareBelow010": null,
+    "shareBelow025": null,
+    "shareBelow050": null,
+    "shareBelow075": null,
+    "xgDifferenceByEloBucket": [
+      {
+        "bucket": "0-49",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      },
+      {
+        "bucket": "50-99",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      },
+      {
+        "bucket": "100-149",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      },
+      {
+        "bucket": "150-199",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      },
+      {
+        "bucket": "200-299",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      },
+      {
+        "bucket": "300+",
+        "matchCount": 0,
+        "averageAbsoluteXgDifference": null
+      }
+    ],
+    "eloXgCorrelation": null,
+    "strongFavoriteLowXgCount": 0
+  },
+  "modalVsAggregate": [],
+  "topN": {
+    "exactInTop1": 0,
+    "exactInTop1Rate": null,
+    "exactInTop3": 0,
+    "exactInTop3Rate": null,
+    "exactInTop5": 0,
+    "exactInTop5Rate": null,
+    "outcomeInModal": 0,
+    "outcomeInModalRate": null,
+    "outcomeInTop3": 0,
+    "outcomeInTop3Rate": null,
+    "outcomeInTop5": 0,
+    "outcomeInTop5Rate": null
+  },
+  "upsetAndBlowout": {
+    "upsetCount": 0,
+    "blowoutCount": 0,
+    "strongFavoriteMissCount": 0,
+    "underestimatedBlowoutCount": 0,
+    "exampleCount": 0,
+    "exampleTruncated": false,
+    "examples": []
+  },
+  "records": [],
+  "findings": [
+    {
+      "code": "low_sample",
+      "severity": "critical",
+      "summary": "Eligible predictions (0) below minSampleForEvidence=8; metrics are not statistically meaningful."
+    },
+    {
+      "code": "low_coverage",
+      "severity": "warning",
+      "summary": "Prediction coverage 0 below minCoverageRate=0.5."
+    }
+  ],
+  "recommendation": "insufficient_evidence",
+  "recommendationBasis": {
+    "rationale": "Only 0 eligible prediction(s); below minSampleForEvidence=8.",
+    "thresholds": {
+      "minSampleForEvidence": 8,
+      "minCoverageRate": 0.5,
+      "acceptableOutcomeAccuracy": 0.5,
+      "poorExactScorelineAccuracy": 0.15,
+      "materialTopNGap": 0.15,
+      "xgCompressionDifference": 0.25,
+      "xgCompressionShare": 0.5,
+      "strongFavoriteEloGap": 200,
+      "strongFavoriteMinXgAdvantage": 0.4,
+      "blowoutGoalDifference": 3,
+      "underestimatedBlowoutXgDifference": 1,
+      "oneOneOverpredictionDelta": 0.1,
+      "drawOverpredictionDelta": 0.05,
+      "maxExamples": 10
+    }
+  }
+}
