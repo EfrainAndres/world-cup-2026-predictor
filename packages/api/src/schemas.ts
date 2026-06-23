@@ -527,6 +527,27 @@ export interface WorldCup2026GroupStandingsFoundationResponse {
 
 export type WorldCup2026StandingsMode = "official" | "live_provisional" | "projected";
 
+export type WorldCup2026LiveStandingsIssueCode =
+  | "invalid_group_label"
+  | "missing_group_label"
+  | "provider_group_mismatch"
+  | "unresolved_canonical_team"
+  | "provider_fixture_unresolved"
+  | "duplicate_fixture"
+  | "invalid_finished_score"
+  | "future_record_excluded"
+  | "provider_standings_not_grouped"
+  | "provider_global_standings_mismatch";
+
+export interface WorldCup2026LiveStandingsIssue {
+  code: WorldCup2026LiveStandingsIssueCode;
+  providerFixtureId?: string;
+  fixtureId?: string;
+  group?: string;
+  team?: string;
+  message: string;
+}
+
 export interface WorldCup2026LiveStandingsSyncMetadata {
   mode: WorldCup2026StandingsMode;
   activeProvider: string;
@@ -552,6 +573,7 @@ export interface WorldCup2026LiveGroupStandingsResponse {
   activeLiveMatchCount: number;
   completedMatchCount: number;
   syncMetadata: WorldCup2026LiveStandingsSyncMetadata;
+  standingsIssues: readonly WorldCup2026LiveStandingsIssue[];
   resultProvider: WorldCup2026ResultProviderMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;

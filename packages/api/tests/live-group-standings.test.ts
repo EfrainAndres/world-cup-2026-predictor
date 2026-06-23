@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   buildWorldCup2026GroupStandings,
-  getWorldCup2026LiveGroupStandings
+  getWorldCup2026LiveGroupStandings,
+  WORLD_CUP_2026_GROUP_STAGE_FIXTURES
 } from "../src/index.js";
 import type {
   WorldCup2026ExternalFixtureRecord,
+  WorldCup2026ExternalStandingRecord,
   WorldCup2026LiveGroupStandingsResponse
 } from "../src/index.js";
 
@@ -42,6 +44,36 @@ function liveRecord(overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}):
     updatedAt: "2026-06-14",
     ...overrides
   };
+}
+
+function providerStanding(overrides: Partial<WorldCup2026ExternalStandingRecord> = {}): WorldCup2026ExternalStandingRecord {
+  return {
+    team: "Mexico",
+    position: 1,
+    played: 9,
+    wins: 9,
+    draws: 0,
+    losses: 0,
+    goalsFor: 99,
+    goalsAgainst: 0,
+    goalDifference: 99,
+    points: 99,
+    updatedAt: "2026-06-14",
+    ...overrides
+  };
+}
+
+function omitGroup(record: WorldCup2026ExternalFixtureRecord): WorldCup2026ExternalFixtureRecord {
+  const withoutGroup = { ...record };
+  delete withoutGroup.group;
+  return withoutGroup;
+}
+
+function omitScores(record: WorldCup2026ExternalFixtureRecord): WorldCup2026ExternalFixtureRecord {
+  const withoutScores = { ...record };
+  delete withoutScores.homeScore;
+  delete withoutScores.awayScore;
+  return withoutScores;
 }
 
 describe("getWorldCup2026LiveGroupStandings", () => {
@@ -122,6 +154,37 @@ describe("getWorldCup2026LiveGroupStandings", () => {
   });
 
   describe("official standings mode with provided records", () => {
+    it("derives grouped standings from normalized real-style group-stage fixture records", () => {
+      const completedResults = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.map((fixture, index) =>
+        finishedRecord({
+          providerFixtureId: `provider-${index + 1}`,
+          group: `GROUP_${fixture.group}`,
+          matchday: fixture.matchday,
+          homeTeam: fixture.homeTeam,
+          awayTeam: fixture.awayTeam,
+          homeScore: 1,
+          awayScore: 0,
+          updatedAt: "2026-06-14T12:00:00Z"
+        })
+      );
+
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults,
+        liveMatches: [],
+        activeProvider: "football_data_org_results_provider",
+        externalProviderEnabled: true,
+        localFallbackUsed: false
+      });
+
+      expect(result.officialGroups).toHaveLength(12);
+      expect(result.standingsIssues).toHaveLength(0);
+      for (const group of result.officialGroups) {
+        expect(group.completedFixtureCount).toBe(6);
+        expect(group.pendingFixtureCount).toBe(0);
+        expect(group.standings.reduce((sum, entry) => sum + entry.played, 0)).toBe(12);
+      }
+    });
+
     it("official standings use only completed (finished) records", () => {
       const result = getWorldCup2026LiveGroupStandings({
         completedResults: [finishedRecord({ homeScore: 3, awayScore: 1 })],
@@ -191,6 +254,120 @@ describe("getWorldCup2026LiveGroupStandings", () => {
       if (!groupA) return;
       const koreaEntry = groupA.standings.find((e) => e.team === "South Korea");
       expect(koreaEntry?.played).toBe(0);
+    });
+
+    it("excludes completed records after the requested cutoff", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        cutoffAt: "2026-06-14T12:00:00Z",
+        completedResults: [
+          finishedRecord({
+            homeScore: 3,
+            awayScore: 0,
+            updatedAt: "2026-06-14T12:00:01Z"
+          })
+        ],
+        liveMatches: []
+      });
+
+      const groupA = result.officialGroups.find((g) => g.group === "A");
+      const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
+      expect(mexicoEntry?.played).toBe(0);
+      expect(result.standingsIssues.some((issue) => issue.code === "future_record_excluded")).toBe(true);
+    });
+
+    it("warns and skips invalid group labels without corrupting valid groups", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: "invalid-group",
+            group: "GROUP_Z",
+            homeScore: 5,
+            awayScore: 0
+          }),
+          finishedRecord({
+            providerFixtureId: "valid-group",
+            group: "GROUP_A",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ],
+        liveMatches: []
+      });
+
+      const groupA = result.officialGroups.find((g) => g.group === "A");
+      const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
+      expect(mexicoEntry?.played).toBe(1);
+      expect(mexicoEntry?.goalsFor).toBe(2);
+      expect(result.standingsIssues.some((issue) => issue.code === "invalid_group_label")).toBe(true);
+    });
+
+    it("warns on missing group labels but uses resolvable canonical fixtures", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          omitGroup(finishedRecord({
+            homeScore: 2,
+            awayScore: 0
+          }))
+        ],
+        liveMatches: []
+      });
+
+      const groupA = result.officialGroups.find((g) => g.group === "A");
+      const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
+      expect(mexicoEntry?.played).toBe(1);
+      expect(result.standingsIssues.some((issue) => issue.code === "missing_group_label")).toBe(true);
+    });
+
+    it("warns and skips unresolved provider team names", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: "unknown-team",
+            group: "GROUP_A",
+            homeTeam: "Unknown FC",
+            awayTeam: "South Africa",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ],
+        liveMatches: []
+      });
+
+      for (const group of result.officialGroups) {
+        for (const entry of group.standings) {
+          expect(entry.played).toBe(0);
+        }
+      }
+      expect(result.standingsIssues.some((issue) => issue.code === "unresolved_canonical_team")).toBe(true);
+    });
+
+    it("warns and skips finished fixtures without valid scores", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          omitScores(finishedRecord())
+        ],
+        liveMatches: []
+      });
+
+      const groupA = result.officialGroups.find((g) => g.group === "A");
+      const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
+      expect(mexicoEntry?.played).toBe(0);
+      expect(result.standingsIssues.some((issue) => issue.code === "invalid_finished_score")).toBe(true);
+    });
+
+    it("does not use provider global standings as grouped truth", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [finishedRecord({ homeScore: 2, awayScore: 0 })],
+        liveMatches: [],
+        standings: [providerStanding({ team: "Mexico", played: 9, points: 99 })]
+      });
+
+      const groupA = result.officialGroups.find((g) => g.group === "A");
+      const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
+      expect(mexicoEntry?.played).toBe(1);
+      expect(mexicoEntry?.points).toBe(3);
+      expect(result.standingsIssues.some((issue) => issue.code === "provider_standings_not_grouped")).toBe(true);
+      expect(result.standingsIssues.some((issue) => issue.code === "provider_global_standings_mismatch")).toBe(true);
     });
   });
 

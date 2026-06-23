@@ -9,6 +9,7 @@ import type {
   PredictionConfidenceAssessment,
   PredictMatchFromLiveEloResponse,
   WorldCup2026ExternalFixtureRecord,
+  WorldCup2026ExternalStandingRecord,
   WorldCup2026PredictionEvaluation,
   WorldCup2026PredictionSnapshot,
   WorldCup2026SyncResult
@@ -55,6 +56,23 @@ function syncResult(overrides: Partial<WorldCup2026SyncResult> = {}): WorldCup20
     standings: [],
     normalizationIssues: [],
     warnings: [],
+    ...overrides
+  };
+}
+
+function providerStanding(overrides: Partial<WorldCup2026ExternalStandingRecord> = {}): WorldCup2026ExternalStandingRecord {
+  return {
+    team: "Mexico",
+    position: 1,
+    played: 9,
+    wins: 9,
+    draws: 0,
+    losses: 0,
+    goalsFor: 99,
+    goalsAgainst: 0,
+    goalDifference: 99,
+    points: 99,
+    updatedAt: "2026-06-14T12:00:00Z",
     ...overrides
   };
 }
@@ -472,6 +490,48 @@ describe("buildWorldCup2026GroupDetail", () => {
     });
     expect(JSON.stringify(result)).not.toContain("token");
     expect(JSON.stringify(result)).not.toContain("secret");
+  });
+
+  it("propagates provider-global standings warnings without using them as group truth", () => {
+    const result = buildWorldCup2026GroupDetail({
+      group: "A",
+      timezone: "UTC",
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+            group: "A",
+            matchday: 1,
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "finished",
+            kickoffAt: "2026-06-11T18:00:00Z",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ],
+        completedResults: [
+          record({
+            providerFixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+            group: "A",
+            matchday: 1,
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "finished",
+            kickoffAt: "2026-06-11T18:00:00Z",
+            homeScore: 2,
+            awayScore: 0
+          })
+        ],
+        standings: [providerStanding()]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.standings.official.find((entry) => entry.team === "Mexico")?.points).toBe(3);
+    expect(result.warnings.some((warning) => warning.includes("Provider standings include ungrouped rows"))).toBe(true);
+    expect(result.warnings.some((warning) => warning.includes("differ from fixture-derived standings"))).toBe(true);
   });
 
   it("does not mutate standings foundations while composing group detail", () => {

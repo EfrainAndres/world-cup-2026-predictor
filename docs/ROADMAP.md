@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1 Done; 12.18B2–B4 and 12.18C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1, 12.18B2 Done; 12.18B3–B4 and 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -331,7 +331,7 @@ Current measured result: with no pre-match snapshots stored in the queried runti
 Staged follow-ups:
 
 - **12.18B1** — real standings source audit and match-context plan (done).
-- **12.18B2** — real standings normalization guardrails.
+- **12.18B2** — real standings normalization guardrails (done).
 - **12.18B3** — match context read model.
 - **12.18B4** — UI and snapshot provenance presentation.
 - **12.18C** — Elo-to-xG recalibration (gated on `recalibrate_elo_to_xg` with under-separated favorites; evaluated on a holdout via the existing V1/V2 workflow).
@@ -409,6 +409,29 @@ Exit criteria:
 
 - `pnpm --filter @world-cup-2026-predictor/api typecheck` passes.
 - `git diff --check` passes.
+
+## Phase 12.18B2 - Real Group Standings Integration
+
+**Status:** Done
+
+Implementation phase. Integrate normalized football-data.org match records as the authoritative external input for World Cup 2026 grouped standings while preserving the existing standings engine and all prediction, projection, snapshot, migration, provider-selection, and scheduled-capture behavior.
+
+Deliverables:
+
+- `getWorldCup2026LiveGroupStandings()` continues to use `buildWorldCup2026GroupStandings()` as the canonical grouped-standings calculation engine.
+- Official standings use valid completed fixtures only.
+- Live provisional standings use valid completed fixtures plus valid live/halftime scores, with duplicate fixture prevention.
+- `GROUP_A` through `GROUP_L` provider labels map deterministically to `A` through `L`.
+- Invalid or missing group labels, unresolved teams, duplicate fixtures, invalid finished scores, cutoff exclusions, and provider-global standings mismatches are surfaced as typed standings issues and warning text.
+- football-data.org global standings with `group=null` are not used as grouped standings truth; they are retained only as cross-check evidence.
+- Real-provider team-name aliases cover the 48-team feed, including accents and alternate provider names.
+- `docs/data-quality/REAL_GROUP_STANDINGS_INTEGRATION.md`.
+
+Exit criteria:
+
+- Normalized group-stage fixtures produce grouped standings for Groups A-L.
+- Completed-only, live/halftime provisional, duplicate-prevention, cutoff/no-look-ahead, provider-global-ignore, local fallback, and projected-standings-unchanged tests pass.
+- No prediction formula, Elo/xG constant, projection behavior, snapshot identity/hash, migration, provider selection, scheduled capture, UI contract, dependency, or unrelated refactor is introduced.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

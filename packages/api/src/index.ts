@@ -429,6 +429,8 @@ export type {
   WorldCup2026SyncProviderMode,
   WorldCup2026SyncResult,
   WorldCup2026StandingsMode,
+  WorldCup2026LiveStandingsIssueCode,
+  WorldCup2026LiveStandingsIssue,
   WorldCup2026LiveStandingsSyncMetadata,
   WorldCup2026LiveGroupStandingsResponse,
   WorldCup2026EloIngestionIssueCode,

@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  canonicalizeTeamName,
   createCachedResultsProvider,
   createFootballDataOrgResultsProvider,
   synchronizeWorldCup2026Results,
+  WORLD_CUP_2026_TEAM_NAMES,
   type FootballDataOrgProviderConfig,
   type WorldCup2026FootballResultsProvider
 } from "../src/index.js";
@@ -162,6 +164,23 @@ describe("createFootballDataOrgResultsProvider", () => {
     expect(result.status).toBe("success");
     if (result.status !== "success") return;
     expect(result.records[0]?.status).toBe("live");
+  });
+
+  it("preserves provider-supplied live scores for provisional standings input", async () => {
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([
+        buildMatch({ status: "IN_PLAY", score: { fullTime: { home: 1, away: 0 } } })
+      ]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getLiveMatches();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records[0]?.status).toBe("live");
+    expect(result.records[0]?.homeScore).toBe(1);
+    expect(result.records[0]?.awayScore).toBe(0);
   });
 
   it("maps PAUSED status to halftime", async () => {
@@ -352,6 +371,92 @@ describe("createFootballDataOrgResultsProvider", () => {
     expect(standings.status).toBe("success");
     if (standings.status !== "success") return;
     expect(standings.records).toHaveLength(1);
+  });
+
+  it("warns when provider standings are global instead of grouped", async () => {
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([buildMatch()]),
+      buildStandingsResponse([
+        buildStandingGroup({ type: "TOTAL", group: null }),
+        buildStandingGroup({ type: "HOME", group: null }),
+        buildStandingGroup({ type: "AWAY", group: null })
+      ])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const fixtures = provider.getFixtures();
+    const standings = provider.getStandings();
+
+    expect(fixtures.status).toBe("success");
+    expect(standings.status).toBe("success");
+    if (fixtures.status !== "success" || standings.status !== "success") return;
+
+    expect(fixtures.warnings).toHaveLength(0);
+    expect(standings.warnings.some((warning) => warning.includes("ungrouped global TOTAL table"))).toBe(true);
+    expect(standings.records[0]?.group).toBeUndefined();
+  });
+
+  it("canonicalizes provider team names used by the real 48-team feed", () => {
+    const providerNames = [
+      "Mexico",
+      "South Africa",
+      "South Korea",
+      "Czechia",
+      "Canada",
+      "Bosnia-Herzegovina",
+      "Qatar",
+      "Switzerland",
+      "Brazil",
+      "Morocco",
+      "Haiti",
+      "Scotland",
+      "United States",
+      "Paraguay",
+      "Australia",
+      "Turkey",
+      "Germany",
+      "Curaçao",
+      "Ivory Coast",
+      "Ecuador",
+      "Netherlands",
+      "Japan",
+      "Sweden",
+      "Tunisia",
+      "Belgium",
+      "Egypt",
+      "Iran",
+      "New Zealand",
+      "Spain",
+      "Cape Verde Islands",
+      "Saudi Arabia",
+      "Uruguay",
+      "France",
+      "Senegal",
+      "Iraq",
+      "Norway",
+      "Argentina",
+      "Algeria",
+      "Austria",
+      "Jordan",
+      "Portugal",
+      "Congo DR",
+      "Uzbekistan",
+      "Colombia",
+      "England",
+      "Croatia",
+      "Ghana",
+      "Panama"
+    ];
+
+    const canonicalNames = providerNames.map((name) => canonicalizeTeamName(name));
+
+    expect(canonicalNames).toHaveLength(48);
+    expect(new Set(canonicalNames).size).toBe(48);
+    for (const canonicalName of canonicalNames) {
+      expect(WORLD_CUP_2026_TEAM_NAMES).toContain(canonicalName);
+    }
+    expect(canonicalizeTeamName("Curaçao")).toBe("Curacao");
+    expect(canonicalizeTeamName("Cape Verde Islands")).toBe("Cape Verde");
+    expect(canonicalizeTeamName("Congo DR")).toBe("DR Congo");
   });
 
   it("returns a failing provider when matches endpoint returns HTTP error", async () => {
