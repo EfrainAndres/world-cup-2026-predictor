@@ -339,6 +339,26 @@ Exit criteria:
 - Audit output is deterministic with no `NaN`/`Infinity`; stored snapshots are not mutated.
 - `git diff --check` passes.
 
+## Phase 12.18A1 - Automated Pre-Match Snapshot Capture
+
+**Status:** Done
+
+Implementation phase. Add an automated capture flow that discovers eligible upcoming World Cup 2026 fixtures, generates one deterministic prediction per fixture via the existing production path (`predictMatchFromLiveElo`), and persists an immutable pre-match snapshot before kickoff. No production formula, Elo/xG constant, standings logic, provider, migration, or user-facing prediction behaviour was changed; no snapshot is ever updated or deleted.
+
+Deliverables:
+
+- `packages/api/src/prematch-snapshot-capture.ts` — pure-ish orchestration service: named `PreMatchSnapshotCapturePolicy` with explicit constants (24h→15m capture window, bounded `maxFixturesPerRun`, `balanced` preset, tournament adjustments off by default); typed `PreMatchCaptureEligibility` states with deterministic millisecond boundary behaviour (eligible at window start/end, `too_early`/`window_closed` 1 ms outside, `already_started` exactly at kickoff); `captureWorldCup2026PreMatchSnapshots` (discover → evaluate → idempotency pre-check → predict → final no-look-ahead guard → persist); a stable fixture-derived capture identity (`cutoffAt = kickoff`) that reuses the existing idempotency key and content hash so repeated runs never duplicate; sanitized failure reporting (no raw provider/DB errors); dry-run mode; process-local mutex and PostgreSQL `pg_try_advisory_lock` locking; `runScheduledPreMatchSnapshotCapture` (PostgreSQL required for non-dry scheduled mode, never falls back to memory, `already_running` on lock contention); and `getPreMatchSnapshotCaptureStatus` runtime metadata.
+- `packages/api/src/prematch-snapshot-capture-cli.ts` — manual/scheduled CLI (`capture:prematch-snapshots`) suitable for cron/GitHub Actions/Vercel Cron; requires `DATABASE_URL` in postgres mode, gates an arbitrary historical `now`, never prints secrets, and exits non-zero on unsafe configuration or partial failure. Kept out of `index.ts` (I/O).
+- `packages/api/src/index.ts` — exports the pure service, policy, eligibility, lock helpers, status helper, and types (bundle-safe).
+- `packages/api/tests/prematch-snapshot-capture.test.ts` and `prematch-snapshot-capture-integration.test.ts` — 38 tests (postgres ones opt-in via `TEST_DATABASE_URL`): policy defaults, window boundaries, status/provider exclusion, idempotent capture, deterministic ordering, `maxFixturesPerRun`, dry-run no-writes, prediction/persistence/conflict failures, scheduler lock + postgres requirement, operational status, advisory-lock mutual exclusion, two-client visibility, and audit compatibility.
+- `docs/model-results/AUTOMATED_PREMATCH_SNAPSHOT_CAPTURE.md`, `.env.example` placeholders.
+
+Exit criteria:
+
+- API tests, typecheck, and build pass; model tests/typecheck and the full monorepo build pass as regression.
+- Capture is idempotent, look-ahead-free, and never mutates or deletes snapshots.
+- `git diff --check` passes.
+
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 
 **Status:** Done

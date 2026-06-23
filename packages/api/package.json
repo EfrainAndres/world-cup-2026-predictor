@@ -10,6 +10,7 @@
     "build": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "node --experimental-strip-types ./src/db-migrate.ts",
     "audit:prediction-usefulness": "node --experimental-strip-types ./src/prediction-usefulness-audit-cli.ts",
+    "capture:prematch-snapshots": "node --experimental-strip-types ./src/prematch-snapshot-capture-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
