@@ -1,5 +1,6 @@
 import postgres from "postgres";
-import { runMigrations } from "./migration-runner.ts";
+import { runMigrations } from "./migration-runner.js";
+
 
 async function main(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL?.trim();
