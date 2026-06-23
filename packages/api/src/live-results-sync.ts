@@ -92,6 +92,7 @@ interface PreloadedProviderData {
   completedResults: readonly WorldCup2026ExternalFixtureRecord[];
   standings: readonly WorldCup2026ExternalStandingRecord[];
   syncedAt: string;
+  warnings?: readonly string[];
 }
 
 function mapFootballDataOrgStatus(status: string): WorldCup2026ExternalMatchStatus {
@@ -182,6 +183,7 @@ function createPreloadedProvider(
   providerId: string,
   data: PreloadedProviderData
 ): WorldCup2026FootballResultsProvider {
+  const providerWarnings: readonly string[] = data.warnings ?? [];
   const success = <T>(records: readonly T[]) => ({
     status: "success" as const,
     providerId,
@@ -193,7 +195,8 @@ function createPreloadedProvider(
 
   return {
     id: providerId,
-    getFixtures: () => success(data.fixtures),
+    // Warnings for omitted fixtures are surfaced on the fixture listing only.
+    getFixtures: () => ({ ...success(data.fixtures), warnings: providerWarnings }),
     getLiveMatches: () => success(data.liveMatches),
     getCompletedResults: () => success(data.completedResults),
     getStandings: () => success(data.standings)
@@ -278,7 +281,26 @@ export async function createFootballDataOrgResultsProvider(
     }
 
     const syncedAt = new Date().toISOString();
-    const allFixtures = normalizeFootballDataOrgMatches(matchesData.matches, season, syncedAt);
+
+    // Filter out knockout fixtures whose participants are not yet known.
+    // Matches with a null or blank team name cannot be normalized and would
+    // cause normalizeExternalFixtureRecords to reject the entire bundle.
+    // We omit only the unresolved fixtures and surface a sanitized warning.
+    const resolvedMatches = matchesData.matches.filter(
+      (m) => m.homeTeam.name !== null && m.homeTeam.name.trim().length > 0 &&
+             m.awayTeam.name !== null && m.awayTeam.name.trim().length > 0
+    );
+    const unresolvedCount = matchesData.matches.length - resolvedMatches.length;
+
+    const allFixtures = normalizeFootballDataOrgMatches(resolvedMatches, season, syncedAt);
+
+    const dataWarnings: readonly string[] =
+      unresolvedCount > 0
+        ? [
+            `${unresolvedCount} fixture(s) with unresolved participants were omitted from provider results` +
+              " and will be included when their participants are confirmed."
+          ]
+        : [];
 
     const liveStatuses: WorldCup2026ExternalMatchStatus[] = ["live", "halftime"];
     const liveMatches = allFixtures.filter((f) => liveStatuses.includes(f.status));
@@ -289,6 +311,7 @@ export async function createFootballDataOrgResultsProvider(
       fixtures: allFixtures,
       liveMatches,
       completedResults,
+      ...(dataWarnings.length > 0 ? { warnings: dataWarnings } : {}),
       standings,
       syncedAt
     });
