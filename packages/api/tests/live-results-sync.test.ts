@@ -434,16 +434,186 @@ describe("createFootballDataOrgResultsProvider", () => {
     if (fixtures.status !== "success") return;
     expect(fixtures.records[0]?.providerFixtureId).toBe("999888");
   });
+
+  // ---------------------------------------------------------------------------
+  // Unresolved knockout fixture filtering
+  // ---------------------------------------------------------------------------
+
+  it("omits fixtures with null team names and keeps resolved fixtures", async () => {
+    const resolvedMatch = buildMatch({
+      id: 20001,
+      status: "SCHEDULED",
+      score: { fullTime: { home: null, away: null } },
+      utcDate: "2026-07-14T20:00:00Z"
+    });
+    const unresolvedMatch = buildMatch({
+      id: 20002,
+      status: "SCHEDULED",
+      score: { fullTime: { home: null, away: null } },
+      homeTeam: { id: null, name: null, shortName: null },
+      awayTeam: { id: null, name: null, shortName: null }
+    });
+
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([resolvedMatch, unresolvedMatch]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0]?.providerFixtureId).toBe("20001");
+  });
+
+  it("provider remains active (localFallbackUsed=false) when resolved fixtures exist alongside unresolved ones", async () => {
+    const resolvedMatch = buildMatch({
+      id: 30001,
+      status: "SCHEDULED",
+      score: { fullTime: { home: null, away: null } }
+    });
+    const unresolvedMatch = buildMatch({
+      id: 30002,
+      homeTeam: { id: null, name: null, shortName: null },
+      awayTeam: { id: null, name: null, shortName: null },
+      score: { fullTime: { home: null, away: null } }
+    });
+
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([resolvedMatch, unresolvedMatch]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+
+    // synchronizeWorldCup2026Results wires the foundation resolver
+    const result = await synchronizeWorldCup2026Results({
+      providerMode: "football_data_org",
+      token: "test-token",
+      fetch: mockFetch
+    });
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.externalProviderEnabled).toBe(true);
+    expect(result.fixtures).toHaveLength(1);
+    expect(result.fixtures[0]?.providerFixtureId).toBe("30001");
+  });
+
+  it("preserves kickoffAt on resolved fixtures when unresolved ones are omitted", async () => {
+    const resolvedMatch = buildMatch({
+      id: 40001,
+      status: "SCHEDULED",
+      utcDate: "2026-07-15T18:00:00Z",
+      score: { fullTime: { home: null, away: null } }
+    });
+    const unresolvedMatch = buildMatch({
+      id: 40002,
+      homeTeam: { id: null, name: null, shortName: null },
+      awayTeam: { id: null, name: null, shortName: null },
+      score: { fullTime: { home: null, away: null } }
+    });
+
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([resolvedMatch, unresolvedMatch]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records[0]?.kickoffAt).toBe("2026-07-15T18:00:00Z");
+  });
+
+  it("includes a sanitized warning when unresolved fixtures are omitted", async () => {
+    const resolvedMatch = buildMatch({
+      id: 50001,
+      status: "SCHEDULED",
+      score: { fullTime: { home: null, away: null } }
+    });
+    const unresolvedMatch = buildMatch({
+      id: 50002,
+      homeTeam: { id: null, name: null, shortName: null },
+      awayTeam: { id: null, name: null, shortName: null },
+      score: { fullTime: { home: null, away: null } }
+    });
+
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([resolvedMatch, unresolvedMatch]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(
+      defaultConfig({ token: "secret-api-token-xyz", fetch: mockFetch })
+    );
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.warnings.length).toBeGreaterThan(0);
+    expect(result.warnings.some((w) => w.includes("unresolved participants"))).toBe(true);
+    // Warning must not expose any sensitive or raw data
+    const warningText = result.warnings.join(" ");
+    expect(warningText).not.toContain("secret-api-token-xyz");
+    expect(warningText).not.toContain("null");
+  });
+
+  it("emits no warning and returns all fixtures when all team names are resolved", async () => {
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([
+        buildMatch({ id: 60001, status: "SCHEDULED", score: { fullTime: { home: null, away: null } } }),
+        buildMatch({ id: 60002, status: "SCHEDULED", score: { fullTime: { home: null, away: null } } })
+      ]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records).toHaveLength(2);
+    expect(result.warnings).toHaveLength(0);
+  });
+
+  it("omits fixtures with blank-whitespace-only team names", async () => {
+    const resolvedMatch = buildMatch({ id: 70001, status: "SCHEDULED", score: { fullTime: { home: null, away: null } } });
+    const blankTeamMatch = buildMatch({
+      id: 70002,
+      homeTeam: { id: null, name: "   ", shortName: null },
+      awayTeam: { id: null, name: "", shortName: null },
+      score: { fullTime: { home: null, away: null } }
+    });
+
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([resolvedMatch, blankTeamMatch]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0]?.providerFixtureId).toBe("70001");
+  });
 });
 
 describe("synchronizeWorldCup2026Results", () => {
   it("defaults to local_static mode when providerMode is not set", async () => {
-    const result = await synchronizeWorldCup2026Results({});
+    const original = process.env["RESULTS_PROVIDER"];
+    delete process.env["RESULTS_PROVIDER"];
+    try {
+      const result = await synchronizeWorldCup2026Results({});
 
-    expect(result.providerMode).toBe("local_static");
-    expect(result.activeProvider).toBe("local_static_results_provider");
-    expect(result.localFallbackUsed).toBe(true);
-    expect(result.externalProviderEnabled).toBe(false);
+      expect(result.providerMode).toBe("local_static");
+      expect(result.activeProvider).toBe("local_static_results_provider");
+      expect(result.localFallbackUsed).toBe(true);
+      expect(result.externalProviderEnabled).toBe(false);
+    } finally {
+      if (original === undefined) {
+        delete process.env["RESULTS_PROVIDER"];
+      } else {
+        process.env["RESULTS_PROVIDER"] = original;
+      }
+    }
   });
 
   it("returns local static data when providerMode is 'local'", async () => {

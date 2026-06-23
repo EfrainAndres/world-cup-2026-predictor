@@ -211,6 +211,34 @@ describe("provider connectivity", () => {
     expect(result.checks.providerConnectivity).toBe(false);
   });
 
+  it("is NOT blocked_provider when resolved fixtures exist alongside unresolved knockout fixtures", async () => {
+    // Simulates the real scenario: football-data.org returns resolved group-stage
+    // fixtures mixed with unresolved knockout fixtures (null team names filtered
+    // upstream). The preflight must accept the result as long as resolved fixtures
+    // have kickoff timestamps.
+    const result = await runPreMatchCaptureActivationPreflight({
+      env: VALID_ENV,
+      now: TOO_EARLY, // outside capture window → ready_no_currently_eligible_fixture
+      checkDatabaseConnectivity: async () => CONNECTED,
+      synchronize: async () =>
+        makeSyncResult({
+          fixtures: [
+            makeFixture({ kickoffAt: KICKOFF }),         // resolved group-stage fixture
+            // unresolved knockout: omitted upstream, so it never reaches preflight
+          ],
+          warnings: [
+            "32 fixture(s) with unresolved participants were omitted from provider results and will be included when their participants are confirmed."
+          ]
+        })
+    });
+    // Provider is active and has kickoff data; no blocked status.
+    expect(result.status).not.toBe("blocked_provider");
+    expect(result.status).not.toBe("blocked_configuration");
+    expect(result.status).not.toBe("blocked_database");
+    expect(result.checks.providerConnectivity).toBe(true);
+    expect(result.checks.fixturesHaveKickoff).toBe(true);
+  });
+
   it("returns blocked_provider when provider returns no fixtures with kickoff", async () => {
     const result = await runPreMatchCaptureActivationPreflight({
       env: VALID_ENV,
