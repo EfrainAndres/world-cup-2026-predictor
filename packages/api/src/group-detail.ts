@@ -712,6 +712,7 @@ export function buildWorldCup2026GroupDetail(
   const liveStandings = getWorldCup2026LiveGroupStandings({
     completedResults: input.syncResult.completedResults,
     liveMatches: input.syncResult.liveMatches,
+    standings: input.syncResult.standings,
     activeProvider: input.syncResult.activeProvider,
     cacheUsed: input.syncResult.cacheUsed,
     localFallbackUsed: input.syncResult.localFallbackUsed,
@@ -745,7 +746,10 @@ export function buildWorldCup2026GroupDetail(
   const postponed: WorldCup2026GroupDetailMatch[] = [];
   const cancelled: WorldCup2026GroupDetailMatch[] = [];
   const unscheduled: WorldCup2026GroupDetailMatch[] = [];
-  const warnings: string[] = [...input.syncResult.warnings];
+  const warnings: string[] = [
+    ...input.syncResult.warnings,
+    ...liveStandings.standingsIssues.map((issue) => issue.message)
+  ];
   const typedIssues: WorldCup2026DailyMatchIssue[] = [];
 
   for (const record of input.syncResult.fixtures) {

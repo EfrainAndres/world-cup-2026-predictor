@@ -92,7 +92,8 @@ interface PreloadedProviderData {
   completedResults: readonly WorldCup2026ExternalFixtureRecord[];
   standings: readonly WorldCup2026ExternalStandingRecord[];
   syncedAt: string;
-  warnings?: readonly string[];
+  fixtureWarnings?: readonly string[];
+  standingsWarnings?: readonly string[];
 }
 
 function mapFootballDataOrgStatus(status: string): WorldCup2026ExternalMatchStatus {
@@ -118,7 +119,8 @@ function mapFootballDataOrgStatus(status: string): WorldCup2026ExternalMatchStat
 
 function normalizeGroupLabel(raw: string | null): string | undefined {
   if (!raw) return undefined;
-  return raw.replace(/^GROUP_/, "");
+  const normalized = raw.trim().toUpperCase().replace(/^GROUP_/, "");
+  return normalized.length > 0 ? normalized : undefined;
 }
 
 function normalizeFootballDataOrgMatches(
@@ -128,10 +130,9 @@ function normalizeFootballDataOrgMatches(
 ): WorldCup2026ExternalFixtureRecord[] {
   return matches.map((match) => {
     const status = mapFootballDataOrgStatus(match.status);
-    const isFinished = status === "finished";
     const group = normalizeGroupLabel(match.group);
-    const homeScore = isFinished && match.score.fullTime.home !== null ? match.score.fullTime.home : undefined;
-    const awayScore = isFinished && match.score.fullTime.away !== null ? match.score.fullTime.away : undefined;
+    const homeScore = match.score.fullTime.home !== null ? match.score.fullTime.home : undefined;
+    const awayScore = match.score.fullTime.away !== null ? match.score.fullTime.away : undefined;
 
     const record: WorldCup2026ExternalFixtureRecord = {
       providerFixtureId: String(match.id),
@@ -179,27 +180,44 @@ function normalizeFootballDataOrgStandings(
     });
 }
 
+function getFootballDataOrgStandingsWarnings(
+  groups: readonly FootballDataOrgStandingGroup[]
+): readonly string[] {
+  const totalGroups = groups.filter((g) => g.type === "TOTAL");
+  const hasUngroupedTotal = totalGroups.some((g) => g.group === null);
+
+  if (!hasUngroupedTotal) {
+    return [];
+  }
+
+  return [
+    "football-data.org standings endpoint returned an ungrouped global TOTAL table. " +
+      "Grouped standings are derived from normalized match records instead."
+  ];
+}
+
 function createPreloadedProvider(
   providerId: string,
   data: PreloadedProviderData
 ): WorldCup2026FootballResultsProvider {
-  const providerWarnings: readonly string[] = data.warnings ?? [];
-  const success = <T>(records: readonly T[]) => ({
+  const fixtureWarnings: readonly string[] = data.fixtureWarnings ?? [];
+  const standingsWarnings: readonly string[] = data.standingsWarnings ?? [];
+  const success = <T>(records: readonly T[], warnings: readonly string[] = []) => ({
     status: "success" as const,
     providerId,
     records,
     servedFromCache: false,
     syncedAt: data.syncedAt,
-    warnings: [] as readonly string[]
+    warnings
   });
 
   return {
     id: providerId,
     // Warnings for omitted fixtures are surfaced on the fixture listing only.
-    getFixtures: () => ({ ...success(data.fixtures), warnings: providerWarnings }),
+    getFixtures: () => success(data.fixtures, fixtureWarnings),
     getLiveMatches: () => success(data.liveMatches),
     getCompletedResults: () => success(data.completedResults),
-    getStandings: () => success(data.standings)
+    getStandings: () => success(data.standings, standingsWarnings)
   };
 }
 
@@ -306,12 +324,14 @@ export async function createFootballDataOrgResultsProvider(
     const liveMatches = allFixtures.filter((f) => liveStatuses.includes(f.status));
     const completedResults = allFixtures.filter((f) => f.status === "finished");
     const standings = normalizeFootballDataOrgStandings(standingsData.standings, syncedAt);
+    const standingsWarnings = getFootballDataOrgStandingsWarnings(standingsData.standings);
 
     return createPreloadedProvider(FOOTBALL_DATA_ORG_PROVIDER_ID, {
       fixtures: allFixtures,
       liveMatches,
       completedResults,
-      ...(dataWarnings.length > 0 ? { warnings: dataWarnings } : {}),
+      ...(dataWarnings.length > 0 ? { fixtureWarnings: dataWarnings } : {}),
+      ...(standingsWarnings.length > 0 ? { standingsWarnings } : {}),
       standings,
       syncedAt
     });

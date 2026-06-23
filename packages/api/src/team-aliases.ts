@@ -17,6 +17,7 @@ export const TEAM_ALIASES: Readonly<Record<string, string>> = {
   "bosnia herzegovina": "Bosnia-Herzegovina",
   bosnia: "Bosnia-Herzegovina",
   "cape verde islands": "Cape Verde",
+  curacao: "Curacao",
   "congo dr": "DR Congo",
   "cote d'ivoire": "Ivory Coast",
   "czech republic": "Czechia",
