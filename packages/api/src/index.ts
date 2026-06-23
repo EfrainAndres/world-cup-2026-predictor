@@ -216,6 +216,42 @@ export type {
   XgEloBucketAudit
 } from "./prediction-usefulness-audit.js";
 export {
+  DEFAULT_PREMATCH_SNAPSHOT_CAPTURE_POLICY,
+  PREMATCH_SNAPSHOT_CAPTURE_ADVISORY_LOCK_KEY,
+  PREMATCH_SNAPSHOT_CAPTURE_DEFAULT_PRESET,
+  PREMATCH_SNAPSHOT_CAPTURE_MAX_FIXTURES_PER_RUN,
+  PREMATCH_SNAPSHOT_CAPTURE_MAX_GOALS,
+  PREMATCH_SNAPSHOT_CAPTURE_POLICY_VERSION,
+  PREMATCH_SNAPSHOT_CAPTURE_WINDOW_END_BEFORE_KICKOFF_MINUTES,
+  PREMATCH_SNAPSHOT_CAPTURE_WINDOW_START_BEFORE_KICKOFF_MINUTES,
+  PreMatchSnapshotCaptureConfigError,
+  captureWorldCup2026PreMatchSnapshots,
+  createPostgresAdvisoryCaptureLock,
+  createProcessLocalCaptureLock,
+  evaluatePreMatchCaptureEligibility,
+  getPreMatchSnapshotCaptureStatus,
+  resolvePreMatchSnapshotCapturePolicy,
+  runScheduledPreMatchSnapshotCapture
+} from "./prematch-snapshot-capture.js";
+export type {
+  CapturePreMatchSnapshotsInput,
+  CapturePreMatchSnapshotsReport,
+  GetPreMatchSnapshotCaptureStatusInput,
+  PreMatchCaptureAction,
+  PreMatchCaptureEligibility,
+  PreMatchCaptureEligibilityInput,
+  PreMatchCaptureEligibilityResult,
+  PreMatchSnapshotCaptureConfigErrorCode,
+  PreMatchSnapshotCaptureLock,
+  PreMatchSnapshotCapturePolicy,
+  PreMatchSnapshotCaptureResult,
+  PreMatchSnapshotCaptureStatus,
+  PreMatchSnapshotPredictor,
+  ResolvedPreMatchSnapshotCapturePolicy,
+  RunScheduledPreMatchSnapshotCaptureInput,
+  ScheduledPreMatchSnapshotCaptureReport
+} from "./prematch-snapshot-capture.js";
+export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
