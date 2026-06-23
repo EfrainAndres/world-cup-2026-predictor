@@ -252,6 +252,19 @@ export type {
   ScheduledPreMatchSnapshotCaptureReport
 } from "./prematch-snapshot-capture.js";
 export {
+  assessProviderReadiness,
+  runPreMatchCaptureActivationPreflight
+} from "./prematch-capture-preflight.js";
+export type {
+  DatabaseConnectivityResult,
+  PreflightChecks,
+  PreMatchCaptureActivationPreflightResult,
+  ProviderReadinessReport,
+  RunPreMatchCaptureActivationPreflightInput,
+  ScheduledCaptureActivationStatus,
+  ScheduledCaptureActivationVerdict
+} from "./prematch-capture-preflight.js";
+export {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,

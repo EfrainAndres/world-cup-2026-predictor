@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful (1-1 frequency, draw bias, favorite separation, xG compression, modal-vs-aggregate, top-N coverage) and recommend keep / presentation-change / recalibration. | 12.18A Done; 12.18B–C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful (1-1 frequency, draw bias, favorite separation, xG compression, modal-vs-aggregate, top-N coverage) and recommend keep / presentation-change / recalibration. | 12.18A, 12.18A1, 12.18A2 Done; 12.18B–C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -357,6 +357,31 @@ Exit criteria:
 
 - API tests, typecheck, and build pass; model tests/typecheck and the full monorepo build pass as regression.
 - Capture is idempotent, look-ahead-free, and never mutates or deletes snapshots.
+- `git diff --check` passes.
+
+## Phase 12.18A2 - Scheduled Capture Activation & Verification
+
+**Status:** Done
+
+Implementation phase. Activate the automated pre-match snapshot capture against the `football_data_org` external provider and make it safely schedulable via GitHub Actions. Extends the Phase 12.18A1 capture CLI with a preflight mode and a dry-run mode and adds a GitHub Actions workflow that runs every 30 minutes.
+
+Deliverables:
+
+- `packages/api/src/prematch-capture-preflight.ts` — pure preflight service: `ScheduledCaptureActivationStatus` type (`ready` | `ready_no_currently_eligible_fixture` | `blocked_configuration` | `blocked_provider` | `blocked_database`), `ScheduledCaptureActivationVerdict` type (`activated_and_verified` | `ready_to_activate` | `blocked`), `assessProviderReadiness()` (counts total/kickoff/upcoming/unresolved/invalid/in-window fixtures from a sync result), `runPreMatchCaptureActivationPreflight()` (validates PERSISTENCE_PROVIDER, DATABASE_URL, RESULTS_PROVIDER, FOOTBALL_DATA_API_TOKEN, DB connectivity, provider connectivity, fixture kickoff data, and capture window evaluability — injectable for tests, never prints secrets).
+- `packages/api/src/prematch-snapshot-capture-cli.ts` — extended with `PREMATCH_CAPTURE_MODE=preflight|dry_run|capture` (default: `capture`); preflight mode calls `runPreMatchCaptureActivationPreflight` with real DB connectivity check; dry_run mode forces `dryRun: true`; backward-compatible (no mode = capture).
+- `packages/api/src/index.ts` — exports preflight service and types (bundle-safe).
+- `.github/workflows/prematch-snapshot-capture.yml` — GitHub Actions workflow: `schedule: */30 * * * *` + `workflow_dispatch` with mode input; least-privilege `permissions: contents: read`; concurrency group prevents overlapping runs; maps `WC2026_DATABASE_URL` secret to `DATABASE_URL`; `FOOTBALL_DATA_API_TOKEN` secret; never echoes secrets; 15-minute timeout.
+- `packages/api/tests/prematch-capture-preflight.test.ts` — 24 tests: all configuration-blocked states, database connectivity failure, provider failure, provider fallback blocked, no-kickoff blocked, ready/ready_no_eligible states, provider readiness counts (total, kickoff, upcoming, in-window, unresolved, invalid, zero), and security (no secrets in output).
+- `docs/operations/PREMATCH_SNAPSHOT_CAPTURE_ACTIVATION.md` — full activation guide: required env vars, repository secrets, all CLI modes, activation progression (preflight → dry_run → capture → repeated capture = idempotency), scheduling cadence, concurrency, DB requirement, failure handling, disabling, rollback, security, and activation verdict.
+- `.env.example` — `PREMATCH_CAPTURE_MODE` placeholder.
+- `docs/ai/TASK_CONTEXT_MANIFEST.md` — updated scheduled-capture-activation row.
+
+Exit criteria:
+
+- API tests (1017), typecheck, and build pass; full monorepo build clean.
+- Preflight, dry-run, and capture CLI modes each exit with the correct code.
+- Workflow file structure validates (workflow_dispatch + schedule, concurrency, secrets mapping, least privilege).
+- Activation verdict is `ready_to_activate` (pipeline is fully configured; real `activated_and_verified` requires a live upcoming fixture in the provider's fixture list during the capture window).
 - `git diff --check` passes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
