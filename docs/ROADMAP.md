@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful (1-1 frequency, draw bias, favorite separation, xG compression, modal-vs-aggregate, top-N coverage) and recommend keep / presentation-change / recalibration. | 12.18A, 12.18A1, 12.18A2 Done; 12.18B–C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1 Done; 12.18B2–B4 and 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -328,9 +328,12 @@ Deliverables:
 
 Current measured result: with no pre-match snapshots stored in the queried runtime, `eligiblePredictions = 0` over 8 completed fixtures → recommendation `insufficient_evidence`. The harness is validated; an empirical verdict requires a persistence source containing real stored snapshots.
 
-Staged follow-ups (defined, not implemented):
+Staged follow-ups:
 
-- **12.18B** — scoreline-selection / presentation change (gated on `presentation_change_only` or `recalibrate_scoreline_selection` over a sufficient sample).
+- **12.18B1** — real standings source audit and match-context plan (done).
+- **12.18B2** — real standings normalization guardrails.
+- **12.18B3** — match context read model.
+- **12.18B4** — UI and snapshot provenance presentation.
 - **12.18C** — Elo-to-xG recalibration (gated on `recalibrate_elo_to_xg` with under-separated favorites; evaluated on a holdout via the existing V1/V2 workflow).
 
 Exit criteria:
@@ -382,6 +385,29 @@ Exit criteria:
 - Preflight, dry-run, and capture CLI modes each exit with the correct code.
 - Workflow file structure validates (workflow_dispatch + schedule, concurrency, secrets mapping, least privilege).
 - Activation verdict is `ready_to_activate` (pipeline is fully configured; real `activated_and_verified` requires a live upcoming fixture in the provider's fixture list during the capture window).
+- `git diff --check` passes.
+
+## Phase 12.18B1 - Real Standings Source Audit & Normalization Plan
+
+**Status:** Done
+
+Analysis/documentation phase. Audit the current standings sources, football-data.org fixture and standings behavior, team-name normalization, group mapping, deduplication, no-look-ahead boundaries, and match-context requirements before any production behavior changes.
+
+Deliverables:
+
+- `docs/data-quality/REAL_STANDINGS_SOURCE_AUDIT.md` — current source/consumer audit, provider limitation analysis, official/provisional/projected standings definitions, team and group normalization audit, deduplication rules, no-look-ahead boundaries, fallback behavior, mismatch warnings, and the required conclusion that grouped standings must be fixture-derived.
+- `docs/architecture/REAL_STANDINGS_AND_MATCH_CONTEXT_PLAN.md` — proposed match-context read model, source responsibilities, fallback behavior, validation rules, API/schema compatibility risks, and implementation split for 12.18B2, 12.18B3, and 12.18B4.
+
+Key conclusions:
+
+- `getWorldCup2026LiveGroupStandings()` and `buildWorldCup2026GroupStandings()` remain the authoritative grouped-standings pipeline.
+- Real grouped standings should be calculated from normalized completed fixtures, with live/halftime records used only for provisional standings.
+- The current football-data.org standings endpoint response should be ignored for grouped standings, exposed only as safe metadata where useful, and used for cross-check warnings later.
+- Production prediction formulas remain unchanged.
+
+Exit criteria:
+
+- `pnpm --filter @world-cup-2026-predictor/api typecheck` passes.
 - `git diff --check` passes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
