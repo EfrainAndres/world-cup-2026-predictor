@@ -1,0 +1,67 @@
+name: Pre-Match Snapshot Capture
+
+on:
+  # Trigger manually via the Actions UI for first-run verification.
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Capture mode: preflight | dry_run | capture"
+        required: false
+        default: "dry_run"
+        type: choice
+        options:
+          - preflight
+          - dry_run
+          - capture
+
+  # Run automatically every 30 minutes during the World Cup 2026 tournament.
+  # Disable by removing the schedule block or setting `enabled: false` on the
+  # relevant workflow in the GitHub Actions UI.
+  schedule:
+    - cron: "*/30 * * * *"
+
+# Prevent overlapping runs. If a run is already in progress the new one waits.
+# Using group=branch so manual and scheduled runs do not cancel each other.
+concurrency:
+  group: prematch-snapshot-capture
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    name: Capture
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Map the repository secret to the runtime name the CLI expects.
+      DATABASE_URL: ${{ secrets.WC2026_DATABASE_URL }}
+      FOOTBALL_DATA_API_TOKEN: ${{ secrets.FOOTBALL_DATA_API_TOKEN }}
+      PERSISTENCE_PROVIDER: postgres
+      RESULTS_PROVIDER: football_data_org
+      # Scheduled runs always execute capture mode.
+      # Manual dispatch uses the workflow_dispatch input (default: dry_run).
+      PREMATCH_CAPTURE_MODE: ${{ github.event_name == 'schedule' && 'capture' || inputs.mode }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run pre-match snapshot capture
+        run: pnpm --filter @world-cup-2026-predictor/api capture:prematch-snapshots
