@@ -143,6 +143,28 @@ function resolveFixtureId(
   return {};
 }
 
+function orientCompletedResultToCanonicalFixture(
+  record: WorldCup2026ExternalFixtureRecord,
+  fixtureId: string,
+  reversed: boolean
+): WorldCup2026ExternalFixtureRecord | undefined {
+  const fixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find((candidate) => candidate.id === fixtureId);
+  if (fixture === undefined) return undefined;
+  const { homeScore, awayScore, ...recordWithoutScore } = record;
+  const canonicalHomeScore = reversed ? awayScore : homeScore;
+  const canonicalAwayScore = reversed ? homeScore : awayScore;
+
+  return {
+    ...recordWithoutScore,
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    ...(fixture.group === undefined ? {} : { group: fixture.group }),
+    ...(fixture.matchday === undefined ? {} : { matchday: fixture.matchday }),
+    ...(canonicalHomeScore === undefined ? {} : { homeScore: canonicalHomeScore }),
+    ...(canonicalAwayScore === undefined ? {} : { awayScore: canonicalAwayScore })
+  };
+}
+
 function validateOutcomeProbabilities(
   snapshot: WorldCup2026PredictionSnapshot
 ): WorldCup2026PredictionEvaluationIssue | undefined {
@@ -292,12 +314,28 @@ function resolveCompletedResultForSnapshot(
     const resolved = resolveFixtureId(record);
 
     if (resolved.fixtureId === snapshot.fixtureId) {
-      exactMatches.push({ fixtureId: resolved.fixtureId, record });
+      const canonicalRecord = orientCompletedResultToCanonicalFixture(
+        record,
+        resolved.fixtureId,
+        false
+      );
+      if (canonicalRecord !== undefined) {
+        exactMatches.push({ fixtureId: resolved.fixtureId, record: canonicalRecord });
+      }
       continue;
     }
 
     if (resolved.reverseFixtureId === snapshot.fixtureId) {
-      reverseMatches.push(record);
+      const canonicalRecord = orientCompletedResultToCanonicalFixture(
+        record,
+        resolved.reverseFixtureId,
+        true
+      );
+      if (canonicalRecord !== undefined) {
+        exactMatches.push({ fixtureId: resolved.reverseFixtureId, record: canonicalRecord });
+      } else {
+        reverseMatches.push(record);
+      }
       continue;
     }
 
@@ -567,6 +605,23 @@ function buildEvaluationFromSnapshot(
         )
       ]
     };
+  }
+
+  if (snapshot.kickoffAt !== undefined) {
+    const capturedMs = Date.parse(snapshot.capturedAt);
+    const kickoffMs = Date.parse(snapshot.kickoffAt);
+    if (Number.isFinite(capturedMs) && Number.isFinite(kickoffMs) && capturedMs >= kickoffMs) {
+      return {
+        status: "not_eligible",
+        issues: [
+          makeIssue(
+            "snapshot_after_kickoff",
+            `Snapshot "${snapshot.snapshotId}" was captured at or after kickoff and is not eligible for completed-result evaluation.`,
+            { snapshotId: snapshot.snapshotId, fixtureId: snapshot.fixtureId }
+          )
+        ]
+      };
+    }
   }
 
   const officialFixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(

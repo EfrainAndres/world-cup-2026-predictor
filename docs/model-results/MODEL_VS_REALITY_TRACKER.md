@@ -12,7 +12,7 @@ An evaluation is created only when all of the following are true:
 - the snapshot fixture is an official World Cup 2026 fixture
 - the snapshot status is `pre_match_locked` or `foundation_unverified`
 - a normalized completed result exists for that same fixture
-- the completed result preserves the official home/away order
+- the completed result resolves to the official home/away order
 - both final scores are non-negative integers
 - the same snapshot/result/metric-version combination has not already been evaluated
 
@@ -21,7 +21,7 @@ Typed issues are returned for:
 - missing snapshot
 - missing completed result
 - fixture mismatch
-- team-order mismatch
+- team-order mismatch when the record cannot be safely canonicalized
 - incomplete score
 - live or scheduled status
 - duplicate completed result
@@ -52,15 +52,14 @@ Completed result linking is deterministic:
 
 1. exact internal fixture id match when available
 2. canonical home/away team-name match in official order
-3. reverse-order detection for typed rejection
+3. reverse-order detection with score mapping into canonical fixture orientation
 
 The tracker rejects:
 
-- reverse-order matches
 - unresolved fixture identity
 - duplicate completed results for the same fixture
 
-It does not invent missing fixture metadata and does not regenerate predictions.
+Reverse-order provider records are accepted only when they resolve to the same canonical fixture. Scores are mapped into canonical home/away orientation before metrics are calculated. The tracker does not invent missing fixture metadata and does not regenerate predictions.
 
 ## Outcome Derivation
 
