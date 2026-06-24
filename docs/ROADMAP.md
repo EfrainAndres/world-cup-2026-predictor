@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8 Done; 12.18B9 Recommended; 12.18C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C Done; 12.18B9 Recommended; 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -477,6 +477,28 @@ Exit criteria:
 - UTC kickoff instants remain canonical and unmodified.
 - Prediction formulas, Elo/xG constants, provider sync, snapshots/evaluations, database migrations, scheduled capture, and automatic evaluation behavior remain unchanged.
 - API, web unit, E2E, build, and diff validation pass.
+
+## Phase 12.18B8C - Live Standings Completed-Fixture Reconciliation
+
+**Status:** Done
+
+Implementation phase. Reconcile normalized football-data.org completed group-stage records with canonical fixtures when the provider team order is reversed from the repository fixture template.
+
+Deliverables:
+
+- ProviderFixtureId-first fixture resolution remains intact.
+- Team-pair fallback now supports direct and reversed canonicalized pairs.
+- Reversed provider scores are swapped into canonical home/away orientation before standings calculation.
+- `completedMatchCount` reflects accepted completed records used by official standings, with warnings when provider finished records are rejected.
+- Regression coverage for Portugal 5-0 Uzbekistan, Colombia 1-0 Congo DR, England 0-0 Ghana, and Panama 0-1 Croatia, including exact Group K and Group L standings.
+- `docs/data-quality/LIVE_STANDINGS_COMPLETED_FIXTURE_RECONCILIATION.md`.
+
+Exit criteria:
+
+- Valid completed group-stage records contribute exactly once to official standings.
+- Live provisional standings continue to compose accepted completed results with current live/halftime scores.
+- Provider global standings remain metadata/cross-check only.
+- Canonical UTC timestamps, timezone display behavior, predictions, Elo/xG constants, projections, snapshots, evaluations, migrations, scheduled capture, and provider selection remain unchanged.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

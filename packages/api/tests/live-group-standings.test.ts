@@ -76,6 +76,103 @@ function omitScores(record: WorldCup2026ExternalFixtureRecord): WorldCup2026Exte
   return withoutScores;
 }
 
+function getGroupEntry(result: WorldCup2026LiveGroupStandingsResponse, group: string, team: string) {
+  return result.officialGroups.find((g) => g.group === group)?.standings.find((entry) => entry.team === team);
+}
+
+function knownGroupKAndLCompletedRecords(): WorldCup2026ExternalFixtureRecord[] {
+  return [
+    finishedRecord({
+      providerFixtureId: "fd-portugal-dr-congo",
+      group: "GROUP_K",
+      matchday: 1,
+      homeTeam: "Portugal",
+      awayTeam: "Congo DR",
+      homeScore: 1,
+      awayScore: 1,
+      kickoffAt: "2026-06-17T00:00:00Z",
+      updatedAt: "2026-06-17T02:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-uzbekistan-colombia",
+      group: "GROUP_K",
+      matchday: 1,
+      homeTeam: "Uzbekistan",
+      awayTeam: "Colombia",
+      homeScore: 1,
+      awayScore: 3,
+      kickoffAt: "2026-06-18T00:00:00Z",
+      updatedAt: "2026-06-18T02:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-portugal-uzbekistan",
+      group: "GROUP_K",
+      matchday: 2,
+      homeTeam: "Portugal",
+      awayTeam: "Uzbekistan",
+      homeScore: 5,
+      awayScore: 0,
+      kickoffAt: "2026-06-23T18:00:00Z",
+      updatedAt: "2026-06-23T20:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-colombia-dr-congo",
+      group: "GROUP_K",
+      matchday: 2,
+      homeTeam: "Colombia",
+      awayTeam: "Congo DR",
+      homeScore: 1,
+      awayScore: 0,
+      kickoffAt: "2026-06-24T03:00:00Z",
+      updatedAt: "2026-06-24T05:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-england-croatia",
+      group: "GROUP_L",
+      matchday: 1,
+      homeTeam: "England",
+      awayTeam: "Croatia",
+      homeScore: 4,
+      awayScore: 2,
+      kickoffAt: "2026-06-17T18:00:00Z",
+      updatedAt: "2026-06-17T20:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-ghana-panama",
+      group: "GROUP_L",
+      matchday: 1,
+      homeTeam: "Ghana",
+      awayTeam: "Panama",
+      homeScore: 1,
+      awayScore: 0,
+      kickoffAt: "2026-06-18T18:00:00Z",
+      updatedAt: "2026-06-18T20:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-england-ghana",
+      group: "GROUP_L",
+      matchday: 2,
+      homeTeam: "England",
+      awayTeam: "Ghana",
+      homeScore: 0,
+      awayScore: 0,
+      kickoffAt: "2026-06-23T21:00:00Z",
+      updatedAt: "2026-06-23T23:00:00Z"
+    }),
+    finishedRecord({
+      providerFixtureId: "fd-panama-croatia",
+      group: "GROUP_L",
+      matchday: 2,
+      homeTeam: "Panama",
+      awayTeam: "Croatia",
+      homeScore: 0,
+      awayScore: 1,
+      kickoffAt: "2026-06-24T03:00:00Z",
+      updatedAt: "2026-06-24T05:00:00Z"
+    })
+  ];
+}
+
 describe("getWorldCup2026LiveGroupStandings", () => {
   describe("default local static mode", () => {
     it("returns a success response with official groups", () => {
@@ -369,6 +466,128 @@ describe("getWorldCup2026LiveGroupStandings", () => {
       expect(result.standingsIssues.some((issue) => issue.code === "provider_standings_not_grouped")).toBe(true);
       expect(result.standingsIssues.some((issue) => issue.code === "provider_global_standings_mismatch")).toBe(true);
     });
+
+    it("counts all valid completed Group K and L real-style fixtures once, including reversed provider team order", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: knownGroupKAndLCompletedRecords(),
+        liveMatches: [],
+        activeProvider: "football_data_org_results_provider",
+        externalProviderEnabled: true,
+        localFallbackUsed: false
+      });
+
+      expect(result.completedMatchCount).toBe(8);
+      expect(result.syncMetadata.completedMatchCount).toBe(8);
+      expect(result.standingsIssues).toHaveLength(0);
+      expect(result.projectedGroups).toBeNull();
+
+      expect(getGroupEntry(result, "K", "Colombia")).toMatchObject({
+        played: 2,
+        wins: 2,
+        draws: 0,
+        losses: 0,
+        goalsFor: 4,
+        goalsAgainst: 1,
+        goalDifference: 3,
+        points: 6
+      });
+      expect(getGroupEntry(result, "K", "Portugal")).toMatchObject({
+        played: 2,
+        wins: 1,
+        draws: 1,
+        losses: 0,
+        goalsFor: 6,
+        goalsAgainst: 1,
+        goalDifference: 5,
+        points: 4
+      });
+      expect(getGroupEntry(result, "K", "DR Congo")).toMatchObject({
+        played: 2,
+        wins: 0,
+        draws: 1,
+        losses: 1,
+        goalsFor: 1,
+        goalsAgainst: 2,
+        goalDifference: -1,
+        points: 1
+      });
+      expect(getGroupEntry(result, "K", "Uzbekistan")).toMatchObject({
+        played: 2,
+        wins: 0,
+        draws: 0,
+        losses: 2,
+        goalsFor: 1,
+        goalsAgainst: 8,
+        goalDifference: -7,
+        points: 0
+      });
+
+      expect(getGroupEntry(result, "L", "England")).toMatchObject({
+        played: 2,
+        wins: 1,
+        draws: 1,
+        losses: 0,
+        goalsFor: 4,
+        goalsAgainst: 2,
+        goalDifference: 2,
+        points: 4
+      });
+      expect(getGroupEntry(result, "L", "Ghana")).toMatchObject({
+        played: 2,
+        wins: 1,
+        draws: 1,
+        losses: 0,
+        goalsFor: 1,
+        goalsAgainst: 0,
+        goalDifference: 1,
+        points: 4
+      });
+      expect(getGroupEntry(result, "L", "Croatia")).toMatchObject({
+        played: 2,
+        wins: 1,
+        draws: 0,
+        losses: 1,
+        goalsFor: 3,
+        goalsAgainst: 4,
+        goalDifference: -1,
+        points: 3
+      });
+      expect(getGroupEntry(result, "L", "Panama")).toMatchObject({
+        played: 2,
+        wins: 0,
+        draws: 0,
+        losses: 2,
+        goalsFor: 0,
+        goalsAgainst: 2,
+        goalDifference: -2,
+        points: 0
+      });
+    });
+
+    it("keeps completed metadata aligned to accepted official standings records", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: "fd-valid-mexico-south-africa",
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            homeScore: 2,
+            awayScore: 0
+          }),
+          omitScores(finishedRecord({
+            providerFixtureId: "fd-invalid-finished-score",
+            homeTeam: "South Korea",
+            awayTeam: "Czechia"
+          }))
+        ],
+        liveMatches: []
+      });
+
+      expect(result.completedMatchCount).toBe(1);
+      expect(result.syncMetadata.completedMatchCount).toBe(1);
+      expect(result.syncMetadata.warnings.some((warning) => warning.includes("accepted 1 of 2"))).toBe(true);
+      expect(result.standingsIssues.some((issue) => issue.code === "invalid_finished_score")).toBe(true);
+    });
   });
 
   describe("live provisional standings", () => {
@@ -603,6 +822,94 @@ describe("getWorldCup2026LiveGroupStandings", () => {
       const mexicoEntry = groupA?.standings.find((e) => e.team === "Mexico");
       expect(mexicoEntry?.played).toBe(1);
       expect(mexicoEntry?.wins).toBe(1);
+    });
+
+    it("resolves reversed provider team-pair records and swaps scores into canonical fixture order", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: "fd-colombia-dr-congo",
+            group: "GROUP_K",
+            homeTeam: "Colombia",
+            awayTeam: "Congo DR",
+            homeScore: 1,
+            awayScore: 0
+          })
+        ],
+        liveMatches: []
+      });
+
+      const colombiaEntry = getGroupEntry(result, "K", "Colombia");
+      const drCongoEntry = getGroupEntry(result, "K", "DR Congo");
+
+      expect(colombiaEntry).toMatchObject({
+        played: 1,
+        wins: 1,
+        goalsFor: 1,
+        goalsAgainst: 0,
+        points: 3
+      });
+      expect(drCongoEntry).toMatchObject({
+        played: 1,
+        losses: 1,
+        goalsFor: 0,
+        goalsAgainst: 1,
+        points: 0
+      });
+      expect(result.standingsIssues.some((issue) => issue.code === "provider_fixture_unresolved")).toBe(false);
+    });
+
+    it("uses providerFixtureId-first resolution when it matches a canonical fixture id", () => {
+      const canonicalFixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(
+        (fixture) => fixture.group === "K" && fixture.homeTeam === "DR Congo" && fixture.awayTeam === "Colombia"
+      );
+      expect(canonicalFixture).toBeDefined();
+      if (canonicalFixture === undefined) return;
+
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: canonicalFixture.id,
+            group: "GROUP_K",
+            homeTeam: "DR Congo",
+            awayTeam: "Colombia",
+            homeScore: 0,
+            awayScore: 1
+          })
+        ],
+        liveMatches: []
+      });
+
+      expect(getGroupEntry(result, "K", "Colombia")?.points).toBe(3);
+      expect(result.standingsIssues).toHaveLength(0);
+    });
+
+    it("deduplicates direct and reversed records that resolve to the same canonical fixture", () => {
+      const result = getWorldCup2026LiveGroupStandings({
+        completedResults: [
+          finishedRecord({
+            providerFixtureId: "fd-dr-congo-colombia-direct",
+            group: "GROUP_K",
+            homeTeam: "DR Congo",
+            awayTeam: "Colombia",
+            homeScore: 0,
+            awayScore: 1
+          }),
+          finishedRecord({
+            providerFixtureId: "fd-colombia-dr-congo-reversed",
+            group: "GROUP_K",
+            homeTeam: "Colombia",
+            awayTeam: "Congo DR",
+            homeScore: 1,
+            awayScore: 0
+          })
+        ],
+        liveMatches: []
+      });
+
+      expect(result.completedMatchCount).toBe(1);
+      expect(getGroupEntry(result, "K", "Colombia")?.played).toBe(1);
+      expect(result.standingsIssues.some((issue) => issue.code === "duplicate_fixture")).toBe(true);
     });
 
     it("ignores records where neither providerFixtureId nor team names match any internal fixture", () => {

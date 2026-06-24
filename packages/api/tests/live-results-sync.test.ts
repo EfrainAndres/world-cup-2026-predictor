@@ -329,6 +329,102 @@ describe("createFootballDataOrgResultsProvider", () => {
     expect(completedResults.records[0]?.status).toBe("finished");
   });
 
+  it("normalizes the known completed Group K and L provider fixtures with IDs, groups, scores, and kickoffs", async () => {
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([
+        buildMatch({
+          id: 901001,
+          utcDate: "2026-06-23T18:00:00Z",
+          group: "GROUP_K",
+          matchday: 2,
+          homeTeam: { id: 1, name: "Portugal", shortName: "Portugal" },
+          awayTeam: { id: 2, name: "Uzbekistan", shortName: "Uzbekistan" },
+          score: { fullTime: { home: 5, away: 0 } }
+        }),
+        buildMatch({
+          id: 901002,
+          utcDate: "2026-06-24T03:00:00Z",
+          group: "GROUP_K",
+          matchday: 2,
+          homeTeam: { id: 3, name: "Colombia", shortName: "Colombia" },
+          awayTeam: { id: 4, name: "Congo DR", shortName: "Congo DR" },
+          score: { fullTime: { home: 1, away: 0 } }
+        }),
+        buildMatch({
+          id: 901003,
+          utcDate: "2026-06-23T21:00:00Z",
+          group: "GROUP_L",
+          matchday: 2,
+          homeTeam: { id: 5, name: "England", shortName: "England" },
+          awayTeam: { id: 6, name: "Ghana", shortName: "Ghana" },
+          score: { fullTime: { home: 0, away: 0 } }
+        }),
+        buildMatch({
+          id: 901004,
+          utcDate: "2026-06-24T03:00:00Z",
+          group: "GROUP_L",
+          matchday: 2,
+          homeTeam: { id: 7, name: "Panama", shortName: "Panama" },
+          awayTeam: { id: 8, name: "Croatia", shortName: "Croatia" },
+          score: { fullTime: { home: 0, away: 1 } }
+        })
+      ]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const completedResults = provider.getCompletedResults();
+
+    expect(completedResults.status).toBe("success");
+    if (completedResults.status !== "success") return;
+
+    expect(completedResults.records).toEqual([
+      expect.objectContaining({
+        providerFixtureId: "901001",
+        group: "K",
+        matchday: 2,
+        homeTeam: "Portugal",
+        awayTeam: "Uzbekistan",
+        status: "finished",
+        homeScore: 5,
+        awayScore: 0,
+        kickoffAt: "2026-06-23T18:00:00Z"
+      }),
+      expect.objectContaining({
+        providerFixtureId: "901002",
+        group: "K",
+        matchday: 2,
+        homeTeam: "Colombia",
+        awayTeam: "Congo DR",
+        status: "finished",
+        homeScore: 1,
+        awayScore: 0,
+        kickoffAt: "2026-06-24T03:00:00Z"
+      }),
+      expect.objectContaining({
+        providerFixtureId: "901003",
+        group: "L",
+        matchday: 2,
+        homeTeam: "England",
+        awayTeam: "Ghana",
+        status: "finished",
+        homeScore: 0,
+        awayScore: 0,
+        kickoffAt: "2026-06-23T21:00:00Z"
+      }),
+      expect.objectContaining({
+        providerFixtureId: "901004",
+        group: "L",
+        matchday: 2,
+        homeTeam: "Panama",
+        awayTeam: "Croatia",
+        status: "finished",
+        homeScore: 0,
+        awayScore: 1,
+        kickoffAt: "2026-06-24T03:00:00Z"
+      })
+    ]);
+  });
+
   it("maps standings from API response with correct fields", async () => {
     const mockFetch = createMockFetch(
       buildMatchesResponse([buildMatch()]),
