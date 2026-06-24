@@ -43,6 +43,13 @@ const PROVISIONAL_STATUSES: ReadonlySet<WorldCup2026ExternalMatchStatus> = new S
 const VALID_GROUPS: ReadonlySet<string> = new Set(WORLD_CUP_2026_FIXTURE_GROUPS.map((group) => group.group));
 const VALID_TEAM_KEYS: ReadonlySet<string> = new Set(WORLD_CUP_2026_TEAM_NAMES.map((team) => normalizeTeamSearchText(team)));
 
+type FixtureScoreOrientation = "canonical" | "reversed";
+
+interface FixtureResolution {
+  fixture: WorldCup2026Fixture;
+  scoreOrientation: FixtureScoreOrientation;
+}
+
 function buildFixtureIndex(fixtures: readonly WorldCup2026Fixture[]): {
   byId: Map<string, WorldCup2026Fixture>;
   byTeams: Map<string, WorldCup2026Fixture>;
@@ -56,10 +63,34 @@ function buildFixtureIndex(fixtures: readonly WorldCup2026Fixture[]): {
 function resolveInternalFixture(
   record: WorldCup2026ExternalFixtureRecord,
   index: ReturnType<typeof buildFixtureIndex>
-): WorldCup2026Fixture | undefined {
+): FixtureResolution | undefined {
+  const fixtureById = index.byId.get(record.providerFixtureId);
+  if (fixtureById !== undefined) {
+    return {
+      fixture: fixtureById,
+      scoreOrientation: "canonical"
+    };
+  }
+
   const homeTeam = canonicalizeTeamName(record.homeTeam);
   const awayTeam = canonicalizeTeamName(record.awayTeam);
-  return index.byId.get(record.providerFixtureId) ?? index.byTeams.get(`${homeTeam}|${awayTeam}`);
+  const directFixture = index.byTeams.get(`${homeTeam}|${awayTeam}`);
+  if (directFixture !== undefined) {
+    return {
+      fixture: directFixture,
+      scoreOrientation: "canonical"
+    };
+  }
+
+  const reversedFixture = index.byTeams.get(`${awayTeam}|${homeTeam}`);
+  if (reversedFixture !== undefined) {
+    return {
+      fixture: reversedFixture,
+      scoreOrientation: "reversed"
+    };
+  }
+
+  return undefined;
 }
 
 function normalizeProviderGroupLabel(group: string | undefined): string | undefined {
@@ -204,27 +235,31 @@ function adaptRecordsToFixtureResults(
   for (const record of records) {
     if (!allowedStatuses.has(record.status)) continue;
 
-    const fixture = resolveInternalFixture(record, index);
+    const resolution = resolveInternalFixture(record, index);
+    const fixture = resolution?.fixture;
     if (!validateRecordForStandings(record, fixture, issues, cutoffAt)) continue;
-    if (fixture === undefined) continue;
+    if (resolution === undefined) continue;
     if (record.homeScore === undefined || record.awayScore === undefined) continue;
 
-    if (seenInternalIds.has(fixture.id)) {
+    if (seenInternalIds.has(resolution.fixture.id)) {
       pushIssue(issues, {
         code: "duplicate_fixture",
         providerFixtureId: record.providerFixtureId,
-        fixtureId: fixture.id,
-        message: `Duplicate fixture '${fixture.id}' was skipped while composing standings.`
+        fixtureId: resolution.fixture.id,
+        message: `Duplicate fixture '${resolution.fixture.id}' was skipped while composing standings.`
       });
       continue;
     }
 
-    seenInternalIds.add(fixture.id);
+    const homeScore = resolution.scoreOrientation === "canonical" ? record.homeScore : record.awayScore;
+    const awayScore = resolution.scoreOrientation === "canonical" ? record.awayScore : record.homeScore;
+
+    seenInternalIds.add(resolution.fixture.id);
     results.push({
-      fixtureId: fixture.id,
+      fixtureId: resolution.fixture.id,
       status: "completed",
-      homeScore: record.homeScore,
-      awayScore: record.awayScore,
+      homeScore,
+      awayScore,
       resultSource: "external_api",
       ...(record.updatedAt !== undefined ? { updatedAt: record.updatedAt } : {})
     });
@@ -233,25 +268,14 @@ function adaptRecordsToFixtureResults(
   return results;
 }
 
-function buildOfficialGroups(
-  completedRecords: readonly WorldCup2026ExternalFixtureRecord[],
-  fixtures: readonly WorldCup2026Fixture[],
-  issues: WorldCup2026LiveStandingsIssue[],
-  cutoffAt?: string
-): readonly WorldCup2026GroupStandings[] {
-  const officialResults = adaptRecordsToFixtureResults(completedRecords, FINISHED_STATUSES, fixtures, new Set(), issues, cutoffAt);
-  return buildWorldCup2026GroupStandings({ results: officialResults });
-}
-
 function buildProvisionalGroups(
-  completedRecords: readonly WorldCup2026ExternalFixtureRecord[],
+  completedResults: readonly WorldCup2026FixtureResult[],
   liveRecords: readonly WorldCup2026ExternalFixtureRecord[],
   fixtures: readonly WorldCup2026Fixture[],
   issues: WorldCup2026LiveStandingsIssue[],
   cutoffAt?: string
 ): readonly WorldCup2026GroupStandings[] {
-  const seenInternalIds = new Set<string>();
-  const completedResults = adaptRecordsToFixtureResults(completedRecords, FINISHED_STATUSES, fixtures, seenInternalIds, issues, cutoffAt);
+  const seenInternalIds = new Set<string>(completedResults.map((result) => result.fixtureId));
   const liveResults = adaptRecordsToFixtureResults(liveRecords, LIVE_STATUSES, fixtures, seenInternalIds, issues, cutoffAt);
   return buildWorldCup2026GroupStandings({ results: [...completedResults, ...liveResults] });
 }
@@ -382,14 +406,21 @@ export function getWorldCup2026LiveGroupStandings(
   const activeLiveMatchCount = liveRecords.filter(
     (r) => LIVE_STATUSES.has(r.status)
   ).length;
-  const completedMatchCount = completedRecords.filter(
-    (r) => FINISHED_STATUSES.has(r.status)
-  ).length;
+  const providerFinishedRecordCount = completedRecords.filter((r) => FINISHED_STATUSES.has(r.status)).length;
 
-  const officialGroups = buildOfficialGroups(completedRecords, fixtures, standingsIssues, input?.cutoffAt);
+  const officialResults = adaptRecordsToFixtureResults(
+    completedRecords,
+    FINISHED_STATUSES,
+    fixtures,
+    new Set(),
+    standingsIssues,
+    input?.cutoffAt
+  );
+  const completedMatchCount = officialResults.length;
+  const officialGroups = buildWorldCup2026GroupStandings({ results: officialResults });
 
   const provisionalGroups = activeLiveMatchCount > 0
-    ? buildProvisionalGroups(completedRecords, liveRecords, fixtures, standingsIssues, input?.cutoffAt)
+    ? buildProvisionalGroups(officialResults, liveRecords, fixtures, standingsIssues, input?.cutoffAt)
     : null;
   standingsIssues.push(...analyzeProviderStandings(providerStandings, officialGroups));
 
@@ -405,7 +436,14 @@ export function getWorldCup2026LiveGroupStandings(
       cacheUsed,
       localFallbackUsed,
       externalProviderEnabled,
-      ...(lastSuccessfulSync !== undefined ? { lastSuccessfulSync } : {})
+      ...(lastSuccessfulSync !== undefined ? { lastSuccessfulSync } : {}),
+      ...(providerFinishedRecordCount !== completedMatchCount
+        ? {
+            extraWarnings: [
+              `Official standings accepted ${completedMatchCount} of ${providerFinishedRecordCount} finished provider record${providerFinishedRecordCount === 1 ? "" : "s"} after validation.`
+            ]
+          }
+        : {})
     }
   );
 

@@ -84,6 +84,7 @@ describe("match context composition — daily matches", () => {
   it("attaches matchContext to an entry for a known canonical fixture", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({ fixtures: [MEXICO_SA_RECORD] })
     });
 
@@ -102,6 +103,7 @@ describe("match context composition — daily matches", () => {
   it("context is additive — existing entry fields are unchanged", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({ fixtures: [MEXICO_SA_RECORD] })
     });
 
@@ -126,6 +128,7 @@ describe("match context composition — daily matches", () => {
 
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({ fixtures: [unknownRecord] })
     });
 
@@ -139,6 +142,7 @@ describe("match context composition — daily matches", () => {
   it("context reflects completed results for qualification state", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({
         fixtures: [MEXICO_SA_RECORD],
         completedResults: [COMPLETED_MEXICO_WIN]
@@ -158,6 +162,7 @@ describe("match context composition — daily matches", () => {
   it("context uses stale flag when cacheUsed is true", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({
         fixtures: [MEXICO_SA_RECORD],
         cacheUsed: true
@@ -176,6 +181,7 @@ describe("match context composition — daily matches", () => {
   it("context uses stale flag when localFallbackUsed is true", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: syncResult({
         fixtures: [MEXICO_SA_RECORD],
         localFallbackUsed: true
@@ -197,6 +203,7 @@ describe("match context composition — daily matches", () => {
 
     buildWorldCup2026DailyMatches({
       date: "2026-06-14",
+      timezone: "UTC",
       syncResult: sr
     });
 
