@@ -2052,6 +2052,108 @@ export interface ApiRoutes {
   simulateWorldCup2026ThirdPlaceMatchFoundation: () => WorldCup2026ThirdPlaceMatchSimulationFoundationResponse;
 }
 
+export type WorldCup2026MatchContextGroup =
+  | "A" | "B" | "C" | "D" | "E" | "F"
+  | "G" | "H" | "I" | "J" | "K" | "L";
+
+export type WorldCup2026FixtureImportanceLevel = "unknown" | "low" | "medium" | "high";
+
+export type WorldCup2026MatchContextQualificationStatus =
+  | "official"
+  | "provisional"
+  | "foundation_only";
+
+export type WorldCup2026MatchContextStandingsMode = "official" | "live_provisional";
+
+export interface WorldCup2026TeamStandingContext {
+  team: string;
+  groupPosition: number | null;
+  points: number;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+}
+
+export interface WorldCup2026MatchContextStandingsContext {
+  mode: WorldCup2026MatchContextStandingsMode;
+  home: WorldCup2026TeamStandingContext;
+  away: WorldCup2026TeamStandingContext;
+  groupComplete: boolean;
+}
+
+export interface WorldCup2026MatchContextTournamentForm {
+  homeMatchesPlayed: number;
+  awayMatchesPlayed: number;
+  homeFormScore: number;
+  awayFormScore: number;
+  formulaVersion: string;
+}
+
+export interface WorldCup2026MatchContextQualificationState {
+  firstPlace?: string;
+  secondPlace?: string;
+  thirdPlace?: string;
+  thirdPlaceCurrentlyQualifying?: boolean;
+  status: WorldCup2026MatchContextQualificationStatus;
+}
+
+export interface WorldCup2026MatchContextFixtureImportance {
+  level: WorldCup2026FixtureImportanceLevel;
+  reasons: readonly string[];
+}
+
+export interface WorldCup2026MatchContextProviderFreshness {
+  activeProvider: string;
+  cacheUsed: boolean;
+  localFallbackUsed: boolean;
+  stale: boolean;
+  lastSuccessfulSync?: string;
+}
+
+export interface WorldCup2026MatchContextFallbackState {
+  externalProviderEnabled: boolean;
+  localFallbackUsed: boolean;
+  unresolvedFixture: boolean;
+  warnings: readonly string[];
+}
+
+export interface WorldCup2026MatchContext {
+  fixtureId: string;
+  providerFixtureId?: string;
+  group: WorldCup2026MatchContextGroup;
+  matchday: number;
+  homeTeam: string;
+  awayTeam: string;
+  kickoffAt?: string;
+  standingsContext: WorldCup2026MatchContextStandingsContext;
+  tournamentForm?: WorldCup2026MatchContextTournamentForm;
+  qualificationState: WorldCup2026MatchContextQualificationState;
+  fixtureImportance: WorldCup2026MatchContextFixtureImportance;
+  providerFreshness: WorldCup2026MatchContextProviderFreshness;
+  fallbackState: WorldCup2026MatchContextFallbackState;
+}
+
+export type WorldCup2026MatchContextErrorCode = "fixture_not_found";
+
+export interface WorldCup2026MatchContextError {
+  status: "error";
+  code: WorldCup2026MatchContextErrorCode;
+  message: string;
+}
+
+export interface WorldCup2026MatchContextSuccess {
+  status: "success";
+  context: WorldCup2026MatchContext;
+}
+
+export type WorldCup2026MatchContextResult =
+  | WorldCup2026MatchContextSuccess
+  | WorldCup2026MatchContextError;
+
 export const API_VERSION = "api-foundation-v1";
 export const API_MODE = "pure_handlers" as const;
 
