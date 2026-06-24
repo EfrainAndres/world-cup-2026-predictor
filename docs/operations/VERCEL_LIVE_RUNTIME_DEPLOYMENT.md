@@ -26,6 +26,8 @@ Set these as **server-side Vercel environment variables**. Do not use any `NEXT_
 
 After changing Vercel environment variables, redeploy the application. Existing deployments do not automatically pick up new values.
 
+These server-side variable names are also allowlisted in `turbo.json` under the `build` task `env` field. That keeps Turborepo and Vercel build caching aware of runtime configuration changes without exposing any values or introducing `NEXT_PUBLIC_` variables.
+
 ## Vercel CLI Commands
 
 Examples only. Do not paste secrets into shared logs.
