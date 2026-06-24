@@ -290,6 +290,8 @@ export {
   buildWorldCup2026GroupFixtures,
   buildWorldCup2026CoverageEntries
 } from "./world-cup-2026-teams.js";
+export { buildWorldCup2026MatchContext } from "./match-context.js";
+export type { BuildWorldCup2026MatchContextInput } from "./match-context.js";
 export {
   assessPredictionConfidence
 } from "./prediction-confidence.js";
@@ -503,7 +505,23 @@ export type {
   PredictionHistoryListFilters,
   PredictionHistoryListSuccessResponse,
   PredictionHistoryListValidationErrorResponse,
-  PredictionHistoryListResponse
+  PredictionHistoryListResponse,
+  WorldCup2026FixtureImportanceLevel,
+  WorldCup2026MatchContext,
+  WorldCup2026MatchContextErrorCode,
+  WorldCup2026MatchContextFallbackState,
+  WorldCup2026MatchContextFixtureImportance,
+  WorldCup2026MatchContextGroup,
+  WorldCup2026MatchContextProviderFreshness,
+  WorldCup2026MatchContextQualificationState,
+  WorldCup2026MatchContextQualificationStatus,
+  WorldCup2026MatchContextError,
+  WorldCup2026MatchContextResult,
+  WorldCup2026MatchContextStandingsContext,
+  WorldCup2026MatchContextSuccess,
+  WorldCup2026MatchContextStandingsMode,
+  WorldCup2026MatchContextTournamentForm,
+  WorldCup2026TeamStandingContext
 } from "./schemas.js";
 
 export type {
