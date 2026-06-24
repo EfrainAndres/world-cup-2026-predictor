@@ -12,6 +12,7 @@ import {
   getDailyMatchStateLabel,
   shouldShowDailyMatchScore
 } from "../lib/daily-matches-ui";
+import { MatchContextDisplay } from "./MatchContextDisplay";
 
 interface DailyMatchCardProps {
   match: WorldCup2026DailyMatchEntry;
@@ -56,6 +57,12 @@ export function DailyMatchCard({ match }: DailyMatchCardProps) {
         </div>
 
       </div>
+
+      {match.matchContext !== undefined && (
+        <div className="mt-4 border-t border-slate-100 pt-4">
+          <MatchContextDisplay context={match.matchContext} />
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 border-t border-slate-100 pt-4 lg:grid-cols-2">
         <div className="rounded-md border border-slate-200 bg-slate-50 p-3">

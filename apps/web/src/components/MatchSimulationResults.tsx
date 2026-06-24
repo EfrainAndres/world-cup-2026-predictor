@@ -1,13 +1,16 @@
 "use client";
 
+import React from "react";
 import type { SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
-import type { PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import type { PredictMatchFromLiveEloSuccessResponse, WorldCup2026MatchContext } from "../lib/api-client";
 import { formatElo, formatPercent } from "../lib/api-client";
 import { getTournamentFormDisplayState } from "../lib/tournament-form-helpers";
 import { StatusPill } from "./StatusPill";
+import { MatchContextDisplay } from "./MatchContextDisplay";
 
 interface MatchSimulationResultsProps {
   result: SimulateMatchSuccessResponse | PredictMatchFromLiveEloSuccessResponse;
+  matchContext?: WorldCup2026MatchContext;
 }
 
 function formatConfidenceLevel(level: PredictMatchFromLiveEloSuccessResponse["predictionConfidence"]["level"]): string {
@@ -134,7 +137,7 @@ function TournamentFormAdjustmentSection({ result }: { result: PredictMatchFromL
   );
 }
 
-export function MatchSimulationResults({ result }: MatchSimulationResultsProps) {
+export function MatchSimulationResults({ result, matchContext }: MatchSimulationResultsProps) {
   const isLiveEloPrediction = "liveElo" in result;
   const probabilityCards = [
     {
@@ -293,6 +296,17 @@ export function MatchSimulationResults({ result }: MatchSimulationResultsProps) 
           Optional Monte Carlo run: {result.monteCarloSimulation.simulationCount} seeded simulations.
         </p>
       ) : null}
+
+      <div className="mt-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Match context — not used as a model input
+        </p>
+        {matchContext !== undefined ? (
+          <MatchContextDisplay context={matchContext} />
+        ) : (
+          <p className="mt-1 text-xs text-slate-500">Match context is not available for this prediction.</p>
+        )}
+      </div>
 
       <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-950">
         {isLiveEloPrediction

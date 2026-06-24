@@ -667,6 +667,7 @@ export interface WorldCup2026DailyMatchEntry {
   venue?: string;
   predictionSnapshot: WorldCup2026DailyMatchSnapshotSummary;
   predictionHistory: WorldCup2026DailyMatchPredictionHistorySummary;
+  matchContext?: WorldCup2026MatchContext;
 }
 
 export interface WorldCup2026DailyMatchesCounts {

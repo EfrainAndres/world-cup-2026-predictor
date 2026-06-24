@@ -27,11 +27,19 @@ import { WorldCupSemifinalMatchSimulationSection } from "../src/components/World
 import { WorldCupSemifinalSimulationSection } from "../src/components/WorldCupSemifinalSimulationSection";
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../src/lib/daily-matches-ui";
+import type { WorldCup2026MatchContext } from "../src/lib/api-client";
 import { getDashboardDailyMatches, getDashboardSnapshot } from "../src/lib/api-client";
 
 export default async function DashboardHomePage() {
   const snapshot = getDashboardSnapshot();
   const dailyMatches = await getDashboardDailyMatches({ timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
+
+  const contextByFixtureId: Record<string, WorldCup2026MatchContext> = {};
+  for (const match of [...dailyMatches.matches, ...dailyMatches.unscheduledMatches]) {
+    if (match.matchContext !== undefined) {
+      contextByFixtureId[match.fixtureId] = match.matchContext;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -91,7 +99,11 @@ export default async function DashboardHomePage() {
             description="Select an official World Cup fixture or switch to a custom matchup, then run a local API simulation. The output is a baseline scenario, not a published forecast."
           />
           <div className="mt-6">
-            <MatchSimulationForm initialResult={snapshot.matchPreview} fixtureFoundation={snapshot.worldCup2026Fixtures} />
+            <MatchSimulationForm
+              initialResult={snapshot.matchPreview}
+              fixtureFoundation={snapshot.worldCup2026Fixtures}
+              initialMatchContextByFixtureId={contextByFixtureId}
+            />
           </div>
         </section>
 

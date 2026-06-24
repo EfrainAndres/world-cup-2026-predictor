@@ -1536,6 +1536,46 @@ test("tournament form section always shows secondary signal disclaimer", async (
   ).toBeVisible();
 });
 
+// ── Match context section in simulation results ───────────────────────────────
+
+test("initial simulation result always shows match context section header", async ({ page }) => {
+  await page.goto("/");
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(
+    resultsSection.getByText("Match context — not used as a model input", { exact: true })
+  ).toBeVisible();
+});
+
+test("custom matchup simulation shows match context section with not-available message", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Brazil vs Germany" });
+  await expect(
+    resultsSection.getByText("Match context — not used as a model input", { exact: true })
+  ).toBeVisible();
+  await expect(
+    resultsSection.getByText("Match context is not available for this prediction.", { exact: true })
+  ).toBeVisible();
+});
+
+test("match context section header remains visible after running Auto Predict From Elo in scheduled mode", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(
+    resultsSection.getByText("Match context — not used as a model input", { exact: true })
+  ).toBeVisible();
+});
+
 test("Manual xG result does not show tournament form section", async ({ page }) => {
   await page.goto("/");
 

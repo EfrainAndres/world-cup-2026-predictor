@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import type { ApiValidationIssue, SimulateMatchSuccessResponse, WorldCup2026FixtureFoundationResponse } from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
-import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse } from "../lib/api-client";
+import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse, WorldCup2026MatchContext } from "../lib/api-client";
 import { buildTournamentFormRequestField } from "../lib/tournament-form-helpers";
 import { getGroupedTeamOptions } from "../lib/grouped-team-options";
 import {
@@ -19,6 +19,7 @@ import { SearchableTeamSelect } from "./SearchableTeamSelect";
 interface MatchSimulationFormProps {
   initialResult: SimulateMatchSuccessResponse;
   fixtureFoundation: WorldCup2026FixtureFoundationResponse;
+  initialMatchContextByFixtureId?: Record<string, WorldCup2026MatchContext>;
 }
 
 interface MatchSimulationFormState {
@@ -105,7 +106,7 @@ const PRESET_LABELS: Record<EloXgPreset, string> = {
 
 const GROUPED_TEAM_OPTIONS = getGroupedTeamOptions();
 
-export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchSimulationFormProps) {
+export function MatchSimulationForm({ initialResult, fixtureFoundation, initialMatchContextByFixtureId }: MatchSimulationFormProps) {
   const defaultScheduledSelection = getDefaultScheduledMatchSelection(fixtureFoundation);
   const [matchSelectionMode, setMatchSelectionMode] = useState<MatchSelectionMode>("scheduled");
   const [predictionMode, setPredictionMode] = useState<PredictionMode>("manual");
@@ -124,6 +125,11 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
     group: scheduledGroup,
     fixtureId: scheduledFixtureId
   });
+
+  const resolvedMatchContext: WorldCup2026MatchContext | undefined =
+    matchSelectionMode === "scheduled" && initialMatchContextByFixtureId !== undefined
+      ? initialMatchContextByFixtureId[selectedFixture.id]
+      : undefined;
 
   function clearInteractiveState(): void {
     setIssues([]);
@@ -612,7 +618,7 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation }: MatchS
       </form>
 
       {result !== null ? (
-        <MatchSimulationResults result={result} />
+        <MatchSimulationResults result={result} matchContext={resolvedMatchContext} />
       ) : (
         <section
           aria-label="Simulation results"
