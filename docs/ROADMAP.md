@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C Done; 12.18B9 Recommended; 12.18C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9 Done; 12.18C1 Recommended; 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -499,6 +499,30 @@ Exit criteria:
 - Live provisional standings continue to compose accepted completed results with current live/halftime scores.
 - Provider global standings remain metadata/cross-check only.
 - Canonical UTC timestamps, timezone display behavior, predictions, Elo/xG constants, projections, snapshots, evaluations, migrations, scheduled capture, and provider selection remain unchanged.
+
+## Phase 12.18B9 - Automatic Completed-Prediction Evaluation
+
+**Status:** Done
+
+Implementation phase. Automatically evaluate immutable pre-match prediction snapshots once synchronized official World Cup 2026 fixture results become completed.
+
+Deliverables:
+
+- Server-side automatic evaluation runner over persisted snapshots and synchronized completed results.
+- Dry-run and scheduled execution support through `COMPLETED_EVALUATION_MODE=preflight|dry_run|evaluate`.
+- `evaluate:completed-predictions` API package script.
+- GitHub Actions workflow with `workflow_dispatch`, schedule, least permissions, and concurrency protection.
+- Reversed provider orientation mapped into canonical fixture orientation before evaluation.
+- No-look-ahead rejection for snapshots captured at or after kickoff.
+- Idempotent already-evaluated reporting and conflict reporting without overwrites.
+- `docs/model-results/AUTOMATIC_COMPLETED_PREDICTION_EVALUATION.md`.
+- `docs/operations/AUTOMATIC_EVALUATION_RUNBOOK.md`.
+
+Exit criteria:
+
+- Prediction History shows evaluated final scores and metrics once evaluations exist.
+- Non-dry scheduled execution requires PostgreSQL and does not silently fall back to memory.
+- No prediction formula, Elo/xG constant, snapshot/evaluation identity algorithm, migration, provider selection, standings formula, scheduled capture behavior, or Colombia timezone behavior changes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

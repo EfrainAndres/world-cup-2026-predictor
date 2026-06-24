@@ -185,6 +185,25 @@ export type {
   EvaluateWorldCup2026PredictionSnapshotResult
 } from "./prediction-evaluation-service.js";
 export {
+  AutomaticCompletedPredictionEvaluationConfigError,
+  __resetCompletedPredictionEvaluationRuntimeForTests,
+  createProcessLocalCompletedEvaluationLock,
+  evaluateCompletedWorldCup2026PredictionSnapshots,
+  runScheduledCompletedPredictionEvaluation
+} from "./automatic-completed-prediction-evaluation.js";
+export type {
+  AutomaticCompletedPredictionEvaluationAction,
+  AutomaticCompletedPredictionEvaluationConfigErrorCode,
+  AutomaticCompletedPredictionEvaluationLock,
+  AutomaticCompletedPredictionEvaluationMode,
+  AutomaticCompletedPredictionEvaluationReport,
+  AutomaticCompletedPredictionEvaluationResult,
+  AutomaticCompletedPredictionEvaluationSummary,
+  EvaluateCompletedPredictionsInput,
+  RunScheduledAutomaticCompletedPredictionEvaluationInput,
+  ScheduledAutomaticCompletedPredictionEvaluationReport
+} from "./automatic-completed-prediction-evaluation.js";
+export {
   createInMemoryPredictionEvaluationStore,
   defaultPredictionEvaluationStore
 } from "./prediction-evaluation-store.js";

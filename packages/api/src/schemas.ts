@@ -1698,6 +1698,7 @@ export type WorldCup2026PredictionEvaluationIssueCode =
   | "duplicate_completed_result"
   | "invalid_fixture_identity"
   | "unsupported_snapshot_state"
+  | "snapshot_after_kickoff"
   | "invalid_snapshot_probabilities";
 
 export interface WorldCup2026PredictionEvaluationIssue {

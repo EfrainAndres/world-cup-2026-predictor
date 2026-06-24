@@ -289,7 +289,7 @@ describe("prediction evaluation service", () => {
     }
   });
 
-  it("rejects fixture mismatches and team-order mismatches", () => {
+  it("maps reversed provider team order and rejects fixture mismatches", () => {
     const store = createInMemoryPredictionEvaluationStore();
     const reversed = evaluateWorldCup2026PredictionSnapshot({
       snapshot: makeSnapshot(),
@@ -313,8 +313,12 @@ describe("prediction evaluation service", () => {
       evaluationStore: store
     });
 
-    expect(reversed.status).toBe("not_eligible");
-    expect(reversed.issues[0]?.code).toBe("team_order_mismatch");
+    expect(reversed.status).toBe("evaluated");
+    expect(reversed.evaluation?.actual).toMatchObject({
+      homeGoals: 0,
+      awayGoals: 2,
+      outcome: "away_win"
+    });
     expect(mismatched.status).toBe("not_eligible");
     expect(mismatched.issues[0]?.code).toBe("fixture_mismatch");
   });

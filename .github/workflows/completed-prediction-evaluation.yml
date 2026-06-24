@@ -1,0 +1,59 @@
+name: Completed Prediction Evaluation
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Evaluation mode: preflight | dry_run | evaluate"
+        required: false
+        default: "dry_run"
+        type: choice
+        options:
+          - preflight
+          - dry_run
+          - evaluate
+
+  # Run after likely result-sync/capture windows without coupling to page requests.
+  schedule:
+    - cron: "*/30 * * * *"
+
+concurrency:
+  group: completed-prediction-evaluation
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  evaluate:
+    name: Evaluate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      DATABASE_URL: ${{ secrets.WC2026_DATABASE_URL }}
+      FOOTBALL_DATA_API_TOKEN: ${{ secrets.FOOTBALL_DATA_API_TOKEN }}
+      PERSISTENCE_PROVIDER: postgres
+      RESULTS_PROVIDER: football_data_org
+      COMPLETED_EVALUATION_MODE: ${{ github.event_name == 'schedule' && 'evaluate' || inputs.mode }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run completed prediction evaluation
+        run: pnpm --filter @world-cup-2026-predictor/api evaluate:completed-predictions
