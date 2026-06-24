@@ -142,6 +142,18 @@ export type {
   ProjectionRefreshExecution,
   ProjectionInputSummary
 };
+export type {
+  WorldCup2026MatchContext,
+  WorldCup2026MatchContextStandingsContext,
+  WorldCup2026MatchContextQualificationState,
+  WorldCup2026MatchContextFixtureImportance,
+  WorldCup2026MatchContextProviderFreshness,
+  WorldCup2026MatchContextFallbackState,
+  WorldCup2026MatchContextQualificationStatus,
+  WorldCup2026MatchContextStandingsMode,
+  WorldCup2026FixtureImportanceLevel,
+  WorldCup2026TeamStandingContext
+} from "@world-cup-2026-predictor/api";
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
 

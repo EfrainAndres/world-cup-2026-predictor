@@ -9,6 +9,7 @@ import {
   getDailyMatchStateLabel,
   shouldShowDailyMatchScore
 } from "../lib/daily-matches-ui";
+import { MatchContextDisplay } from "./MatchContextDisplay";
 
 interface GroupDetailMatchCardProps {
   match: WorldCup2026GroupDetailMatch;
@@ -55,6 +56,10 @@ export function GroupDetailMatchCard({ match }: GroupDetailMatchCardProps) {
             {match.homeScore} – {match.awayScore}
           </p>
         </div>
+      )}
+
+      {match.matchContext !== undefined && (
+        <MatchContextDisplay context={match.matchContext} />
       )}
 
       {historyState !== "no_snapshot" && (

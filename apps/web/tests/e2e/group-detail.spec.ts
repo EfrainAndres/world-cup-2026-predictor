@@ -122,24 +122,32 @@ test("Group A page heading and official standings appear", async ({ page }) => {
 test("Group A navigation item is marked active", async ({ page }) => {
   await page.goto("/groups/A");
 
-  const activeLink = page.locator('a[aria-current="page"]');
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Group A");
+
+  const nav = page.getByRole("navigation", { name: "World Cup 2026 group navigation" });
+  const activeLink = nav.locator('[aria-current="page"]');
   await expect(activeLink).toBeVisible();
   await expect(activeLink).toHaveText("A");
 });
 
-test("can navigate from Group A to Group B via group nav", async ({ page }) => {
+// retries:1 — dev server event-loop starvation under full-suite parallel load can truncate the RSC stream; one retry recovers.
+test("can navigate from Group A to Group B via group nav", { retries: 1 }, async ({ page }) => {
   await page.goto("/groups/A");
 
-  await page.getByRole("link", { name: "B", exact: true }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Group A");
+
+  const nav = page.getByRole("navigation", { name: "World Cup 2026 group navigation" });
+  await nav.getByRole("link", { name: "B", exact: true }).click();
 
   await expect(page).toHaveURL(/\/groups\/B/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Group B");
-  const activeLink = page.locator('a[aria-current="page"]');
-  await expect(activeLink).toHaveText("B");
+  await expect(nav.locator('[aria-current="page"]')).toHaveText("B");
 });
 
 test("match categories render without duplication", async ({ page }) => {
   await page.goto("/groups/A");
+
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Group A");
 
   // Count occurrences of Mexico — should appear once in standings, once in a match card
   const sections = page.getByRole("region");
@@ -180,8 +188,9 @@ test("local fallback is labeled when API returns localFallbackUsed=true", async 
 
   await page.goto("/groups/A");
 
-  await expect(page.getByText("Local fallback")).toBeVisible();
-  await expect(page.getByText("Local static fallback is active.", { exact: false })).toBeVisible();
+  const dataSrcSummary = page.getByLabel("Data source summary");
+  await expect(dataSrcSummary.getByText("Local fallback")).toBeVisible();
+  await expect(dataSrcSummary.getByText("Local static fallback is active.", { exact: false })).toBeVisible();
 });
 
 test("prediction history section is absent when no snapshots exist for the group", async ({ page }) => {

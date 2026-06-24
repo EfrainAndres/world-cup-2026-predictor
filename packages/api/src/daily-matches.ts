@@ -6,6 +6,7 @@ import {
   type PredictionEvaluationStore
 } from "./prediction-evaluation-store.js";
 import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
+import { buildWorldCup2026MatchContext } from "./match-context.js";
 import type {
   ApiValidationIssue,
   GetWorldCup2026DailyMatchesInput,
@@ -535,7 +536,24 @@ export function buildWorldCup2026DailyMatches(
       continue;
     }
 
-    const entry = buildDailyMatchEntry(record, fixture, timezone, snapshotStore, evaluationStore);
+    const baseEntry = buildDailyMatchEntry(record, fixture, timezone, snapshotStore, evaluationStore);
+    const contextResult = buildWorldCup2026MatchContext({
+      fixtureId: baseEntry.fixtureId,
+      fixtures: input.syncResult.fixtures,
+      completedResults: input.syncResult.completedResults,
+      liveMatches: input.syncResult.liveMatches,
+      activeProvider: input.syncResult.activeProvider,
+      cacheUsed: input.syncResult.cacheUsed,
+      localFallbackUsed: input.syncResult.localFallbackUsed,
+      externalProviderEnabled: input.syncResult.externalProviderEnabled,
+      ...(input.syncResult.lastSuccessfulSync !== undefined
+        ? { lastSuccessfulSync: input.syncResult.lastSuccessfulSync }
+        : {})
+    });
+    const entry: WorldCup2026DailyMatchEntry =
+      contextResult.status === "success"
+        ? { ...baseEntry, matchContext: contextResult.context }
+        : baseEntry;
 
     if (record.kickoffAt === undefined) {
       issues.push({

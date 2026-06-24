@@ -235,6 +235,10 @@ function PredictionHistoryDesktopTable({
                     </p>
                   </div>
                 )}
+                <div className="mt-3 border-t border-slate-100 pt-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Match context</p>
+                  <p className="mt-1 text-xs text-slate-500">Historical match context was not captured for this snapshot.</p>
+                </div>
               </td>
             </tr>
           ))}
@@ -313,6 +317,11 @@ function PredictionHistoryMobileCards({
                   </p>
                 </>
               )}
+            </div>
+
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Match context</p>
+              <p className="mt-2 text-sm text-slate-500">Historical match context was not captured for this snapshot.</p>
             </div>
           </div>
         </article>

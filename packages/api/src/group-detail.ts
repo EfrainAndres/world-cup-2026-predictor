@@ -15,6 +15,7 @@ import {
   resolveFixture
 } from "./daily-matches.js";
 import { synchronizeWorldCup2026Results } from "./live-results-sync.js";
+import { buildWorldCup2026MatchContext } from "./match-context.js";
 import { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 import { defaultSnapshotStore, type PredictionSnapshotStore } from "./snapshot-store.js";
 import {
@@ -106,6 +107,7 @@ function toGroupDetailMatch(entry: WorldCup2026DailyMatchEntry, warnings: readon
     ...(entry.awayScore === undefined ? {} : { awayScore: entry.awayScore }),
     ...(entry.venue === undefined ? {} : { venue: entry.venue }),
     predictionHistory: entry.predictionHistory,
+    ...(entry.matchContext !== undefined ? { matchContext: entry.matchContext } : {}),
     warnings
   };
 }
@@ -786,8 +788,26 @@ export function buildWorldCup2026GroupDetail(
       continue;
     }
 
+    const baseEntry = buildDailyMatchEntry(record, fixture, timezone, snapshotStore, evaluationStore);
+    const ctxResult = buildWorldCup2026MatchContext({
+      fixtureId: baseEntry.fixtureId,
+      fixtures: input.syncResult.fixtures,
+      completedResults: input.syncResult.completedResults,
+      liveMatches: input.syncResult.liveMatches,
+      activeProvider: input.syncResult.activeProvider,
+      cacheUsed: input.syncResult.cacheUsed,
+      localFallbackUsed: input.syncResult.localFallbackUsed,
+      externalProviderEnabled: input.syncResult.externalProviderEnabled,
+      ...(input.syncResult.lastSuccessfulSync !== undefined
+        ? { lastSuccessfulSync: input.syncResult.lastSuccessfulSync }
+        : {})
+    });
+    const entryWithContext: WorldCup2026DailyMatchEntry =
+      ctxResult.status === "success"
+        ? { ...baseEntry, matchContext: ctxResult.context }
+        : baseEntry;
     const entry = toGroupDetailMatch(
-      buildDailyMatchEntry(record, fixture, timezone, snapshotStore, evaluationStore),
+      entryWithContext,
       fixture === undefined
         ? [`Fixture '${record.providerFixtureId}' could not be resolved to an internal group-stage fixture and was included using provider fields.`]
         : []
