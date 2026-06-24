@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4 Done; 12.18C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7 Done; 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -432,6 +432,30 @@ Exit criteria:
 - Normalized group-stage fixtures produce grouped standings for Groups A-L.
 - Completed-only, live/halftime provisional, duplicate-prevention, cutoff/no-look-ahead, provider-global-ignore, local fallback, and projected-standings-unchanged tests pass.
 - No prediction formula, Elo/xG constant, projection behavior, snapshot identity/hash, migration, provider selection, scheduled capture, UI contract, dependency, or unrelated refactor is introduced.
+
+## Phase 12.18B7 - Production Runtime & Live Data Deployment
+
+**Status:** Done
+
+Implementation phase. Make the Vercel-facing web runtime use the validated PostgreSQL/Neon and football-data.org configuration when available instead of freezing local static fallback data during build-time rendering.
+
+Deliverables:
+
+- Dashboard home page uses dynamic Node.js server rendering.
+- Dashboard performs one request-scoped `synchronizeWorldCup2026Results()` call and shares it across Today’s Matches, group standings, Auto Predict match-context seed data, and runtime diagnostics.
+- Group detail, prediction history, and World Cup API proxy routes are marked dynamic Node.js runtime where they read live provider or persistent history state.
+- Runtime diagnostics expose only safe fields: persistence configured, database connected, results provider configured, external provider active, active provider, fallback/cache flags, fixture counts, kickoff counts, last sync, and warnings.
+- UI status labels come from runtime diagnostics instead of hard-coded disabled labels.
+- Client components do not call football-data.org or PostgreSQL directly and do not receive secrets.
+- `.vercel/` is ignored so local Vercel project metadata is not committed.
+- `docs/operations/VERCEL_LIVE_RUNTIME_DEPLOYMENT.md`.
+
+Exit criteria:
+
+- Live deployment variables are documented for Production and Preview.
+- Dynamic rendering prevents local static fallback from being baked into Vercel builds.
+- Safe fallback remains visible when provider or database connectivity fails.
+- No prediction formula, Elo/xG constant, snapshot identity/hash, migration, provider credential, scheduled capture behavior, or client-side secret exposure changes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

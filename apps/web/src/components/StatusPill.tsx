@@ -1,3 +1,5 @@
+import React from "react";
+
 interface StatusPillProps {
   label: string;
   tone?: "neutral" | "success" | "warning";

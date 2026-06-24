@@ -1,5 +1,8 @@
 import { getWorldCup2026GroupDetail } from "@world-cup-2026-predictor/api";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ group: string }> }

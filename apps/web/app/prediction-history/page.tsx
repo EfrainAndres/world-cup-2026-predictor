@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Prediction History · World Cup 2026 Predictor"
 };
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 interface PredictionHistoryPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
