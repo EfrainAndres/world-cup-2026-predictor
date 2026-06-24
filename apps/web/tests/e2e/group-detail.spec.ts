@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// Group detail pages perform dynamic server rendering plus projection-cache reads/writes.
+// Keep this spec serial to avoid dev-server RSC stream truncation under full-suite parallel load.
+test.describe.configure({ mode: "serial" });
+
 function buildGroupDetailSuccessResponse(group: string, overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     status: "success",

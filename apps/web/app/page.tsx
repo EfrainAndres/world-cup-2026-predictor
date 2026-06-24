@@ -28,11 +28,36 @@ import { WorldCupSemifinalSimulationSection } from "../src/components/WorldCupSe
 import { WorldCupStandingsSection } from "../src/components/WorldCupStandingsSection";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../src/lib/daily-matches-ui";
 import type { WorldCup2026MatchContext } from "../src/lib/api-client";
-import { getDashboardDailyMatches, getDashboardSnapshot } from "../src/lib/api-client";
+import { getDashboardSnapshot } from "../src/lib/api-client";
+import {
+  buildDashboardDailyMatchesFromSync,
+  buildDashboardStandingsFromSync,
+  getDashboardLiveSyncResult,
+  getProductionRuntimeDiagnostics
+} from "../src/lib/server-runtime";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+function getDatabaseStatusLabel(databaseConnected: boolean, persistenceConfigured: boolean): string {
+  if (databaseConnected) return "Connected";
+  if (persistenceConfigured) return "Configured, unavailable";
+  return "Disabled";
+}
+
+function getExternalServicesStatusLabel(externalProviderActive: boolean, resultsProviderConfigured: boolean, localFallbackUsed: boolean): string {
+  if (externalProviderActive) return "Live provider active";
+  if (localFallbackUsed) return "Local fallback";
+  if (resultsProviderConfigured) return "Configured, unavailable";
+  return "Disabled";
+}
 
 export default async function DashboardHomePage() {
-  const snapshot = getDashboardSnapshot();
-  const dailyMatches = await getDashboardDailyMatches({ timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
+  const syncResult = await getDashboardLiveSyncResult();
+  const runtimeDiagnostics = await getProductionRuntimeDiagnostics(syncResult);
+  const standings = buildDashboardStandingsFromSync(syncResult);
+  const snapshot = getDashboardSnapshot({ worldCup2026Standings: standings });
+  const dailyMatches = buildDashboardDailyMatchesFromSync(syncResult, { timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
 
   const contextByFixtureId: Record<string, WorldCup2026MatchContext> = {};
   for (const match of [...dailyMatches.matches, ...dailyMatches.unscheduledMatches]) {
@@ -63,15 +88,26 @@ export default async function DashboardHomePage() {
               <dl className="space-y-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-500">Server deployment</dt>
-                  <dd className="font-semibold text-slate-950">Not added</dd>
+                  <dd className="font-semibold text-slate-950">Dynamic runtime</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-slate-500">Database</dt>
-                  <dd className="font-semibold text-slate-950">Disabled</dd>
+                  <dd className="font-semibold text-slate-950">
+                    {getDatabaseStatusLabel(
+                      runtimeDiagnostics.databaseConnected,
+                      runtimeDiagnostics.persistenceProviderConfigured
+                    )}
+                  </dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-slate-500">Charts</dt>
-                  <dd className="font-semibold text-slate-950">Deferred</dd>
+                  <dt className="text-slate-500">External services</dt>
+                  <dd className="font-semibold text-slate-950">
+                    {getExternalServicesStatusLabel(
+                      runtimeDiagnostics.externalProviderActive,
+                      runtimeDiagnostics.resultsProviderConfigured,
+                      runtimeDiagnostics.localFallbackUsed
+                    )}
+                  </dd>
                 </div>
               </dl>
             </aside>
@@ -86,7 +122,11 @@ export default async function DashboardHomePage() {
             description="The dashboard keeps model readiness, warnings, and historical replay context visible before richer prediction screens are added."
           />
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
-            <ModelStatusCard health={snapshot.health} modelInfo={snapshot.modelInfo} />
+            <ModelStatusCard
+              health={snapshot.health}
+              modelInfo={snapshot.modelInfo}
+              runtimeDiagnostics={runtimeDiagnostics}
+            />
             <HistoricalReplayAuditPreviewCard audit={snapshot.historicalReplayAudit} />
           </div>
         </section>

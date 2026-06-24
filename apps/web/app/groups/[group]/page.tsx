@@ -25,12 +25,11 @@ import type { GroupProjectionCacheStore } from "@world-cup-2026-predictor/api";
 const VALID_GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"] as const;
 type ValidGroup = (typeof VALID_GROUPS)[number];
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 function isValidGroup(g: string): g is ValidGroup {
   return (VALID_GROUPS as readonly string[]).includes(g);
-}
-
-export function generateStaticParams(): { group: string }[] {
-  return VALID_GROUPS.map((group) => ({ group }));
 }
 
 export async function generateMetadata({

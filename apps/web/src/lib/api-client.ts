@@ -184,6 +184,10 @@ export interface DashboardSnapshot {
   worldCup2026ThirdPlaceMatchSimulation: WorldCup2026ThirdPlaceMatchSimulationFoundationResponse;
 }
 
+export interface GetDashboardSnapshotInput {
+  worldCup2026Standings?: WorldCup2026LiveGroupStandingsResponse;
+}
+
 export function formatPercent(value: number): string {
   return `${(value * 100).toFixed(1)}%`;
 }
@@ -216,7 +220,7 @@ export async function getDashboardDailyMatches(
   return response;
 }
 
-export function getDashboardSnapshot(): DashboardSnapshot {
+export function getDashboardSnapshot(input: GetDashboardSnapshotInput = {}): DashboardSnapshot {
   const worldCup2026Fixtures = getWorldCup2026FixtureFoundation();
   const defaultScheduledFixture = worldCup2026Fixtures.fixtures[0];
 
@@ -262,7 +266,7 @@ export function getDashboardSnapshot(): DashboardSnapshot {
     teamRatings: getTeamRatingsFoundation(),
     liveEloRatings: getLiveEloRatingsFoundation(),
     worldCup2026Fixtures,
-    worldCup2026Standings: getWorldCup2026LiveGroupStandings(),
+    worldCup2026Standings: input.worldCup2026Standings ?? getWorldCup2026LiveGroupStandings(),
     worldCup2026RoundOf32: getWorldCup2026RoundOf32Foundation(),
     worldCup2026KnockoutBracket: getWorldCup2026KnockoutBracketFoundation(),
     worldCup2026KnockoutSimulation: simulateWorldCup2026KnockoutFixturesFoundation(),
