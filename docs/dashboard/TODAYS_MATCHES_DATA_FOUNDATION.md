@@ -29,7 +29,7 @@ Rules:
 
 - `date` must use `YYYY-MM-DD`
 - `timezone` must be a valid IANA timezone
-- default timezone is `UTC`
+- default timezone is `America/Bogota`
 - when `date` is omitted, the handler derives the requested day from `generatedAt` in the chosen timezone
 - the machine’s implicit local timezone is never used
 
@@ -76,6 +76,8 @@ Rules:
 - do not invent kickoff timestamps
 
 Fixtures without kickoff metadata are excluded from the dated list and returned separately as `unscheduledMatches`.
+
+The dashboard default groups matches by Colombia local calendar date. For example, `2026-06-24T03:00:00Z` belongs to `2026-06-23` in `America/Bogota`, while `2026-06-24T05:00:00Z` belongs to `2026-06-24`. Explicit `timezone=UTC` requests remain supported.
 
 ## Provider Metadata
 

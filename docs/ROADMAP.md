@@ -122,7 +122,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.15 | Shareable Prediction Cards | Package predictions and evaluation summaries into portfolio-, creator-, and sponsor-ready share assets. | Planned |
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
-| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7 Done; 12.18C Planned |
+| 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8 Done; 12.18B9 Recommended; 12.18C Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -456,6 +456,27 @@ Exit criteria:
 - Dynamic rendering prevents local static fallback from being baked into Vercel builds.
 - Safe fallback remains visible when provider or database connectivity fails.
 - No prediction formula, Elo/xG constant, snapshot identity/hash, migration, provider credential, scheduled capture behavior, or client-side secret exposure changes.
+
+## Phase 12.18B8 - Colombia Timezone & Local Match-Day Fix
+
+**Status:** Done
+
+Implementation phase. Make the public dashboard's Match Center and related fixture displays use Colombia local time by default so late-night fixtures are grouped by the calendar date Colombian users expect.
+
+Deliverables:
+
+- `WORLD_CUP_2026_DISPLAY_TIMEZONE = "America/Bogota"` as the named default.
+- Daily Match Center SSR, client navigation, and API proxy requests pass the default timezone explicitly.
+- `2026-06-24T03:00:00Z` groups under Colombia local date `2026-06-23`; `2026-06-24T05:00:00Z` groups under `2026-06-24`.
+- UI timezone label is `Colombia time (America/Bogota, UTC-5)`.
+- Explicit `timezone=UTC` remains supported.
+- `docs/dashboard/COLOMBIA_TIMEZONE_AND_LOCAL_MATCH_DAY.md`.
+
+Exit criteria:
+
+- UTC kickoff instants remain canonical and unmodified.
+- Prediction formulas, Elo/xG constants, provider sync, snapshots/evaluations, database migrations, scheduled capture, and automatic evaluation behavior remain unchanged.
+- API, web unit, E2E, build, and diff validation pass.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 

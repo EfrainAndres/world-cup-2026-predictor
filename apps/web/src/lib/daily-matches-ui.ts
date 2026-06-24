@@ -3,9 +3,10 @@ import type {
   WorldCup2026DailyMatchState,
   WorldCup2026DailyMatchesProviderMetadata
 } from "./api-client";
-import { formatPercent } from "./api-client";
+import { formatPercent, WORLD_CUP_2026_DISPLAY_TIMEZONE } from "./api-client";
 
-export const DAILY_MATCHES_DISPLAY_TIMEZONE = "UTC";
+export const DAILY_MATCHES_DISPLAY_TIMEZONE = WORLD_CUP_2026_DISPLAY_TIMEZONE;
+export const DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL = "Colombia time (America/Bogota, UTC-5)";
 export type DailyMatchHistoryState =
   | "no_snapshot"
   | "upcoming_with_prediction"

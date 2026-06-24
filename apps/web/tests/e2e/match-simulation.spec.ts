@@ -12,7 +12,7 @@ function buildDailyMatchesSuccessResponse(overrides: Record<string, unknown> = {
   return {
     status: "success",
     requestedDate: "2026-06-20",
-    timezone: "UTC",
+    timezone: "America/Bogota",
     generatedAt: "2026-06-19T12:00:00Z",
     matches: [],
     unscheduledMatches: [],
@@ -82,7 +82,7 @@ test("dashboard renders Today's World Cup Matches with timezone, fallback source
   await expect(section).toBeVisible();
   await expect(section.getByText("Selected date")).toBeVisible();
   await expect(section.getByText("Timezone")).toBeVisible();
-  await expect(section.getByText("UTC", { exact: true })).toBeVisible();
+  await expect(section.getByText("Colombia time (America/Bogota, UTC-5)", { exact: true })).toBeVisible();
   await expect(section.getByText("Source: Local static fallback", { exact: true })).toBeVisible();
   await expect(section.getByText("No scheduled matches are available for this date.")).toBeVisible();
   await expect(section.getByText(/fixtures are available but do not yet have kickoff metadata/i)).toBeVisible();
@@ -107,7 +107,7 @@ test("daily match center navigation loads mocked live and final cards with snaps
                 group: "Group A",
                 matchday: 1,
                 kickoffAt: "2026-06-20T16:00:00Z",
-                localizedKickoff: "2026-06-20 16:00 UTC",
+                localizedKickoff: "2026-06-20 11:00 GMT-5",
                 homeTeam: "Mexico",
                 awayTeam: "South Africa",
                 normalizedStatus: "final",
@@ -162,7 +162,7 @@ test("daily match center navigation loads mocked live and final cards with snaps
                 group: "Group C",
                 matchday: 1,
                 kickoffAt: "2026-06-20T19:00:00Z",
-                localizedKickoff: "2026-06-20 19:00 UTC",
+                localizedKickoff: "2026-06-20 14:00 GMT-5",
                 homeTeam: "Brazil",
                 awayTeam: "Morocco",
                 normalizedStatus: "live",
@@ -235,7 +235,7 @@ test("daily match center navigation loads mocked live and final cards with snaps
               group: "Group D",
               matchday: 1,
               kickoffAt: "2026-06-18T18:00:00Z",
-              localizedKickoff: "2026-06-18 18:00 UTC",
+              localizedKickoff: "2026-06-18 13:00 GMT-5",
               homeTeam: "United States",
               awayTeam: "Paraguay",
               normalizedStatus: "halftime",
@@ -315,7 +315,7 @@ test("daily match center shows evaluation pending for final fixtures without sto
                 group: "Group H",
                 matchday: 1,
                 kickoffAt: "2026-06-20T12:00:00Z",
-                localizedKickoff: "2026-06-20 12:00 UTC",
+                localizedKickoff: "2026-06-20 07:00 GMT-5",
                 homeTeam: "Spain",
                 awayTeam: "Cape Verde",
                 normalizedStatus: "final",
@@ -407,7 +407,7 @@ test("daily match center clears previous cards when a date change returns an API
                 group: "Group F",
                 matchday: 1,
                 kickoffAt: "2026-06-20T14:00:00Z",
-                localizedKickoff: "2026-06-20 14:00 UTC",
+                localizedKickoff: "2026-06-20 09:00 GMT-5",
                 homeTeam: "Netherlands",
                 awayTeam: "Japan",
                 normalizedStatus: "final",
@@ -484,6 +484,7 @@ test("daily match center remains usable on mobile layouts", async ({ page }) => 
   await expect(section.getByRole("button", { name: "Previous day" })).toBeVisible();
   await expect(section.getByRole("button", { name: "Today" })).toBeVisible();
   await expect(section.getByRole("button", { name: "Next day" })).toBeVisible();
+  await expect(section.getByText("Colombia time (America/Bogota, UTC-5)", { exact: true })).toBeVisible();
   await expect(section.getByText("Source: Local static fallback", { exact: true })).toBeVisible();
 });
 

@@ -28,7 +28,8 @@ import type {
   WorldCup2026SyncResult
 } from "./schemas.js";
 
-export const DEFAULT_DAILY_MATCHES_TIMEZONE = "UTC";
+export const WORLD_CUP_2026_DISPLAY_TIMEZONE = "America/Bogota";
+export const DEFAULT_DAILY_MATCHES_TIMEZONE = WORLD_CUP_2026_DISPLAY_TIMEZONE;
 const DATE_FORMAT_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface BuildWorldCup2026DailyMatchesInput extends GetWorldCup2026DailyMatchesInput {
@@ -607,7 +608,7 @@ export function buildWorldCup2026DailyMatches(
     providerMetadata,
     issues,
     warnings,
-      metadata: buildApiMetadata([
+    metadata: buildApiMetadata([
       "Daily matches groups synchronized World Cup 2026 fixtures by localized calendar date using normalized provider data.",
       "Status mapping uses provider-normalized fixture status as the source of truth.",
       "No snapshots or evaluations are created automatically; history association is read-only."

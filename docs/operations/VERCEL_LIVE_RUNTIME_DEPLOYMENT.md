@@ -105,6 +105,7 @@ With production variables configured and services reachable:
 - database status: `Connected`;
 - external services: `Live provider active`;
 - Today’s Matches source: `football_data_org_results_provider` or equivalent active provider label;
+- Today’s Matches timezone: `Colombia time (America/Bogota, UTC-5)`;
 - fixtures with kickoff metadata should be non-zero;
 - local static fallback warning should not appear unless the provider is unavailable;
 - Prediction History should read from persistent PostgreSQL when records exist.
@@ -124,7 +125,7 @@ Safe fallback states:
 4. Confirm the boundary summary does not show `Database Disabled` when PostgreSQL is connected.
 5. Confirm the model status card shows `Live provider active` and `Connected`.
 6. Confirm Today’s Matches shows a live provider or cache source, not local fallback, when football-data.org succeeds.
-7. Confirm daily matches include kickoff times for real dated fixtures.
+7. Confirm daily matches include kickoff times for real dated fixtures in Colombia local time.
 8. Confirm World Cup group standings show external provider metadata and fixture-derived results.
 9. Open `/groups/A` and confirm source metadata matches the live provider/fallback state.
 10. Open `/prediction-history` and confirm persistent history metadata or a sanitized database error.

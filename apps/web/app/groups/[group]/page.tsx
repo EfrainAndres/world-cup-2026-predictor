@@ -18,7 +18,10 @@ import {
   CURRENT_MODEL_VERSION,
   CURRENT_FORMULA_VERSION
 } from "@world-cup-2026-predictor/api";
-import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../../../src/lib/daily-matches-ui";
+import {
+  DAILY_MATCHES_DISPLAY_TIMEZONE,
+  DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL
+} from "../../../src/lib/daily-matches-ui";
 import type { WorldCup2026GroupDetailMatch, WorldCup2026GroupProjection } from "../../../src/lib/api-client";
 import type { GroupProjectionCacheStore } from "@world-cup-2026-predictor/api";
 
@@ -160,7 +163,7 @@ export default async function GroupDetailPage({
             World Cup 2026 · Group {normalized}
           </h1>
           <p className="mt-2 text-sm text-slate-500">
-            Timezone: {DAILY_MATCHES_DISPLAY_TIMEZONE} · Generated: {new Date(generatedAt).toUTCString()}
+            Timezone: {DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL} · Generated: {new Date(generatedAt).toUTCString()}
           </p>
         </section>
 
