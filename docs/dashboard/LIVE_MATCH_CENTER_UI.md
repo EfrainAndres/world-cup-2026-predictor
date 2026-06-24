@@ -60,9 +60,11 @@ The UI keeps one explicit timezone and sends both `date` and `timezone` back to 
 
 ## Timezone
 
-This phase uses `UTC` as the explicit display timezone.
+The public dashboard now uses `America/Bogota` as the explicit display timezone and labels it as:
 
-The dashboard does not silently switch to the browser timezone.
+`Colombia time (America/Bogota, UTC-5)`
+
+The dashboard does not silently switch to the browser timezone or the Vercel server region timezone. Explicit API requests for `UTC` remain supported.
 
 ## Provider Metadata
 

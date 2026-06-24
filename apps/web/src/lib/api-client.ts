@@ -27,7 +27,8 @@ import {
   simulateWorldCup2026SemifinalMatchesFoundation,
   resolveWorldCup2026KnockoutWinnersFoundation,
   getWorldCup2026ThirdPlaceMatchFoundation,
-  simulateWorldCup2026ThirdPlaceMatchFoundation
+  simulateWorldCup2026ThirdPlaceMatchFoundation,
+  WORLD_CUP_2026_DISPLAY_TIMEZONE
 } from "@world-cup-2026-predictor/api";
 import type {
   EloXgPreset,
@@ -156,6 +157,7 @@ export type {
 } from "@world-cup-2026-predictor/api";
 
 export const HISTORICAL_TOURNAMENT_YEARS = [2010, 2014, 2018, 2022] as const satisfies readonly SupportedHistoricalTournamentYear[];
+export { WORLD_CUP_2026_DISPLAY_TIMEZONE };
 
 export interface DashboardSnapshot {
   health: HealthResponse;

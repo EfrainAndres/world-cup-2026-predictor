@@ -57,7 +57,10 @@ export {
 export type { FootballDataOrgProviderConfig, SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
 export { getWorldCup2026LiveGroupStandings } from "./live-group-standings.js";
 export type { GetWorldCup2026LiveGroupStandingsInput } from "./live-group-standings.js";
-export { buildWorldCup2026DailyMatches } from "./daily-matches.js";
+export {
+  buildWorldCup2026DailyMatches,
+  WORLD_CUP_2026_DISPLAY_TIMEZONE
+} from "./daily-matches.js";
 export type { BuildWorldCup2026DailyMatchesInput } from "./daily-matches.js";
 export { buildWorldCup2026GroupDetail } from "./group-detail.js";
 export type { BuildWorldCup2026GroupDetailInput } from "./group-detail.js";

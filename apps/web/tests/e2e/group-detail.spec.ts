@@ -8,7 +8,7 @@ function buildGroupDetailSuccessResponse(group: string, overrides: Record<string
   return {
     status: "success",
     group,
-    timezone: "UTC",
+    timezone: "America/Bogota",
     generatedAt: "2026-06-19T12:00:00Z",
     teams: [
       { team: "Mexico", position: 1 },
@@ -36,7 +36,7 @@ function buildGroupDetailSuccessResponse(group: string, overrides: Record<string
           matchday: 1,
           homeScore: 3,
           awayScore: 0,
-          localizedKickoff: "2026-06-12, 15:00 UTC",
+          localizedKickoff: "2026-06-12, 10:00 GMT-5",
           predictionHistory: { snapshot: { available: false }, evaluation: { available: false }, warnings: [] },
           warnings: []
         }
@@ -50,7 +50,7 @@ function buildGroupDetailSuccessResponse(group: string, overrides: Record<string
           state: "upcoming",
           normalizedStatus: "scheduled",
           matchday: 2,
-          localizedKickoff: "2026-06-15, 18:00 UTC",
+          localizedKickoff: "2026-06-15, 13:00 GMT-5",
           predictionHistory: { snapshot: { available: false }, evaluation: { available: false }, warnings: [] },
           warnings: []
         }
@@ -109,11 +109,11 @@ function buildGroupDetailSuccessResponse(group: string, overrides: Record<string
 test("navigates to Group A from dashboard via 'View group details' link", async ({ page }) => {
   await page.goto("/");
 
-  const groupLinks = page.getByRole("link", { name: "View group details →" });
-  await expect(groupLinks.first()).toBeVisible();
-  await groupLinks.first().click();
+  const groupALink = page.locator('a[href="/groups/A"]').first();
+  await expect(groupALink).toBeVisible();
+  await groupALink.click();
 
-  await expect(page).toHaveURL(/\/groups\/[A-L]/);
+  await expect(page).toHaveURL(/\/groups\/A/);
 });
 
 test("Group A page heading and official standings appear", async ({ page }) => {

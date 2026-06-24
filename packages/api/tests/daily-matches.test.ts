@@ -5,7 +5,8 @@ import {
   createInMemorySnapshotStore,
   getWorldCup2026DailyMatches,
   getWorldCup2026LiveGroupStandings,
-  predictMatchFromLiveElo
+  predictMatchFromLiveElo,
+  WORLD_CUP_2026_DISPLAY_TIMEZONE
 } from "../src/index.js";
 import type {
   PredictionConfidenceAssessment,
@@ -171,6 +172,18 @@ function evaluation(
 }
 
 describe("buildWorldCup2026DailyMatches", () => {
+  it("defaults daily matching to Colombia local time", () => {
+    const result = buildWorldCup2026DailyMatches({
+      generatedAt: "2026-06-24T03:30:00Z",
+      syncResult: syncResult()
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.timezone).toBe(WORLD_CUP_2026_DISPLAY_TIMEZONE);
+    expect(result.requestedDate).toBe("2026-06-23");
+  });
+
   it("filters by requested date in UTC and orders by kickoff then fixture id", () => {
     const result = buildWorldCup2026DailyMatches({
       date: "2026-06-11",
@@ -243,6 +256,99 @@ describe("buildWorldCup2026DailyMatches", () => {
     if (result.status !== "success") return;
     expect(result.matches).toHaveLength(1);
     expect(result.matches[0]?.localizedKickoff).toContain("2026-06-11");
+  });
+
+  it("maps late UTC kickoff to the previous Colombia match day", () => {
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-23",
+      timezone: WORLD_CUP_2026_DISPLAY_TIMEZONE,
+      generatedAt: "2026-06-23T12:00:00Z",
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "colombia-vs-dr-congo",
+            homeTeam: "Colombia",
+            awayTeam: "DR Congo",
+            status: "scheduled",
+            kickoffAt: "2026-06-24T03:00:00Z",
+            group: "K",
+            matchday: 1
+          }),
+          record({
+            providerFixtureId: "midnight-colombia",
+            homeTeam: "Portugal",
+            awayTeam: "Uzbekistan",
+            status: "scheduled",
+            kickoffAt: "2026-06-24T05:00:00Z",
+            group: "K",
+            matchday: 1
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches.map((match) => match.providerFixtureId)).toEqual(["colombia-vs-dr-congo"]);
+    expect(result.matches[0]?.localizedKickoff).toContain("2026-06-23");
+    expect(result.matches[0]?.localizedKickoff).not.toContain("UTC");
+  });
+
+  it("maps midnight UTC-5 kickoff to the Colombia calendar day", () => {
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-24",
+      timezone: WORLD_CUP_2026_DISPLAY_TIMEZONE,
+      generatedAt: "2026-06-24T12:00:00Z",
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "colombia-vs-dr-congo",
+            homeTeam: "Colombia",
+            awayTeam: "DR Congo",
+            status: "scheduled",
+            kickoffAt: "2026-06-24T03:00:00Z",
+            group: "K",
+            matchday: 1
+          }),
+          record({
+            providerFixtureId: "midnight-colombia",
+            homeTeam: "Portugal",
+            awayTeam: "Uzbekistan",
+            status: "scheduled",
+            kickoffAt: "2026-06-24T05:00:00Z",
+            group: "K",
+            matchday: 1
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches.map((match) => match.providerFixtureId)).toEqual(["midnight-colombia"]);
+    expect(result.matches[0]?.localizedKickoff).toContain("2026-06-24");
+  });
+
+  it("preserves stored UTC kickoff timestamps while filtering in Colombia local time", () => {
+    const source = record({
+      providerFixtureId: "colombia-vs-dr-congo",
+      homeTeam: "Colombia",
+      awayTeam: "DR Congo",
+      status: "scheduled",
+      kickoffAt: "2026-06-24T03:00:00Z",
+      group: "K"
+    });
+
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-23",
+      timezone: WORLD_CUP_2026_DISPLAY_TIMEZONE,
+      syncResult: syncResult({ fixtures: [source] })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches[0]?.kickoffAt).toBe("2026-06-24T03:00:00Z");
+    expect(source.kickoffAt).toBe("2026-06-24T03:00:00Z");
   });
 
   it("maps normalized statuses and preserves valid final scores", () => {

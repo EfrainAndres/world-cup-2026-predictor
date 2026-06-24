@@ -40,9 +40,9 @@ describe("GroupDetailMatchCard", () => {
 
   test("renders localized kickoff when provided", () => {
     const html = renderToStaticMarkup(
-      <GroupDetailMatchCard match={makeMatch({ localizedKickoff: "2026-06-12, 15:00 UTC" })} />
+      <GroupDetailMatchCard match={makeMatch({ localizedKickoff: "2026-06-12, 10:00 GMT-5" })} />
     );
-    expect(html).toContain("2026-06-12, 15:00 UTC");
+    expect(html).toContain("2026-06-12, 10:00 GMT-5");
   });
 
   test("renders matchday when provided", () => {

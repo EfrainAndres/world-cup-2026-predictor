@@ -8,6 +8,7 @@ import type {
 } from "../lib/api-client";
 import {
   DAILY_MATCHES_DISPLAY_TIMEZONE,
+  DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL,
   formatUtcTimestamp,
   getDailyMatchesSourceClasses,
   getDailyMatchesSourceLabel,
@@ -94,7 +95,9 @@ export function TodaysMatchesSection({ initialData }: TodaysMatchesSectionProps)
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Timezone</p>
-              <p className="mt-1 text-sm font-semibold text-slate-950">{timezone}</p>
+              <p className="mt-1 text-sm font-semibold text-slate-950">
+                {timezone === DAILY_MATCHES_DISPLAY_TIMEZONE ? DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL : timezone}
+              </p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Source</p>

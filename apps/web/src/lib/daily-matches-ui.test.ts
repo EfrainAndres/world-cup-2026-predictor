@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL,
   DAILY_MATCHES_DISPLAY_TIMEZONE,
   formatDailyMatchProbability,
   formatEvaluationExactScoreLabel,
@@ -17,8 +18,9 @@ import {
 } from "./daily-matches-ui";
 
 describe("daily matches UI helpers", () => {
-  test("uses UTC as the explicit display timezone", () => {
-    expect(DAILY_MATCHES_DISPLAY_TIMEZONE).toBe("UTC");
+  test("uses Colombia time as the explicit display timezone", () => {
+    expect(DAILY_MATCHES_DISPLAY_TIMEZONE).toBe("America/Bogota");
+    expect(DAILY_MATCHES_DISPLAY_TIMEZONE_LABEL).toBe("Colombia time (America/Bogota, UTC-5)");
   });
 
   test("shifts dates deterministically in both directions", () => {
@@ -29,6 +31,11 @@ describe("daily matches UI helpers", () => {
   test("derives today's date in the requested timezone", () => {
     expect(getTodayDateForTimezone("UTC", new Date("2026-06-19T05:10:00Z"))).toBe("2026-06-19");
     expect(getTodayDateForTimezone("America/Bogota", new Date("2026-06-19T02:30:00Z"))).toBe("2026-06-18");
+  });
+
+  test("derives Colombia today independently of the process timezone", () => {
+    expect(getTodayDateForTimezone(DAILY_MATCHES_DISPLAY_TIMEZONE, new Date("2026-06-24T03:30:00Z"))).toBe("2026-06-23");
+    expect(getTodayDateForTimezone(DAILY_MATCHES_DISPLAY_TIMEZONE, new Date("2026-06-24T05:00:00Z"))).toBe("2026-06-24");
   });
 
   test("maps normalized daily states to UI labels", () => {
