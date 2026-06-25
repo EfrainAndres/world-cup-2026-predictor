@@ -11,7 +11,7 @@
         "FOOTBALL_DATA_COMPETITION_CODE",
         "FOOTBALL_DATA_SEASON"
       ],
-      "outputs": ["dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],
