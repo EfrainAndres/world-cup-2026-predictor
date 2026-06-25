@@ -20,3 +20,5 @@ apps/web/.next/
 .turbo/
 **/.turbo/
 node_modules/
+
+.env.production.local

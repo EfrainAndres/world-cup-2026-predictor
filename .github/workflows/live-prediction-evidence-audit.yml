@@ -1,0 +1,110 @@
+name: Live Prediction Evidence Audit
+
+# Phase 12.18C1 — Live Prediction Evidence & Recalibration Gate
+#
+# Reads persisted prediction snapshots and completed Model-vs-Reality
+# evaluations from the production PostgreSQL database and runs the pure
+# gate service to produce a human-readable summary or a JSON artifact.
+#
+# This workflow is intentionally manual-only. The gate returns
+# `evidence_collection_continue` until at least 20 unique fixtures have
+# been evaluated; running on a schedule before that threshold adds noise
+# without producing actionable verdicts. Re-evaluate scheduling once the
+# evidence sample exceeds the minForRecalibrationEvidence threshold (20).
+#
+# No results-provider token is required: the gate reads only persisted
+# snapshots and evaluations — it never calls football-data.org.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Audit mode: summary (stdout only) | write_artifact (JSON file)"
+        required: false
+        default: "summary"
+        type: choice
+        options:
+          - summary
+          - write_artifact
+
+# Prevent overlapping audit runs. A new dispatch waits for any in-progress run.
+concurrency:
+  group: live-prediction-evidence-audit
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Map the repository secret to the runtime name the CLI expects.
+      DATABASE_URL: ${{ secrets.WC2026_DATABASE_URL }}
+      # Postgres persistence is required; there is no fallback to memory.
+      PERSISTENCE_PROVIDER: postgres
+      # CLI mode — determined solely by the workflow_dispatch input.
+      LIVE_EVIDENCE_MODE: ${{ inputs.mode }}
+      # Default artifact path matches the CLI default.
+      LIVE_EVIDENCE_OUTPUT_PATH: docs/model-results/artifacts/world-cup-2026-live-prediction-evidence-gate.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run live prediction evidence audit
+        run: pnpm --filter @world-cup-2026-predictor/api audit:live-prediction-evidence
+
+      - name: Verify artifact was generated
+        if: inputs.mode == 'write_artifact'
+        run: |
+          if [ ! -f "$LIVE_EVIDENCE_OUTPUT_PATH" ]; then
+            echo "::error::Expected artifact was not generated at $LIVE_EVIDENCE_OUTPUT_PATH"
+            exit 1
+          fi
+          echo "Artifact generated successfully."
+
+      - name: Upload evidence gate artifact
+        if: inputs.mode == 'write_artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-prediction-evidence-gate
+          path: ${{ env.LIVE_EVIDENCE_OUTPUT_PATH }}
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Write step summary
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          MODE="${{ inputs.mode }}"
+          ARTIFACT_UPLOADED="no"
+          if [ "$MODE" = "write_artifact" ] && [ "$STATUS" = "success" ]; then
+            ARTIFACT_UPLOADED="yes"
+          fi
+          {
+            echo "## Live Prediction Evidence Audit"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Mode | \`$MODE\` |"
+            echo "| Status | $STATUS |"
+            echo "| Artifact uploaded | $ARTIFACT_UPLOADED |"
+          } >> "$GITHUB_STEP_SUMMARY"

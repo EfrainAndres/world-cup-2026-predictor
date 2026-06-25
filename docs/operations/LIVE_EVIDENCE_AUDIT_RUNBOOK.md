@@ -1,7 +1,98 @@
 # Live Evidence Audit Runbook
 
-**Phase:** 12.18C1 — Live Prediction Evidence & Recalibration Gate  
+**Phase:** 12.18C1 — Live Prediction Evidence & Recalibration Gate
+
 **Updated:** 2026-06-24
+
+**Workflow:** `.github/workflows/live-prediction-evidence-audit.yml`
+
+---
+
+## GitHub Actions Execution
+
+### Required GitHub Secret
+
+| Secret | Purpose |
+|---|---|
+| `WC2026_DATABASE_URL` | Neon PostgreSQL connection string for the production database |
+
+No results-provider token is required. The gate reads only persisted snapshots and
+evaluations — it never calls football-data.org or any external results API.
+
+### Manual Dispatch
+
+1. Go to **Actions → Live Prediction Evidence Audit** in the GitHub repository.
+2. Click **Run workflow**.
+3. Select a mode:
+   - `summary` — prints the evidence summary to the workflow log. No files written.
+   - `write_artifact` — generates the JSON artifact and uploads it to GitHub Artifacts.
+4. Click **Run workflow**.
+
+### Expected Conservative Decision at Low Sample Size
+
+With fewer than 20 unique evaluated fixtures the gate always returns
+`evidence_collection_continue`. This is correct. The `summary` mode log will show:
+
+```
+DECISION: EVIDENCE_COLLECTION_CONTINUE
+- Unique evaluated fixtures (N) below minForRecalibrationEvidence=20.
+- Evidence is clean but sample is too small for a reliable recalibration verdict.
+```
+
+No model action is required when this verdict is returned.
+
+### summary vs write_artifact Behavior
+
+| Mode | Output | Files written | Artifact uploaded |
+|---|---|---|---|
+| `summary` | Human-readable stdout in workflow log | None | No |
+| `write_artifact` | Human-readable stdout + JSON file | `docs/model-results/artifacts/world-cup-2026-live-prediction-evidence-gate.json` | Yes |
+
+### Downloading the Artifact
+
+After a `write_artifact` run:
+1. Open the completed workflow run in the GitHub Actions UI.
+2. Scroll to **Artifacts** at the bottom of the summary page.
+3. Download `live-prediction-evidence-gate`.
+4. The ZIP contains `world-cup-2026-live-prediction-evidence-gate.json`.
+
+To commit the artifact to the repository for traceability, extract it to
+`docs/model-results/artifacts/` and commit with a message referencing the gate verdict.
+
+### Scheduling Policy
+
+The workflow is **manual-only** by design. The gate returns `evidence_collection_continue`
+until at least 20 unique fixtures are evaluated; running on a schedule before that
+threshold generates noise without actionable output. Re-evaluate adding a schedule
+(e.g. weekly) once the evidence sample reliably exceeds `minForRecalibrationEvidence=20`.
+
+---
+
+## Troubleshooting: GitHub Actions
+
+### Missing secret — `WC2026_DATABASE_URL` not configured
+
+The job will fail at the audit step with:
+```
+DATABASE_URL is required when PERSISTENCE_PROVIDER=postgres.
+```
+Fix: Add the `WC2026_DATABASE_URL` secret in **Settings → Secrets and variables → Actions**.
+
+### PostgreSQL connectivity failure
+
+The job will fail at the audit step with a sanitized operational error (no connection
+string is printed). Confirm:
+- The Neon database is reachable from GitHub Actions (no IP allowlist restrictions).
+- `WC2026_DATABASE_URL` contains a valid connection string (check for typos via a
+  `dry_run` of the `evaluate:completed-predictions` workflow).
+
+### write_artifact mode fails before upload
+
+If the CLI exits with code 1, the artifact verification step catches the missing file:
+```
+::error::Expected artifact was not generated at docs/model-results/artifacts/...
+```
+Check the preceding step log for the root cause (postgres required, missing DATABASE_URL).
 
 ---
 
