@@ -48,8 +48,9 @@ jobs:
       PERSISTENCE_PROVIDER: postgres
       # CLI mode — determined solely by the workflow_dispatch input.
       LIVE_EVIDENCE_MODE: ${{ inputs.mode }}
-      # Default artifact path matches the CLI default.
-      LIVE_EVIDENCE_OUTPUT_PATH: docs/model-results/artifacts/world-cup-2026-live-prediction-evidence-gate.json
+      # Absolute path so the CLI (cwd=packages/api), the verify step, and
+      # upload-artifact all reference the same file regardless of working directory.
+      LIVE_EVIDENCE_OUTPUT_PATH: ${{ github.workspace }}/docs/model-results/artifacts/world-cup-2026-live-prediction-evidence-gate.json
 
     steps:
       - name: Checkout repository
