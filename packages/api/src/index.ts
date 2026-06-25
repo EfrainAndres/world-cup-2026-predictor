@@ -562,3 +562,30 @@ export type {
   WorldCup2026TeamEntry
 } from "./world-cup-2026-teams.js";
 export type { TeamAliasResolution, TeamCoverageEntry } from "./team-aliases.js";
+export {
+  LIVE_EVIDENCE_GATE_THRESHOLDS,
+  classifyLiveEvidenceFavoriteStrength,
+  runLiveEvidenceGate
+} from "./live-prediction-evidence-gate.js";
+export type {
+  LiveEvidenceCoreMetrics,
+  LiveEvidenceCounts,
+  LiveEvidenceDataQualityAssessment,
+  LiveEvidenceDrawCalibration,
+  LiveEvidenceDrawCalibrationBucket,
+  LiveEvidenceExcludedSnapshot,
+  LiveEvidenceFavoriteBucket,
+  LiveEvidenceFavoriteSeparation,
+  LiveEvidenceFavoriteStrength,
+  LiveEvidenceFinding,
+  LiveEvidenceGateDecision,
+  LiveEvidenceGateInput,
+  LiveEvidenceGateReport,
+  LiveEvidenceScorelineConcentration,
+  LiveEvidenceScorelineEntry,
+  LiveEvidenceSegment,
+  LiveEvidenceSelectionExclusionReason,
+  LiveEvidenceSelectionSummary,
+  LiveEvidenceXgCompression,
+  LiveEvidenceXgStrengthBucket
+} from "./live-prediction-evidence-gate.js";
