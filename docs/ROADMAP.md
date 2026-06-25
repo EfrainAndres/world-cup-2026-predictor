@@ -123,6 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A Done; 12.19B–H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -523,6 +524,36 @@ Exit criteria:
 - Prediction History shows evaluated final scores and metrics once evaluations exist.
 - Non-dry scheduled execution requires PostgreSQL and does not silently fall back to memory.
 - No prediction formula, Elo/xG constant, snapshot/evaluation identity algorithm, migration, provider selection, standings formula, scheduled capture behavior, or Colombia timezone behavior changes.
+
+## Phase 12.19A - Sports UI Benchmark & Information Architecture
+
+**Status:** Done
+
+Documentation-only UX architecture phase. Audit why the current Home page feels overloaded, benchmark reusable football-product UX patterns conceptually, define a shorter match-first information architecture, and plan a staged migration that preserves existing functionality.
+
+Deliverables:
+
+- `docs/ux/SPORTS_UI_BENCHMARK_AND_INFORMATION_ARCHITECTURE.md` — benchmark framework, product principles, sitemap, future Home architecture, progressive disclosure plan, visual direction, desktop/mobile wireframes, navigation recommendation, component reuse plan, and 12.19B-H migration roadmap.
+- `docs/ux/CURRENT_HOME_CONTENT_INVENTORY.md` — current Home render-order inventory, data sources, visual-weight assessment, section classifications, before-versus-after section count, and top overload contributors.
+- `docs/ux/TEAM_IDENTITY_AND_FLAGS_STRATEGY.md` — canonical team identity and local flag-asset strategy, data ownership model, component proposal, edge cases, and rollout plan.
+
+Planned UX migration:
+
+- **12.19B** — Design System & Team Identity Foundation.
+- **12.19C** — Application Shell and Navigation.
+- **12.19D** — Home Dashboard Redesign.
+- **12.19E** — Matches Experience.
+- **12.19F** — Groups and Tournament Experience.
+- **12.19G** — Model and Evidence Center.
+- **12.19H** — Responsive, Accessibility and Final UX QA.
+
+Exit criteria:
+
+- No application source, component, style, route, test, dependency, model, persistence, workflow, environment, or production behavior changes.
+- Every current Home section is accounted for.
+- Future Home architecture is materially shorter while all major capabilities remain reachable.
+- Team identity strategy uses one canonical ownership model and avoids emoji dependency.
+- Benchmark recommendations are pattern-based and do not copy proprietary UI.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 
