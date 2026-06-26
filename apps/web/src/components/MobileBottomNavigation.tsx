@@ -69,14 +69,14 @@ export function MobileBottomNavigation() {
       {/* Fixed bottom navigation bar */}
       <nav
         aria-label="Mobile navigation"
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200 bg-white"
+        className="fixed bottom-0 left-0 right-0 z-40 w-full max-w-[100dvw] border-t border-slate-200 bg-white"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <ul className="flex">
+        <ul className="flex w-full min-w-0">
           {MOBILE_BOTTOM_ITEMS.map((item) => {
             const active = isRouteActive(pathname, item.href);
             return (
-              <li key={item.href} className="flex-1">
+              <li key={item.href} className="min-w-0 flex-1">
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}
@@ -89,7 +89,7 @@ export function MobileBottomNavigation() {
               </li>
             );
           })}
-          <li className="flex-1">
+          <li className="min-w-0 flex-1">
             <button
               ref={moreButtonRef}
               type="button"

@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen w-full max-w-full min-w-0 overflow-x-clip bg-slate-50">
       {/* Skip link — first focusable element; visible on keyboard focus */}
       <a
         href="#main-content"
@@ -19,7 +19,7 @@ export function AppShell({ children }: AppShellProps) {
       </a>
       <AppHeader />
       {/* tabIndex={-1} enables programmatic focus from the skip link */}
-      <main id="main-content" tabIndex={-1} className="pb-16 outline-none lg:pb-0">
+      <main id="main-content" tabIndex={-1} className="min-w-0 max-w-full pb-16 outline-none lg:pb-0">
         {children}
       </main>
       <MobileBottomNavigation />

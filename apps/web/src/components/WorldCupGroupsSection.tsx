@@ -49,7 +49,7 @@ export function WorldCupGroupsSection({ fixtureFoundation }: WorldCupGroupsSecti
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {fixtureFoundation.groups.map((group) => (
           <WorldCupGroupCard
             key={group.group}
