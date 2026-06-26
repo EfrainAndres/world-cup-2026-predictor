@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { AppHeader } from "../../../src/components/AppHeader";
 import { GroupDetailMatchCard } from "../../../src/components/GroupDetailMatchCard";
 import { GroupDetailProviderMetadata } from "../../../src/components/GroupDetailProviderMetadata";
 import { GroupDetailProjection } from "../../../src/components/GroupDetailProjection";
@@ -141,9 +140,7 @@ export default async function GroupDetailPage({
   const hasPostponedOrCancelled = matches.postponed.length > 0 || matches.cancelled.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Breadcrumb + group nav */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 text-sm">
@@ -280,7 +277,6 @@ export default async function GroupDetailPage({
             </ul>
           </section>
         )}
-      </main>
     </div>
   );
 }

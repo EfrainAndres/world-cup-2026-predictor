@@ -1,4 +1,3 @@
-import { AppHeader } from "../src/components/AppHeader";
 import { HistoricalReplayAuditPreviewCard } from "../src/components/HistoricalReplayAuditPreviewCard";
 import { HistoricalValidationSection } from "../src/components/HistoricalValidationSection";
 import { LiveEloRatingsSection } from "../src/components/LiveEloRatingsSection";
@@ -67,9 +66,7 @@ export default async function DashboardHomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppHeader />
-      <main id="overview" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div id="overview" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <section aria-labelledby="dashboard-title" className="pb-8">
           <p className="text-sm font-semibold uppercase text-teal-700">Dashboard foundation</p>
           <div className="mt-3 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
@@ -231,7 +228,6 @@ export default async function DashboardHomePage() {
             audit={snapshot.historicalReplayAudit}
           />
         </div>
-      </main>
     </div>
   );
 }
