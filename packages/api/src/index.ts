@@ -589,3 +589,13 @@ export type {
   LiveEvidenceXgCompression,
   LiveEvidenceXgStrengthBucket
 } from "./live-prediction-evidence-gate.js";
+export {
+  UNKNOWN_TEAM_VISUAL_IDENTITY,
+  WORLD_CUP_2026_TEAM_IDENTITIES,
+  assertAllCanonicalTeamsCovered,
+  getTeamFlagPath,
+  getTeamVisualIdentity,
+  isKnownTeam,
+  resolveTeamVisualIdentity
+} from "./world-cup-2026-team-identity.js";
+export type { WorldCup2026TeamVisualIdentity } from "./world-cup-2026-team-identity.js";

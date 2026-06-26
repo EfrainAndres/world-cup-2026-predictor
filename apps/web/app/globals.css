@@ -1,31 +1,125 @@
 @import "tailwindcss";
 
+/* -----------------------------------------------------------------------
+   Semantic design tokens — Phase 12.19B Design System Foundation
+   All custom properties are scoped to :root for global reach.
+   Tailwind utility classes remain the primary styling mechanism;
+   these tokens are available via var() for custom CSS and for
+   future migration as components opt into the token system.
+   ----------------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
-  --background: #f6f8fb;
-  --foreground: #172033;
-  --muted: #5b6577;
-  --panel: #ffffff;
-  --panel-border: #d9e0ea;
-  --accent: #0f766e;
-  --accent-strong: #134e4a;
-  --warning: #8a5a00;
+
+  /* --- Surface colors --- */
+  --color-bg: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f4f8;
+  --color-surface-elevated: #ffffff;
+
+  /* --- Text colors --- */
+  --color-text-primary: #172033;
+  --color-text-secondary: #374151;
+  --color-text-subtle: #5b6577;
+
+  /* --- Border colors --- */
+  --color-border: #d9e0ea;
+  --color-border-strong: #9aa3b2;
+
+  /* --- Brand --- */
+  --color-brand: #0f766e;
+  --color-brand-hover: #134e4a;
+
+  /* --- Semantic state --- */
+  --color-success: #166534;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #bbf7d0;
+
+  --color-warning: #8a5a00;
+  --color-warning-bg: #fffbeb;
+  --color-warning-border: #fde68a;
+
+  --color-danger: #991b1b;
+  --color-danger-bg: #fff1f2;
+  --color-danger-border: #fecdd3;
+
+  --color-info: #1d4ed8;
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+
+  --color-live: #dc2626;
+  --color-live-bg: #fef2f2;
+  --color-live-border: #fca5a5;
+
+  /* --- Focus --- */
+  --color-focus-ring: #0f766e;
+
+  /* --- Legacy aliases (preserved for backward compatibility) --- */
+  --background: var(--color-bg);
+  --foreground: var(--color-text-primary);
+  --muted: var(--color-text-subtle);
+  --panel: var(--color-surface);
+  --panel-border: var(--color-border);
+  --accent: var(--color-brand);
+  --accent-strong: var(--color-brand-hover);
+  --warning: var(--color-warning);
+
+  /* --- Spacing scale --- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* --- Radius scale --- */
+  --r-sm: 0.25rem;
+  --r-md: 0.375rem;
+  --r-lg: 0.5rem;
+  --r-xl: 0.75rem;
+
+  /* --- Shadow scale --- */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 1px 3px 0 rgb(0 0 0 / 0.10), 0 1px 2px -1px rgb(0 0 0 / 0.10);
+  --shadow-lg: 0 4px 6px -1px rgb(0 0 0 / 0.10), 0 2px 4px -2px rgb(0 0 0 / 0.10);
+
+  /* --- Typography scale --- */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+
+  /* --- Container widths --- */
+  --container-max: 80rem;
+  --container-content: 48rem;
+  --container-px: 1rem;
+  --container-px-sm: 1.5rem;
+  --container-px-lg: 2rem;
 }
 
+/* --- Base reset --- */
 * {
   box-sizing: border-box;
 }
 
 html {
   min-height: 100%;
-  background: var(--background);
+  background: var(--color-bg);
 }
 
 body {
   min-height: 100%;
   margin: 0;
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--color-text-primary);
+  background: var(--color-bg);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -36,6 +130,6 @@ a {
 }
 
 :focus-visible {
-  outline: 3px solid #0f766e;
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 3px;
 }

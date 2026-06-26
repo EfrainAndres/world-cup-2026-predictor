@@ -1,5 +1,16 @@
 import React from "react";
+import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
+import type { WorldCup2026TeamVisualIdentity } from "@world-cup-2026-predictor/api";
 import type { WorldCup2026GroupStandingEntry } from "../lib/api-client";
+import { TeamIdentity } from "./TeamIdentity";
+
+function resolveStandingIdentity(teamName: string): WorldCup2026TeamVisualIdentity {
+  const id = getTeamVisualIdentity(teamName);
+  if (id.teamId === "unknown") {
+    return { ...id, canonicalName: teamName, shortName: teamName };
+  }
+  return id;
+}
 
 interface GroupDetailStandingsTableProps {
   standings: readonly WorldCup2026GroupStandingEntry[];
@@ -28,7 +39,9 @@ export function GroupDetailStandingsTable({ standings, label }: GroupDetailStand
           <tbody className="divide-y divide-slate-100 text-slate-700">
             {standings.map((entry) => (
               <tr key={entry.team}>
-                <th scope="row" className="py-2 pl-4 pr-3 font-medium text-slate-900">{entry.team}</th>
+                <th scope="row" className="py-2 pl-4 pr-3 font-medium text-slate-900">
+                  <TeamIdentity identity={resolveStandingIdentity(entry.team)} size="xs" />
+                </th>
                 <td className="px-2 py-2 text-right font-semibold text-slate-950">{entry.points}</td>
                 <td className="px-2 py-2 text-right">{entry.played}</td>
                 <td className="px-2 py-2 text-right">{entry.wins}</td>
