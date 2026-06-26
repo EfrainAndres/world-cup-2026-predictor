@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { AppHeader } from "../../src/components/AppHeader";
 import { PredictionHistoryDashboard } from "../../src/components/PredictionHistoryDashboard";
 import { listWorldCup2026PredictionHistory } from "@world-cup-2026-predictor/api";
 import { toPredictionHistoryQuery } from "../../src/lib/prediction-history-ui";
@@ -28,20 +27,17 @@ export default async function PredictionHistoryPage({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <AppHeader />
-      <PredictionHistoryDashboard
-        response={response}
-        formValues={{
-          group: firstValue("group"),
-          team: firstValue("team"),
-          fixtureId: firstValue("fixtureId"),
-          status: firstValue("status"),
-          evaluationState: firstValue("evaluationState") || "all",
-          sort: firstValue("sort") || "captured_desc",
-          pageSize: firstValue("pageSize") || "20"
-        }}
-      />
-    </div>
+    <PredictionHistoryDashboard
+      response={response}
+      formValues={{
+        group: firstValue("group"),
+        team: firstValue("team"),
+        fixtureId: firstValue("fixtureId"),
+        status: firstValue("status"),
+        evaluationState: firstValue("evaluationState") || "all",
+        sort: firstValue("sort") || "captured_desc",
+        pageSize: firstValue("pageSize") || "20"
+      }}
+    />
   );
 }
