@@ -73,7 +73,7 @@ test("Home CTAs route to reachable destinations", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "View model evidence", exact: true }).click();
   await expect(page).toHaveURL("/model");
-  await expect(page.getByRole("heading", { name: "Model", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Model and Evidence Center", exact: true }),).toBeVisible();
 });
 
 for (const viewport of REQUIRED_VIEWPORTS) {
