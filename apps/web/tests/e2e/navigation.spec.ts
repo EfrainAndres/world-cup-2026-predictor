@@ -507,7 +507,7 @@ test.describe("Existing pages continue to render (no double headers)", () => {
   test("/model page loads and renders heading", async ({ page }) => {
     await page.goto("/model");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Model", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Model and Evidence Center", exact: true }),).toBeVisible();
   });
 });
 

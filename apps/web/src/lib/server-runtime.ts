@@ -2,22 +2,31 @@ import {
   buildWorldCup2026DailyMatches,
   canonicalizeTeamName,
   getPredictionHistoryPersistenceConfig,
+  getModelInfo,
   getWorldCup2026LiveGroupStandings,
   resolvePredictionHistoryPersistence,
+  runLiveEvidenceGate,
+  summarizeWorldCup2026ModelReality,
   synchronizeWorldCup2026Results,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_DISPLAY_TIMEZONE
 } from "@world-cup-2026-predictor/api";
 import type {
+  LiveEvidenceGateReport,
+  ModelInfoResponse,
+  PredictionHistoryPersistenceMetadata,
   PredictionHistoryPersistenceResolution,
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse,
   WorldCup2026ExternalFixtureRecord,
   WorldCup2026LiveGroupStandingsResponse,
+  WorldCup2026ModelRealitySummary,
   WorldCup2026ResultProviderMetadata,
   WorldCup2026SyncResult
 } from "@world-cup-2026-predictor/api";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
+import type { ModelEvidenceStateKind } from "./model-evidence-center";
+import { deriveEvidenceStateKind } from "./model-evidence-center";
 
 export interface ProductionRuntimeDiagnostics {
   persistenceProviderConfigured: boolean;
@@ -213,4 +222,120 @@ export function buildDashboardMatchEntryById(
 
   const unscheduled = response.unscheduledMatches.find((m) => m.fixtureId === fixtureId);
   return unscheduled ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Model Evidence Center data composition
+// Resolves persistence once, loads snapshots + evaluations, runs pure analysis.
+// No writes, no provider sync, no tournament computation.
+// ---------------------------------------------------------------------------
+
+export interface ModelEvidenceCenterData {
+  modelInfo: ModelInfoResponse;
+  realitySummary: WorldCup2026ModelRealitySummary | null;
+  gateReport: LiveEvidenceGateReport | null;
+  persistenceMetadata: PredictionHistoryPersistenceMetadata | null;
+  snapshotCount: number;
+  evaluationCount: number;
+  stateKind: ModelEvidenceStateKind;
+  warnings: string[];
+  generatedAt: string;
+}
+
+export async function getModelEvidenceCenterData(): Promise<ModelEvidenceCenterData> {
+  const modelInfo = getModelInfo();
+  const generatedAt = new Date().toISOString();
+  const warnings: string[] = [];
+
+  const persistenceConfigured = (() => {
+    try {
+      const cfg = getPredictionHistoryPersistenceConfig();
+      return cfg.provider === "postgres";
+    } catch {
+      return false;
+    }
+  })();
+
+  let persistence: PredictionHistoryPersistenceResolution | null = null;
+  let persistenceError = false;
+
+  try {
+    persistence = await resolvePredictionHistoryPersistence();
+  } catch {
+    persistenceError = true;
+    warnings.push("Prediction history persistence is configured but could not be accessed.");
+  }
+
+  if (persistenceError || persistence === null) {
+    const stateKind = deriveEvidenceStateKind(persistenceConfigured, persistenceError, 0, 0, null);
+    return {
+      modelInfo,
+      realitySummary: null,
+      gateReport: null,
+      persistenceMetadata: null,
+      snapshotCount: 0,
+      evaluationCount: 0,
+      stateKind,
+      warnings,
+      generatedAt
+    };
+  }
+
+  let snapshots: Awaited<ReturnType<typeof persistence.snapshotStore.list>> = [];
+  let evaluations: Awaited<ReturnType<typeof persistence.evaluationStore.list>> = [];
+
+  try {
+    [snapshots, evaluations] = await Promise.all([
+      persistence.snapshotStore.list({ limit: 2000 }),
+      persistence.evaluationStore.list({ limit: 2000 })
+    ]);
+  } catch {
+    warnings.push("Evidence data could not be loaded from persistence.");
+    const stateKind = deriveEvidenceStateKind(persistenceConfigured, true, 0, 0, null);
+    return {
+      modelInfo,
+      realitySummary: null,
+      gateReport: null,
+      persistenceMetadata: persistence.metadata,
+      snapshotCount: 0,
+      evaluationCount: 0,
+      stateKind,
+      warnings,
+      generatedAt
+    };
+  }
+
+  const realitySummary = summarizeWorldCup2026ModelReality(evaluations);
+
+  let gateReport: LiveEvidenceGateReport | null = null;
+  try {
+    gateReport = runLiveEvidenceGate({
+      snapshots,
+      evaluations,
+      generatedAt,
+      persistenceMetadata: persistence.metadata
+    });
+  } catch {
+    warnings.push("Evidence gate analysis could not be completed.");
+  }
+
+  const stateKind = deriveEvidenceStateKind(
+    persistenceConfigured || persistence.metadata.persistent,
+    false,
+    snapshots.length,
+    evaluations.length,
+    gateReport?.decision ?? null
+  );
+
+  return {
+    modelInfo,
+    realitySummary,
+    gateReport,
+    persistenceMetadata: persistence.metadata,
+    snapshotCount: snapshots.length,
+    evaluationCount: evaluations.length,
+    stateKind,
+    warnings,
+    generatedAt
+  };
 }

@@ -58,9 +58,11 @@ describe("MobileBottomNavigation", () => {
     expect(html).toContain(">More<");
   });
 
-  test("More button has aria-expanded=false initially", () => {
+  test("More button targets the native popover menu", () => {
     const html = renderToStaticMarkup(<MobileBottomNavigation />);
-    expect(html).toContain('aria-expanded="false"');
+
+    expect(html).toContain('popoverTarget="mobile-more-menu"');
+    expect(html).toContain('aria-haspopup="menu"');
   });
 
   test("More button references the more menu via aria-controls", () => {
@@ -68,17 +70,21 @@ describe("MobileBottomNavigation", () => {
     expect(html).toContain('aria-controls="mobile-more-menu"');
   });
 
-  test("More menu is initially closed — no menu role rendered", () => {
+  test("More menu is rendered as a native auto popover", () => {
     const html = renderToStaticMarkup(<MobileBottomNavigation />);
-    expect(html).not.toContain('role="menu"');
+
+    expect(html).toContain('id="mobile-more-menu"');
+    expect(html).toContain('popover="auto"');
+    expect(html).toContain('role="menu"');
+    expect(html).toContain('aria-label="More destinations"');
   });
 
-  test("More menu items are not rendered in initial state", () => {
+  test("More menu items are rendered inside the native popover", () => {
     const html = renderToStaticMarkup(<MobileBottomNavigation />);
-    // MOBILE_MORE_ITEMS labels should not appear (menu is closed)
+
     for (const item of MOBILE_MORE_ITEMS) {
-      // The menu is closed in SSR initial state — items are not rendered
-      expect(html).not.toContain(`aria-label="More destinations"`);
+      expect(html).toContain(`href="${item.href}"`);
+      expect(html).toContain(`>${item.label}</a>`);
     }
   });
 

@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–F Done; 12.19G–H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–G Done; 12.19H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -544,7 +544,7 @@ Planned UX migration:
 - **12.19D** — Home Dashboard Redesign. **Done.**
 - **12.19E** — Matches Experience. **Done.**
 - **12.19F** — Groups and Tournament Experience. **Done.**
-- **12.19G** — Model and Evidence Center.
+- **12.19G** — Model and Evidence Center. **Done.**
 - **12.19H** — Responsive, Accessibility and Final UX QA.
 
 Exit criteria:
@@ -634,6 +634,37 @@ Exit criteria:
 - `/tournament` renders 7 primary regions; all simulation details are behind per-round collapsed disclosures; technical/projection disclosure is collapsed by default.
 - `GroupNav` uses `<Link>`, horizontal scroll, and keyboard-accessible touch targets.
 - No horizontal overflow at 320, 375, 390, 430px viewports.
+- No new client components, snapshots, evaluations, migrations, or provider changes.
+
+## Phase 12.19G - Model and Evidence Center
+
+**Status:** Done
+
+Implementation phase that turned `/model` into the primary Model and Evidence Center: a read-only, server-rendered destination covering the production pipeline configuration, live evidence accumulated from real WC2026 matches, and the recalibration gate verdict.
+
+Deliverables:
+
+- `apps/web/src/lib/model-evidence-center.ts` — pure helper module: `deriveEvidenceStateKind`, `getEvidenceState`, `getVerdictPresentation` (all 7 gate decisions), `getConfidenceLevelPresentation` (4 levels), `getCoverageTypePresentation` (4 types), metric formatters (`formatEvidencePercent`, `formatEvidenceDecimal`, `formatEvidenceGoals`, `formatSampleSize`, `formatEvidenceCount`), progress helpers (`getEvidenceProgress`, `getRecalibrationProgress`), `getProductionModelConfig`, `getModelVersionLabel`.
+- `apps/web/src/lib/server-runtime.ts` — added `ModelEvidenceCenterData` interface and `getModelEvidenceCenterData()` async function (no `getDashboardSnapshot()` call).
+- `apps/web/src/components/ModelStatusSummary.tsx` — status bar with evidence state badge, definition list, and evidence progress bar.
+- `apps/web/src/components/PredictionPipelineOverview.tsx` — static 8-step pipeline ordered list.
+- `apps/web/src/components/ProductionModelConfiguration.tsx` — configuration DL with full-parameter `<details>` disclosure.
+- `apps/web/src/components/ConfidenceCoverageGuide.tsx` — confidence level + coverage type guide with note box.
+- `apps/web/src/components/ModelEvidenceSummary.tsx` — metrics grid from `WorldCup2026ModelRealitySummary`; handles all empty/insufficient states.
+- `apps/web/src/components/RecalibrationGateSummary.tsx` — gate verdict banner with recalibration threshold progress bar and decision reason disclosures.
+- `apps/web/app/model/page.tsx` — rewritten to 7-region page calling `getModelEvidenceCenterData()`.
+- `apps/web/src/lib/model-evidence-center.test.ts` — 63 unit tests covering all verdict mappings, metric formatting, evidence states, confidence levels, configuration values.
+- `apps/web/tests/e2e/model.spec.ts` — Playwright tests for all 7 section IDs, pipeline steps, configuration disclosure, confidence guide, gate progress bar, CTAs, mobile overflow, aria-labelledby.
+- `docs/ux/MODEL_AND_EVIDENCE_CENTER.md` — 7-region IA spec, data composition, evidence state machine, component index, responsive and accessibility notes.
+
+Exit criteria:
+
+- `/model` renders 7 primary regions as server components with no client state.
+- No `getDashboardSnapshot()` call on the model route — only `getModelEvidenceCenterData()`.
+- Evidence state machine handles all 6 state kinds with appropriate empty states.
+- All 7 gate decisions have verdict presentations with `statusVariant` and `preserveModel`.
+- No horizontal overflow at 320, 375, 390, 430px viewports.
+- No recalibration, no writes, no provider sync.
 - No new client components, snapshots, evaluations, migrations, or provider changes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
