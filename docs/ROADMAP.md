@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–C Done; 12.19D–H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–D Done; 12.19E–H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -541,7 +541,7 @@ Planned UX migration:
 
 - **12.19B** — Design System & Team Identity Foundation. **Done.**
 - **12.19C** — Application Shell and Navigation. **Done.**
-- **12.19D** — Home Dashboard Redesign.
+- **12.19D** — Home Dashboard Redesign. **Done.**
 - **12.19E** — Matches Experience.
 - **12.19F** — Groups and Tournament Experience.
 - **12.19G** — Model and Evidence Center.
@@ -553,6 +553,27 @@ Exit criteria:
 - Every current Home section is accounted for.
 - Future Home architecture is materially shorter while all major capabilities remain reachable.
 - Team identity strategy uses one canonical ownership model and avoids emoji dependency.
+
+## Phase 12.19D - Home Dashboard Redesign
+
+**Status:** Done
+
+Implementation phase that replaced the overloaded 36-region Home render tree with an 8-section match-first dashboard: compact introduction, Today's matches, featured prediction, group snapshot, tournament outlook, model track record, quick actions, and one collapsed technical status disclosure.
+
+Deliverables:
+
+- `apps/web/app/page.tsx` — read-only dynamic Node.js Home composition that performs one World Cup 2026 result synchronization per render, reuses that sync result for daily matches, standings, and runtime diagnostics, and avoids generating snapshots or writing evaluations.
+- `apps/web/src/lib/home-dashboard.ts` and `apps/web/src/components/HomeDashboardSections.tsx` — focused Home selection policies and summary sections using `TeamIdentity`, `Surface`, `StatusBadge`, `EmptyState`, and `TechnicalDisclosure`.
+- Route upgrades for `/matches`, `/groups`, `/predictions`, `/tournament`, and `/model` so full existing match-center, prediction, group/standings, tournament, and model evidence capabilities remain reachable outside Home.
+- `docs/ux/HOME_DASHBOARD_REDESIGN.md` — implementation notes, content movement, route ownership, server-side data reuse, mobile behavior, accessibility, performance impact, and deferred 12.19E-H work.
+
+Exit criteria:
+
+- Home has no more than 8 primary sections and no longer renders full tournament rounds, all 12 full group standings tables, complete Elo tables, complete diagnostics, or full prediction history.
+- Today’s matches are the highest-priority Home content and flags appear in key summaries.
+- Technical/provider/persistence details are collapsed by default.
+- Existing prediction, match center, group, tournament, model, and history workflows remain reachable through route navigation.
+- Prediction logic, Elo/xG formulas, persistence schema, snapshots, evaluations, providers, and workflows remain unchanged.
 - Benchmark recommendations are pattern-based and do not copy proprietary UI.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)

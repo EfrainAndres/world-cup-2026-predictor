@@ -1,31 +1,58 @@
 import React from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { HistoricalReplayAuditPreviewCard } from "../../src/components/HistoricalReplayAuditPreviewCard";
+import { HistoricalValidationSection } from "../../src/components/HistoricalValidationSection";
+import { LiveEloRatingsSection } from "../../src/components/LiveEloRatingsSection";
+import { ModelStatusCard } from "../../src/components/ModelStatusCard";
 import { PageContainer } from "../../src/components/PageContainer";
 import { PageHeader } from "../../src/components/PageHeader";
-import { EmptyState } from "../../src/components/EmptyState";
+import { TeamRatingsSection } from "../../src/components/TeamRatingsSection";
+import { getDashboardSnapshot } from "../../src/lib/api-client";
+import {
+  buildDashboardStandingsFromSync,
+  getDashboardLiveSyncResult,
+  getProductionRuntimeDiagnostics
+} from "../../src/lib/server-runtime";
 
 export const metadata: Metadata = {
   title: "Model · World Cup 2026 Predictor"
 };
 
-export default function ModelPage() {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export default async function ModelPage() {
+  const syncResult = await getDashboardLiveSyncResult();
+  const runtimeDiagnostics = await getProductionRuntimeDiagnostics(syncResult);
+  const standings = buildDashboardStandingsFromSync(syncResult);
+  const snapshot = getDashboardSnapshot({ worldCup2026Standings: standings });
+
   return (
     <PageContainer className="py-8">
       <PageHeader
         eyebrow="World Cup 2026"
         title="Model"
-        description="Review model performance, evidence, confidence, and methodology."
+        description="Review model readiness, evidence, rating inputs, validation summaries, and historical replay context."
       />
-      <div className="mt-8">
-        <EmptyState
-          title="Model evidence center coming in Phase 12.19G"
-          description="Accuracy metrics, evidence gate status, Elo/xG methodology, and technical provenance."
-          action={
-            <Link href="/prediction-history" className="text-sm font-medium text-teal-700 hover:underline">
-              Prediction History →
-            </Link>
-          }
+
+      <section aria-labelledby="model-status-title" className="mt-8 grid gap-6 lg:grid-cols-2">
+        <h2 id="model-status-title" className="sr-only">
+          Model status and evidence summary
+        </h2>
+        <ModelStatusCard
+          health={snapshot.health}
+          modelInfo={snapshot.modelInfo}
+          runtimeDiagnostics={runtimeDiagnostics}
+        />
+        <HistoricalReplayAuditPreviewCard audit={snapshot.historicalReplayAudit} />
+      </section>
+
+      <LiveEloRatingsSection liveEloRatings={snapshot.liveEloRatings} />
+      <TeamRatingsSection teamRatings={snapshot.teamRatings} />
+      <div id="historical">
+        <HistoricalValidationSection
+          tournaments={snapshot.historicalTournaments}
+          audit={snapshot.historicalReplayAudit}
         />
       </div>
     </PageContainer>

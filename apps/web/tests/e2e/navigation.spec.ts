@@ -116,7 +116,7 @@ test.describe("Application shell — desktop navigation", () => {
 
   test("History secondary link is visible on desktop", async ({ page }) => {
     await page.goto("/");
-    const historyLink = page.getByRole("link", { name: "History" });
+    const historyLink = page.getByRole("link", { name: "History", exact: true });
     await expect(historyLink).toBeVisible();
   });
 
@@ -478,34 +478,34 @@ test.describe("Existing pages continue to render (no double headers)", () => {
     await expect(headers).toHaveCount(1);
   });
 
-  test("placeholder /matches page loads and renders heading", async ({ page }) => {
+  test("/matches page loads and renders heading", async ({ page }) => {
     await page.goto("/matches");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Matches" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Matches", exact: true })).toBeVisible();
   });
 
-  test("placeholder /groups page loads and renders heading", async ({ page }) => {
+  test("/groups page loads and renders heading", async ({ page }) => {
     await page.goto("/groups");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Groups" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Groups", exact: true })).toBeVisible();
   });
 
-  test("placeholder /predictions page loads and renders heading", async ({ page }) => {
+  test("/predictions page loads and renders heading", async ({ page }) => {
     await page.goto("/predictions");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Predictions" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Predictions", exact: true })).toBeVisible();
   });
 
-  test("placeholder /tournament page loads and renders heading", async ({ page }) => {
+  test("/tournament page loads and renders heading", async ({ page }) => {
     await page.goto("/tournament");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Tournament" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tournament", exact: true })).toBeVisible();
   });
 
-  test("placeholder /model page loads and renders heading", async ({ page }) => {
+  test("/model page loads and renders heading", async ({ page }) => {
     await page.goto("/model");
     await expect(page.getByRole("main")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Model" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Model", exact: true })).toBeVisible();
   });
 });
 
