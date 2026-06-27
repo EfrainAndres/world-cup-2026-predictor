@@ -1,12 +1,16 @@
 import {
   buildWorldCup2026DailyMatches,
+  canonicalizeTeamName,
   getPredictionHistoryPersistenceConfig,
   getWorldCup2026LiveGroupStandings,
   resolvePredictionHistoryPersistence,
-  synchronizeWorldCup2026Results
+  synchronizeWorldCup2026Results,
+  WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+  WORLD_CUP_2026_DISPLAY_TIMEZONE
 } from "@world-cup-2026-predictor/api";
 import type {
   PredictionHistoryPersistenceResolution,
+  WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse,
   WorldCup2026ExternalFixtureRecord,
   WorldCup2026LiveGroupStandingsResponse,
@@ -138,4 +142,75 @@ export async function getProductionRuntimeDiagnostics(
     ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {}),
     warnings
   };
+}
+
+function getColombiaDate(isoTimestamp: string): string {
+  const dt = new Date(isoTimestamp);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: WORLD_CUP_2026_DISPLAY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const parts = formatter.formatToParts(dt);
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
+}
+
+export function buildDashboardMatchEntryById(
+  syncResult: WorldCup2026SyncResult,
+  fixtureId: string
+): WorldCup2026DailyMatchEntry | null {
+  const fixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find((f) => f.id === fixtureId);
+  if (fixture === undefined) return null;
+
+  const canonicalHome = canonicalizeTeamName(fixture.homeTeam);
+  const canonicalAway = canonicalizeTeamName(fixture.awayTeam);
+
+  const allExternalRecords: WorldCup2026ExternalFixtureRecord[] = [
+    ...syncResult.fixtures,
+    ...syncResult.liveMatches,
+    ...syncResult.completedResults
+  ];
+
+  const seen = new Set<string>();
+  const deduplicated: WorldCup2026ExternalFixtureRecord[] = [];
+  for (const record of allExternalRecords) {
+    const key = record.providerFixtureId;
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduplicated.push(record);
+    }
+  }
+
+  const externalRecord = deduplicated.find((r) => {
+    return (
+      canonicalizeTeamName(r.homeTeam) === canonicalHome &&
+      canonicalizeTeamName(r.awayTeam) === canonicalAway
+    );
+  });
+
+  if (externalRecord === undefined || externalRecord.kickoffAt === undefined) {
+    const noDateResponse = buildWorldCup2026DailyMatches({ syncResult });
+    if (noDateResponse.status !== "success") return null;
+    const entry = noDateResponse.unscheduledMatches.find((m) => m.fixtureId === fixtureId);
+    return entry ?? null;
+  }
+
+  const kickoffDate = getColombiaDate(externalRecord.kickoffAt);
+  const response = buildWorldCup2026DailyMatches({
+    syncResult,
+    date: kickoffDate,
+    timezone: WORLD_CUP_2026_DISPLAY_TIMEZONE
+  });
+
+  if (response.status !== "success") return null;
+
+  const entry = response.matches.find((m) => m.fixtureId === fixtureId);
+  if (entry !== undefined) return entry;
+
+  const unscheduled = response.unscheduledMatches.find((m) => m.fixtureId === fixtureId);
+  return unscheduled ?? null;
 }

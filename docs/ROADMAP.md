@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–D Done; 12.19E–H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–E Done; 12.19F–H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -542,7 +542,7 @@ Planned UX migration:
 - **12.19B** — Design System & Team Identity Foundation. **Done.**
 - **12.19C** — Application Shell and Navigation. **Done.**
 - **12.19D** — Home Dashboard Redesign. **Done.**
-- **12.19E** — Matches Experience.
+- **12.19E** — Matches Experience. **Done.**
 - **12.19F** — Groups and Tournament Experience.
 - **12.19G** — Model and Evidence Center.
 - **12.19H** — Responsive, Accessibility and Final UX QA.
@@ -575,6 +575,36 @@ Exit criteria:
 - Existing prediction, match center, group, tournament, model, and history workflows remain reachable through route navigation.
 - Prediction logic, Elo/xG formulas, persistence schema, snapshots, evaluations, providers, and workflows remain unchanged.
 - Benchmark recommendations are pattern-based and do not copy proprietary UI.
+
+## Phase 12.19E - Matches Experience
+
+**Status:** Done
+
+Implementation phase that turned `/matches` into the primary match center: URL-driven date navigation, five match filter tabs with per-filter counts, a compact sortable `CompactMatchRow` list with TeamIdentity, and a new `/matches/[fixtureId]` detail route with prediction summary, 1X2 probability bars, projected score, model vs reality evaluation, group standing context, and a collapsed technical disclosure.
+
+Deliverables:
+
+- `apps/web/src/lib/matches-experience.ts` — pure helpers: `getMatchStatusPriority`, `sortMatchesForDisplay`, `applyMatchFilter`, `parseMatchFilter`, `parseMatchDate`, `buildMatchesUrl`, `getPrevDate`, `getNextDate`, `formatDisplayDate`.
+- `apps/web/src/components/CompactMatchRow.tsx` — compact server component match row linking to detail route.
+- `apps/web/src/components/MatchList.tsx` — server component `<ol>` list with `EmptyState` fallback.
+- `apps/web/src/components/MatchesDateNavigation.tsx` — server component prev/today/next `<Link>` nav.
+- `apps/web/src/components/MatchFilterBar.tsx` — server component filter tab bar with horizontal scroll.
+- `apps/web/app/matches/page.tsx` — replaced with server-rendered match center reading `searchParams`.
+- `apps/web/app/matches/[fixtureId]/page.tsx` — match detail route with `notFound()` for invalid fixtures.
+- `apps/web/src/lib/server-runtime.ts` — added `buildDashboardMatchEntryById`.
+- `apps/web/src/lib/matches-experience.test.ts` — 32 unit tests covering sorting, filtering, URL building, date parsing.
+- `apps/web/tests/e2e/matches.spec.ts` — Playwright tests for date nav, filters, match list, detail route, 404, mobile overflow, nav activation.
+- `docs/ux/MATCHES_EXPERIENCE.md` — implementation notes, route architecture, component summary, accessibility.
+
+Exit criteria:
+
+- `/matches` renders date navigation, filter bar, and sorted match list as server components with no client state.
+- URL is the source of truth for date and filter; shareable and bookmarkable.
+- `/matches/[fixtureId]` renders match detail; `notFound()` for invalid fixture IDs.
+- Matches nav item is active on both `/matches` and `/matches/[fixtureId]`.
+- No horizontal overflow at 320, 375, 390, 430px viewports.
+- Mobile bottom navigation remains visible.
+- No new client components, snapshots, evaluations, migrations, or provider changes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)
 
