@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–E Done; 12.19F–H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–F Done; 12.19G–H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -543,7 +543,7 @@ Planned UX migration:
 - **12.19C** — Application Shell and Navigation. **Done.**
 - **12.19D** — Home Dashboard Redesign. **Done.**
 - **12.19E** — Matches Experience. **Done.**
-- **12.19F** — Groups and Tournament Experience.
+- **12.19F** — Groups and Tournament Experience. **Done.**
 - **12.19G** — Model and Evidence Center.
 - **12.19H** — Responsive, Accessibility and Final UX QA.
 
@@ -604,6 +604,36 @@ Exit criteria:
 - Matches nav item is active on both `/matches` and `/matches/[fixtureId]`.
 - No horizontal overflow at 320, 375, 390, 430px viewports.
 - Mobile bottom navigation remains visible.
+- No new client components, snapshots, evaluations, migrations, or provider changes.
+
+## Phase 12.19F - Groups and Tournament Experience
+
+**Status:** Done
+
+Implementation phase that turned `/groups` and `/tournament` into complete sports-oriented destination pages with clear region-based layouts, progressive disclosure for simulation detail, and TeamIdentity flags throughout.
+
+Deliverables:
+
+- `apps/web/src/lib/groups-tournament-ui.ts` — pure helpers: `getSourcePresentation`, `projectionSourceToVariant`, `getProjectionSourcePresentation`, `groupIsComplete`, `formatGroupProgress`, `formatGD`, `isValidGroup`, `VALID_GROUPS`.
+- `apps/web/src/components/GroupOverviewCard.tsx` — compact group card with top-3 standings, qualification position circles, and Pts/GD columns.
+- `apps/web/src/components/TournamentRoundNav.tsx` — horizontal scroll anchor navigation across 7 tournament rounds.
+- `apps/web/src/components/TournamentChampionOutlook.tsx` — champion/runner-up/third-place outlook with TeamIdentity flags, 1X2 probabilities, and "Projected only" disclaimer.
+- `apps/web/src/components/GroupNav.tsx` — updated to use `<Link>` and horizontal scroll with touch targets.
+- `apps/web/app/groups/page.tsx` — complete rewrite to 6-region server page: progress bar, group overview grid, qualification overview, best-third ranking table, activity summary, technical disclosure.
+- `apps/web/app/groups/[group]/page.tsx` — breadcrumb now links to `/groups`; provider metadata moved to collapsed `<details>` disclosure.
+- `apps/web/app/tournament/page.tsx` — complete rewrite to 7-region server page: header/status, round nav, champion outlook, knockout bracket, stage summaries (each with collapsed match-by-match details), technical disclosure.
+- `apps/web/src/lib/groups-tournament-ui.test.ts` — 25 unit tests covering all exported helpers.
+- `apps/web/tests/e2e/groups.spec.ts` — Playwright tests for groups overview, group detail breadcrumb, GroupNav, disclosure, mobile overflow.
+- `apps/web/tests/e2e/tournament.spec.ts` — Playwright tests for tournament structure, round nav, champion outlook, stage sections, disclosures, mobile overflow.
+- `docs/ux/GROUPS_AND_TOURNAMENT_EXPERIENCE.md` — implementation notes, region layout, section IDs, data source, component summary.
+
+Exit criteria:
+
+- `/groups` renders 12 group overview cards, qualification overview, best-third ranking, and matches CTA as server components with no client state.
+- `/groups/[group]` breadcrumb links to `/groups`; provider metadata is behind collapsed disclosure.
+- `/tournament` renders 7 primary regions; all simulation details are behind per-round collapsed disclosures; technical/projection disclosure is collapsed by default.
+- `GroupNav` uses `<Link>`, horizontal scroll, and keyboard-accessible touch targets.
+- No horizontal overflow at 320, 375, 390, 430px viewports.
 - No new client components, snapshots, evaluations, migrations, or provider changes.
 
 ## Phase 12.17A - Multi-Tournament Architecture After Validation (Proposal)

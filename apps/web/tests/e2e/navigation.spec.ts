@@ -193,6 +193,8 @@ test.describe("Application shell — mobile navigation", () => {
     const moreButton = page
       .getByRole("navigation", { name: "Mobile navigation" })
       .getByRole("button", { name: "More" });
+    await expect(moreButton).toBeVisible();
+    await expect(moreButton).toBeEnabled();
     await moreButton.click();
     const moreMenu = page.getByRole("menu", { name: "More destinations" });
     await expect(moreMenu).toBeVisible();
