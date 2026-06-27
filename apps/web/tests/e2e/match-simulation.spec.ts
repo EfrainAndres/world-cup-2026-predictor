@@ -58,7 +58,7 @@ test("loads dashboard home with main heading", async ({ page }) => {
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "World Cup prediction signals with model limits in view"
+      name: "World Cup 2026 Predictor"
     })
   ).toBeVisible();
 });
@@ -66,17 +66,15 @@ test("loads dashboard home with main heading", async ({ page }) => {
 test("main dashboard sections are visible on load", async ({ page }) => {
   await page.goto("/");
 
-  await expect(
-    page.getByRole("heading", { level: 2, name: "Interactive match simulation" })
-  ).toBeVisible();
-
-  await expect(
-    page.getByRole("heading", { level: 2, name: "Current model and API evidence" })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Today's matches" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Featured prediction" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Group snapshot" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Tournament outlook" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: "Model track record" })).toBeVisible();
 });
 
 test("dashboard renders Today's World Cup Matches with timezone, fallback source, and unscheduled warning", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/matches");
 
   const section = page.getByRole("region", { name: "Today's World Cup Matches" });
   await expect(section).toBeVisible();
@@ -272,7 +270,7 @@ test("daily match center navigation loads mocked live and final cards with snaps
     });
   });
 
-  await page.goto("/");
+  await page.goto("/matches");
 
   const section = page.getByRole("region", { name: "Today's World Cup Matches" });
   await section.getByRole("button", { name: "Next day" }).click();
@@ -378,7 +376,7 @@ test("daily match center shows evaluation pending for final fixtures without sto
     });
   });
 
-  await page.goto("/");
+  await page.goto("/matches");
 
   const section = page.getByRole("region", { name: "Today's World Cup Matches" });
   await section.getByRole("button", { name: "Next day" }).click();
@@ -463,7 +461,7 @@ test("daily match center clears previous cards when a date change returns an API
     });
   });
 
-  await page.goto("/");
+  await page.goto("/matches");
 
   const section = page.getByRole("region", { name: "Today's World Cup Matches" });
   await section.getByRole("button", { name: "Next day" }).click();
@@ -477,7 +475,7 @@ test("daily match center clears previous cards when a date change returns an API
 
 test("daily match center remains usable on mobile layouts", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/matches");
 
   const section = page.getByRole("region", { name: "Today's World Cup Matches" });
   await expect(section).toBeVisible();
@@ -489,7 +487,7 @@ test("daily match center remains usable on mobile layouts", async ({ page }) => 
 });
 
 test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   await expect(
     page.getByRole("heading", { level: 2, name: "World Cup 2026 Groups & Fixtures" })
@@ -508,7 +506,7 @@ test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ pa
 });
 
 test("dashboard renders World Cup 2026 group standings tables", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   await expect(
     page.getByRole("heading", { level: 2, name: "World Cup 2026 Group Standings" })
@@ -528,7 +526,7 @@ test("dashboard renders World Cup 2026 group standings tables", async ({ page })
 });
 
 test("standings section shows Official tab selected by default", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   const tablist = page.getByRole("tablist", { name: "Standings mode" });
   await expect(tablist).toBeVisible();
@@ -539,7 +537,7 @@ test("standings section shows Official tab selected by default", async ({ page }
 });
 
 test("standings section shows live provisional tab in disabled state when no live matches", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   const tablist = page.getByRole("tablist", { name: "Standings mode" });
   const provisionalTab = tablist.getByRole("tab", { name: /Live provisional/ });
@@ -549,7 +547,7 @@ test("standings section shows live provisional tab in disabled state when no liv
 });
 
 test("standings section shows projected tab in disabled state", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   const tablist = page.getByRole("tablist", { name: "Standings mode" });
   const projectedTab = tablist.getByRole("tab", { name: /Projected/ });
@@ -559,7 +557,7 @@ test("standings section shows projected tab in disabled state", async ({ page })
 });
 
 test("standings section group tables remain accessible via Official tab", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/groups");
 
   const groupsSection = page.getByRole("region", { name: "World Cup 2026 Group Standings" });
   const groupA = groupsSection.getByRole("article", { name: "Group A standings" });
@@ -569,7 +567,7 @@ test("standings section group tables remain accessible via Official tab", async 
 });
 
 test("dashboard renders projected World Cup 2026 Round of 32 foundation", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 32" })).toBeVisible();
   const roundOf32Section = page.getByRole("region", { name: "Projected Round of 32" });
@@ -583,7 +581,7 @@ test("dashboard renders projected World Cup 2026 Round of 32 foundation", async 
 });
 
 test("dashboard renders Round of 32 knockout match simulations", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Round of 32 match simulations" })).toBeVisible();
   const simSection = page.getByRole("region", { name: "Round of 32 match simulations" });
@@ -593,7 +591,7 @@ test("dashboard renders Round of 32 knockout match simulations", async ({ page }
 });
 
 test("dashboard renders projected Round of 16 with advancement reasons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 16" })).toBeVisible();
   const r16Section = page.getByRole("region", { name: "Projected Round of 16" });
@@ -603,7 +601,7 @@ test("dashboard renders projected Round of 16 with advancement reasons", async (
 });
 
 test("dashboard renders Round of 16 match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Round of 16 match simulations" })).toBeVisible();
   const r16SimSection = page.getByRole("region", { name: "Round of 16 match simulations" });
@@ -613,7 +611,7 @@ test("dashboard renders Round of 16 match simulations with win and draw probabil
 });
 
 test("dashboard renders projected Quarterfinals with advancement reasons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Quarterfinals" })).toBeVisible();
   const qfSection = page.getByRole("region", { name: "Projected Quarterfinals" });
@@ -623,7 +621,7 @@ test("dashboard renders projected Quarterfinals with advancement reasons", async
 });
 
 test("dashboard renders Quarterfinal match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Quarterfinal match simulations" })).toBeVisible();
   const qfSimSection = page.getByRole("region", { name: "Quarterfinal match simulations" });
@@ -633,7 +631,7 @@ test("dashboard renders Quarterfinal match simulations with win and draw probabi
 });
 
 test("dashboard renders projected Semifinals with advancement reasons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Semifinals" })).toBeVisible();
   const sfSection = page.getByRole("region", { name: "Projected Semifinals" });
@@ -643,7 +641,7 @@ test("dashboard renders projected Semifinals with advancement reasons", async ({
 });
 
 test("dashboard renders Semifinal match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Semifinal match simulations" })).toBeVisible();
   const sfSimSection = page.getByRole("region", { name: "Semifinal match simulations" });
@@ -653,7 +651,7 @@ test("dashboard renders Semifinal match simulations with win and draw probabilit
 });
 
 test("dashboard renders projected Final with advancement reasons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Final" })).toBeVisible();
   const finalSection = page.getByRole("region", { name: "Projected Final" });
@@ -663,7 +661,7 @@ test("dashboard renders projected Final with advancement reasons", async ({ page
 });
 
 test("dashboard renders Final match simulation with win and draw probabilities", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Final match simulation", exact: true })).toBeVisible();
   const finalSimSection = page.getByRole("region", { name: "Final match simulation", exact: true });
@@ -673,7 +671,7 @@ test("dashboard renders Final match simulation with win and draw probabilities",
 });
 
 test("dashboard renders tournament projection overview with champion, runner-up, third place, and phase nav", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Tournament Projection Overview" })).toBeVisible();
   const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview" });
@@ -686,7 +684,7 @@ test("dashboard renders tournament projection overview with champion, runner-up,
 });
 
 test("dashboard renders champion projection summary with champion, runner-up, path, and warning", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Champion Projection Summary" })).toBeVisible();
   const summarySection = page.getByRole("region", { name: "Champion Projection Summary" });
@@ -699,7 +697,7 @@ test("dashboard renders champion projection summary with champion, runner-up, pa
 });
 
 test("dashboard renders projected tournament winner with champion and runner-up", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Tournament Winner" })).toBeVisible();
   const resolutionSection = page.getByRole("region", { name: "Projected Tournament Winner" });
@@ -710,7 +708,7 @@ test("dashboard renders projected tournament winner with champion and runner-up"
 });
 
 test("dashboard renders projected third place match with two participants", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected Third Place Match" })).toBeVisible();
   const thirdPlaceSection = page.getByRole("region", { name: "Projected Third Place Match" });
@@ -721,7 +719,7 @@ test("dashboard renders projected third place match with two participants", asyn
 });
 
 test("dashboard renders third place match simulation section with probabilities and scorelines", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Third Place Match simulation" })).toBeVisible();
   const simSection = page.getByRole("region", { name: "Third Place Match simulation" });
@@ -732,7 +730,7 @@ test("dashboard renders third place match simulation section with probabilities 
 });
 
 test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   await expect(page.getByRole("heading", { level: 2, name: "Projected knockout bracket" })).toBeVisible();
   const bracketSection = page.getByRole("region", { name: "Projected knockout bracket" });
@@ -746,26 +744,26 @@ test("dashboard renders projected knockout bracket with all rounds", async ({ pa
   await expect(page.getByText("Winner R32-01").first()).toBeVisible();
 });
 
-test("home page section targets exist for deep-linking", async ({ page }) => {
+test("home page renders exactly eight primary sections in the approved order", async ({ page }) => {
   await page.goto("/");
 
-  // Section IDs used for deep-linking from placeholder pages and internal references
-  await expect(page.locator("#match-preview")).toBeAttached();
-  await expect(page.locator("#replay-audit")).toBeAttached();
-  await expect(page.locator("#historical")).toBeAttached();
+  const sections = page.locator("[data-home-section]");
+  await expect(sections).toHaveCount(8);
+  await expect(sections.nth(0)).toHaveAttribute("id", "home-intro");
+  await expect(sections.nth(1)).toHaveAttribute("id", "home-todays-matches");
+  await expect(sections.nth(2)).toHaveAttribute("id", "home-featured-prediction");
+  await expect(sections.nth(3)).toHaveAttribute("id", "home-group-snapshot");
+  await expect(sections.nth(4)).toHaveAttribute("id", "home-tournament-outlook");
+  await expect(sections.nth(5)).toHaveAttribute("id", "home-model-track-record");
+  await expect(sections.nth(6)).toHaveAttribute("id", "home-quick-actions");
+  await expect(sections.nth(7)).toHaveAttribute("id", "home-technical-status");
   await expect(page.locator("#overview")).toBeAttached();
-  await expect(page.locator("#world-cup-tournament-overview")).toBeAttached();
-  await expect(page.locator("#world-cup-champion-projection-summary")).toBeAttached();
-  await expect(page.locator("#world-cup-final-match-simulation")).toBeAttached();
-  await expect(page.locator("#world-cup-semifinal-match-simulation")).toBeAttached();
-  await expect(page.locator("#world-cup-quarterfinal-match-simulation")).toBeAttached();
-  await expect(page.locator("#world-cup-round-of-16-match-simulation")).toBeAttached();
-  await expect(page.locator("#world-cup-knockout-simulation")).toBeAttached();
-  await expect(page.locator("#world-cup-third-place-match-simulation")).toBeAttached();
+  await expect(page.getByRole("heading", { name: "Projected Round of 32" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "World Cup 2026 Group Standings" })).toHaveCount(0);
 });
 
 test("dashboard sections appear in correct top-to-bottom order for portfolio flow", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/tournament");
 
   const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview", exact: true });
   const championSection = page.getByRole("region", { name: "Champion Projection Summary", exact: true });
@@ -798,7 +796,7 @@ test("dashboard sections appear in correct top-to-bottom order for portfolio flo
 // ── Match simulation form ─────────────────────────────────────────────────────
 
 test("match simulation form renders with required inputs and submit button", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(page.getByRole("button", { name: "Scheduled World Cup match" })).toBeVisible();
   await expect(page.getByLabel("World Cup group")).toBeVisible();
@@ -809,7 +807,7 @@ test("match simulation form renders with required inputs and submit button", asy
 });
 
 test("scheduled World Cup match mode is the default selection path", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   const fixtureMetadata = page.getByText("Selected fixture metadata").locator("..");
 
@@ -822,7 +820,7 @@ test("scheduled World Cup match mode is the default selection path", async ({ pa
 });
 
 test("initial simulation results render on page load for the default scheduled fixture", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(
     page.getByRole("heading", { name: "Mexico vs South Africa" })
@@ -833,7 +831,7 @@ test("initial simulation results render on page load for the default scheduled f
 });
 
 test("changing the selected group filters official fixtures to that group only", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByLabel("World Cup group").selectOption("C");
 
@@ -846,7 +844,7 @@ test("changing the selected group filters official fixtures to that group only",
 });
 
 test("scheduled fixture selection updates both teams in official order", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByLabel("World Cup group").selectOption("D");
   await page.getByLabel("Official fixture").selectOption("wc2026-group-d-md1-02-australia-vs-turkey");
@@ -859,7 +857,7 @@ test("scheduled fixture selection updates both teams in official order", async (
 // ── Win/draw/loss probability cards ──────────────────────────────────────────
 
 test("outcome probability cards render with percentage values", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   const resultsSection = page.getByRole("region", {
     name: "Mexico vs South Africa"
@@ -878,7 +876,7 @@ test("outcome probability cards render with percentage values", async ({ page })
 // ── Most likely scorelines ────────────────────────────────────────────────────
 
 test("most likely scorelines heading and list are visible", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(
     page.getByRole("heading", { name: "Most likely scorelines" })
@@ -896,7 +894,7 @@ test("most likely scorelines heading and list are visible", async ({ page }) => 
 // ── Scheduled simulation run ──────────────────────────────────────────────────
 
 test("running a manual simulation from a scheduled fixture uses the selected official matchup", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByLabel("World Cup group").selectOption("C");
   await page.getByLabel("Official fixture").selectOption("wc2026-group-c-md1-02-haiti-vs-scotland");
@@ -906,7 +904,7 @@ test("running a manual simulation from a scheduled fixture uses the selected off
 });
 
 test("changing scheduled fixture selection clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
 
@@ -917,7 +915,7 @@ test("changing scheduled fixture selection clears stale results", async ({ page 
 });
 
 test("changing scheduled group clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
 
@@ -928,7 +926,7 @@ test("changing scheduled group clears stale results", async ({ page }) => {
 });
 
 test("switching prediction mode clears stale results for the selected fixture", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
 
@@ -939,7 +937,7 @@ test("switching prediction mode clears stale results for the selected fixture", 
 });
 
 test("switching to custom matchup clears stale scheduled results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await expect(page.getByRole("heading", { name: "Mexico vs South Africa" })).toBeVisible();
 
@@ -952,7 +950,7 @@ test("switching to custom matchup clears stale scheduled results", async ({ page
 // ── Custom matchup mode ───────────────────────────────────────────────────────
 
 test("custom matchup mode remains functional with manual inputs", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
 
@@ -967,7 +965,7 @@ test("custom matchup mode remains functional with manual inputs", async ({ page 
 });
 
 test("custom matchup grouped selector excludes the selected home team from away options", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -979,7 +977,7 @@ test("custom matchup grouped selector excludes the selected home team from away 
 });
 
 test("custom matchup supports keyboard selection and canonical team labels", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
 
@@ -993,7 +991,7 @@ test("custom matchup supports keyboard selection and canonical team labels", asy
 });
 
 test("changing a custom selected team clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1009,7 +1007,7 @@ test("changing a custom selected team clears stale results", async ({ page }) =>
 });
 
 test("swap teams exchanges canonical values and clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1027,7 +1025,7 @@ test("swap teams exchanges canonical values and clears stale results", async ({ 
 });
 
 test("custom matchup remains functional in Auto Predict From Elo mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1041,7 +1039,7 @@ test("custom matchup remains functional in Auto Predict From Elo mode", async ({
 // ── Manual simulation run ─────────────────────────────────────────────────────
 
 test("submitting manual simulation with different teams updates result heading", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1055,7 +1053,7 @@ test("submitting manual simulation with different teams updates result heading",
 });
 
 test("manual simulation result shows three probability cards", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Spain", "Spain · Group H");
@@ -1071,7 +1069,7 @@ test("manual simulation result shows three probability cards", async ({ page }) 
 test("manual simulation result includes win draw loss labels, expected goals, scorelines, and baseline note", async ({
   page
 }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
 
@@ -1098,7 +1096,7 @@ test("manual simulation result includes win draw loss labels, expected goals, sc
 // ── Auto Predict From Elo mode ────────────────────────────────────────────────
 
 test("switching to Auto Predict From Elo mode shows Elo info panel", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
 
@@ -1108,7 +1106,7 @@ test("switching to Auto Predict From Elo mode shows Elo info panel", async ({ pa
 });
 
 test("scheduled fixture selection works in Auto Predict From Elo mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByLabel("World Cup group").selectOption("C");
@@ -1119,7 +1117,7 @@ test("scheduled fixture selection works in Auto Predict From Elo mode", async ({
 });
 
 test("Elo mode preset selector shows all three preset buttons", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
 
@@ -1129,7 +1127,7 @@ test("Elo mode preset selector shows all three preset buttons", async ({ page })
 });
 
 test("Auto Predict From Elo with valid teams returns Live Elo prediction result", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1155,7 +1153,7 @@ test("Auto Predict From Elo with valid teams returns Live Elo prediction result"
 });
 
 test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 coverage", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1183,7 +1181,7 @@ test("Auto Predict From Elo supports Haiti vs Scotland from World Cup 2026 cover
 });
 
 test("changing a scheduled fixture clears stale confidence output together with stale prediction results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
@@ -1199,7 +1197,7 @@ test("changing a scheduled fixture clears stale confidence output together with 
 });
 
 test("manual simulation flow does not render automated confidence metadata", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1214,7 +1212,7 @@ test("manual simulation flow does not render automated confidence metadata", asy
 // ── Elo prediction presets ────────────────────────────────────────────────────
 
 test("conservative preset result shows conservative preset metadata", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1228,7 +1226,7 @@ test("conservative preset result shows conservative preset metadata", async ({ p
 });
 
 test("balanced preset result shows balanced preset metadata", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   // Balanced is the default preset — no preset button click needed
   await page.getByRole("button", { name: "Custom matchup" }).click();
@@ -1242,7 +1240,7 @@ test("balanced preset result shows balanced preset metadata", async ({ page }) =
 });
 
 test("aggressive preset result shows aggressive preset metadata", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1256,7 +1254,7 @@ test("aggressive preset result shows aggressive preset metadata", async ({ page 
 });
 
 test("switching preset from conservative to aggressive updates preset metadata in result", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1279,7 +1277,7 @@ test("switching preset from conservative to aggressive updates preset metadata i
 // ── Team aliases ──────────────────────────────────────────────────────────────
 
 test("entering Korea Republic in Elo mode resolves to South Korea in result heading", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1293,7 +1291,7 @@ test("entering Korea Republic in Elo mode resolves to South Korea in result head
 });
 
 test("entering Czech Republic in Elo mode resolves to Czechia in result heading", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1307,7 +1305,7 @@ test("entering Czech Republic in Elo mode resolves to Czechia in result heading"
 });
 
 test("entering USA in Elo mode resolves to United States in result heading", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1323,7 +1321,7 @@ test("entering USA in Elo mode resolves to United States in result heading", asy
 // ── Alias search and duplicate prevention ─────────────────────────────────────
 
 test("alias search in custom mode returns canonical team options", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await page.getByRole("combobox", { name: "Home team" }).click();
@@ -1333,7 +1331,7 @@ test("alias search in custom mode returns canonical team options", async ({ page
 });
 
 test("duplicate-team selection is prevented in custom mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1346,7 +1344,7 @@ test("duplicate-team selection is prevented in custom mode", async ({ page }) =>
 // ── Manual mode validation ────────────────────────────────────────────────────
 
 test("invalid xG value in manual mode shows field-level validation error", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   // Negative xG is invalid — client requires 0 or greater
   await page.getByLabel("Expected home goals").fill("-1");
@@ -1360,7 +1358,7 @@ test("invalid xG value in manual mode shows field-level validation error", async
 // ── Tournament form adjustment toggle ─────────────────────────────────────────
 
 test("tournament form toggle defaults to Off in Auto Predict mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
 
@@ -1370,14 +1368,14 @@ test("tournament form toggle defaults to Off in Auto Predict mode", async ({ pag
 });
 
 test("tournament form toggle is not visible in Manual xG mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   // Default is manual mode — toggle should not be visible
   await expect(page.getByText("Tournament form adjustment")).not.toBeVisible();
 });
 
 test("switching to Manual xG mode hides tournament form toggle", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await expect(page.getByText("Tournament form adjustment")).toBeVisible();
@@ -1387,7 +1385,7 @@ test("switching to Manual xG mode hides tournament form toggle", async ({ page }
 });
 
 test("tournament form help text is visible when toggle is shown", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
 
@@ -1397,7 +1395,7 @@ test("tournament form help text is visible when toggle is shown", async ({ page 
 });
 
 test("enabling tournament form toggle clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
@@ -1410,7 +1408,7 @@ test("enabling tournament form toggle clears stale results", async ({ page }) =>
 });
 
 test("disabling tournament form toggle clears stale results", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1424,7 +1422,7 @@ test("disabling tournament form toggle clears stale results", async ({ page }) =
 });
 
 test("running Auto Predict with tournament form Off does not show tournament form section", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   // Off is the default — no need to click Off
@@ -1436,7 +1434,7 @@ test("running Auto Predict with tournament form Off does not show tournament for
 });
 
 test("running Auto Predict with tournament form On shows tournament form section", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1447,7 +1445,7 @@ test("running Auto Predict with tournament form On shows tournament form section
 });
 
 test("tournament form section shows Applied or Not applied status", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1462,7 +1460,7 @@ test("tournament form section shows Applied or Not applied status", async ({ pag
 });
 
 test("tournament form Not applied shows explanatory text", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1487,7 +1485,7 @@ test("tournament form Not applied shows explanatory text", async ({ page }) => {
 });
 
 test("tournament form Applied shows Baseline Elo, Adjustment, Effective Elo and Matches for both teams", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1512,7 +1510,7 @@ test("tournament form Applied shows Baseline Elo, Adjustment, Effective Elo and 
 });
 
 test("tournament form section always shows secondary signal disclaimer", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1529,7 +1527,7 @@ test("tournament form section always shows secondary signal disclaimer", async (
 // ── Match context section in simulation results ───────────────────────────────
 
 test("initial simulation result always shows match context section header", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
   await expect(
@@ -1538,7 +1536,7 @@ test("initial simulation result always shows match context section header", asyn
 });
 
 test("custom matchup simulation shows match context section with not-available message", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1555,7 +1553,7 @@ test("custom matchup simulation shows match context section with not-available m
 });
 
 test("match context section header remains visible after running Auto Predict From Elo in scheduled mode", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
@@ -1567,7 +1565,7 @@ test("match context section header remains visible after running Auto Predict Fr
 });
 
 test("Manual xG result does not show tournament form section", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Custom matchup" }).click();
   await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
@@ -1579,7 +1577,7 @@ test("Manual xG result does not show tournament form section", async ({ page }) 
 });
 
 test("switching from tournament form On back to Off and re-predicting removes tournament form section", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
@@ -1594,7 +1592,7 @@ test("switching from tournament form On back to Off and re-predicting removes to
 });
 
 test("scheduled fixture and custom matchup flows remain functional with tournament form enabled", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   // Scheduled fixture flow with tournament form On
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1615,7 +1613,7 @@ test("scheduled fixture and custom matchup flows remain functional with tourname
 });
 
 test("prediction confidence section still visible alongside tournament form section", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "On", exact: true }).click();
