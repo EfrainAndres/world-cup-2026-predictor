@@ -64,13 +64,22 @@ export interface OfficialKnockoutTopologyMatch {
   downstream: readonly KnockoutDownstreamDestination[];
 }
 
+export interface OfficialRoundOf32FixtureProvenance {
+  participantSource: "canonical_official_fixture";
+  sourceName: string;
+  asOf: string;
+  notes?: string;
+}
+
 export interface OfficialRoundOf32FixtureFoundation {
   fixtureId: string;
   officialMatchNumber: number;
   bracketSlot: number;
-  kickoffAt: string;
   homeTeam: string;
   awayTeam: string;
+  provenance: OfficialRoundOf32FixtureProvenance;
+  kickoffAt?: string;
+  venue?: string;
   providerFixtureId?: string;
 }
 
@@ -116,6 +125,7 @@ export interface OfficialKnockoutFixtureProjection {
   sourceState: OfficialKnockoutSourceState;
   status: WorldCup2026ExternalMatchStatus | "scheduled" | "unavailable";
   sourceClassification: "canonical_static_official_fixture" | "provider_official_fixture" | "provider_official_result" | "projected";
+  provenance?: OfficialRoundOf32FixtureProvenance;
   providerFixtureId?: string;
   officialScore?: OfficialKnockoutScore;
   projectedScore?: OfficialKnockoutScore;
@@ -182,6 +192,12 @@ interface ResolvedMatchRecord {
 }
 
 const OFFICIAL_ROUND_OF_32_FIXTURE_AS_OF = "2026-06-28T00:00:00.000Z";
+const OFFICIAL_ROUND_OF_32_PROVENANCE: OfficialRoundOf32FixtureProvenance = {
+  participantSource: "canonical_official_fixture",
+  sourceName: "Project-maintained confirmed World Cup 2026 Round-of-32 fixture list",
+  asOf: OFFICIAL_ROUND_OF_32_FIXTURE_AS_OF,
+  notes: "Kickoff timestamps, venues, and provider fixture IDs are intentionally omitted until confirmed in normalized provider data."
+};
 const PROJECTION_TIE_EPSILON = 0.000001;
 
 function officialTeam(team: string): KnockoutParticipantSource {
@@ -198,132 +214,132 @@ function loserOf(matchNumber: number): KnockoutParticipantSource {
 
 export const WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES = [
   {
-    fixtureId: "wc2026-match-73-mexico-vs-portugal",
+    fixtureId: "wc2026-match-73-south-africa-vs-canada",
     officialMatchNumber: 73,
     bracketSlot: 1,
-    kickoffAt: "2026-06-28T16:00:00.000Z",
-    homeTeam: "Mexico",
-    awayTeam: "Portugal"
+    homeTeam: "South Africa",
+    awayTeam: "Canada",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-74-bosnia-herzegovina-vs-norway",
+    fixtureId: "wc2026-match-74-brazil-vs-japan",
     officialMatchNumber: 74,
     bracketSlot: 2,
-    kickoffAt: "2026-06-28T20:00:00.000Z",
-    homeTeam: "Bosnia-Herzegovina",
-    awayTeam: "Norway"
+    homeTeam: "Brazil",
+    awayTeam: "Japan",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-75-scotland-vs-iran",
+    fixtureId: "wc2026-match-75-germany-vs-paraguay",
     officialMatchNumber: 75,
     bracketSlot: 3,
-    kickoffAt: "2026-06-29T16:00:00.000Z",
-    homeTeam: "Scotland",
-    awayTeam: "Iran"
+    homeTeam: "Germany",
+    awayTeam: "Paraguay",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-76-united-states-vs-ghana",
+    fixtureId: "wc2026-match-76-netherlands-vs-morocco",
     officialMatchNumber: 76,
     bracketSlot: 4,
-    kickoffAt: "2026-06-29T20:00:00.000Z",
-    homeTeam: "United States",
-    awayTeam: "Ghana"
+    homeTeam: "Netherlands",
+    awayTeam: "Morocco",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-77-curacao-vs-germany",
+    fixtureId: "wc2026-match-77-ivory-coast-vs-norway",
     officialMatchNumber: 77,
     bracketSlot: 5,
-    kickoffAt: "2026-06-30T16:00:00.000Z",
-    homeTeam: "Curacao",
-    awayTeam: "Germany"
+    homeTeam: "Ivory Coast",
+    awayTeam: "Norway",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-78-japan-vs-austria",
+    fixtureId: "wc2026-match-78-france-vs-sweden",
     officialMatchNumber: 78,
     bracketSlot: 6,
-    kickoffAt: "2026-06-30T20:00:00.000Z",
-    homeTeam: "Japan",
-    awayTeam: "Austria"
+    homeTeam: "France",
+    awayTeam: "Sweden",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-79-belgium-vs-qatar",
+    fixtureId: "wc2026-match-79-mexico-vs-ecuador",
     officialMatchNumber: 79,
     bracketSlot: 7,
-    kickoffAt: "2026-07-01T16:00:00.000Z",
-    homeTeam: "Belgium",
-    awayTeam: "Qatar"
+    homeTeam: "Mexico",
+    awayTeam: "Ecuador",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-80-cape-verde-vs-morocco",
+    fixtureId: "wc2026-match-80-england-vs-dr-congo",
     officialMatchNumber: 80,
     bracketSlot: 8,
-    kickoffAt: "2026-07-01T20:00:00.000Z",
-    homeTeam: "Cape Verde",
-    awayTeam: "Morocco"
+    homeTeam: "England",
+    awayTeam: "DR Congo",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-81-france-vs-ecuador",
+    fixtureId: "wc2026-match-81-belgium-vs-senegal",
     officialMatchNumber: 81,
     bracketSlot: 9,
-    kickoffAt: "2026-07-02T16:00:00.000Z",
-    homeTeam: "France",
-    awayTeam: "Ecuador"
+    homeTeam: "Belgium",
+    awayTeam: "Senegal",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-82-algeria-vs-netherlands",
+    fixtureId: "wc2026-match-82-united-states-vs-bosnia-herzegovina",
     officialMatchNumber: 82,
     bracketSlot: 10,
-    kickoffAt: "2026-07-02T20:00:00.000Z",
-    homeTeam: "Algeria",
-    awayTeam: "Netherlands"
+    homeTeam: "United States",
+    awayTeam: "Bosnia-Herzegovina",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-83-colombia-vs-egypt",
+    fixtureId: "wc2026-match-83-spain-vs-austria",
     officialMatchNumber: 83,
     bracketSlot: 11,
-    kickoffAt: "2026-07-03T16:00:00.000Z",
-    homeTeam: "Colombia",
-    awayTeam: "Egypt"
+    homeTeam: "Spain",
+    awayTeam: "Austria",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-84-croatia-vs-saudi-arabia",
+    fixtureId: "wc2026-match-84-portugal-vs-croatia",
     officialMatchNumber: 84,
     bracketSlot: 12,
-    kickoffAt: "2026-07-03T20:00:00.000Z",
-    homeTeam: "Croatia",
-    awayTeam: "Saudi Arabia"
+    homeTeam: "Portugal",
+    awayTeam: "Croatia",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-85-south-korea-vs-iraq",
+    fixtureId: "wc2026-match-85-switzerland-vs-algeria",
     officialMatchNumber: 85,
     bracketSlot: 13,
-    kickoffAt: "2026-07-04T16:00:00.000Z",
-    homeTeam: "South Korea",
-    awayTeam: "Iraq"
+    homeTeam: "Switzerland",
+    awayTeam: "Algeria",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-86-canada-vs-argentina",
+    fixtureId: "wc2026-match-86-australia-vs-egypt",
     officialMatchNumber: 86,
     bracketSlot: 14,
-    kickoffAt: "2026-07-04T20:00:00.000Z",
-    homeTeam: "Canada",
-    awayTeam: "Argentina"
+    homeTeam: "Australia",
+    awayTeam: "Egypt",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-87-brazil-vs-dr-congo",
+    fixtureId: "wc2026-match-87-argentina-vs-cape-verde",
     officialMatchNumber: 87,
     bracketSlot: 15,
-    kickoffAt: "2026-07-05T16:00:00.000Z",
-    homeTeam: "Brazil",
-    awayTeam: "DR Congo"
+    homeTeam: "Argentina",
+    awayTeam: "Cape Verde",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   },
   {
-    fixtureId: "wc2026-match-88-australia-vs-england",
+    fixtureId: "wc2026-match-88-colombia-vs-ghana",
     officialMatchNumber: 88,
     bracketSlot: 16,
-    kickoffAt: "2026-07-05T20:00:00.000Z",
-    homeTeam: "Australia",
-    awayTeam: "England"
+    homeTeam: "Colombia",
+    awayTeam: "Ghana",
+    provenance: OFFICIAL_ROUND_OF_32_PROVENANCE
   }
 ] as const satisfies readonly OfficialRoundOf32FixtureFoundation[];
 
@@ -510,13 +526,18 @@ function findProviderRecord(
   const matchNumberMatches = knockoutRecords.filter((record) => record.matchday === identity.officialMatchNumber);
   if (matchNumberMatches.length === 1) {
     const record = matchNumberMatches[0]!;
-    const orientation =
-      identity.homeTeam !== undefined &&
-      identity.awayTeam !== undefined &&
-      normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identity.awayTeam) &&
-      normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identity.homeTeam)
-        ? "reversed"
-        : "canonical";
+    let orientation: ProviderMatchResult["orientation"] = "canonical";
+    if (identity.homeTeam !== undefined && identity.awayTeam !== undefined) {
+      const canonicalOrder =
+        normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identity.homeTeam) &&
+        normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identity.awayTeam);
+      const reversedOrder =
+        normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identity.awayTeam) &&
+        normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identity.homeTeam);
+
+      if (!canonicalOrder && !reversedOrder) return null;
+      orientation = reversedOrder ? "reversed" : "canonical";
+    }
     return { record, orientation, method: "official_match_number" };
   }
   if (matchNumberMatches.length > 1) return null;
@@ -1004,6 +1025,7 @@ export function buildOfficialWorldCup2026KnockoutProjection(
       sourceState,
       status,
       sourceClassification,
+      ...(fixtureFoundation?.provenance === undefined ? {} : { provenance: fixtureFoundation.provenance }),
       ...(providerMatch?.record.providerFixtureId === undefined ? {} : { providerFixtureId: providerMatch.record.providerFixtureId }),
       ...(officialScore === undefined ? {} : { officialScore }),
       ...(projectedScore === undefined ? {} : { projectedScore }),

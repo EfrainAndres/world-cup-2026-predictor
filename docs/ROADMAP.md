@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, and staged UX migration. | 12.19A–G1 Done; 12.19H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A–G1 Done; 12.19H Planned |
 
 ## Phase 12.15A - Persistence Architecture Decision
 

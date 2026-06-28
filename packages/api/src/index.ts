@@ -92,7 +92,8 @@ export type {
   OfficialKnockoutSourceState,
   OfficialKnockoutStage,
   OfficialKnockoutTopologyMatch,
-  OfficialRoundOf32FixtureFoundation
+  OfficialRoundOf32FixtureFoundation,
+  OfficialRoundOf32FixtureProvenance
 } from "./world-cup-2026-official-knockout.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";

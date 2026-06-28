@@ -64,6 +64,27 @@ test("Tournament page shows exactly 16 official Round-of-32 fixtures", async ({ 
   await expect(roundOf32.getByText("Projected result")).toHaveCount(16);
 });
 
+test("Tournament page shows confirmed official Round-of-32 matchups", async ({ page }) => {
+  await page.goto("/tournament");
+
+  const examples = [
+    [73, "South Africa", "Canada"],
+    [74, "Brazil", "Japan"],
+    [80, "England", "DR Congo"],
+    [82, "United States", "Bosnia-Herzegovina"],
+    [87, "Argentina", "Cape Verde"],
+    [88, "Colombia", "Ghana"]
+  ] as const;
+
+  for (const [matchNumber, homeTeam, awayTeam] of examples) {
+    const card = page.locator(`[data-knockout-fixture="${matchNumber}"]`);
+    await expect(card).toBeVisible();
+    await expect(card.getByTitle(homeTeam).first()).toBeVisible();
+    await expect(card.getByTitle(awayTeam).first()).toBeVisible();
+    await expect(card.getByText("Official fixture")).toBeVisible();
+  }
+});
+
 test("Tournament page distinguishes projected participants from official fixtures", async ({ page }) => {
   await page.goto("/tournament");
 

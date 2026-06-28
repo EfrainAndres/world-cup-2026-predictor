@@ -17,6 +17,29 @@ The runtime source order is:
 
 The local static provider currently returns group-stage fixtures only, so the canonical Round-of-32 fixture fallback is required until the external provider supplies knockout fixture records.
 
+The confirmed canonical Round-of-32 fallback is:
+
+| Match | Home | Away |
+| --- | --- | --- |
+| 73 | South Africa | Canada |
+| 74 | Brazil | Japan |
+| 75 | Germany | Paraguay |
+| 76 | Netherlands | Morocco |
+| 77 | Ivory Coast | Norway |
+| 78 | France | Sweden |
+| 79 | Mexico | Ecuador |
+| 80 | England | DR Congo |
+| 81 | Belgium | Senegal |
+| 82 | United States | Bosnia-Herzegovina |
+| 83 | Spain | Austria |
+| 84 | Portugal | Croatia |
+| 85 | Switzerland | Algeria |
+| 86 | Australia | Egypt |
+| 87 | Argentina | Cape Verde |
+| 88 | Colombia | Ghana |
+
+Each canonical entry carries explicit provenance with `participantSource: canonical_official_fixture`, a source name, and an `asOf` timestamp. Kickoff timestamps, venues, and provider fixture IDs are not populated unless confirmed.
+
 ## Match-Number Topology
 
 The central topology covers matches 73-104:
@@ -35,11 +58,11 @@ Every future participant is represented as a typed source, such as `winner_of` o
 Provider records are matched in this order:
 
 1. provider fixture ID, when a canonical provider ID is present;
-2. official match number via normalized `matchday`;
+2. official match number via normalized `matchday`, only when the provider teams match the canonical home/away teams in either orientation;
 3. canonical home/away teams;
 4. reversed canonical team order with score orientation correction.
 
-Ambiguous matches are rejected and surfaced as matching issues. Provider records are never mutated.
+Ambiguous matches and match-number records with conflicting teams are rejected and surfaced as matching issues. Provider records are never mutated, and provider data never replaces canonical official teams with standings projections.
 
 ## Official-Result Precedence
 
@@ -94,9 +117,9 @@ Knockout match detail links are deferred because `/matches/[fixtureId]` currentl
 
 ## Tests
 
-Focused API tests cover topology counts and mapping, official Round-of-32 uniqueness, official-result precedence, reversed provider orientation correction, unresolved-match prediction, deterministic tie policy, semifinal-loser routing into the Third Place Match, deterministic repeated output, and podium uniqueness.
+Focused API tests cover topology counts and mapping, exact assertions for all 16 official Round-of-32 fixtures, official Round-of-32 uniqueness, legacy projected-team rejection, provenance, official-result precedence, reversed provider orientation correction, provider team-conflict rejection, unresolved-match prediction, deterministic tie policy, semifinal-loser routing into the Third Place Match, deterministic repeated output, and podium uniqueness.
 
-Tournament Playwright coverage now checks official knockout status, one bracket, 16 Round-of-32 fixtures, official/projected labels, all stages, podium visibility, flags, collapsed disclosure, mobile overflow, mobile round navigation, and the Home tournament CTA.
+Tournament Playwright coverage now checks official knockout status, one bracket, 16 Round-of-32 fixtures, stable official examples for matches 73, 74, 80, 82, 87, and 88, official/projected labels, all stages, podium visibility, flags, collapsed disclosure, mobile overflow, mobile round navigation, and the Home tournament CTA.
 
 ## Operational Limitations
 
@@ -109,4 +132,3 @@ Tournament Playwright coverage now checks official knockout status, one bracket,
 ## Rollback
 
 Rollback is limited to returning `/tournament` and Home tournament summary to the legacy foundation projection helpers. The new service is additive, has no migrations, and performs no writes.
-

@@ -7,6 +7,7 @@ import {
   validateOfficialRoundOf32Fixtures
 } from "../src/world-cup-2026-official-knockout.js";
 import type {
+  OfficialRoundOf32FixtureFoundation,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
   PredictMatchFromLiveEloSuccessResponse,
@@ -152,6 +153,27 @@ function makePredictor(response: PredictMatchFromLiveEloSuccessResponse) {
   return { predict, calls };
 }
 
+const EXPECTED_OFFICIAL_ROUND_OF_32_FIXTURES = [
+  [73, "South Africa", "Canada"],
+  [74, "Brazil", "Japan"],
+  [75, "Germany", "Paraguay"],
+  [76, "Netherlands", "Morocco"],
+  [77, "Ivory Coast", "Norway"],
+  [78, "France", "Sweden"],
+  [79, "Mexico", "Ecuador"],
+  [80, "England", "DR Congo"],
+  [81, "Belgium", "Senegal"],
+  [82, "United States", "Bosnia-Herzegovina"],
+  [83, "Spain", "Austria"],
+  [84, "Portugal", "Croatia"],
+  [85, "Switzerland", "Algeria"],
+  [86, "Australia", "Egypt"],
+  [87, "Argentina", "Cape Verde"],
+  [88, "Colombia", "Ghana"]
+] as const;
+
+const officialRoundOf32Fixtures: readonly OfficialRoundOf32FixtureFoundation[] = WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES;
+
 describe("official World Cup 2026 knockout bracket", () => {
   it("encodes matches 73-104 with the fixed topology", () => {
     expect(validateOfficialKnockoutTopology()).toEqual([]);
@@ -177,15 +199,47 @@ describe("official World Cup 2026 knockout bracket", () => {
 
   it("contains 16 official Round-of-32 fixtures with 32 unique teams", () => {
     expect(validateOfficialRoundOf32Fixtures()).toEqual([]);
-    expect(WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES).toHaveLength(16);
+    expect(officialRoundOf32Fixtures).toHaveLength(16);
 
-    const teams = WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.flatMap((fixture) => [
+    const teams = officialRoundOf32Fixtures.flatMap((fixture) => [
       fixture.homeTeam,
       fixture.awayTeam
     ]);
     expect(new Set(teams).size).toBe(32);
-    expect(WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.map((fixture) => fixture.officialMatchNumber)).toEqual(
+    expect(officialRoundOf32Fixtures.map((fixture) => fixture.officialMatchNumber)).toEqual(
       Array.from({ length: 16 }, (_, index) => index + 73)
+    );
+    for (const [matchNumber, homeTeam, awayTeam] of EXPECTED_OFFICIAL_ROUND_OF_32_FIXTURES) {
+      const fixture = officialRoundOf32Fixtures.find((entry) => entry.officialMatchNumber === matchNumber);
+      expect(fixture).toMatchObject({
+        homeTeam,
+        awayTeam,
+        provenance: {
+          participantSource: "canonical_official_fixture",
+          asOf: expect.any(String),
+          sourceName: expect.any(String)
+        }
+      });
+      expect(fixture?.kickoffAt).toBeUndefined();
+      expect(fixture?.venue).toBeUndefined();
+      expect(fixture?.providerFixtureId).toBeUndefined();
+    }
+  });
+
+  it("does not include legacy projected teams or matchups as official fixtures", () => {
+    const teams = new Set(
+      officialRoundOf32Fixtures.flatMap((fixture) => [fixture.homeTeam, fixture.awayTeam])
+    );
+    for (const legacyTeam of ["Iran", "Curacao", "Iraq", "Saudi Arabia", "Qatar", "Scotland"]) {
+      expect(teams.has(legacyTeam)).toBe(false);
+    }
+
+    expect(officialRoundOf32Fixtures).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ homeTeam: "Mexico", awayTeam: "Portugal" }),
+        expect.objectContaining({ homeTeam: "Bosnia-Herzegovina", awayTeam: "Norway" }),
+        expect.objectContaining({ homeTeam: "South Korea", awayTeam: "Iraq" })
+      ])
     );
   });
 
@@ -196,8 +250,8 @@ describe("official World Cup 2026 knockout bracket", () => {
         record({
           id: "provider-73",
           matchday: 73,
-          homeTeam: "Mexico",
-          awayTeam: "Portugal",
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
           homeScore: 2,
           awayScore: 0
         })
@@ -208,11 +262,11 @@ describe("official World Cup 2026 knockout bracket", () => {
 
     const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
     expect(match73?.sourceState).toBe("official_result");
-    expect(match73?.winner?.team).toBe("Mexico");
+    expect(match73?.winner?.team).toBe("South Africa");
     expect(match73?.officialScore).toEqual({ homeGoals: 2, awayGoals: 0 });
     expect(match73?.projectedScore).toBeUndefined();
     expect(result.metadata.predictorCallCount).toBe(31);
-    expect(predictor.calls.some((call) => call.homeTeam === "Mexico" && call.awayTeam === "Portugal")).toBe(false);
+    expect(predictor.calls.some((call) => call.homeTeam === "South Africa" && call.awayTeam === "Canada")).toBe(false);
   });
 
   it("corrects reversed provider orientation before advancing an official winner", () => {
@@ -221,8 +275,8 @@ describe("official World Cup 2026 knockout bracket", () => {
         record({
           id: "provider-73",
           matchday: 73,
-          homeTeam: "Portugal",
-          awayTeam: "Mexico",
+          homeTeam: "Canada",
+          awayTeam: "South Africa",
           homeScore: 1,
           awayScore: 3
         })
@@ -233,8 +287,32 @@ describe("official World Cup 2026 knockout bracket", () => {
 
     const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
     expect(match73?.officialScore).toEqual({ homeGoals: 3, awayGoals: 1 });
-    expect(match73?.winner?.team).toBe("Mexico");
+    expect(match73?.winner?.team).toBe("South Africa");
     expect(match73?.warnings.join(" ")).toContain("score orientation was corrected");
+  });
+
+  it("does not attach a provider match-number record when its teams conflict with the official fixture", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "legacy-provider-73",
+          matchday: 73,
+          homeTeam: "Mexico",
+          awayTeam: "Portugal",
+          homeScore: 2,
+          awayScore: 0
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.home.team).toBe("South Africa");
+    expect(match73?.away.team).toBe("Canada");
+    expect(match73?.sourceState).toBe("projected_result");
+    expect(match73?.officialScore).toBeUndefined();
+    expect(result.matchingIssues).toContain("No unambiguous provider match found for official match 73.");
   });
 
   it("projects unresolved fixtures through the production predictor contract", () => {
@@ -247,11 +325,26 @@ describe("official World Cup 2026 knockout bracket", () => {
 
     const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
     expect(match73?.sourceState).toBe("projected_result");
+    expect(match73?.home).toMatchObject({
+      team: "South Africa",
+      state: "official_participant",
+      source: { kind: "official_team", team: "South Africa" }
+    });
+    expect(match73?.away).toMatchObject({
+      team: "Canada",
+      state: "official_participant",
+      source: { kind: "official_team", team: "Canada" }
+    });
+    expect(match73?.provenance).toMatchObject({
+      participantSource: "canonical_official_fixture",
+      asOf: expect.any(String),
+      sourceName: expect.any(String)
+    });
     expect(match73?.projectedScore).toEqual({ homeGoals: 2, awayGoals: 1 });
     expect(match73?.advancementMethod).toBe("projected_regulation");
     expect(predictor.calls[0]).toMatchObject({
-      homeTeam: "Mexico",
-      awayTeam: "Portugal",
+      homeTeam: "South Africa",
+      awayTeam: "Canada",
       preset: "balanced",
       tournamentResultsAdjustment: { enabled: false },
       tournamentFormAdjustment: { enabled: false }
@@ -267,7 +360,7 @@ describe("official World Cup 2026 knockout bracket", () => {
 
     const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
     expect(match73?.advancementMethod).toBe("projected_extra_time");
-    expect(match73?.winner?.team).toBe("Mexico");
+    expect(match73?.winner?.team).toBe("South Africa");
   });
 
   it("uses Elo and then stable identity when projected tie-breakers remain tied", () => {
@@ -282,15 +375,15 @@ describe("official World Cup 2026 knockout bracket", () => {
       generatedAt: "2026-06-28T12:00:00.000Z"
     });
 
-    expect(eloResult.matches.find((match) => match.officialMatchNumber === 73)?.winner?.team).toBe("Portugal");
-    expect(identityResult.matches.find((match) => match.officialMatchNumber === 73)?.winner?.team).toBe("Mexico");
+    expect(eloResult.matches.find((match) => match.officialMatchNumber === 73)?.winner?.team).toBe("Canada");
+    expect(identityResult.matches.find((match) => match.officialMatchNumber === 73)?.winner?.team).toBe("Canada");
   });
 
   it("feeds official semifinal losers into the third-place match", () => {
     const result = buildOfficialWorldCup2026KnockoutProjection({
       syncResult: syncResult([
-        record({ id: "provider-101", matchday: 101, homeTeam: "Mexico", awayTeam: "Colombia", homeScore: 0, awayScore: 1 }),
-        record({ id: "provider-102", matchday: 102, homeTeam: "United States", awayTeam: "Canada", homeScore: 2, awayScore: 0 })
+        record({ id: "provider-101", matchday: 101, homeTeam: "South Africa", awayTeam: "Spain", homeScore: 0, awayScore: 1 }),
+        record({ id: "provider-102", matchday: 102, homeTeam: "Netherlands", awayTeam: "Switzerland", homeScore: 2, awayScore: 0 })
       ]),
       predictMatch: makePredictor(fakePrediction({ homeGoals: 1, awayGoals: 0 })).predict,
       generatedAt: "2026-06-28T12:00:00.000Z"
@@ -317,5 +410,9 @@ describe("official World Cup 2026 knockout bracket", () => {
     expect(first.matches).toHaveLength(32);
     expect(new Set(Object.values(first.podium)).size).toBe(4);
     expect(first.validationWarnings).toEqual([]);
+
+    const roundOf16 = first.matches.find((match) => match.officialMatchNumber === 89);
+    expect(roundOf16?.home.state).toBe("projected_winner");
+    expect(roundOf16?.away.state).toBe("projected_winner");
   });
 });

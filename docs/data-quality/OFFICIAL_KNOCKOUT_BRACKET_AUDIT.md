@@ -44,6 +44,37 @@ Current fixture IDs are generated as local foundation IDs such as:
 
 The legacy foundation does not preserve official match numbers 73-88 as first-class identifiers.
 
+## Defect Found During G1 Preview
+
+The initial Phase 12.19G1 implementation incorrectly copied the legacy foundation/projected Round-of-32 participants above into `WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES` and mapped them through `official_team` participant sources.
+
+That promoted projected standings-derived teams to `Official fixture` and `Official participant` labels on `/tournament`. The defect was fixed before merge by replacing the fallback source with the confirmed official Round-of-32 fixtures and adding exact regression coverage that rejects legacy teams such as Iran, Curacao, Iraq, Saudi Arabia, Qatar, and Scotland.
+
+## Corrected Canonical Round-of-32 Fixtures
+
+The corrected canonical data-layer fallback for matches 73-88 is:
+
+| Match | Home | Away |
+| --- | --- | --- |
+| 73 | South Africa | Canada |
+| 74 | Brazil | Japan |
+| 75 | Germany | Paraguay |
+| 76 | Netherlands | Morocco |
+| 77 | Ivory Coast | Norway |
+| 78 | France | Sweden |
+| 79 | Mexico | Ecuador |
+| 80 | England | DR Congo |
+| 81 | Belgium | Senegal |
+| 82 | United States | Bosnia-Herzegovina |
+| 83 | Spain | Austria |
+| 84 | Portugal | Croatia |
+| 85 | Switzerland | Algeria |
+| 86 | Australia | Egypt |
+| 87 | Argentina | Cape Verde |
+| 88 | Colombia | Ghana |
+
+Each entry carries `participantSource: canonical_official_fixture`, a source name, and an `asOf` timestamp. Kickoff timestamps, venues, and provider fixture IDs are omitted until confirmed by normalized provider data.
+
 ## Current Advancement Mapping
 
 The current Round-of-16 simulation pairs projected Round-of-32 winners sequentially:
@@ -95,7 +126,7 @@ Ambiguous provider records must be rejected instead of attached to a similar-loo
 
 The normalized provider record type supports kickoff timestamps and venue values. Current foundation Round-of-32 fixtures do not include official kickoff timestamps or venues.
 
-If canonical static fixture data is needed as a fallback, it must include provenance, an `asOf` timestamp, official match numbers, and replaceable kickoff metadata.
+If canonical static fixture data is needed as a fallback, it must include provenance, an `asOf` timestamp, official match numbers, and only confirmed kickoff or venue metadata. The corrected G1 fallback intentionally omits kickoff and venue fields because they are not available in the current normalized source.
 
 ## Component Assumptions
 
@@ -136,4 +167,3 @@ This phase should not change:
 - evaluations;
 - database schema;
 - provider behavior.
-
