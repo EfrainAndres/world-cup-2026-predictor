@@ -210,10 +210,10 @@ test("Model disclosure shows model scope details", async ({ page }) => {
 // Cross-page CTAs
 // ---------------------------------------------------------------------------
 
-test("Cross-page CTAs contain links to /match, /groups, /tournament", async ({ page }) => {
+test("Cross-page CTAs contain links to /predictions, /groups, /tournament", async ({ page }) => {
   await page.goto("/model");
   const ctaNav = page.getByRole("navigation", { name: "Related pages" });
-  await expect(ctaNav.getByRole("link", { name: "Run a prediction" })).toBeVisible();
+  await expect(ctaNav.getByRole("link", { name: "Run a prediction" })).toHaveAttribute("href", "/predictions");
   await expect(ctaNav.getByRole("link", { name: "Group standings" })).toBeVisible();
   await expect(ctaNav.getByRole("link", { name: "Tournament bracket" })).toBeVisible();
 });

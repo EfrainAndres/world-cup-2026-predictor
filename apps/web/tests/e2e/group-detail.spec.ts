@@ -192,6 +192,7 @@ test("local fallback is labeled when API returns localFallbackUsed=true", async 
 
   await page.goto("/groups/A");
 
+  await page.locator("summary").filter({ hasText: "Data source & technical details" }).click();
   const dataSrcSummary = page.getByLabel("Data source summary");
   await expect(dataSrcSummary.getByText("Local fallback")).toBeVisible();
   await expect(dataSrcSummary.getByText("Local static fallback is active.", { exact: false })).toBeVisible();
@@ -229,13 +230,13 @@ test("mobile layout remains usable on 390px viewport", async ({ page }) => {
   await expect(nav).toBeVisible();
 });
 
-test("breadcrumb link back to dashboard is visible", async ({ page }) => {
+test("breadcrumb link back to groups is visible", async ({ page }) => {
   await page.goto("/groups/A");
 
-  const backLink = page.getByRole("link", { name: "← Dashboard" });
+  const backLink = page.getByRole("link", { name: "← Groups" });
   await expect(backLink).toBeVisible();
   await backLink.click();
-  await expect(page).toHaveURL("/");
+  await expect(page).toHaveURL("/groups");
 });
 
 // ── Projection section ────────────────────────────────────────────────────────
@@ -374,7 +375,7 @@ test("breadcrumb, standings, and projection all coexist without layout overflow 
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/groups/A");
 
-  await expect(page.getByRole("link", { name: "← Dashboard" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "← Groups" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Official standings" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Projected standings" })).toBeVisible();
 });

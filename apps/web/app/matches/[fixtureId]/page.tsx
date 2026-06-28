@@ -113,6 +113,9 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
               {getDailyMatchStateLabel(match.state)}
             </span>
           </div>
+          <h1 className="mt-3 text-xl font-semibold text-slate-950 sm:text-2xl">
+            {match.homeTeam} vs {match.awayTeam}
+          </h1>
 
           <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="flex min-w-0 flex-col items-start gap-1">
@@ -272,18 +275,18 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           <dl className="mt-3 space-y-1 text-xs text-slate-600">
             <div className="flex gap-3">
               <dt className="w-32 shrink-0 text-slate-500">Fixture ID</dt>
-              <dd className="font-mono text-slate-800">{match.fixtureId}</dd>
+              <dd className="min-w-0 break-all font-mono text-slate-800">{match.fixtureId}</dd>
             </div>
             {snapshot.modelVersion !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Model version</dt>
-                <dd>{snapshot.modelVersion}</dd>
+                <dd className="min-w-0 break-all">{snapshot.modelVersion}</dd>
               </div>
             )}
             {snapshot.capturedAt !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Captured at</dt>
-                <dd>{snapshot.capturedAt}</dd>
+                <dd className="min-w-0 break-all">{snapshot.capturedAt}</dd>
               </div>
             )}
             {snapshot.status !== undefined && (
@@ -295,7 +298,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
             {evaluation.evaluatedAt !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Evaluated at</dt>
-                <dd>{evaluation.evaluatedAt}</dd>
+                <dd className="min-w-0 break-all">{evaluation.evaluatedAt}</dd>
               </div>
             )}
             {prediction !== undefined && (

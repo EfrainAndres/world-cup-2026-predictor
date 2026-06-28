@@ -123,7 +123,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.16 | Prediction History Dashboard | Add a read-only dashboard page over persisted World Cup 2026 prediction snapshots and Model-vs-Reality evaluations with filters, pagination, and summary metrics. | Done |
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
-| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A–G1 Done; 12.19H Planned |
+| 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A-H Done |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -545,7 +545,7 @@ Planned UX migration:
 - **12.19E** — Matches Experience. **Done.**
 - **12.19F** — Groups and Tournament Experience. **Done.**
 - **12.19G** — Model and Evidence Center. **Done.**
-- **12.19H** — Responsive, Accessibility and Final UX QA.
+- **12.19H** — Responsive, Accessibility and Final UX QA. **Done.**
 
 Exit criteria:
 
@@ -553,6 +553,27 @@ Exit criteria:
 - Every current Home section is accounted for.
 - Future Home architecture is materially shorter while all major capabilities remain reachable.
 - Team identity strategy uses one canonical ownership model and avoids emoji dependency.
+
+## Phase 12.19H - Responsive, Accessibility and Final UX QA
+
+**Status:** Done
+
+Final stabilization phase for the Phase 12.19 UX migration. Audited the primary route set across responsive, accessibility, semantic, keyboard, status-label, cross-browser, and regression concerns without changing prediction formulas, provider behavior, persistence, snapshots, evaluations, standings, qualification, or official knockout topology.
+
+Deliverables:
+
+- `docs/qa/PHASE_12_19_FINAL_UX_QA_AUDIT.md` — audit-first inventory covering primary routes, current h1s, landmark expectations, client/server boundaries, responsive/accessibility/browser coverage, local-scroll exceptions, deferred UX issues, and baseline test state.
+- `docs/qa/PHASE_12_19_FINAL_UX_QA.md` — final QA report with scope, defects found, fixes, regression coverage, responsive/accessibility/cross-browser results, performance observations, accepted exceptions, and release verdict.
+- `docs/qa/PHASE_12_19_ACCESSIBILITY_CHECKLIST.md` — semantic accessibility checklist using existing Playwright dependencies because axe is not installed.
+- `docs/qa/PHASE_12_19_RESPONSIVE_MATRIX.md` — route-by-viewport matrix for the 9 primary route representatives and 10 required viewport sizes.
+- `apps/web/tests/e2e/final-ux-qa.spec.ts` — reusable final QA Playwright coverage for route/viewport overflow checks, landmark counts, h1 counts, duplicate IDs, `aria-labelledby` integrity, named interactive controls, labeled form controls, image alt attributes, nested-interactive detection, mobile nav clearance, Firefox/WebKit smoke, More popover, disclosures, and one prediction interaction.
+- Small UX/accessibility corrections: added a visible h1 to match detail, removed the nested main from Prediction History and aligned its h1 copy, corrected the Model CTA to `/predictions`, and exposed existing knockout advancement metadata when a tied projected regulation score still advances one team.
+
+Exit criteria:
+
+- Primary routes are validated for one header, one main, one h1, no duplicate IDs, no document-level horizontal overflow, mobile bottom-navigation clearance, keyboard-reachable disclosures/popovers, visible non-color-only statuses, and route-active navigation.
+- Chromium route/viewport matrix passes; Firefox and WebKit smoke checks pass.
+- No product feature, model formula, provider, persistence, schema, snapshot, evaluation, official fixture, or topology behavior changes.
 
 ## Phase 12.19D - Home Dashboard Redesign
 

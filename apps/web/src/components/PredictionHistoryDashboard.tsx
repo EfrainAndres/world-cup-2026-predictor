@@ -396,8 +396,8 @@ export function PredictionHistoryDashboard({
       : undefined;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="bg-slate-50">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6 flex items-center gap-2 text-sm">
           <Link href="/" className="font-medium text-teal-700 hover:underline">
             ← Dashboard
@@ -407,7 +407,7 @@ export function PredictionHistoryDashboard({
         <section aria-labelledby="prediction-history-heading" className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-teal-700">Prediction history</p>
           <h1 id="prediction-history-heading" className="mt-1 text-3xl font-semibold text-slate-950 sm:text-4xl">
-            Prediction History Dashboard
+            Prediction History
           </h1>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
             Review immutable pre-match predictions alongside official results and Model-vs-Reality accuracy metrics. This page never regenerates, edits, or deletes stored history.
@@ -517,7 +517,7 @@ export function PredictionHistoryDashboard({
             </section>
           </>
         ) : null}
-      </main>
+      </div>
     </div>
   );
 }

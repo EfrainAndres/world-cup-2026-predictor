@@ -128,6 +128,7 @@ test("Match detail page renders for a valid fixture", async ({ page }) => {
   await page.goto(`/matches/${KNOWN_FIXTURE_ID}`);
   // Should not be a 404
   await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Mexico vs South Africa" })).toBeVisible();
   // Should contain at least one team name
   await expect(page.getByText("Mexico").first()).toBeVisible();
 });
