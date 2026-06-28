@@ -1,9 +1,8 @@
 import {
+  buildOfficialWorldCup2026KnockoutProjection,
   getModelInfo,
   getWorldCup2026FixtureFoundation,
-  getWorldCup2026ThirdPlaceMatchFoundation,
-  listWorldCup2026PredictionHistory,
-  resolveWorldCup2026KnockoutWinnersFoundation
+  listWorldCup2026PredictionHistory
 } from "@world-cup-2026-predictor/api";
 import type { PredictionHistoryListSummary } from "@world-cup-2026-predictor/api";
 import { HomeDashboard } from "../src/components/HomeDashboardSections";
@@ -49,8 +48,7 @@ export default async function DashboardHomePage() {
   const dailyMatches = buildDashboardDailyMatchesFromSync(syncResult, { timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
   const fixtureFoundation = getWorldCup2026FixtureFoundation();
   const modelInfo = getModelInfo();
-  const tournamentResolution = resolveWorldCup2026KnockoutWinnersFoundation();
-  const thirdPlaceMatch = getWorldCup2026ThirdPlaceMatchFoundation();
+  const tournamentProjection = buildOfficialWorldCup2026KnockoutProjection({ syncResult });
   const predictionHistorySummary = await getHomePredictionHistorySummary();
 
   const homeMatches = selectHomeMatches(dailyMatches);
@@ -81,8 +79,7 @@ export default async function DashboardHomePage() {
       homeMatches={homeMatches}
       featuredPrediction={featuredPrediction}
       groups={selectHomeGroups(standings, dailyMatches)}
-      tournamentResolution={tournamentResolution}
-      thirdPlaceMatch={thirdPlaceMatch}
+      tournamentProjection={tournamentProjection}
       modelTrackRecordMetrics={buildHomeModelTrackRecordMetrics(predictionHistorySummary)}
       modelVersion={modelInfo.modelPackage}
       formulaVersion={featuredPrediction?.source === "generated_fixture" ? formulaVersion : undefined}

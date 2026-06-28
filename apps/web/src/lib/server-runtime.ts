@@ -1,5 +1,6 @@
 import {
   buildWorldCup2026DailyMatches,
+  buildOfficialWorldCup2026KnockoutProjection,
   canonicalizeTeamName,
   getPredictionHistoryPersistenceConfig,
   getModelInfo,
@@ -19,6 +20,7 @@ import type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse,
   WorldCup2026ExternalFixtureRecord,
+  OfficialKnockoutProjectionResult,
   WorldCup2026LiveGroupStandingsResponse,
   WorldCup2026ModelRealitySummary,
   WorldCup2026ResultProviderMetadata,
@@ -100,6 +102,11 @@ export function buildDashboardDailyMatchesFromSync(
 
 export async function getDashboardLiveSyncResult(): Promise<WorldCup2026SyncResult> {
   return synchronizeWorldCup2026Results({});
+}
+
+export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
+  const syncResult = await getDashboardLiveSyncResult();
+  return buildOfficialWorldCup2026KnockoutProjection({ syncResult });
 }
 
 export async function getProductionRuntimeDiagnostics(

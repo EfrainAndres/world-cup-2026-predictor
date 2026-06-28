@@ -73,6 +73,27 @@ export {
   PROJECTION_FRESHNESS_THRESHOLDS
 } from "./projection-refresh-policy.js";
 export type { AssessProjectionRefreshInput } from "./projection-refresh-policy.js";
+export {
+  WORLD_CUP_2026_OFFICIAL_KNOCKOUT_TOPOLOGY,
+  WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES,
+  buildOfficialWorldCup2026KnockoutProjection,
+  validateOfficialKnockoutTopology,
+  validateOfficialRoundOf32Fixtures
+} from "./world-cup-2026-official-knockout.js";
+export type {
+  BuildOfficialWorldCup2026KnockoutProjectionInput,
+  KnockoutAdvancementMethod,
+  KnockoutParticipantSource,
+  OfficialKnockoutFixtureProjection,
+  OfficialKnockoutParticipant,
+  OfficialKnockoutPodium,
+  OfficialKnockoutProjectionData,
+  OfficialKnockoutProjectionResult,
+  OfficialKnockoutSourceState,
+  OfficialKnockoutStage,
+  OfficialKnockoutTopologyMatch,
+  OfficialRoundOf32FixtureFoundation
+} from "./world-cup-2026-official-knockout.js";
 export { ingestWorldCup2026ResultsIntoLiveElo, isBeforeCutoff } from "./elo-ingestion.js";
 export type { IngestWorldCup2026ResultsIntoLiveEloInput } from "./elo-ingestion.js";
 export {
