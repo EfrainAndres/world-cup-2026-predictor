@@ -1,12 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
-import type { WorldCup2026GroupStandings } from "@world-cup-2026-predictor/api";
+import type { OfficialKnockoutProjectionResult, WorldCup2026GroupStandings } from "@world-cup-2026-predictor/api";
 import type {
   WorldCup2026DailyMatchEntry,
-  WorldCup2026DailyMatchesSuccessResponse,
-  WorldCup2026KnockoutWinnerResolutionResponse,
-  WorldCup2026ThirdPlaceMatchFoundationResponse
+  WorldCup2026DailyMatchesSuccessResponse
 } from "../lib/api-client";
 import { formatPercent } from "../lib/api-client";
 import {
@@ -38,8 +36,7 @@ interface HomeDashboardProps {
   homeMatches: readonly WorldCup2026DailyMatchEntry[];
   featuredPrediction: HomeFeaturedPrediction | null;
   groups: readonly WorldCup2026GroupStandings[];
-  tournamentResolution: WorldCup2026KnockoutWinnerResolutionResponse;
-  thirdPlaceMatch: WorldCup2026ThirdPlaceMatchFoundationResponse;
+  tournamentProjection: OfficialKnockoutProjectionResult;
   modelTrackRecordMetrics: readonly HomeModelTrackRecordMetric[];
   modelVersion?: string;
   formulaVersion?: string;
@@ -63,8 +60,7 @@ interface HomeGroupSnapshotProps {
 }
 
 interface HomeTournamentOutlookProps {
-  resolution: WorldCup2026KnockoutWinnerResolutionResponse;
-  thirdPlaceMatch: WorldCup2026ThirdPlaceMatchFoundationResponse;
+  projection: OfficialKnockoutProjectionResult;
 }
 
 interface HomeModelTrackRecordProps {
@@ -349,9 +345,7 @@ export function HomeGroupSnapshot({ groups }: HomeGroupSnapshotProps) {
   );
 }
 
-export function HomeTournamentOutlook({ resolution, thirdPlaceMatch }: HomeTournamentOutlookProps) {
-  const thirdPlaceFixture = thirdPlaceMatch.thirdPlaceMatchFixture;
-
+export function HomeTournamentOutlook({ projection }: HomeTournamentOutlookProps) {
   return (
     <HomeSection id={HOME_SECTION_IDS[4]} labelledBy="home-tournament-outlook-title">
       <SectionHeader
@@ -368,24 +362,23 @@ export function HomeTournamentOutlook({ resolution, thirdPlaceMatch }: HomeTourn
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold text-teal-700">Projected champion</p>
-            <TeamIdentity identity={getTeamVisualIdentity(resolution.champion.team)} size="lg" showFifaCode className="mt-2 min-w-0" />
+            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.champion)} size="lg" showFifaCode className="mt-2 min-w-0" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500">Projected runner-up</p>
-            <TeamIdentity identity={getTeamVisualIdentity(resolution.runnerUp.team)} size="lg" showFifaCode className="mt-2 min-w-0" />
+            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.runnerUp)} size="lg" showFifaCode className="mt-2 min-w-0" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500">Current projection phase</p>
-            <p className="mt-2 text-lg font-semibold text-slate-950">Knockout projection</p>
-            <p className="mt-1 text-sm text-slate-600">{resolution.totalResolvedFixtures} fixtures resolved</p>
+            <p className="text-xs font-semibold text-slate-500">Projected third place</p>
+            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.thirdPlace)} size="lg" showFifaCode className="mt-2 min-w-0" />
           </div>
         </div>
         <div className="mt-4 border-t border-slate-100 pt-4">
-          <p className="text-xs font-semibold text-slate-500">Projected Third Place Match</p>
+          <p className="text-xs font-semibold text-slate-500">Official knockout phase</p>
           <p className="mt-1 text-sm text-slate-700">
-            {thirdPlaceFixture.homeTeam} vs {thirdPlaceFixture.awayTeam}
+            {projection.rounds.round_of_32.length} official fixtures; {projection.metadata.predictorCallCount} unresolved fixtures projected.
           </p>
-          <p className="mt-2 text-xs text-slate-500">Projections are deterministic and may change as standings and results update.</p>
+          <p className="mt-2 text-xs text-slate-500">Official completed results override projections. Remaining paths may change as results update.</p>
         </div>
       </Surface>
     </HomeSection>
@@ -496,8 +489,7 @@ export function HomeDashboard({
   homeMatches,
   featuredPrediction,
   groups,
-  tournamentResolution,
-  thirdPlaceMatch,
+  tournamentProjection,
   modelTrackRecordMetrics,
   modelVersion,
   formulaVersion
@@ -508,7 +500,7 @@ export function HomeDashboard({
       <HomeTodayMatches matches={homeMatches} dailyMatches={dailyMatches} />
       <HomeFeaturedPrediction prediction={featuredPrediction} />
       <HomeGroupSnapshot groups={groups} />
-      <HomeTournamentOutlook resolution={tournamentResolution} thirdPlaceMatch={thirdPlaceMatch} />
+      <HomeTournamentOutlook projection={tournamentProjection} />
       <HomeModelTrackRecord metrics={modelTrackRecordMetrics} />
       <HomeQuickActions />
       <HomeTechnicalStatus
