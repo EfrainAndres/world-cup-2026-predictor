@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createStatsBombOpenDataProvider } from "./providers/statsbomb/statsbomb-open-data-provider.js";
+import { isValidIsoTimestamp, normalizeToIsoTimestamp } from "./statsbomb-cli-utils.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MONOREPO_ROOT = join(__dirname, "../../..");
@@ -10,8 +11,29 @@ const dataDir =
   process.env["STATSBOMB_OPEN_DATA_DIR"] ??
   join(MONOREPO_ROOT, ".local-data", "statsbomb-open-data");
 
-const today = new Date().toISOString().slice(0, 10);
-const cutoffAt = process.env["STATSBOMB_PROFILE_CUTOFF_AT"] ?? today;
+function resolveCutoff(): string {
+  const argIdx = process.argv.indexOf("--cutoff-at");
+  if (argIdx !== -1) {
+    const val = process.argv[argIdx + 1] ?? "";
+    if (!isValidIsoTimestamp(val)) {
+      console.error(`ERROR: --cutoff-at value '${val}' is not a valid ISO timestamp.`);
+      console.error("Expected: YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ  (e.g. 2026-06-01T00:00:00.000Z)");
+      process.exit(1);
+    }
+    return normalizeToIsoTimestamp(val);
+  }
+  const envVal = process.env["STATSBOMB_PROFILE_CUTOFF_AT"];
+  if (envVal !== undefined) {
+    if (!isValidIsoTimestamp(envVal)) {
+      console.error(`ERROR: STATSBOMB_PROFILE_CUTOFF_AT='${envVal}' is not a valid ISO timestamp.`);
+      process.exit(1);
+    }
+    return normalizeToIsoTimestamp(envVal);
+  }
+  return new Date().toISOString().replace(/\.\d{3}Z$/, ".000Z");
+}
+
+const cutoffAt = resolveCutoff();
 
 const outputPath =
   process.env["STATSBOMB_PROFILE_OUTPUT_PATH"] ??
@@ -65,7 +87,7 @@ async function run(): Promise<void> {
 
   const artifact = {
     schemaVersion: "1.0.0",
-    generatedAt: today,
+    generatedAt: new Date().toISOString(),
     cutoffAt,
     source: "statsbomb_open_data",
     teamCount: results.length,

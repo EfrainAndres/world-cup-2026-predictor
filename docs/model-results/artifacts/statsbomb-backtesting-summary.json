@@ -1,6 +1,526 @@
 {
-  "status": "real_data_evaluation_blocked",
-  "reason": "StatsBomb profiles artifact is empty or unavailable. Run statsbomb:download then statsbomb:build-profiles then statsbomb:backtest.",
-  "schemaVersion": "1.0.0",
-  "generatedAt": null
+  "schemaVersion": "2.0.0",
+  "generatedAt": "2026-06-29T19:49:21.411Z",
+  "status": "data_quality_blocked",
+  "decision": "data_quality_blocked",
+  "decisionReasons": [
+    "Elo compression: all baseline fixtures predict the same modal scoreline — Elo differences are too small to produce divergent xG pairs. Evaluation metrics would compare identical distributions and carry no signal."
+  ],
+  "dataDirPath": "/Users/efrain.vergara/Documents/Main Projects/world-cup-2026-predictor/.local-data/statsbomb-open-data",
+  "profilesArtifactPath": "/Users/efrain.vergara/Documents/Main Projects/world-cup-2026-predictor/docs/model-results/artifacts/statsbomb-team-performance-profiles.json",
+  "profilesCutoffAt": "2026-06-01T00:00:00.000Z",
+  "historicalFixtureCount": 128,
+  "scoredFixtureCount": 128,
+  "profileDiagnostics": {
+    "uniqueCutoffPairs": 256,
+    "profilesWithData": 210,
+    "profilesFallback": 46,
+    "fixturesWithBothTeamsUnresolved": 4,
+    "hasProviderData": true
+  },
+  "eloDiagnostics": {
+    "fixtureCount": 128,
+    "uniqueEloPairs": 128,
+    "eloGapMin": 0,
+    "eloGapMax": 126.4,
+    "eloGapMean": 35.6,
+    "uniqueBaselineXgPairs": 31,
+    "uniqueBaselineModalCount": 1,
+    "uniqueBaselineModals": [
+      "1-1"
+    ]
+  },
+  "signalCoverage": {
+    "totalFixtures": 128,
+    "signalApplied": 86,
+    "signalApplicationRate": 0.671875,
+    "notAppliedReasons": {
+      "home_profile_missing": 19,
+      "applied": 86,
+      "both_profiles_missing": 4,
+      "away_profile_missing": 19
+    },
+    "avgSignalWeight": 0.05596899224806202,
+    "maxSignalWeight": 0.3,
+    "avgHomeXgDelta": 0.002020012819454499,
+    "avgAwayXgDelta": -0.0014122215698493343,
+    "maxAbsXgDelta": 0.07636217444634408
+  },
+  "baselineMetrics": {
+    "fixtureCount": 128,
+    "brierScore": 0.64213624568013,
+    "logLoss": 1.0621671701739537,
+    "outcomeAccuracy": 0.484375,
+    "exactScoreAccuracy": 0.09375,
+    "top3ScoreCoverage": 0.28125,
+    "top5ScoreCoverage": 0.4921875,
+    "homeGoalMae": 1.0662499999999997,
+    "awayGoalMae": 0.8273437499999999,
+    "totalGoalMae": 0.9467968749999998,
+    "avgPredictedHomeGoals": 1.2623437499999999,
+    "avgPredictedAwayGoals": 1.2376562500000001,
+    "avgActualHomeGoals": 1.5,
+    "avgActualAwayGoals": 1.1640625,
+    "probabilitySumValid": true,
+    "sampleSizeLabel": "stronger"
+  },
+  "enrichedMetrics": {
+    "fixtureCount": 128,
+    "brierScore": 0.6405683329273701,
+    "logLoss": 1.0600281243496845,
+    "outcomeAccuracy": 0.5078125,
+    "exactScoreAccuracy": 0.09375,
+    "top3ScoreCoverage": 0.28125,
+    "top5ScoreCoverage": 0.5,
+    "homeGoalMae": 1.0644575270709797,
+    "awayGoalMae": 0.8265763757273352,
+    "totalGoalMae": 0.9455169513991575,
+    "avgPredictedHomeGoals": 1.264363762819455,
+    "avgPredictedAwayGoals": 1.2362440284301512,
+    "avgActualHomeGoals": 1.5,
+    "avgActualAwayGoals": 1.1640625,
+    "probabilitySumValid": true,
+    "sampleSizeLabel": "stronger"
+  },
+  "scorelineDiversity": {
+    "fixtureCount": 128,
+    "top10BaselineModalScorelines": [
+      {
+        "homeGoals": 1,
+        "awayGoals": 1,
+        "count": 128,
+        "frequency": 1
+      }
+    ],
+    "top10EnrichedModalScorelines": [
+      {
+        "homeGoals": 1,
+        "awayGoals": 1,
+        "count": 128,
+        "frequency": 1
+      }
+    ],
+    "baselineUniqueModalScorelineCount": 1,
+    "enrichedUniqueModalScorelineCount": 1,
+    "baselineTop1Concentration": 1,
+    "enrichedTop1Concentration": 1,
+    "baselineTop2Concentration": 1,
+    "enrichedTop2Concentration": 1,
+    "baselineAvgTopScorelineProb": 0.12788608105129215,
+    "enrichedAvgTopScorelineProb": 0.12782127526568526,
+    "baselineAvgFirstSecondGap": 0.02089508081195084,
+    "enrichedAvgFirstSecondGap": 0.020615603791659033,
+    "baseline0_0Frequency": 0,
+    "baseline1_0Frequency": 0,
+    "baseline0_1Frequency": 0,
+    "baseline1_1Frequency": 1,
+    "baseline2_0Frequency": 0,
+    "baseline0_2Frequency": 0,
+    "baseline2_1Frequency": 0,
+    "baseline1_2Frequency": 0,
+    "enriched0_0Frequency": 0,
+    "enriched1_0Frequency": 0,
+    "enriched0_1Frequency": 0,
+    "enriched1_1Frequency": 1,
+    "enriched2_0Frequency": 0,
+    "enriched0_2Frequency": 0,
+    "enriched2_1Frequency": 0,
+    "enriched1_2Frequency": 0,
+    "pctModalScoreChanged": 0,
+    "pctBaseline1_1ChangedAway": 0,
+    "pctNonBaseline1_1ChangedInto1_1": 0
+  },
+  "cohorts": [
+    {
+      "name": "all",
+      "fixtureCount": 128,
+      "sampleSizeLabel": "stronger",
+      "baseline": {
+        "brierScore": 0.64213624568013,
+        "logLoss": 1.0621671701739537,
+        "outcomeAccuracy": 0.484375
+      },
+      "enriched": {
+        "brierScore": 0.6405683329273701,
+        "logLoss": 1.0600281243496845,
+        "outcomeAccuracy": 0.5078125
+      },
+      "delta": {
+        "brierScore": -0.0015679127527598036,
+        "logLoss": -0.002139045824269159,
+        "outcomeAccuracy": 0.0234375,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.0017924729290199615,
+        "awayGoalMae": -0.0007673742726647115,
+        "totalGoalMae": -0.001279923600842281
+      }
+    },
+    {
+      "name": "wc_only",
+      "fixtureCount": 128,
+      "sampleSizeLabel": "stronger",
+      "baseline": {
+        "brierScore": 0.64213624568013,
+        "logLoss": 1.0621671701739537,
+        "outcomeAccuracy": 0.484375
+      },
+      "enriched": {
+        "brierScore": 0.6405683329273701,
+        "logLoss": 1.0600281243496845,
+        "outcomeAccuracy": 0.5078125
+      },
+      "delta": {
+        "brierScore": -0.0015679127527598036,
+        "logLoss": -0.002139045824269159,
+        "outcomeAccuracy": 0.0234375,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.0017924729290199615,
+        "awayGoalMae": -0.0007673742726647115,
+        "totalGoalMae": -0.001279923600842281
+      }
+    },
+    {
+      "name": "non_wc",
+      "fixtureCount": 0,
+      "sampleSizeLabel": "insufficient",
+      "baseline": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "enriched": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "delta": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null,
+        "exactScoreAccuracy": null,
+        "homeGoalMae": null,
+        "awayGoalMae": null,
+        "totalGoalMae": null
+      }
+    },
+    {
+      "name": "neutral",
+      "fixtureCount": 128,
+      "sampleSizeLabel": "stronger",
+      "baseline": {
+        "brierScore": 0.64213624568013,
+        "logLoss": 1.0621671701739537,
+        "outcomeAccuracy": 0.484375
+      },
+      "enriched": {
+        "brierScore": 0.6405683329273701,
+        "logLoss": 1.0600281243496845,
+        "outcomeAccuracy": 0.5078125
+      },
+      "delta": {
+        "brierScore": -0.0015679127527598036,
+        "logLoss": -0.002139045824269159,
+        "outcomeAccuracy": 0.0234375,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.0017924729290199615,
+        "awayGoalMae": -0.0007673742726647115,
+        "totalGoalMae": -0.001279923600842281
+      }
+    },
+    {
+      "name": "knockout",
+      "fixtureCount": 32,
+      "sampleSizeLabel": "limited",
+      "baseline": {
+        "brierScore": 0.6380960397643289,
+        "logLoss": 1.0589647683490708,
+        "outcomeAccuracy": 0.53125
+      },
+      "enriched": {
+        "brierScore": 0.6345728229575529,
+        "logLoss": 1.0540724612283918,
+        "outcomeAccuracy": 0.5
+      },
+      "delta": {
+        "brierScore": -0.0035232168067760306,
+        "logLoss": -0.004892307120679007,
+        "outcomeAccuracy": -0.03125,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.008693773909874913,
+        "awayGoalMae": -0.0008866495136790054,
+        "totalGoalMae": -0.004790211711776959
+      }
+    },
+    {
+      "name": "group_stage",
+      "fixtureCount": 96,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6434829809853976,
+        "logLoss": 1.0632346374489143,
+        "outcomeAccuracy": 0.46875
+      },
+      "enriched": {
+        "brierScore": 0.6425668362506423,
+        "logLoss": 1.0620133453901155,
+        "outcomeAccuracy": 0.5104166666666666
+      },
+      "delta": {
+        "brierScore": -0.0009161447347553198,
+        "logLoss": -0.0012212920587988396,
+        "outcomeAccuracy": 0.04166666666666663,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": 0.0005079607312643564,
+        "awayGoalMae": -0.0007276158589928361,
+        "totalGoalMae": -0.00010982756386423986
+      }
+    },
+    {
+      "name": "full_or_partial_coverage",
+      "fixtureCount": 68,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6335345231700169,
+        "logLoss": 1.0494643547939966,
+        "outcomeAccuracy": 0.5
+      },
+      "enriched": {
+        "brierScore": 0.6322405781480654,
+        "logLoss": 1.0476991431502591,
+        "outcomeAccuracy": 0.5147058823529411
+      },
+      "delta": {
+        "brierScore": -0.0012939450219514592,
+        "logLoss": -0.001765211643737441,
+        "outcomeAccuracy": 0.014705882352941124,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.001633450079473242,
+        "awayGoalMae": -0.0004125210497990528,
+        "totalGoalMae": -0.001022985564636203
+      }
+    },
+    {
+      "name": "sparse_coverage",
+      "fixtureCount": 75,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6402151919931718,
+        "logLoss": 1.0601472871291155,
+        "outcomeAccuracy": 0.5333333333333333
+      },
+      "enriched": {
+        "brierScore": 0.6384919924292575,
+        "logLoss": 1.057783589441608,
+        "outcomeAccuracy": 0.5733333333333334
+      },
+      "delta": {
+        "brierScore": -0.0017231995639143127,
+        "logLoss": -0.002363697687507438,
+        "outcomeAccuracy": 0.040000000000000036,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.002188005119385217,
+        "awayGoalMae": -0.001111263147386854,
+        "totalGoalMae": -0.0016496341333860354
+      }
+    },
+    {
+      "name": "signal_not_applied",
+      "fixtureCount": 42,
+      "sampleSizeLabel": "limited",
+      "baseline": {
+        "brierScore": 0.6482323735477707,
+        "logLoss": 1.0722052038037657,
+        "outcomeAccuracy": 0.4523809523809524
+      },
+      "enriched": {
+        "brierScore": 0.6482323735477707,
+        "logLoss": 1.0722052038037657,
+        "outcomeAccuracy": 0.4523809523809524
+      },
+      "delta": {
+        "brierScore": 0,
+        "logLoss": 0,
+        "outcomeAccuracy": 0,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": 0,
+        "awayGoalMae": 0,
+        "totalGoalMae": 0
+      }
+    },
+    {
+      "name": "signal_applied",
+      "fixtureCount": 86,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6391590669540738,
+        "logLoss": 1.0572648746803242,
+        "outcomeAccuracy": 0.5
+      },
+      "enriched": {
+        "brierScore": 0.6368254293685698,
+        "logLoss": 1.0540811785697843,
+        "outcomeAccuracy": 0.5348837209302325
+      },
+      "delta": {
+        "brierScore": -0.002333637585503978,
+        "logLoss": -0.003183696110539813,
+        "outcomeAccuracy": 0.03488372093023251,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.002667866685053477,
+        "awayGoalMae": -0.0011421384523380151,
+        "totalGoalMae": -0.0019050025686957461
+      }
+    },
+    {
+      "name": "strong_favorite",
+      "fixtureCount": 0,
+      "sampleSizeLabel": "insufficient",
+      "baseline": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "enriched": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "delta": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null,
+        "exactScoreAccuracy": null,
+        "homeGoalMae": null,
+        "awayGoalMae": null,
+        "totalGoalMae": null
+      }
+    },
+    {
+      "name": "moderate_favorite",
+      "fixtureCount": 0,
+      "sampleSizeLabel": "insufficient",
+      "baseline": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "enriched": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "delta": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null,
+        "exactScoreAccuracy": null,
+        "homeGoalMae": null,
+        "awayGoalMae": null,
+        "totalGoalMae": null
+      }
+    },
+    {
+      "name": "weak_favorite",
+      "fixtureCount": 51,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6355394654168494,
+        "logLoss": 1.0535845042450025,
+        "outcomeAccuracy": 0.5098039215686274
+      },
+      "enriched": {
+        "brierScore": 0.6343087313368728,
+        "logLoss": 1.0519977488289138,
+        "outcomeAccuracy": 0.5098039215686274
+      },
+      "delta": {
+        "brierScore": -0.0012307340799765365,
+        "logLoss": -0.0015867554160886588,
+        "outcomeAccuracy": 0,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.00006240958992020929,
+        "awayGoalMae": 0.0006722567772304844,
+        "totalGoalMae": 0.00030492359365519306
+      }
+    },
+    {
+      "name": "no_clear_favorite",
+      "fixtureCount": 77,
+      "sampleSizeLabel": "moderate",
+      "baseline": {
+        "brierScore": 0.6465055416986676,
+        "logLoss": 1.0678517930619604,
+        "outcomeAccuracy": 0.4675324675324675
+      },
+      "enriched": {
+        "brierScore": 0.6447143028119849,
+        "logLoss": 1.0653469444998054,
+        "outcomeAccuracy": 0.5064935064935064
+      },
+      "delta": {
+        "brierScore": -0.0017912388866826445,
+        "logLoss": -0.0025048485621550487,
+        "outcomeAccuracy": 0.03896103896103892,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.0029383590367366708,
+        "awayGoalMae": -0.0017208961368803122,
+        "totalGoalMae": -0.002329627586808436
+      }
+    },
+    {
+      "name": "baseline_modal_1_1",
+      "fixtureCount": 128,
+      "sampleSizeLabel": "stronger",
+      "baseline": {
+        "brierScore": 0.64213624568013,
+        "logLoss": 1.0621671701739537,
+        "outcomeAccuracy": 0.484375
+      },
+      "enriched": {
+        "brierScore": 0.6405683329273701,
+        "logLoss": 1.0600281243496845,
+        "outcomeAccuracy": 0.5078125
+      },
+      "delta": {
+        "brierScore": -0.0015679127527598036,
+        "logLoss": -0.002139045824269159,
+        "outcomeAccuracy": 0.0234375,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.0017924729290199615,
+        "awayGoalMae": -0.0007673742726647115,
+        "totalGoalMae": -0.001279923600842281
+      }
+    },
+    {
+      "name": "draw_heavy_baseline",
+      "fixtureCount": 0,
+      "sampleSizeLabel": "insufficient",
+      "baseline": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "enriched": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null
+      },
+      "delta": {
+        "brierScore": null,
+        "logLoss": null,
+        "outcomeAccuracy": null,
+        "exactScoreAccuracy": null,
+        "homeGoalMae": null,
+        "awayGoalMae": null,
+        "totalGoalMae": null
+      }
+    }
+  ],
+  "roundOf32Summary": {
+    "fixtureCount": 16,
+    "signalApplied": 13,
+    "modalScoreChanged": 0,
+    "baseline1_1Count": 16,
+    "enriched1_1Count": 16
+  }
 }

@@ -4,6 +4,7 @@ export type BacktestDecision =
   | "recalibrate_signal_weights"
   | "disable_signal_candidate"
   | "real_data_evaluation_blocked"
+  | "data_quality_blocked"
   | "insufficient_evidence";
 
 export const DECISION_MIN_ELIGIBLE_FIXTURES = 20;
@@ -29,6 +30,9 @@ export interface BacktestDecisionInput {
   };
   hasLookaheadFailure: boolean;
   hasInvalidProfiles: boolean;
+  // Optional data-quality fields — absent means "unknown / not checked"
+  uniqueBaselineModalCount?: number;
+  hasProviderData?: boolean;
 }
 
 export interface BacktestDecisionResult {
@@ -56,6 +60,33 @@ export function makeStatsBombBacktestDecision(
   if (input.hasInvalidProfiles) {
     reasons.push("Invalid profiles detected: one or more team profiles contain corrupt or inconsistent data.");
     return { decision: "disable_signal_candidate", reasons };
+  }
+
+  // Data quality guard — must run before insufficient_evidence so structural failures
+  // are not misclassified as evidence problems.
+  if (input.fixtureCount >= DECISION_MIN_ELIGIBLE_FIXTURES) {
+    // All baseline modals identical → Elo compression, evaluation is meaningless
+    if (input.uniqueBaselineModalCount === 1) {
+      reasons.push(
+        "Elo compression: all baseline fixtures predict the same modal scoreline — " +
+        "Elo differences are too small to produce divergent xG pairs. " +
+        "Evaluation metrics would compare identical distributions and carry no signal."
+      );
+      return { decision: "data_quality_blocked", reasons };
+    }
+
+    // Zero signal applied despite a working provider → structural pipeline failure
+    if (
+      input.signalApplicationCount === 0 &&
+      input.hasProviderData === true
+    ) {
+      reasons.push(
+        "Signal applied to zero fixtures despite a live StatsBomb provider. " +
+        "All per-fixture profile lookups failed (unresolved team, no-look-ahead rejection, " +
+        "or coverage below threshold). Evaluation result would be identical to baseline."
+      );
+      return { decision: "data_quality_blocked", reasons };
+    }
   }
 
   if (
