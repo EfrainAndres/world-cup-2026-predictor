@@ -1,0 +1,215 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-06-29T20:16:59.826Z",
+  "status": "complete",
+  "dataQualityDecision": {
+    "decision": "weighted_replay_ready",
+    "selectedStrategy": "expanded_international_weighted",
+    "reasons": [
+      "Expanded weighted replay produced sufficient Elo, xG, and modal-score diversity."
+    ],
+    "strategies": [
+      {
+        "strategy": "world_cup_only_basic",
+        "acceptedFixtureCount": 128,
+        "unresolvedTeamCount": 0,
+        "noLookAheadFailures": 0,
+        "uniquePreMatchEloPairCount": 128,
+        "uniqueBaselineXgPairCount": 31,
+        "uniqueModalScorelineCount": 1,
+        "modalOneOneFrequency": 1,
+        "fixturesAbove167PointGap": 0,
+        "ready": false,
+        "reasons": [
+          "Unique modal scorelines 1 is below 2.",
+          "Modal 1-1 frequency is still 100% or unavailable.",
+          "No evaluated fixtures exceed the 167-point Elo-gap threshold."
+        ]
+      },
+      {
+        "strategy": "expanded_international_basic",
+        "acceptedFixtureCount": 128,
+        "unresolvedTeamCount": 0,
+        "noLookAheadFailures": 0,
+        "uniquePreMatchEloPairCount": 128,
+        "uniqueBaselineXgPairCount": 31,
+        "uniqueModalScorelineCount": 1,
+        "modalOneOneFrequency": 1,
+        "fixturesAbove167PointGap": 0,
+        "ready": false,
+        "reasons": [
+          "Unique modal scorelines 1 is below 2.",
+          "Modal 1-1 frequency is still 100% or unavailable.",
+          "No evaluated fixtures exceed the 167-point Elo-gap threshold."
+        ]
+      },
+      {
+        "strategy": "expanded_international_weighted",
+        "acceptedFixtureCount": 128,
+        "unresolvedTeamCount": 0,
+        "noLookAheadFailures": 0,
+        "uniquePreMatchEloPairCount": 128,
+        "uniqueBaselineXgPairCount": 59,
+        "uniqueModalScorelineCount": 3,
+        "modalOneOneFrequency": 0.7890625,
+        "fixturesAbove167PointGap": 24,
+        "ready": true,
+        "reasons": []
+      }
+    ]
+  },
+  "strategies": [
+    {
+      "strategy": "expanded_international_weighted",
+      "fixtureCount": 128,
+      "profileDiagnostics": {
+        "uniqueCutoffPairs": 256,
+        "profilesWithData": 210,
+        "profilesFallback": 46,
+        "fixturesWithBothTeamsUnresolved": 4,
+        "hasProviderData": true
+      },
+      "signalCoverage": {
+        "totalFixtures": 128,
+        "signalApplied": 86,
+        "signalApplicationRate": 0.671875,
+        "notAppliedReasons": {
+          "home_profile_missing": 19,
+          "applied": 86,
+          "both_profiles_missing": 4,
+          "away_profile_missing": 19
+        },
+        "avgSignalWeight": 0.05596899224806202,
+        "maxSignalWeight": 0.3,
+        "avgHomeXgDelta": 0.001680429486121164,
+        "avgAwayXgDelta": -0.0010726382365160037,
+        "maxAbsXgDelta": 0.08955099522807974
+      },
+      "baselineMetrics": {
+        "fixtureCount": 128,
+        "brierScore": 0.6383362039711733,
+        "logLoss": 1.060778535974867,
+        "outcomeAccuracy": 0.484375,
+        "exactScoreAccuracy": 0.09375,
+        "top3ScoreCoverage": 0.2890625,
+        "top5ScoreCoverage": 0.484375,
+        "homeGoalMae": 1.0689843749999999,
+        "awayGoalMae": 0.8180468749999998,
+        "totalGoalMae": 0.9435156249999999,
+        "avgPredictedHomeGoals": 1.291796875,
+        "avgPredictedAwayGoals": 1.208203125,
+        "avgActualHomeGoals": 1.5,
+        "avgActualAwayGoals": 1.1640625,
+        "probabilitySumValid": true,
+        "sampleSizeLabel": "stronger"
+      },
+      "enrichedMetrics": {
+        "fixtureCount": 128,
+        "brierScore": 0.6365394737792673,
+        "logLoss": 1.058124248237262,
+        "outcomeAccuracy": 0.4921875,
+        "exactScoreAccuracy": 0.09375,
+        "top3ScoreCoverage": 0.28125,
+        "top5ScoreCoverage": 0.4921875,
+        "homeGoalMae": 1.0673028270411753,
+        "awayGoalMae": 0.8169417533786558,
+        "totalGoalMae": 0.9421222902099156,
+        "avgPredictedHomeGoals": 1.2934773044861207,
+        "avgPredictedAwayGoals": 1.207130486763484,
+        "avgActualHomeGoals": 1.5,
+        "avgActualAwayGoals": 1.1640625,
+        "probabilitySumValid": true,
+        "sampleSizeLabel": "stronger"
+      },
+      "metricDelta": {
+        "brierScore": -0.001797,
+        "logLoss": -0.002654,
+        "outcomeAccuracy": 0.007813,
+        "exactScoreAccuracy": 0,
+        "homeGoalMae": -0.001682,
+        "awayGoalMae": -0.001105,
+        "totalGoalMae": -0.001393
+      },
+      "scorelineDiversity": {
+        "fixtureCount": 128,
+        "top10BaselineModalScorelines": [
+          {
+            "homeGoals": 1,
+            "awayGoals": 1,
+            "count": 101,
+            "frequency": 0.7890625
+          },
+          {
+            "homeGoals": 1,
+            "awayGoals": 0,
+            "count": 19,
+            "frequency": 0.1484375
+          },
+          {
+            "homeGoals": 0,
+            "awayGoals": 1,
+            "count": 8,
+            "frequency": 0.0625
+          }
+        ],
+        "top10EnrichedModalScorelines": [
+          {
+            "homeGoals": 1,
+            "awayGoals": 1,
+            "count": 101,
+            "frequency": 0.7890625
+          },
+          {
+            "homeGoals": 1,
+            "awayGoals": 0,
+            "count": 19,
+            "frequency": 0.1484375
+          },
+          {
+            "homeGoals": 0,
+            "awayGoals": 1,
+            "count": 8,
+            "frequency": 0.0625
+          }
+        ],
+        "baselineUniqueModalScorelineCount": 3,
+        "enrichedUniqueModalScorelineCount": 3,
+        "baselineTop1Concentration": 0.7890625,
+        "enrichedTop1Concentration": 0.7890625,
+        "baselineTop2Concentration": 0.9375,
+        "enrichedTop2Concentration": 0.9375,
+        "baselineAvgTopScorelineProb": 0.1280125937228567,
+        "enrichedAvgTopScorelineProb": 0.12790920642789663,
+        "baselineAvgFirstSecondGap": 0.014669031166503829,
+        "enrichedAvgFirstSecondGap": 0.014579751623544308,
+        "baseline0_0Frequency": 0,
+        "baseline1_0Frequency": 0.1484375,
+        "baseline0_1Frequency": 0.0625,
+        "baseline1_1Frequency": 0.7890625,
+        "baseline2_0Frequency": 0,
+        "baseline0_2Frequency": 0,
+        "baseline2_1Frequency": 0,
+        "baseline1_2Frequency": 0,
+        "enriched0_0Frequency": 0,
+        "enriched1_0Frequency": 0.1484375,
+        "enriched0_1Frequency": 0.0625,
+        "enriched1_1Frequency": 0.7890625,
+        "enriched2_0Frequency": 0,
+        "enriched0_2Frequency": 0,
+        "enriched2_1Frequency": 0,
+        "enriched1_2Frequency": 0,
+        "pctModalScoreChanged": 0,
+        "pctBaseline1_1ChangedAway": 0,
+        "pctNonBaseline1_1ChangedInto1_1": 0
+      },
+      "statsBombDecision": {
+        "decision": "promote_signal_candidate",
+        "reasons": [
+          "Both Brier Score (Δ-0.0018) and Log Loss (Δ-0.0027) improved.",
+          "No material regression detected across monitored metrics.",
+          "Signal applied to 86 of 128 eligible fixtures."
+        ]
+      }
+    }
+  ]
+}

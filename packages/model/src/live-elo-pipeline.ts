@@ -563,7 +563,7 @@ function processMatchesWithWeighting(
   };
 }
 
-function updateRatingsAfterMatchWithHomeAdvantage(
+export function updateRatingsAfterMatchWithHomeAdvantage(
   ratings: ReadonlyMap<string, number>,
   match: EloMatch,
   config: EloConfig,
