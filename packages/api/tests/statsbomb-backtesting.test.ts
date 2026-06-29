@@ -19,6 +19,14 @@ import {
 import { evaluateScorelineDiversity } from "../src/statsbomb-scoreline-diversity.js";
 import type { TeamPerformanceProfileSource } from "../src/statsbomb-prediction-signal.js";
 import type { TeamPerformanceProfile } from "../src/providers/statsbomb/index.js";
+import {
+  isValidIsoTimestamp,
+} from "../src/statsbomb-cli-utils.js";
+import {
+  buildScoreLookupKey,
+  lookupHistoricalScore,
+} from "../src/statsbomb-historical-scores.js";
+import type { HistoricalScoreLookup } from "../src/statsbomb-historical-scores.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -732,5 +740,281 @@ describe("compatibility: probability sums validated", () => {
     );
     const m = computeBacktestMetrics(results, false);
     expect(m.probabilitySumValid).toBe(true);
+  });
+});
+
+// ─── 9. CLI cutoff validation ──────────────────────────────────────────────────
+
+describe("isValidIsoTimestamp: accepts valid formats", () => {
+  it("accepts YYYY-MM-DD date-only string", () => {
+    expect(isValidIsoTimestamp("2026-06-01")).toBe(true);
+  });
+
+  it("accepts full ISO with milliseconds and Z", () => {
+    expect(isValidIsoTimestamp("2026-06-01T00:00:00.000Z")).toBe(true);
+  });
+
+  it("accepts ISO without milliseconds", () => {
+    expect(isValidIsoTimestamp("2022-11-20T12:00:00Z")).toBe(true);
+  });
+});
+
+describe("isValidIsoTimestamp: rejects invalid values", () => {
+  it("rejects empty string", () => {
+    expect(isValidIsoTimestamp("")).toBe(false);
+  });
+
+  it("rejects plain text", () => {
+    expect(isValidIsoTimestamp("not-a-date")).toBe(false);
+  });
+
+  it("rejects month 13", () => {
+    expect(isValidIsoTimestamp("2026-13-01")).toBe(false);
+  });
+
+  it("rejects partial ISO (missing time part after T)", () => {
+    expect(isValidIsoTimestamp("2026-06-01T")).toBe(false);
+  });
+
+  it("rejects date-only with trailing T", () => {
+    expect(isValidIsoTimestamp("2026-06-01T00:00:00")).toBe(false);
+  });
+});
+
+// ─── 10. Historical score lookup ──────────────────────────────────────────────
+
+describe("buildScoreLookupKey: normalizes team names", () => {
+  it("produces consistent key for canonical names", () => {
+    const k = buildScoreLookupKey("Germany", "Spain", "2022-11-27");
+    expect(k).toBe("Germany|Spain|2022-11-27");
+  });
+
+  it("resolves team aliases (Korea Republic → South Korea)", () => {
+    const k = buildScoreLookupKey("Korea Republic", "Portugal", "2022-12-02");
+    expect(k).toBe("South Korea|Portugal|2022-12-02");
+  });
+
+  it("strips time portion from kickoffAt timestamp", () => {
+    const keyWithTime = buildScoreLookupKey("France", "Morocco", "2022-12-14T20:00:00.000Z");
+    const keyDateOnly = buildScoreLookupKey("France", "Morocco", "2022-12-14");
+    expect(keyWithTime).toBe(keyDateOnly);
+  });
+});
+
+describe("lookupHistoricalScore: returns null on miss", () => {
+  it("returns null for empty lookup", () => {
+    const lookup: HistoricalScoreLookup = new Map();
+    expect(lookupHistoricalScore(lookup, "Germany", "Spain", "2022-11-27")).toBeNull();
+  });
+
+  it("returns score when key matches exactly", () => {
+    const lookup: HistoricalScoreLookup = new Map([
+      ["Germany|Spain|2022-11-27", { homeGoals: 1, awayGoals: 1 }],
+    ]);
+    const score = lookupHistoricalScore(lookup, "Germany", "Spain", "2022-11-27");
+    expect(score).not.toBeNull();
+    expect(score!.homeGoals).toBe(1);
+    expect(score!.awayGoals).toBe(1);
+  });
+
+  it("lookup with kickoffAt timestamp resolves to same key as date-only", () => {
+    const lookup: HistoricalScoreLookup = new Map([
+      ["Argentina|France|2022-12-18", { homeGoals: 3, awayGoals: 3 }],
+    ]);
+    const scoreFromKickoff = lookupHistoricalScore(lookup, "Argentina", "France", "2022-12-18T15:00:00.000Z");
+    expect(scoreFromKickoff).not.toBeNull();
+    expect(scoreFromKickoff!.homeGoals).toBe(3);
+  });
+
+  it("returns null when home/away are swapped", () => {
+    const lookup: HistoricalScoreLookup = new Map([
+      ["Germany|Spain|2022-11-27", { homeGoals: 1, awayGoals: 1 }],
+    ]);
+    expect(lookupHistoricalScore(lookup, "Spain", "Germany", "2022-11-27")).toBeNull();
+  });
+});
+
+// ─── 11. data_quality_blocked decision ────────────────────────────────────────
+
+describe("makeStatsBombBacktestDecision: data_quality_blocked", () => {
+  const goodMetrics = { brierScore: 0.50, logLoss: 0.69, totalGoalMae: 0.40 };
+
+  it("returns data_quality_blocked when all baseline modals are identical (Elo compression)", () => {
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 128,
+      signalApplicationCount: 0,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 1,
+    });
+    expect(r.decision).toBe("data_quality_blocked");
+  });
+
+  it("data_quality_blocked includes Elo compression reason", () => {
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 128,
+      signalApplicationCount: 0,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 1,
+    });
+    expect(r.reasons.some(reason => reason.toLowerCase().includes("elo compression"))).toBe(true);
+  });
+
+  it("returns data_quality_blocked when zero signal despite live provider", () => {
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 128,
+      signalApplicationCount: 0,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 5,
+      hasProviderData: true,
+    });
+    expect(r.decision).toBe("data_quality_blocked");
+  });
+
+  it("does NOT return data_quality_blocked when zero signal and no provider data", () => {
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 128,
+      signalApplicationCount: 0,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 5,
+      hasProviderData: false,
+    });
+    // Without a live provider, zero signal is expected — not a data quality block
+    expect(r.decision).not.toBe("data_quality_blocked");
+  });
+
+  it("does NOT return data_quality_blocked when unique modal count >= 2", () => {
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 128,
+      signalApplicationCount: 30,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 3,
+    });
+    expect(r.decision).not.toBe("data_quality_blocked");
+  });
+
+  it("data_quality_blocked is not returned when fixture count below threshold", () => {
+    // With only 5 fixtures, the modal count guard should not trigger
+    const r = makeStatsBombBacktestDecision({
+      hasRealProfiles: true,
+      fixtureCount: 5,
+      signalApplicationCount: 0,
+      baselineMetrics: goodMetrics,
+      enrichedMetrics: goodMetrics,
+      hasLookaheadFailure: false,
+      hasInvalidProfiles: false,
+      uniqueBaselineModalCount: 1,
+      hasProviderData: true,
+    });
+    // Below DECISION_MIN_ELIGIBLE_FIXTURES — goes to insufficient_evidence, not data_quality_blocked
+    expect(r.decision).toBe("insufficient_evidence");
+  });
+});
+
+// ─── 12. Per-fixture profile source pattern ───────────────────────────────────
+
+describe("per-fixture profile source: cutoff at kickoff passes no-look-ahead", () => {
+  it("profile with cutoffAt equal to kickoffAt is accepted", () => {
+    const kickoffAt = "2022-11-20T12:00:00.000Z";
+    const homeProfile = makeProfile("germany", "Germany", { cutoffAt: kickoffAt });
+    const awayProfile = makeProfile("spain", "Spain", { cutoffAt: kickoffAt });
+    const fixture = makeFixture({ kickoffAt, homeTeam: "Germany", awayTeam: "Spain" });
+    const source = makeProfileSource([homeProfile, awayProfile]);
+    const result = evaluateBacktestFixture(fixture, source);
+    // cutoffAt === kickoffAt means <= passes; coverage should be non-null
+    expect(result.homeCoverage).not.toBeNull();
+    expect(result.awayCoverage).not.toBeNull();
+  });
+
+  it("profile with cutoffAt one day AFTER kickoff is rejected", () => {
+    const kickoffAt = "2022-11-20T12:00:00.000Z";
+    const profileCutoff = "2022-11-21T00:00:00.000Z";  // one day later
+    const homeProfile = makeProfile("germany", "Germany", { cutoffAt: profileCutoff });
+    const awayProfile = makeProfile("spain", "Spain", { cutoffAt: profileCutoff });
+    const fixture = makeFixture({ kickoffAt, homeTeam: "Germany", awayTeam: "Spain" });
+    const source = makeProfileSource([homeProfile, awayProfile]);
+    const result = evaluateBacktestFixture(fixture, source);
+    expect(result.signalApplied).toBe(false);
+  });
+});
+
+// ─── 13. Elo diversity invariant ──────────────────────────────────────────────
+
+describe("Elo diversity: different Elo gaps produce different xG pairs", () => {
+  it("equal Elo produces symmetric xG (homeXg ≈ awayXg)", () => {
+    const fixture = makeFixture({ homeElo: 1500, awayElo: 1500 });
+    const result = evaluateBacktestFixture(fixture, NULL_PROFILE_SOURCE);
+    expect(result.baseline.homeXg).toBeCloseTo(result.baseline.awayXg, 4);
+  });
+
+  it("large Elo gap produces asymmetric xG", () => {
+    const fixture = makeFixture({ homeElo: 2000, awayElo: 1200 });
+    const result = evaluateBacktestFixture(fixture, NULL_PROFILE_SOURCE);
+    expect(result.baseline.homeXg).toBeGreaterThan(result.baseline.awayXg);
+  });
+
+  it("distinct Elo pairs → distinct xG pairs (no compression at K=20 WC range)", () => {
+    const elos = [
+      { home: 1600, away: 1500 },
+      { home: 1700, away: 1400 },
+      { home: 1800, away: 1300 },
+    ];
+    const xgPairs = elos.map(e => {
+      const f = makeFixture({ homeElo: e.home, awayElo: e.away });
+      const r = evaluateBacktestFixture(f, NULL_PROFILE_SOURCE);
+      return `${r.baseline.homeXg.toFixed(4)}|${r.baseline.awayXg.toFixed(4)}`;
+    });
+    const unique = new Set(xgPairs);
+    expect(unique.size).toBe(elos.length);
+  });
+});
+
+// ─── 14. Actual score population ──────────────────────────────────────────────
+
+describe("actual scores: goal metrics non-null when scores provided", () => {
+  it("totalGoalMae is non-null when actual goals are populated", () => {
+    const fixture = makeFixture({ actualHomeGoals: 2, actualAwayGoals: 0 });
+    const result = makeResult(fixture);
+    const m = computeBacktestMetrics([result], false);
+    expect(m.totalGoalMae).not.toBeNull();
+    expect(m.totalGoalMae!).toBeGreaterThanOrEqual(0);
+  });
+
+  it("exact score metric is non-null when actual goals provided", () => {
+    const fixture = makeFixture({ actualHomeGoals: 1, actualAwayGoals: 1 });
+    const result = makeResult(fixture);
+    const m = computeBacktestMetrics([result], false);
+    expect(m.exactScoreAccuracy).not.toBeNull();
+  });
+
+  it("fixtures with and without scores coexist without NaN", () => {
+    const results = [
+      makeResult(makeFixture({ matchId: "a", actualHomeGoals: 2, actualAwayGoals: 1 })),
+      makeResult(makeFixture({ matchId: "b", actualHomeGoals: null, actualAwayGoals: null })),
+    ];
+    const m = computeBacktestMetrics(results, false);
+    expect(m.brierScore).not.toBeNull();
+    expect(Number.isFinite(m.brierScore!)).toBe(true);
+    // Score metrics computed only from fixtures with actual goals
+    expect(m.exactScoreAccuracy).not.toBeNull();
   });
 });

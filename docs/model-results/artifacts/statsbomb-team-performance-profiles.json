@@ -1,6 +1,4388 @@
 {
-  "note": "Run pnpm --filter @world-cup-2026-predictor/api statsbomb:build-profiles to generate this file.",
   "schemaVersion": "1.0.0",
-  "generatedAt": null,
-  "profiles": []
+  "generatedAt": "2026-06-29T19:48:39.341Z",
+  "cutoffAt": "2026-06-01T00:00:00.000Z",
+  "source": "statsbomb_open_data",
+  "teamCount": 48,
+  "coverageSummary": {
+    "full": 0,
+    "partial": 37,
+    "sparse": 3,
+    "fallback": 8
+  },
+  "profiles": [
+    {
+      "teamId": "mexico",
+      "canonicalName": "Mexico",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-01",
+      "matchCount": 10,
+      "minutesPlayed": 900,
+      "shotCountFor": 161,
+      "shotCountAgainst": 130,
+      "xgSampleCountFor": 161,
+      "xgSampleCountAgainst": 130,
+      "totalXgFor": 12.5800232757,
+      "totalXgAgainst": 13.721851018200002,
+      "xgForPer90": 1.25800232757,
+      "xgAgainstPer90": 1.3721851018200002,
+      "goalsFor": 6,
+      "goalsAgainst": 10,
+      "goalsForPer90": 0.6000000000000001,
+      "goalsAgainstPer90": 1,
+      "shotQualityFor": 0.07813679053229813,
+      "shotQualityAgainst": 0.10555270014000002,
+      "uniqueOpponentCount": 10,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857265,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857260,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857289,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7534,
+          "matchDate": "2018-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7553,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7583,
+          "matchDate": "2018-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7566,
+          "matchDate": "2018-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939971,
+          "matchDate": "2024-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939979,
+          "matchDate": "2024-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939988,
+          "matchDate": "2024-07-01"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "south-africa",
+      "canonicalName": "South Africa",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-02-10",
+      "matchCount": 7,
+      "minutesPlayed": 720,
+      "shotCountFor": 76,
+      "shotCountAgainst": 96,
+      "xgSampleCountFor": 76,
+      "xgSampleCountAgainst": 96,
+      "totalXgFor": 7.4878802046,
+      "totalXgAgainst": 10.701542253100001,
+      "xgForPer90": 0.935985025575,
+      "xgAgainstPer90": 1.3376927816375002,
+      "goalsFor": 7,
+      "goalsAgainst": 3,
+      "goalsForPer90": 0.875,
+      "goalsAgainstPer90": 0.375,
+      "shotQualityFor": 0.09852473953421052,
+      "shotQualityAgainst": 0.11147439846979168,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920407,
+          "matchDate": "2024-01-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920416,
+          "matchDate": "2024-01-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922658,
+          "matchDate": "2024-02-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3923880,
+          "matchDate": "2024-02-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922837,
+          "matchDate": "2024-02-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922243,
+          "matchDate": "2024-01-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920391,
+          "matchDate": "2024-01-16"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "south-korea",
+      "canonicalName": "South Korea",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-12-05",
+      "matchCount": 7,
+      "minutesPlayed": 630,
+      "shotCountFor": 82,
+      "shotCountAgainst": 107,
+      "xgSampleCountFor": 82,
+      "xgSampleCountAgainst": 107,
+      "totalXgFor": 6.6153906444,
+      "totalXgAgainst": 12.432053261,
+      "xgForPer90": 0.945055806342857,
+      "xgAgainstPer90": 1.7760076087142858,
+      "goalsFor": 8,
+      "goalsAgainst": 11,
+      "goalsForPer90": 1.1428571428571428,
+      "goalsAgainstPer90": 1.5714285714285714,
+      "shotQualityFor": 0.08067549566341463,
+      "shotQualityAgainst": 0.11618741365420561,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857287,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869253,
+          "matchDate": "2022-12-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857299,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857262,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7538,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7553,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7567,
+          "matchDate": "2018-06-27"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "czechia",
+      "canonicalName": "Czechia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-06-26",
+      "matchCount": 8,
+      "minutesPlayed": 720,
+      "shotCountFor": 100,
+      "shotCountAgainst": 95,
+      "xgSampleCountFor": 100,
+      "xgSampleCountAgainst": 95,
+      "totalXgFor": 10.1418399411,
+      "totalXgAgainst": 9.650195572200001,
+      "xgForPer90": 1.2677299926375,
+      "xgAgainstPer90": 1.2062744465250002,
+      "goalsFor": 9,
+      "goalsAgainst": 9,
+      "goalsForPer90": 1.125,
+      "goalsAgainstPer90": 1.125,
+      "shotQualityFor": 0.101418399411,
+      "shotQualityAgainst": 0.10158100602315791,
+      "uniqueOpponentCount": 8,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930166,
+          "matchDate": "2024-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938642,
+          "matchDate": "2024-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930184,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788760,
+          "matchDate": "2021-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794690,
+          "matchDate": "2021-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795109,
+          "matchDate": "2021-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788772,
+          "matchDate": "2021-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788748,
+          "matchDate": "2021-06-14"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "canada",
+      "canonicalName": "Canada",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-14",
+      "matchCount": 9,
+      "minutesPlayed": 870,
+      "shotCountFor": 98,
+      "shotCountAgainst": 103,
+      "xgSampleCountFor": 98,
+      "xgSampleCountAgainst": 103,
+      "totalXgFor": 10.870941238,
+      "totalXgAgainst": 12.468075146899999,
+      "xgForPer90": 1.1245801280689656,
+      "xgAgainstPer90": 1.289800877265517,
+      "goalsFor": 6,
+      "goalsAgainst": 14,
+      "goalsForPer90": 0.6206896551724138,
+      "goalsAgainstPer90": 1.4482758620689655,
+      "shotQualityFor": 0.11092797181632653,
+      "shotQualityAgainst": 0.12104927327087377,
+      "uniqueOpponentCount": 8,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857276,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857268,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857281,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939978,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3943076,
+          "matchDate": "2024-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942785,
+          "matchDate": "2024-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942229,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939985,
+          "matchDate": "2024-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939969,
+          "matchDate": "2024-06-21"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "bosnia-herzegovina",
+      "canonicalName": "Bosnia-Herzegovina",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "qatar",
+      "canonicalName": "Qatar",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-11-29",
+      "matchCount": 3,
+      "minutesPlayed": 270,
+      "shotCountFor": 20,
+      "shotCountAgainst": 31,
+      "xgSampleCountFor": 20,
+      "xgSampleCountAgainst": 31,
+      "totalXgFor": 1.4079916985,
+      "totalXgAgainst": 3.7709291933999998,
+      "xgForPer90": 0.46933056616666674,
+      "xgAgainstPer90": 1.2569763978,
+      "goalsFor": 1,
+      "goalsAgainst": 7,
+      "goalsForPer90": 0.33333333333333337,
+      "goalsAgainstPer90": 2.3333333333333335,
+      "shotQualityFor": 0.07039958492500001,
+      "shotQualityAgainst": 0.1216428772064516,
+      "uniqueOpponentCount": 3,
+      "coverage": "sparse",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857294,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857301,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857286,
+          "matchDate": "2022-11-20"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "switzerland",
+      "canonicalName": "Switzerland",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-06",
+      "matchCount": 18,
+      "minutesPlayed": 1710,
+      "shotCountFor": 218,
+      "shotCountAgainst": 264,
+      "xgSampleCountFor": 218,
+      "xgSampleCountAgainst": 264,
+      "totalXgFor": 21.777820088800006,
+      "totalXgAgainst": 24.378009951899998,
+      "xgForPer90": 1.1462010573052634,
+      "xgAgainstPer90": 1.2830531553631577,
+      "goalsFor": 26,
+      "goalsAgainst": 27,
+      "goalsForPer90": 1.368421052631579,
+      "goalsAgainstPer90": 1.4210526315789473,
+      "shotQualityFor": 0.09989825728807342,
+      "shotQualityAgainst": 0.09234094678749999,
+      "uniqueOpponentCount": 15,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857290,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857269,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857256,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869254,
+          "matchDate": "2022-12-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7550,
+          "matchDate": "2018-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7586,
+          "matchDate": "2018-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7568,
+          "matchDate": "2018-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7533,
+          "matchDate": "2018-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930159,
+          "matchDate": "2024-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942227,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930176,
+          "matchDate": "2024-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930169,
+          "matchDate": "2024-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3940878,
+          "matchDate": "2024-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788765,
+          "matchDate": "2021-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795108,
+          "matchDate": "2021-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788754,
+          "matchDate": "2021-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794691,
+          "matchDate": "2021-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788744,
+          "matchDate": "2021-06-12"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "brazil",
+      "canonicalName": "Brazil",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-07",
+      "matchCount": 14,
+      "minutesPlayed": 1320,
+      "shotCountFor": 249,
+      "shotCountAgainst": 121,
+      "xgSampleCountFor": 249,
+      "xgSampleCountAgainst": 121,
+      "totalXgFor": 29.165546047900005,
+      "totalXgAgainst": 7.241454460100001,
+      "xgForPer90": 1.988559957811364,
+      "xgAgainstPer90": 0.49373553137045456,
+      "goalsFor": 21,
+      "goalsAgainst": 8,
+      "goalsForPer90": 1.4318181818181817,
+      "goalsAgainstPer90": 0.5454545454545454,
+      "shotQualityFor": 0.11713070701967873,
+      "shotQualityAgainst": 0.05984673107520662,
+      "uniqueOpponentCount": 11,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857269,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857258,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869420,
+          "matchDate": "2022-12-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869253,
+          "matchDate": "2022-12-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857280,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8650,
+          "matchDate": "2018-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7548,
+          "matchDate": "2018-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7565,
+          "matchDate": "2018-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7583,
+          "matchDate": "2018-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7533,
+          "matchDate": "2018-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939991,
+          "matchDate": "2024-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939983,
+          "matchDate": "2024-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939976,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942415,
+          "matchDate": "2024-07-07"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "morocco",
+      "canonicalName": "Morocco",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-30",
+      "matchCount": 14,
+      "minutesPlayed": 1290,
+      "shotCountFor": 159,
+      "shotCountAgainst": 137,
+      "xgSampleCountFor": 159,
+      "xgSampleCountAgainst": 137,
+      "totalXgFor": 16.997263168699998,
+      "totalXgAgainst": 13.868753392699999,
+      "xgForPer90": 1.185855569909302,
+      "xgAgainstPer90": 0.9675874460023254,
+      "goalsFor": 13,
+      "goalsAgainst": 12,
+      "goalsForPer90": 0.9069767441860465,
+      "goalsAgainstPer90": 0.8372093023255813,
+      "shotQualityFor": 0.10690102621823898,
+      "shotQualityAgainst": 0.10123177658905108,
+      "uniqueOpponentCount": 11,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857276,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857277,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869684,
+          "matchDate": "2022-12-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869486,
+          "matchDate": "2022-12-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869552,
+          "matchDate": "2022-12-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869220,
+          "matchDate": "2022-12-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857283,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7542,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7560,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7577,
+          "matchDate": "2018-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920394,
+          "matchDate": "2024-01-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920405,
+          "matchDate": "2024-01-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922243,
+          "matchDate": "2024-01-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920419,
+          "matchDate": "2024-01-24"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "haiti",
+      "canonicalName": "Haiti",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "scotland",
+      "canonicalName": "Scotland",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-06-23",
+      "matchCount": 6,
+      "minutesPlayed": 540,
+      "shotCountFor": 58,
+      "shotCountAgainst": 75,
+      "xgSampleCountFor": 58,
+      "xgSampleCountAgainst": 75,
+      "totalXgFor": 4.595537341,
+      "totalXgAgainst": 6.282039697,
+      "xgForPer90": 0.7659228901666667,
+      "xgAgainstPer90": 1.0470066161666667,
+      "goalsFor": 3,
+      "goalsAgainst": 12,
+      "goalsForPer90": 0.5,
+      "goalsAgainstPer90": 2,
+      "shotQualityFor": 0.07923340243103448,
+      "shotQualityAgainst": 0.08376052929333333,
+      "uniqueOpponentCount": 6,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930169,
+          "matchDate": "2024-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930177,
+          "matchDate": "2024-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930158,
+          "matchDate": "2024-06-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788771,
+          "matchDate": "2021-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788759,
+          "matchDate": "2021-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788748,
+          "matchDate": "2021-06-14"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "united-states",
+      "canonicalName": "United States",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-02",
+      "matchCount": 7,
+      "minutesPlayed": 630,
+      "shotCountFor": 80,
+      "shotCountAgainst": 61,
+      "xgSampleCountFor": 80,
+      "xgSampleCountAgainst": 61,
+      "totalXgFor": 7.728497239599999,
+      "totalXgAgainst": 6.4107069286,
+      "xgForPer90": 1.1040710342285713,
+      "xgAgainstPer90": 0.9158152755142857,
+      "goalsFor": 6,
+      "goalsAgainst": 7,
+      "goalsForPer90": 0.8571428571428572,
+      "goalsAgainstPer90": 1,
+      "shotQualityFor": 0.096606215495,
+      "shotQualityAgainst": 0.10509355620655737,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857272,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857278,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857282,
+          "matchDate": "2022-11-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869117,
+          "matchDate": "2022-12-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939974,
+          "matchDate": "2024-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939990,
+          "matchDate": "2024-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939981,
+          "matchDate": "2024-06-27"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "paraguay",
+      "canonicalName": "Paraguay",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-03",
+      "matchCount": 3,
+      "minutesPlayed": 270,
+      "shotCountFor": 43,
+      "shotCountAgainst": 30,
+      "xgSampleCountFor": 43,
+      "xgSampleCountAgainst": 30,
+      "totalXgFor": 2.9593352399,
+      "totalXgAgainst": 4.641665239999999,
+      "xgForPer90": 0.9864450799666667,
+      "xgAgainstPer90": 1.5472217466666662,
+      "goalsFor": 3,
+      "goalsAgainst": 8,
+      "goalsForPer90": 1,
+      "goalsAgainstPer90": 2.666666666666667,
+      "shotQualityFor": 0.06882174976511628,
+      "shotQualityAgainst": 0.15472217466666663,
+      "uniqueOpponentCount": 3,
+      "coverage": "sparse",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939975,
+          "matchDate": "2024-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939983,
+          "matchDate": "2024-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939992,
+          "matchDate": "2024-07-03"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "australia",
+      "canonicalName": "Australia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-12-03",
+      "matchCount": 7,
+      "minutesPlayed": 630,
+      "shotCountFor": 60,
+      "shotCountAgainst": 91,
+      "xgSampleCountFor": 60,
+      "xgSampleCountAgainst": 91,
+      "totalXgFor": 5.5996640837000005,
+      "totalXgAgainst": 9.3537769936,
+      "xgForPer90": 0.7999520119571429,
+      "xgAgainstPer90": 1.3362538562285715,
+      "goalsFor": 6,
+      "goalsAgainst": 11,
+      "goalsForPer90": 0.8571428571428572,
+      "goalsAgainstPer90": 1.5714285714285714,
+      "shotQualityFor": 0.09332773472833335,
+      "shotQualityAgainst": 0.10278875817142857,
+      "uniqueOpponentCount": 5,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869151,
+          "matchDate": "2022-12-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857257,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857288,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857279,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7562,
+          "matchDate": "2018-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7530,
+          "matchDate": "2018-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7547,
+          "matchDate": "2018-06-21"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "turkey",
+      "canonicalName": "Turkey",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-06",
+      "matchCount": 8,
+      "minutesPlayed": 720,
+      "shotCountFor": 113,
+      "shotCountAgainst": 133,
+      "xgSampleCountFor": 113,
+      "xgSampleCountAgainst": 133,
+      "totalXgFor": 9.1710537132,
+      "totalXgAgainst": 14.5449197464,
+      "xgForPer90": 1.14638171415,
+      "xgAgainstPer90": 1.8181149683,
+      "goalsFor": 9,
+      "goalsAgainst": 16,
+      "goalsForPer90": 1.125,
+      "goalsAgainstPer90": 2,
+      "shotQualityFor": 0.08115976737345132,
+      "shotQualityAgainst": 0.10936029884511278,
+      "uniqueOpponentCount": 8,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938639,
+          "matchDate": "2024-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930174,
+          "matchDate": "2024-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942382,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930184,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941022,
+          "matchDate": "2024-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788765,
+          "matchDate": "2021-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788755,
+          "matchDate": "2021-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788741,
+          "matchDate": "2021-06-11"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "germany",
+      "canonicalName": "Germany",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-05",
+      "matchCount": 15,
+      "minutesPlayed": 1380,
+      "shotCountFor": 286,
+      "shotCountAgainst": 127,
+      "xgSampleCountFor": 286,
+      "xgSampleCountAgainst": 127,
+      "totalXgFor": 29.392730549299998,
+      "totalXgAgainst": 14.9651952573,
+      "xgForPer90": 1.9169172097369565,
+      "xgAgainstPer90": 0.9759909950413043,
+      "goalsFor": 25,
+      "goalsAgainst": 20,
+      "goalsForPer90": 1.6304347826086958,
+      "goalsAgainstPer90": 1.3043478260869565,
+      "shotQualityFor": 0.10277178513741259,
+      "shotQualityAgainst": 0.11783618312834646,
+      "uniqueOpponentCount": 13,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857284,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857292,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857263,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7534,
+          "matchDate": "2018-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7551,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7567,
+          "matchDate": "2018-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930176,
+          "matchDate": "2024-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942226,
+          "matchDate": "2024-07-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3940983,
+          "matchDate": "2024-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930168,
+          "matchDate": "2024-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930158,
+          "matchDate": "2024-06-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788764,
+          "matchDate": "2021-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794688,
+          "matchDate": "2021-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788774,
+          "matchDate": "2021-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788751,
+          "matchDate": "2021-06-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "curacao",
+      "canonicalName": "Curacao",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "ivory-coast",
+      "canonicalName": "Ivory Coast",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-02-11",
+      "matchCount": 7,
+      "minutesPlayed": 690,
+      "shotCountFor": 97,
+      "shotCountAgainst": 67,
+      "xgSampleCountFor": 97,
+      "xgSampleCountAgainst": 67,
+      "totalXgFor": 7.605106143199999,
+      "totalXgAgainst": 6.9171684186,
+      "xgForPer90": 0.9919703665043476,
+      "xgAgainstPer90": 0.9022393589478261,
+      "goalsFor": 8,
+      "goalsAgainst": 8,
+      "goalsForPer90": 1.0434782608695652,
+      "goalsAgainstPer90": 1.0434782608695652,
+      "shotQualityFor": 0.0784031561154639,
+      "shotQualityAgainst": 0.10324131968059702,
+      "uniqueOpponentCount": 6,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920408,
+          "matchDate": "2024-01-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3923881,
+          "matchDate": "2024-02-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922838,
+          "matchDate": "2024-02-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922242,
+          "matchDate": "2024-01-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922659,
+          "matchDate": "2024-02-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920398,
+          "matchDate": "2024-01-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920384,
+          "matchDate": "2024-01-13"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "ecuador",
+      "canonicalName": "Ecuador",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-05",
+      "matchCount": 7,
+      "minutesPlayed": 660,
+      "shotCountFor": 80,
+      "shotCountAgainst": 69,
+      "xgSampleCountFor": 80,
+      "xgSampleCountAgainst": 69,
+      "totalXgFor": 8.6025217479,
+      "totalXgAgainst": 6.4320777355,
+      "xgForPer90": 1.173071147440909,
+      "xgAgainstPer90": 0.8771015093863636,
+      "goalsFor": 9,
+      "goalsAgainst": 7,
+      "goalsForPer90": 1.2272727272727273,
+      "goalsAgainstPer90": 0.9545454545454546,
+      "shotQualityFor": 0.10753152184874999,
+      "shotQualityAgainst": 0.0932185179057971,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857274,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857267,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857286,
+          "matchDate": "2022-11-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939980,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939988,
+          "matchDate": "2024-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939972,
+          "matchDate": "2024-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942228,
+          "matchDate": "2024-07-05"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "netherlands",
+      "canonicalName": "Netherlands",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-10",
+      "matchCount": 15,
+      "minutesPlayed": 1380,
+      "shotCountFor": 178,
+      "shotCountAgainst": 173,
+      "xgSampleCountFor": 178,
+      "xgSampleCountAgainst": 173,
+      "totalXgFor": 21.137494809999996,
+      "totalXgAgainst": 14.9587956675,
+      "xgForPer90": 1.378532270217391,
+      "xgAgainstPer90": 0.9755736304891305,
+      "goalsFor": 28,
+      "goalsAgainst": 15,
+      "goalsForPer90": 1.826086956521739,
+      "goalsAgainstPer90": 0.9782608695652174,
+      "shotQualityFor": 0.1187499708426966,
+      "shotQualityAgainst": 0.08646702697976878,
+      "uniqueOpponentCount": 14,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857274,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857285,
+          "matchDate": "2022-11-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857294,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869321,
+          "matchDate": "2022-12-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869117,
+          "matchDate": "2022-12-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938637,
+          "matchDate": "2024-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942819,
+          "matchDate": "2024-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942382,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930180,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941021,
+          "matchDate": "2024-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930173,
+          "matchDate": "2024-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794690,
+          "matchDate": "2021-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788770,
+          "matchDate": "2021-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788746,
+          "matchDate": "2021-06-13"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788756,
+          "matchDate": "2021-06-17"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "japan",
+      "canonicalName": "Japan",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-12-05",
+      "matchCount": 8,
+      "minutesPlayed": 750,
+      "shotCountFor": 88,
+      "shotCountAgainst": 123,
+      "xgSampleCountFor": 88,
+      "xgSampleCountAgainst": 123,
+      "totalXgFor": 9.136836500700001,
+      "totalXgAgainst": 11.322563611499998,
+      "xgForPer90": 1.0964203800840002,
+      "xgAgainstPer90": 1.3587076333799997,
+      "goalsFor": 11,
+      "goalsAgainst": 11,
+      "goalsForPer90": 1.32,
+      "goalsAgainstPer90": 1.32,
+      "shotQualityFor": 0.10382768750795456,
+      "shotQualityAgainst": 0.09205336269512193,
+      "uniqueOpponentCount": 8,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857255,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857284,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857295,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869219,
+          "matchDate": "2022-12-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7584,
+          "matchDate": "2018-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7572,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7541,
+          "matchDate": "2018-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7556,
+          "matchDate": "2018-06-24"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "sweden",
+      "canonicalName": "Sweden",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2021-06-29",
+      "matchCount": 9,
+      "minutesPlayed": 840,
+      "shotCountFor": 99,
+      "shotCountAgainst": 133,
+      "xgSampleCountFor": 99,
+      "xgSampleCountAgainst": 133,
+      "totalXgFor": 11.718956919000002,
+      "totalXgAgainst": 10.1203369812,
+      "xgForPer90": 1.2556025270357145,
+      "xgAgainstPer90": 1.0843218194142856,
+      "goalsFor": 11,
+      "goalsAgainst": 8,
+      "goalsForPer90": 1.1785714285714286,
+      "goalsAgainstPer90": 0.8571428571428572,
+      "shotQualityFor": 0.11837330221212124,
+      "shotQualityAgainst": 0.07609275925714286,
+      "uniqueOpponentCount": 9,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7538,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7586,
+          "matchDate": "2018-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7551,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7566,
+          "matchDate": "2018-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8651,
+          "matchDate": "2018-07-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788761,
+          "matchDate": "2021-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794692,
+          "matchDate": "2021-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788750,
+          "matchDate": "2021-06-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788776,
+          "matchDate": "2021-06-23"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "tunisia",
+      "canonicalName": "Tunisia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-24",
+      "matchCount": 9,
+      "minutesPlayed": 810,
+      "shotCountFor": 95,
+      "shotCountAgainst": 116,
+      "xgSampleCountFor": 95,
+      "xgSampleCountAgainst": 116,
+      "totalXgFor": 9.815164853199999,
+      "totalXgAgainst": 14.032511783599997,
+      "xgForPer90": 1.0905738725777776,
+      "xgAgainstPer90": 1.5591679759555552,
+      "goalsFor": 7,
+      "goalsAgainst": 11,
+      "goalsForPer90": 0.7777777777777777,
+      "goalsAgainstPer90": 1.2222222222222223,
+      "shotQualityFor": 0.1033175247705263,
+      "shotQualityAgainst": 0.12096992916896548,
+      "uniqueOpponentCount": 9,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857275,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857254,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857288,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7569,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7537,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7552,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920404,
+          "matchDate": "2024-01-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920393,
+          "matchDate": "2024-01-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920416,
+          "matchDate": "2024-01-24"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "belgium",
+      "canonicalName": "Belgium",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-01",
+      "matchCount": 19,
+      "minutesPlayed": 1710,
+      "shotCountFor": 244,
+      "shotCountAgainst": 277,
+      "xgSampleCountFor": 244,
+      "xgSampleCountAgainst": 277,
+      "totalXgFor": 26.425011224299993,
+      "totalXgAgainst": 21.9727380255,
+      "xgForPer90": 1.3907900644368418,
+      "xgAgainstPer90": 1.1564598960789474,
+      "goalsFor": 28,
+      "goalsAgainst": 13,
+      "goalsForPer90": 1.473684210526316,
+      "goalsAgainstPer90": 0.6842105263157895,
+      "shotQualityFor": 0.10829922632909833,
+      "shotQualityAgainst": 0.07932396399097473,
+      "uniqueOpponentCount": 17,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857296,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857268,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857283,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8650,
+          "matchDate": "2018-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7584,
+          "matchDate": "2018-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7570,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7536,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7552,
+          "matchDate": "2018-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8655,
+          "matchDate": "2018-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8657,
+          "matchDate": "2018-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941019,
+          "matchDate": "2024-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938645,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930164,
+          "matchDate": "2024-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930175,
+          "matchDate": "2024-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794687,
+          "matchDate": "2021-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795107,
+          "matchDate": "2021-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788768,
+          "matchDate": "2021-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788757,
+          "matchDate": "2021-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788743,
+          "matchDate": "2021-06-12"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "egypt",
+      "canonicalName": "Egypt",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-28",
+      "matchCount": 7,
+      "minutesPlayed": 660,
+      "shotCountFor": 102,
+      "shotCountAgainst": 79,
+      "xgSampleCountFor": 102,
+      "xgSampleCountAgainst": 79,
+      "totalXgFor": 9.2556451659,
+      "totalXgAgainst": 8.604181345999999,
+      "xgForPer90": 1.2621334317136363,
+      "xgAgainstPer90": 1.1732974562727272,
+      "goalsFor": 9,
+      "goalsAgainst": 13,
+      "goalsForPer90": 1.2272727272727273,
+      "goalsAgainstPer90": 1.7727272727272725,
+      "shotQualityFor": 0.09074161927352942,
+      "shotQualityAgainst": 0.10891368792405062,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7540,
+          "matchDate": "2018-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7578,
+          "matchDate": "2018-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7559,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922240,
+          "matchDate": "2024-01-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920396,
+          "matchDate": "2024-01-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920385,
+          "matchDate": "2024-01-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920411,
+          "matchDate": "2024-01-22"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "iran",
+      "canonicalName": "Iran",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-11-29",
+      "matchCount": 6,
+      "minutesPlayed": 540,
+      "shotCountFor": 56,
+      "shotCountAgainst": 82,
+      "xgSampleCountFor": 56,
+      "xgSampleCountAgainst": 82,
+      "totalXgFor": 6.531391206000001,
+      "totalXgAgainst": 8.5510147718,
+      "xgForPer90": 1.0885652010000002,
+      "xgAgainstPer90": 1.4251691286333334,
+      "goalsFor": 6,
+      "goalsAgainst": 9,
+      "goalsForPer90": 1,
+      "goalsAgainstPer90": 1.5,
+      "shotQualityFor": 0.1166319858214286,
+      "shotQualityAgainst": 0.10428066794878049,
+      "uniqueOpponentCount": 6,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857271,
+          "matchDate": "2022-11-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857278,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857273,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7543,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7557,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7577,
+          "matchDate": "2018-06-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "new-zealand",
+      "canonicalName": "New Zealand",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "spain",
+      "canonicalName": "Spain",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-14",
+      "matchCount": 21,
+      "minutesPlayed": 2070,
+      "shotCountFor": 360,
+      "shotCountAgainst": 168,
+      "xgSampleCountFor": 360,
+      "xgSampleCountAgainst": 168,
+      "totalXgFor": 38.180690273099984,
+      "totalXgAgainst": 19.1335873967,
+      "xgForPer90": 1.6600300118739122,
+      "xgAgainstPer90": 0.8318951042043479,
+      "goalsFor": 44,
+      "goalsAgainst": 19,
+      "goalsForPer90": 1.9130434782608696,
+      "goalsAgainstPer90": 0.8260869565217391,
+      "shotQualityFor": 0.10605747298083329,
+      "shotQualityAgainst": 0.11389040117083334,
+      "uniqueOpponentCount": 17,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857255,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869220,
+          "matchDate": "2022-12-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857263,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857291,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7543,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7576,
+          "matchDate": "2018-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7582,
+          "matchDate": "2018-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7560,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930160,
+          "matchDate": "2024-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3943043,
+          "matchDate": "2024-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942752,
+          "matchDate": "2024-07-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942226,
+          "matchDate": "2024-07-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941018,
+          "matchDate": "2024-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930179,
+          "matchDate": "2024-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930172,
+          "matchDate": "2024-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795108,
+          "matchDate": "2021-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795220,
+          "matchDate": "2021-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794686,
+          "matchDate": "2021-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788762,
+          "matchDate": "2021-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788750,
+          "matchDate": "2021-06-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788775,
+          "matchDate": "2021-06-23"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "cape-verde",
+      "canonicalName": "Cape Verde",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-02-03",
+      "matchCount": 5,
+      "minutesPlayed": 480,
+      "shotCountFor": 75,
+      "shotCountAgainst": 73,
+      "xgSampleCountFor": 75,
+      "xgSampleCountAgainst": 73,
+      "totalXgFor": 6.807691413000001,
+      "totalXgAgainst": 5.4070622334000005,
+      "xgForPer90": 1.2764421399375,
+      "xgAgainstPer90": 1.0138241687625,
+      "goalsFor": 8,
+      "goalsAgainst": 3,
+      "goalsForPer90": 1.5,
+      "goalsAgainstPer90": 0.5625,
+      "shotQualityFor": 0.09076921884000001,
+      "shotQualityAgainst": 0.07406934566301371,
+      "uniqueOpponentCount": 5,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920399,
+          "matchDate": "2024-01-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922658,
+          "matchDate": "2024-02-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922241,
+          "matchDate": "2024-01-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920387,
+          "matchDate": "2024-01-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920411,
+          "matchDate": "2024-01-22"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "saudi-arabia",
+      "canonicalName": "Saudi Arabia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2022-11-30",
+      "matchCount": 6,
+      "minutesPlayed": 540,
+      "shotCountFor": 65,
+      "shotCountAgainst": 86,
+      "xgSampleCountFor": 65,
+      "xgSampleCountAgainst": 86,
+      "totalXgFor": 6.2696570763,
+      "totalXgAgainst": 10.560643071900001,
+      "xgForPer90": 1.04494284605,
+      "xgAgainstPer90": 1.76010717865,
+      "goalsFor": 5,
+      "goalsAgainst": 12,
+      "goalsForPer90": 0.8333333333333333,
+      "goalsAgainstPer90": 2,
+      "shotQualityFor": 0.09645626271230769,
+      "shotQualityAgainst": 0.12279817525465118,
+      "uniqueOpponentCount": 6,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857297,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857260,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857300,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7544,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7525,
+          "matchDate": "2018-06-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7559,
+          "matchDate": "2018-06-25"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "uruguay",
+      "canonicalName": "Uruguay",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-14",
+      "matchCount": 14,
+      "minutesPlayed": 1320,
+      "shotCountFor": 181,
+      "shotCountAgainst": 136,
+      "xgSampleCountFor": 181,
+      "xgSampleCountAgainst": 136,
+      "totalXgFor": 18.525274415100004,
+      "totalXgAgainst": 10.6502315892,
+      "xgForPer90": 1.2630868919386367,
+      "xgAgainstPer90": 0.7261521538090909,
+      "goalsFor": 20,
+      "goalsAgainst": 9,
+      "goalsForPer90": 1.3636363636363638,
+      "goalsAgainstPer90": 0.6136363636363636,
+      "shotQualityFor": 0.10234958240386742,
+      "shotQualityAgainst": 0.07831052639117647,
+      "uniqueOpponentCount": 13,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857287,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857270,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857293,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7544,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7578,
+          "matchDate": "2018-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7558,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8649,
+          "matchDate": "2018-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7579,
+          "matchDate": "2018-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939982,
+          "matchDate": "2024-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939990,
+          "matchDate": "2024-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3943076,
+          "matchDate": "2024-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942852,
+          "matchDate": "2024-07-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942415,
+          "matchDate": "2024-07-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939973,
+          "matchDate": "2024-06-24"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "france",
+      "canonicalName": "France",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-09",
+      "matchCount": 24,
+      "minutesPlayed": 2250,
+      "shotCountFor": 338,
+      "shotCountAgainst": 236,
+      "xgSampleCountFor": 338,
+      "xgSampleCountAgainst": 236,
+      "totalXgFor": 35.10357924609999,
+      "totalXgAgainst": 25.4305513245,
+      "xgForPer90": 1.4041431698439997,
+      "xgAgainstPer90": 1.01722205298,
+      "goalsFor": 41,
+      "goalsAgainst": 23,
+      "goalsForPer90": 1.6400000000000001,
+      "goalsAgainstPer90": 0.92,
+      "shotQualityFor": 0.10385674333165677,
+      "shotQualityAgainst": 0.10775657340889831,
+      "uniqueOpponentCount": 18,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857275,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857266,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869685,
+          "matchDate": "2022-12-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869354,
+          "matchDate": "2022-12-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869552,
+          "matchDate": "2022-12-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869152,
+          "matchDate": "2022-12-04"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857279,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7546,
+          "matchDate": "2018-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7580,
+          "matchDate": "2018-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7530,
+          "matchDate": "2018-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8649,
+          "matchDate": "2018-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8658,
+          "matchDate": "2018-07-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8655,
+          "matchDate": "2018-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7563,
+          "matchDate": "2018-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938643,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941019,
+          "matchDate": "2024-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942752,
+          "matchDate": "2024-07-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942349,
+          "matchDate": "2024-07-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930173,
+          "matchDate": "2024-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930165,
+          "matchDate": "2024-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788773,
+          "matchDate": "2021-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788763,
+          "matchDate": "2021-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794691,
+          "matchDate": "2021-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788751,
+          "matchDate": "2021-06-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "senegal",
+      "canonicalName": "Senegal",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-29",
+      "matchCount": 11,
+      "minutesPlayed": 1020,
+      "shotCountFor": 123,
+      "shotCountAgainst": 87,
+      "xgSampleCountFor": 123,
+      "xgSampleCountAgainst": 87,
+      "totalXgFor": 13.154120813800002,
+      "totalXgAgainst": 9.345734377000001,
+      "xgForPer90": 1.160657718864706,
+      "xgAgainstPer90": 0.8246236215000001,
+      "goalsFor": 18,
+      "goalsAgainst": 13,
+      "goalsForPer90": 1.588235294117647,
+      "goalsAgainstPer90": 1.1470588235294117,
+      "shotQualityFor": 0.10694407165691058,
+      "shotQualityAgainst": 0.10742223421839082,
+      "uniqueOpponentCount": 11,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857285,
+          "matchDate": "2022-11-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857301,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857267,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869118,
+          "matchDate": "2022-12-04"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7539,
+          "matchDate": "2018-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7571,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7556,
+          "matchDate": "2018-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920400,
+          "matchDate": "2024-01-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920412,
+          "matchDate": "2024-01-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922242,
+          "matchDate": "2024-01-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920388,
+          "matchDate": "2024-01-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "iraq",
+      "canonicalName": "Iraq",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "norway",
+      "canonicalName": "Norway",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "argentina",
+      "canonicalName": "Argentina",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-15",
+      "matchCount": 17,
+      "minutesPlayed": 1650,
+      "shotCountFor": 242,
+      "shotCountAgainst": 143,
+      "xgSampleCountFor": 242,
+      "xgSampleCountAgainst": 143,
+      "totalXgFor": 31.6562304839,
+      "totalXgAgainst": 14.396240697299998,
+      "xgForPer90": 1.7267034809400001,
+      "xgAgainstPer90": 0.78524949258,
+      "goalsFor": 30,
+      "goalsAgainst": 18,
+      "goalsForPer90": 1.6363636363636362,
+      "goalsAgainstPer90": 0.9818181818181819,
+      "shotQualityFor": 0.13081086976818182,
+      "shotQualityAgainst": 0.10067301186923075,
+      "uniqueOpponentCount": 14,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869321,
+          "matchDate": "2022-12-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869685,
+          "matchDate": "2022-12-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869151,
+          "matchDate": "2022-12-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857264,
+          "matchDate": "2022-11-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857289,
+          "matchDate": "2022-11-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869519,
+          "matchDate": "2022-12-13"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857300,
+          "matchDate": "2022-11-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7545,
+          "matchDate": "2018-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7531,
+          "matchDate": "2018-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7580,
+          "matchDate": "2018-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7564,
+          "matchDate": "2018-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939977,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939986,
+          "matchDate": "2024-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3943077,
+          "matchDate": "2024-07-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942785,
+          "matchDate": "2024-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942228,
+          "matchDate": "2024-07-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939969,
+          "matchDate": "2024-06-21"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "algeria",
+      "canonicalName": "Algeria",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-23",
+      "matchCount": 3,
+      "minutesPlayed": 270,
+      "shotCountFor": 47,
+      "shotCountAgainst": 31,
+      "xgSampleCountFor": 47,
+      "xgSampleCountAgainst": 31,
+      "totalXgFor": 3.8813825967,
+      "totalXgAgainst": 3.7847438633,
+      "xgForPer90": 1.2937941989,
+      "xgAgainstPer90": 1.2615812877666668,
+      "goalsFor": 3,
+      "goalsAgainst": 4,
+      "goalsForPer90": 1,
+      "goalsAgainstPer90": 1.3333333333333335,
+      "shotQualityFor": 0.08258260844042553,
+      "shotQualityAgainst": 0.12208851171935484,
+      "uniqueOpponentCount": 3,
+      "coverage": "sparse",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920415,
+          "matchDate": "2024-01-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920402,
+          "matchDate": "2024-01-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920390,
+          "matchDate": "2024-01-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "austria",
+      "canonicalName": "Austria",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-02",
+      "matchCount": 8,
+      "minutesPlayed": 750,
+      "shotCountFor": 103,
+      "shotCountAgainst": 98,
+      "xgSampleCountFor": 103,
+      "xgSampleCountAgainst": 98,
+      "totalXgFor": 10.486411363000002,
+      "totalXgAgainst": 11.840121618999998,
+      "xgForPer90": 1.2583693635600002,
+      "xgAgainstPer90": 1.4208145942799997,
+      "goalsFor": 12,
+      "goalsAgainst": 11,
+      "goalsForPer90": 1.44,
+      "goalsAgainstPer90": 1.32,
+      "shotQualityFor": 0.10180981905825244,
+      "shotQualityAgainst": 0.12081756754081631,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938641,
+          "matchDate": "2024-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930180,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941022,
+          "matchDate": "2024-07-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930165,
+          "matchDate": "2024-06-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794685,
+          "matchDate": "2021-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788747,
+          "matchDate": "2021-06-13"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788767,
+          "matchDate": "2021-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788756,
+          "matchDate": "2021-06-17"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "jordan",
+      "canonicalName": "Jordan",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "portugal",
+      "canonicalName": "Portugal",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-05",
+      "matchCount": 18,
+      "minutesPlayed": 1680,
+      "shotCountFor": 263,
+      "shotCountAgainst": 184,
+      "xgSampleCountFor": 263,
+      "xgSampleCountAgainst": 184,
+      "totalXgFor": 29.249076153700003,
+      "totalXgAgainst": 19.089872549399995,
+      "xgForPer90": 1.5669147939482144,
+      "xgAgainstPer90": 1.022671743717857,
+      "goalsFor": 30,
+      "goalsAgainst": 22,
+      "goalsForPer90": 1.607142857142857,
+      "goalsAgainstPer90": 1.1785714285714286,
+      "shotQualityFor": 0.11121321731444868,
+      "shotQualityAgainst": 0.10374930733369563,
+      "uniqueOpponentCount": 15,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857298,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869486,
+          "matchDate": "2022-12-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869254,
+          "matchDate": "2022-12-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857270,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857262,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7557,
+          "matchDate": "2018-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7542,
+          "matchDate": "2018-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7576,
+          "matchDate": "2018-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7579,
+          "matchDate": "2018-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930166,
+          "matchDate": "2024-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3938644,
+          "matchDate": "2024-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930174,
+          "matchDate": "2024-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942349,
+          "matchDate": "2024-07-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941020,
+          "matchDate": "2024-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788773,
+          "matchDate": "2021-06-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794687,
+          "matchDate": "2021-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788764,
+          "matchDate": "2021-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788752,
+          "matchDate": "2021-06-15"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "dr-congo",
+      "canonicalName": "DR Congo",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-02-10",
+      "matchCount": 7,
+      "minutesPlayed": 690,
+      "shotCountFor": 92,
+      "shotCountAgainst": 56,
+      "xgSampleCountFor": 92,
+      "xgSampleCountAgainst": 56,
+      "totalXgFor": 11.387196189,
+      "totalXgAgainst": 4.833202592299999,
+      "xgForPer90": 1.4852864594347825,
+      "xgAgainstPer90": 0.6304177294304347,
+      "goalsFor": 6,
+      "goalsAgainst": 5,
+      "goalsForPer90": 0.782608695652174,
+      "goalsAgainstPer90": 0.6521739130434783,
+      "shotQualityFor": 0.12377387161956523,
+      "shotQualityAgainst": 0.08630718914821427,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922240,
+          "matchDate": "2024-01-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920395,
+          "matchDate": "2024-01-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920405,
+          "matchDate": "2024-01-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3923880,
+          "matchDate": "2024-02-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922838,
+          "matchDate": "2024-02-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3922356,
+          "matchDate": "2024-02-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920418,
+          "matchDate": "2024-01-24"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "uzbekistan",
+      "canonicalName": "Uzbekistan",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": null,
+      "matchCount": 0,
+      "minutesPlayed": 0,
+      "shotCountFor": 0,
+      "shotCountAgainst": 0,
+      "xgSampleCountFor": 0,
+      "xgSampleCountAgainst": 0,
+      "totalXgFor": null,
+      "totalXgAgainst": null,
+      "xgForPer90": null,
+      "xgAgainstPer90": null,
+      "goalsFor": null,
+      "goalsAgainst": null,
+      "goalsForPer90": null,
+      "goalsAgainstPer90": null,
+      "shotQualityFor": null,
+      "shotQualityAgainst": null,
+      "uniqueOpponentCount": 0,
+      "coverage": "fallback",
+      "freshness": "unknown",
+      "sources": [],
+      "warnings": []
+    },
+    {
+      "teamId": "colombia",
+      "canonicalName": "Colombia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-15",
+      "matchCount": 10,
+      "minutesPlayed": 960,
+      "shotCountFor": 120,
+      "shotCountAgainst": 108,
+      "xgSampleCountFor": 120,
+      "xgSampleCountAgainst": 108,
+      "totalXgFor": 12.6610683189,
+      "totalXgAgainst": 9.7859556268,
+      "xgForPer90": 1.186975154896875,
+      "xgAgainstPer90": 0.9174333400125,
+      "goalsFor": 18,
+      "goalsAgainst": 6,
+      "goalsForPer90": 1.6875,
+      "goalsAgainstPer90": 0.5625,
+      "shotQualityFor": 0.1055089026575,
+      "shotQualityAgainst": 0.09061070024814814,
+      "uniqueOpponentCount": 10,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7585,
+          "matchDate": "2018-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7555,
+          "matchDate": "2018-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7571,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7541,
+          "matchDate": "2018-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939991,
+          "matchDate": "2024-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939975,
+          "matchDate": "2024-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942416,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3943077,
+          "matchDate": "2024-07-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942852,
+          "matchDate": "2024-07-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939984,
+          "matchDate": "2024-06-28"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "england",
+      "canonicalName": "England",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-14",
+      "matchCount": 26,
+      "minutesPlayed": 2520,
+      "shotCountFor": 300,
+      "shotCountAgainst": 267,
+      "xgSampleCountFor": 300,
+      "xgSampleCountAgainst": 267,
+      "totalXgFor": 35.248905496300004,
+      "totalXgAgainst": 23.5313919354,
+      "xgForPer90": 1.2588894820107144,
+      "xgAgainstPer90": 0.8404068548357142,
+      "goalsFor": 44,
+      "goalsAgainst": 20,
+      "goalsForPer90": 1.5714285714285714,
+      "goalsAgainstPer90": 0.7142857142857142,
+      "shotQualityFor": 0.11749635165433335,
+      "shotQualityAgainst": 0.08813255406516854,
+      "uniqueOpponentCount": 23,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857271,
+          "matchDate": "2022-11-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857272,
+          "matchDate": "2022-11-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857261,
+          "matchDate": "2022-11-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869118,
+          "matchDate": "2022-12-04"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869354,
+          "matchDate": "2022-12-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7554,
+          "matchDate": "2018-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7585,
+          "matchDate": "2018-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7570,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8656,
+          "matchDate": "2018-07-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7537,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8651,
+          "matchDate": "2018-07-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8657,
+          "matchDate": "2018-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930163,
+          "matchDate": "2024-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930181,
+          "matchDate": "2024-06-25"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942227,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3942819,
+          "matchDate": "2024-07-10"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3943043,
+          "matchDate": "2024-07-14"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930171,
+          "matchDate": "2024-06-20"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3941017,
+          "matchDate": "2024-06-30"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795187,
+          "matchDate": "2021-07-03"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795506,
+          "matchDate": "2021-07-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794688,
+          "matchDate": "2021-06-29"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788772,
+          "matchDate": "2021-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788759,
+          "matchDate": "2021-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788745,
+          "matchDate": "2021-06-13"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3795221,
+          "matchDate": "2021-07-07"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "croatia",
+      "canonicalName": "Croatia",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-06-24",
+      "matchCount": 21,
+      "minutesPlayed": 2070,
+      "shotCountFor": 277,
+      "shotCountAgainst": 261,
+      "xgSampleCountFor": 277,
+      "xgSampleCountAgainst": 261,
+      "totalXgFor": 29.268024227500003,
+      "totalXgAgainst": 26.686907157500002,
+      "xgForPer90": 1.2725227925000002,
+      "xgAgainstPer90": 1.1603003111956522,
+      "goalsFor": 32,
+      "goalsAgainst": 30,
+      "goalsForPer90": 1.391304347826087,
+      "goalsAgainstPer90": 1.3043478260869565,
+      "shotQualityFor": 0.10566073728339351,
+      "shotQualityAgainst": 0.10224868642720307,
+      "uniqueOpponentCount": 17,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857296,
+          "matchDate": "2022-12-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857277,
+          "matchDate": "2022-11-23"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869684,
+          "matchDate": "2022-12-17"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869519,
+          "matchDate": "2022-12-13"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869420,
+          "matchDate": "2022-12-09"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3869219,
+          "matchDate": "2022-12-05"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857281,
+          "matchDate": "2022-11-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7545,
+          "matchDate": "2018-06-21"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7561,
+          "matchDate": "2018-06-26"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8656,
+          "matchDate": "2018-07-11"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7581,
+          "matchDate": "2018-07-01"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7529,
+          "matchDate": "2018-06-16"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8658,
+          "matchDate": "2018-07-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 8652,
+          "matchDate": "2018-07-07"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930178,
+          "matchDate": "2024-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930160,
+          "matchDate": "2024-06-15"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 282,
+          "matchId": 3930167,
+          "matchDate": "2024-06-19"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788760,
+          "matchDate": "2021-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3794686,
+          "matchDate": "2021-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788771,
+          "matchDate": "2021-06-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 55,
+          "seasonId": 43,
+          "matchId": 3788745,
+          "matchDate": "2021-06-13"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "ghana",
+      "canonicalName": "Ghana",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-01-22",
+      "matchCount": 6,
+      "minutesPlayed": 540,
+      "shotCountFor": 50,
+      "shotCountAgainst": 84,
+      "xgSampleCountFor": 50,
+      "xgSampleCountAgainst": 84,
+      "totalXgFor": 7.0603085527000005,
+      "totalXgAgainst": 10.5646409645,
+      "xgForPer90": 1.176718092116667,
+      "xgAgainstPer90": 1.7607734940833333,
+      "goalsFor": 10,
+      "goalsAgainst": 13,
+      "goalsForPer90": 1.6666666666666665,
+      "goalsAgainstPer90": 2.1666666666666665,
+      "shotQualityFor": 0.14120617105400002,
+      "shotQualityAgainst": 0.12576953529166668,
+      "uniqueOpponentCount": 6,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857298,
+          "matchDate": "2022-11-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857299,
+          "matchDate": "2022-11-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 106,
+          "matchId": 3857293,
+          "matchDate": "2022-12-02"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920410,
+          "matchDate": "2024-01-22"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920396,
+          "matchDate": "2024-01-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 1267,
+          "seasonId": 107,
+          "matchId": 3920387,
+          "matchDate": "2024-01-14"
+        }
+      ],
+      "warnings": []
+    },
+    {
+      "teamId": "panama",
+      "canonicalName": "Panama",
+      "provider": "statsbomb_open_data",
+      "cutoffAt": "2026-06-01T00:00:00.000Z",
+      "latestMatchAt": "2024-07-06",
+      "matchCount": 7,
+      "minutesPlayed": 630,
+      "shotCountFor": 74,
+      "shotCountAgainst": 81,
+      "xgSampleCountFor": 74,
+      "xgSampleCountAgainst": 81,
+      "totalXgFor": 5.6183713306000005,
+      "totalXgAgainst": 12.482386811,
+      "xgForPer90": 0.8026244758000001,
+      "xgAgainstPer90": 1.7831981158571428,
+      "goalsFor": 8,
+      "goalsAgainst": 21,
+      "goalsForPer90": 1.1428571428571428,
+      "goalsAgainstPer90": 3,
+      "shotQualityFor": 0.0759239369,
+      "shotQualityAgainst": 0.1541035408765432,
+      "uniqueOpponentCount": 7,
+      "coverage": "partial",
+      "freshness": "stale",
+      "sources": [
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7554,
+          "matchDate": "2018-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7569,
+          "matchDate": "2018-06-28"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 43,
+          "seasonId": 3,
+          "matchId": 7536,
+          "matchDate": "2018-06-18"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3942416,
+          "matchDate": "2024-07-06"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939973,
+          "matchDate": "2024-06-24"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939981,
+          "matchDate": "2024-06-27"
+        },
+        {
+          "provider": "statsbomb_open_data",
+          "competitionId": 223,
+          "seasonId": 282,
+          "matchId": 3939989,
+          "matchDate": "2024-07-02"
+        }
+      ],
+      "warnings": []
+    }
+  ]
 }

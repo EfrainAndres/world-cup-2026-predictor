@@ -90,12 +90,26 @@ docs/model-results/artifacts/statsbomb-team-performance-profiles.json
 
 ### Custom Cutoff Date
 
+Preferred — pass as a CLI flag (accepts ISO date or full ISO timestamp):
+
 ```bash
-STATSBOMB_PROFILE_CUTOFF_AT=2024-06-15 \
+pnpm --filter @world-cup-2026-predictor/api statsbomb:build-profiles -- --cutoff-at 2026-06-01T00:00:00.000Z
+```
+
+Alternative — set via environment variable:
+
+```bash
+STATSBOMB_PROFILE_CUTOFF_AT=2026-06-01T00:00:00.000Z \
   pnpm --filter @world-cup-2026-predictor/api statsbomb:build-profiles
 ```
 
-Default cutoff is today's date. Only matches **strictly before** the cutoff are included.
+The `--cutoff-at` flag takes precedence over `STATSBOMB_PROFILE_CUTOFF_AT`. Both accept:
+- Date only: `2026-06-01`
+- Full ISO timestamp: `2026-06-01T00:00:00.000Z`
+
+An invalid value causes the CLI to exit 1 with a clear error message.
+
+Default cutoff is the current UTC timestamp. Only matches **strictly before** the cutoff date are included in profiles.
 
 ### Custom Output Path
 

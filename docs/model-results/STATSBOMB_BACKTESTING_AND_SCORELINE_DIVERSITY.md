@@ -22,7 +22,7 @@ All core logic is pure (no Node imports) and can be imported from client-safe mo
 - **Source**: `LIVE_ELO_FOUNDATION_MATCHES` + `loadLiveEloInternationalSupplement()` merged via `mergeEloMatchSources`
 - **Replayed via**: `processMatches(mergedMatches)` to derive per-match pre-match Elo ratings
 - **Filtered to**: matches with `match_id` prefixed `2022-WC` or `2018-WC`
-- **Actual scores**: not available in `LIVE_ELO_FOUNDATION_MATCHES` — `actualHomeGoals` and `actualAwayGoals` are null for all historical fixtures; goal-level metrics (MAE, exact score, top-3/5 coverage) are null in results
+- **Actual scores**: loaded from StatsBomb match records (WC2022 comp 43/s106, WC2018 comp 43/s3); scores reflect regulation + extra-time goals only. Penalty shootout winner is recorded as the result but goals are not inflated.
 - **Actual outcomes**: available as `home_win` / `draw` / `away_win` from `EloMatch.result`
 
 ## No-look-ahead enforcement
@@ -74,16 +74,19 @@ Available only when `actualHomeGoals` / `actualAwayGoals` are non-null. Always n
 
 ## Decision function
 
-`makeStatsBombBacktestDecision` returns one of 6 decisions:
+`makeStatsBombBacktestDecision` returns one of 7 decisions:
 
 | Decision | Condition |
 |---|---|
 | `real_data_evaluation_blocked` | `hasRealProfiles = false` |
 | `disable_signal_candidate` | `hasLookaheadFailure` or `hasInvalidProfiles` |
+| `data_quality_blocked` | All baseline modals identical (Elo compression), or zero signal applied despite live provider |
 | `insufficient_evidence` | `fixtureCount < 20` or `signalApplicationCount < 10` |
 | `recalibrate_signal_weights` | Brier delta > 0.005 or LogLoss delta > 0.015 or goal MAE delta > 0.05 |
 | `promote_signal_candidate` | Both Brier and LogLoss improved (delta < 0) |
 | `retain_experimental` | No regression but insufficient improvement |
+
+**`data_quality_blocked`** is distinct from `insufficient_evidence`: it indicates that the evaluation data is structurally invalid, not merely too small. Current WC-only K=20 Elo data always produces this result because the maximum Elo gap of ~126 pts is below the 167-pt threshold needed to shift the modal scoreline away from 1-1.
 
 The signal must NOT be promoted to production default until `promote_signal_candidate` is returned with real StatsBomb data and the result is reviewed.
 
@@ -110,23 +113,26 @@ The CLI also runs the signal over all 32 WC2026 first-round fixtures using curre
 # 1. Download StatsBomb Open Data (~800 MB)
 pnpm --filter @world-cup-2026-predictor/api statsbomb:download
 
-# 2. Build team performance profiles (cutoff 2026-06-01)
+# 2. Build team performance profiles for the R32 forward-looking artifact (cutoff 2026-06-01)
 pnpm --filter @world-cup-2026-predictor/api statsbomb:build-profiles -- --cutoff-at 2026-06-01T00:00:00.000Z
 
 # 3. Run backtesting evaluation
 pnpm --filter @world-cup-2026-predictor/api statsbomb:backtest
 ```
 
+Steps 2 and 3 are independent: backtesting uses the StatsBomb data directory directly for per-fixture profiles and only uses the static artifact (Step 2) for the Round-of-32 forward-looking section.
+
 Artifacts are written to:
 - `docs/model-results/artifacts/statsbomb-backtesting-summary.json`
 - `docs/model-results/artifacts/statsbomb-round-of-32-comparison.json`
 
-When real data is unavailable, both artifacts contain a `real_data_evaluation_blocked` placeholder.
+When the StatsBomb data directory is unavailable, both artifacts contain a `real_data_evaluation_blocked` placeholder.
 
 ## Statistical caveats
 
-- WC2022 (64 matches) + WC2018 (64 matches) = ≤ 128 historical fixtures. This is a limited sample; interpret Brier/LogLoss deltas cautiously.
-- Profile coverage is uneven. Many WC participants have no StatsBomb data; the signal is only applied to fixtures where both teams have valid in-window profiles.
-- Goal-level metrics are null for this dataset.
+- WC2022 (64 matches) + WC2018 (64 matches) = 128 historical fixtures. Goal-level metrics are available now (128/128 scores populated from StatsBomb records).
+- **Elo compression**: with WC-only K=20 Elo data the maximum observed Elo gap is ~126 pts — below the 167-pt threshold needed to push the modal scoreline away from 1-1. All 128 baseline fixtures predict 1-1. This renders Brier/LogLoss deltas meaningless (both distributions are identical to baseline).
+- **Per-fixture profile coverage**: signal is applied only where both teams can be resolved to WC2026 canonical names AND have StatsBomb data prior to the fixture date. WC2018 fixtures receive ~0 signal (no prior competition data available). WC2022 fixtures receive signal from teams' WC2018 and Euro 2020 history.
 - The Elo replay uses `processMatches` (basic K-factor, no recency or competition weighting), which differs slightly from the live pipeline. Pre-match Elo values are approximations.
+- A `data_quality_blocked` result from this harness does NOT mean the signal is broken — it means the historical evaluation dataset cannot distinguish signal from baseline due to Elo compression. A production evaluation requires richer multi-competition Elo history.
 - A promotion decision from this harness should be treated as a necessary but not sufficient condition.
