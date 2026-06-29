@@ -39,6 +39,157 @@ function formatCoverageType(coverageType: PredictMatchFromLiveEloSuccessResponse
   }
 }
 
+function formatStatsBombLabel(value: string | undefined): string {
+  if (value === undefined) return "Unavailable";
+  return value.charAt(0).toUpperCase() + value.slice(1).replaceAll("_", " ");
+}
+
+function formatStatsBombDate(value: string | undefined): string {
+  if (value === undefined) return "Unavailable";
+  const timestamp = Date.parse(value);
+  if (!Number.isFinite(timestamp)) return value;
+  return new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(timestamp));
+}
+
+function formatStatsBombReason(reason: string): string {
+  switch (reason) {
+    case "disabled":
+      return "Disabled";
+    case "applied":
+      return "Applied";
+    case "source_unavailable":
+      return "Source unavailable";
+    case "home_profile_missing":
+      return "Home profile missing";
+    case "away_profile_missing":
+      return "Away profile missing";
+    case "both_profiles_missing":
+      return "Profiles missing";
+    case "invalid_profile":
+      return "Invalid profile";
+    case "stale_profile":
+      return "Stale profile";
+    default:
+      return formatStatsBombLabel(reason);
+  }
+}
+
+function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
+  const signal = result.statsBombSignal;
+  if (signal === undefined) return null;
+
+  const enriched = signal.applied && signal.authoritative === "statsbomb";
+  const shadow = signal.rolloutMode === "shadow";
+  const homeCoverage = formatStatsBombLabel(signal.homeProfile?.coverage);
+  const awayCoverage = formatStatsBombLabel(signal.awayProfile?.coverage);
+  const homeFreshness = formatStatsBombLabel(signal.homeProfile?.freshness);
+  const awayFreshness = formatStatsBombLabel(signal.awayProfile?.freshness);
+  const signalWeight = Math.max(signal.homeProfile?.weight ?? 0, signal.awayProfile?.weight ?? 0);
+
+  return (
+    <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h4 className="text-sm font-semibold text-slate-950">Model signal</h4>
+          <p className="mt-1 text-sm text-slate-700">
+            Model: {enriched ? "Elo V2 + StatsBomb" : "Elo V2 baseline"}
+          </p>
+        </div>
+        <span
+          className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-semibold ${
+            enriched ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-800"
+          }`}
+        >
+          {enriched ? "StatsBomb enriched" : "Baseline model"}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Coverage</dt>
+          <dd className="mt-1 text-slate-950">
+            {homeCoverage} / {awayCoverage}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Freshness</dt>
+          <dd className="mt-1 text-slate-950">
+            {homeFreshness} / {awayFreshness}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Signal weight</dt>
+          <dd className="mt-1 tabular-nums text-slate-950">{signalWeight.toFixed(2)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Data cutoff</dt>
+          <dd className="mt-1 text-slate-950">{formatStatsBombDate(signal.artifactCutoffAt ?? signal.cutoffAt)}</dd>
+        </div>
+      </dl>
+
+      <p className="mt-3 text-xs text-slate-600">
+        {shadow
+          ? "Shadow mode computed a comparison only; the displayed prediction remains baseline."
+          : enriched
+            ? "StatsBomb profile data adjusted the xG before scoreline probabilities."
+            : `StatsBomb did not affect this prediction: ${formatStatsBombReason(signal.reason)}.`}
+      </p>
+
+      <details className="mt-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700">
+        <summary className="min-h-10 cursor-pointer list-none py-1 font-semibold text-slate-800">
+          StatsBomb technical details
+        </summary>
+        <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div>
+            <dt className="font-semibold text-slate-500">Baseline xG</dt>
+            <dd className="tabular-nums">
+              {signal.baselineExpectedGoals.home.toFixed(2)} / {signal.baselineExpectedGoals.away.toFixed(2)}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Authoritative xG</dt>
+            <dd className="tabular-nums">
+              {signal.adjustedExpectedGoals.home.toFixed(2)} / {signal.adjustedExpectedGoals.away.toFixed(2)}
+            </dd>
+          </div>
+          {signal.shadowAdjustedExpectedGoals !== undefined ? (
+            <div>
+              <dt className="font-semibold text-slate-500">Shadow adjusted xG</dt>
+              <dd className="tabular-nums">
+                {signal.shadowAdjustedExpectedGoals.home.toFixed(2)} / {signal.shadowAdjustedExpectedGoals.away.toFixed(2)}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt className="font-semibold text-slate-500">Provider</dt>
+            <dd>{signal.provider}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Signal version</dt>
+            <dd>{signal.signalVersion}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Reason</dt>
+            <dd>{formatStatsBombReason(signal.reason)}</dd>
+          </div>
+        </dl>
+        {signal.warnings.length > 0 ? (
+          <ul className="mt-2 space-y-1 text-amber-800">
+            {signal.warnings.map((warning) => (
+              <li key={warning}>- {warning}</li>
+            ))}
+          </ul>
+        ) : null}
+      </details>
+    </div>
+  );
+}
+
 function TournamentFormAdjustmentSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
   const displayState = getTournamentFormDisplayState(result.tournamentFormAdjustment);
 
@@ -264,6 +415,7 @@ export function MatchSimulationResults({ result, matchContext }: MatchSimulation
       ) : null}
 
       {isLiveEloPrediction ? <TournamentFormAdjustmentSection result={result} /> : null}
+      {isLiveEloPrediction ? <StatsBombSignalSection result={result} /> : null}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {probabilityCards.map((item) => (

@@ -9,7 +9,9 @@
         "PERSISTENCE_PROVIDER",
         "RESULTS_PROVIDER",
         "FOOTBALL_DATA_COMPETITION_CODE",
-        "FOOTBALL_DATA_SEASON"
+        "FOOTBALL_DATA_SEASON",
+        "STATSBOMB_PREDICTION_SIGNAL_MODE",
+        "STATSBOMB_PREDICTION_SIGNAL_ENABLED"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },

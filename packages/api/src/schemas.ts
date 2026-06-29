@@ -2191,11 +2191,17 @@ export interface StatsBombSignalResponseMetadata {
   enabled: boolean;
   applied: boolean;
   reason: StatsBombAdjustmentReason;
+  rolloutMode?: "off" | "shadow" | "on";
+  activationDecision?: string;
+  authoritative?: "baseline" | "statsbomb";
   provider: "statsbomb_open_data";
   cutoffAt: string;
+  artifactCutoffAt?: string;
+  artifactGeneratedAt?: string;
   signalVersion: "statsbomb-signal-v1";
   baselineExpectedGoals: { home: number; away: number };
   adjustedExpectedGoals: { home: number; away: number };
+  shadowAdjustedExpectedGoals?: { home: number; away: number };
   homeProfile: StatsBombSignalProfileMetadata | null;
   awayProfile: StatsBombSignalProfileMetadata | null;
   warnings: string[];

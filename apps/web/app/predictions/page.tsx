@@ -11,6 +11,7 @@ import {
   buildDashboardStandingsFromSync,
   getDashboardLiveSyncResult
 } from "../../src/lib/server-runtime";
+import { predictMatchFromLiveEloAction } from "./actions";
 
 export const metadata: Metadata = {
   title: "Predictions · World Cup 2026 Predictor"
@@ -47,6 +48,7 @@ export default async function PredictionsPage() {
           initialResult={snapshot.matchPreview}
           fixtureFoundation={snapshot.worldCup2026Fixtures}
           initialMatchContextByFixtureId={contextByFixtureId}
+          predictLiveEloMatch={predictMatchFromLiveEloAction}
         />
       </section>
     </PageContainer>

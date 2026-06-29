@@ -1,5 +1,4 @@
 import {
-  buildOfficialWorldCup2026KnockoutProjection,
   getModelInfo,
   getWorldCup2026FixtureFoundation,
   listWorldCup2026PredictionHistory
@@ -15,12 +14,13 @@ import {
   selectHomeMatches,
   selectStoredFeaturedPrediction
 } from "../src/lib/home-dashboard";
-import { predictDashboardMatchFromLiveElo } from "../src/lib/api-client";
 import {
   buildDashboardDailyMatchesFromSync,
   buildDashboardStandingsFromSync,
+  buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb,
   getDashboardLiveSyncResult,
-  getProductionRuntimeDiagnostics
+  getProductionRuntimeDiagnostics,
+  predictDashboardMatchFromLiveEloWithProductionStatsBomb
 } from "../src/lib/server-runtime";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export default async function DashboardHomePage() {
   const dailyMatches = buildDashboardDailyMatchesFromSync(syncResult, { timezone: DAILY_MATCHES_DISPLAY_TIMEZONE });
   const fixtureFoundation = getWorldCup2026FixtureFoundation();
   const modelInfo = getModelInfo();
-  const tournamentProjection = buildOfficialWorldCup2026KnockoutProjection({ syncResult });
+  const tournamentProjection = buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb(syncResult);
   const predictionHistorySummary = await getHomePredictionHistorySummary();
 
   const homeMatches = selectHomeMatches(dailyMatches);
@@ -58,7 +58,7 @@ export default async function DashboardHomePage() {
   const fallbackPrediction =
     fallbackFeaturedFixture === null
       ? null
-      : predictDashboardMatchFromLiveElo({
+      : predictDashboardMatchFromLiveEloWithProductionStatsBomb({
           homeTeam: fallbackFeaturedFixture.homeTeam,
           awayTeam: fallbackFeaturedFixture.awayTeam,
           maxGoals: 6,

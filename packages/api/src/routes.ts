@@ -60,6 +60,11 @@ import {
   calculateStatsBombPredictionAdjustment
 } from "./statsbomb-prediction-signal.js";
 import type { TeamPerformanceProfileSource } from "./statsbomb-prediction-signal.js";
+import type {
+  StatsBombActivationDecision,
+  StatsBombProductionReadiness,
+  StatsBombRolloutMode
+} from "./statsbomb-production-config.js";
 import { teamNameToId } from "./providers/statsbomb/statsbomb-team-mapping.js";
 import {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
@@ -1096,7 +1101,12 @@ function getFallbackTeamsUsed(entries: readonly WorldCup2026CoverageEntry[]): st
 
 export function predictMatchFromLiveElo(
   request: PredictMatchFromLiveEloRequest,
-  deps?: { statsBombProfileSource?: TeamPerformanceProfileSource }
+  deps?: {
+    statsBombProfileSource?: TeamPerformanceProfileSource;
+    statsBombSignalMode?: StatsBombRolloutMode;
+    statsBombReadiness?: StatsBombProductionReadiness;
+    statsBombActivationDecision?: StatsBombActivationDecision;
+  }
 ): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
 
@@ -1263,81 +1273,168 @@ export function predictMatchFromLiveElo(
     ...(request.preset === undefined ? {} : { preset: request.preset })
   });
 
-  // StatsBomb experimental signal — opt-in, additive, baseline unchanged when disabled/missing
-  const statsBombEnabled = request.statsBombSignal?.enabled === true;
+  // StatsBomb signal — opt-in by request, or controlled by server-side production dependencies.
+  const statsBombRolloutMode = deps?.statsBombSignalMode;
+  const statsBombControlledByServer = statsBombRolloutMode !== undefined;
+  const statsBombEnabled = statsBombControlledByServer
+    ? statsBombRolloutMode !== "off"
+    : request.statsBombSignal?.enabled === true;
   let statsBombSignalMeta: NonNullable<PredictMatchFromLiveEloSuccessResponse["statsBombSignal"]> | undefined;
   let effectiveHomeXg = xgResult.homeExpectedGoals;
   let effectiveAwayXg = xgResult.awayExpectedGoals;
 
-  if (statsBombEnabled) {
-    const profileSource = deps?.statsBombProfileSource ?? NULL_PROFILE_SOURCE;
+  const statsBombCutoffAt =
+    request.statsBombSignal?.cutoffAt ??
+    (deps?.statsBombReadiness?.ready === true ? deps.statsBombReadiness.cutoffAt : new Date().toISOString());
 
-    const cutoffAt = request.statsBombSignal?.cutoffAt ?? new Date().toISOString();
-    const homeCanonical = homeResolution.canonicalName ?? homeEntry.team;
-    const awayCanonical = awayResolution.canonicalName ?? awayEntry.team;
-    const homeTeamId = teamNameToId(homeCanonical);
-    const awayTeamId = teamNameToId(awayCanonical);
-
-    const homeProfileRaw = profileSource.getProfile(homeTeamId);
-    const awayProfileRaw = profileSource.getProfile(awayTeamId);
-
-    const homeProfile =
-      homeProfileRaw !== null && homeProfileRaw.cutoffAt <= cutoffAt ? homeProfileRaw : null;
-    const awayProfile =
-      awayProfileRaw !== null && awayProfileRaw.cutoffAt <= cutoffAt ? awayProfileRaw : null;
-
-    const adjustment = calculateStatsBombPredictionAdjustment({
-      homeProfile,
-      awayProfile,
-      baselineHomeXg: xgResult.homeExpectedGoals,
-      baselineAwayXg: xgResult.awayExpectedGoals,
-      globalPriorXgForPer90: STATSBOMB_GLOBAL_PRIOR_XG_FOR_PER_90,
-      globalPriorXgAgainstPer90: STATSBOMB_GLOBAL_PRIOR_XG_AGAINST_PER_90,
-      ...(request.statsBombSignal?.maxWeight !== undefined
-        ? { maxWeight: request.statsBombSignal.maxWeight }
-        : {})
-    });
-
-    effectiveHomeXg = adjustment.adjustedHomeXg;
-    effectiveAwayXg = adjustment.adjustedAwayXg;
-
+  if (statsBombControlledByServer && !statsBombEnabled) {
     statsBombSignalMeta = {
-      enabled: true,
-      applied: adjustment.applied,
-      reason: adjustment.reason,
+      enabled: false,
+      applied: false,
+      reason: "disabled",
+      rolloutMode: "off",
+      ...(deps?.statsBombActivationDecision === undefined ? {} : { activationDecision: deps.statsBombActivationDecision }),
+      authoritative: "baseline",
       provider: "statsbomb_open_data",
-      cutoffAt,
+      cutoffAt: statsBombCutoffAt,
       signalVersion: STATSBOMB_SIGNAL_VERSION,
       baselineExpectedGoals: {
         home: xgResult.homeExpectedGoals,
         away: xgResult.awayExpectedGoals
       },
       adjustedExpectedGoals: {
-        home: effectiveHomeXg,
-        away: effectiveAwayXg
+        home: xgResult.homeExpectedGoals,
+        away: xgResult.awayExpectedGoals
       },
-      homeProfile:
-        homeProfile !== null && adjustment.homeCoverage !== null && adjustment.homeFreshness !== null
-          ? {
-              coverage: adjustment.homeCoverage,
-              freshness: adjustment.homeFreshness,
-              matchCount: homeProfile.matchCount,
-              latestMatchAt: homeProfile.latestMatchAt,
-              weight: adjustment.homeWeight
-            }
-          : null,
-      awayProfile:
-        awayProfile !== null && adjustment.awayCoverage !== null && adjustment.awayFreshness !== null
-          ? {
-              coverage: adjustment.awayCoverage,
-              freshness: adjustment.awayFreshness,
-              matchCount: awayProfile.matchCount,
-              latestMatchAt: awayProfile.latestMatchAt,
-              weight: adjustment.awayWeight
-            }
-          : null,
-      warnings: adjustment.warnings
+      homeProfile: null,
+      awayProfile: null,
+      warnings: []
     };
+  } else if (statsBombEnabled) {
+    const profileSource = deps?.statsBombProfileSource ?? NULL_PROFILE_SOURCE;
+    const homeCanonical = homeResolution.canonicalName ?? homeEntry.team;
+    const awayCanonical = awayResolution.canonicalName ?? awayEntry.team;
+    const homeTeamId = teamNameToId(homeCanonical);
+    const awayTeamId = teamNameToId(awayCanonical);
+
+    const readiness = deps?.statsBombReadiness;
+    const unavailable =
+      statsBombControlledByServer &&
+      (readiness?.ready !== true || deps?.statsBombProfileSource === undefined);
+
+    if (unavailable) {
+      statsBombSignalMeta = {
+        enabled: true,
+        applied: false,
+        reason: "source_unavailable",
+        ...(statsBombRolloutMode === undefined ? {} : { rolloutMode: statsBombRolloutMode }),
+        ...(deps?.statsBombActivationDecision === undefined ? {} : { activationDecision: deps.statsBombActivationDecision }),
+        authoritative: "baseline",
+        provider: "statsbomb_open_data",
+        cutoffAt: statsBombCutoffAt,
+        signalVersion: STATSBOMB_SIGNAL_VERSION,
+        baselineExpectedGoals: {
+          home: xgResult.homeExpectedGoals,
+          away: xgResult.awayExpectedGoals
+        },
+        adjustedExpectedGoals: {
+          home: xgResult.homeExpectedGoals,
+          away: xgResult.awayExpectedGoals
+        },
+        homeProfile: null,
+        awayProfile: null,
+        warnings: [
+          `StatsBomb profile source unavailable; baseline model used${
+            readiness?.ready === false ? ` (${readiness.reason})` : ""
+          }.`
+        ]
+      };
+    } else {
+      const homeProfileRaw = profileSource.getProfile(homeTeamId);
+      const awayProfileRaw = profileSource.getProfile(awayTeamId);
+
+      const homeProfile =
+        homeProfileRaw !== null && homeProfileRaw.cutoffAt <= statsBombCutoffAt ? homeProfileRaw : null;
+      const awayProfile =
+        awayProfileRaw !== null && awayProfileRaw.cutoffAt <= statsBombCutoffAt ? awayProfileRaw : null;
+
+      const adjustment = calculateStatsBombPredictionAdjustment({
+        homeProfile,
+        awayProfile,
+        baselineHomeXg: xgResult.homeExpectedGoals,
+        baselineAwayXg: xgResult.awayExpectedGoals,
+        globalPriorXgForPer90: STATSBOMB_GLOBAL_PRIOR_XG_FOR_PER_90,
+        globalPriorXgAgainstPer90: STATSBOMB_GLOBAL_PRIOR_XG_AGAINST_PER_90,
+        ...(request.statsBombSignal?.maxWeight !== undefined
+          ? { maxWeight: request.statsBombSignal.maxWeight }
+          : {})
+      });
+
+      const authoritativeStatsBomb =
+        statsBombControlledByServer
+          ? statsBombRolloutMode === "on" && deps?.statsBombActivationDecision === "production_ready"
+          : true;
+
+      if (adjustment.applied && authoritativeStatsBomb) {
+        effectiveHomeXg = adjustment.adjustedHomeXg;
+        effectiveAwayXg = adjustment.adjustedAwayXg;
+      }
+
+      statsBombSignalMeta = {
+        enabled: true,
+        applied: adjustment.applied && authoritativeStatsBomb,
+        reason: adjustment.reason,
+        ...(statsBombRolloutMode === undefined ? {} : { rolloutMode: statsBombRolloutMode }),
+        ...(deps?.statsBombActivationDecision === undefined ? {} : { activationDecision: deps.statsBombActivationDecision }),
+        authoritative: adjustment.applied && authoritativeStatsBomb ? "statsbomb" : "baseline",
+        provider: "statsbomb_open_data",
+        cutoffAt: statsBombCutoffAt,
+        ...(deps?.statsBombReadiness?.ready === true
+          ? {
+              artifactCutoffAt: deps.statsBombReadiness.cutoffAt,
+              artifactGeneratedAt: deps.statsBombReadiness.generatedAt
+            }
+          : {}),
+        signalVersion: STATSBOMB_SIGNAL_VERSION,
+        baselineExpectedGoals: {
+          home: xgResult.homeExpectedGoals,
+          away: xgResult.awayExpectedGoals
+        },
+        adjustedExpectedGoals: {
+          home: effectiveHomeXg,
+          away: effectiveAwayXg
+        },
+        ...(statsBombRolloutMode === "shadow"
+          ? {
+              shadowAdjustedExpectedGoals: {
+                home: adjustment.adjustedHomeXg,
+                away: adjustment.adjustedAwayXg
+              }
+            }
+          : {}),
+        homeProfile:
+          homeProfile !== null && adjustment.homeCoverage !== null && adjustment.homeFreshness !== null
+            ? {
+                coverage: adjustment.homeCoverage,
+                freshness: adjustment.homeFreshness,
+                matchCount: homeProfile.matchCount,
+                latestMatchAt: homeProfile.latestMatchAt,
+                weight: adjustment.homeWeight
+              }
+            : null,
+        awayProfile:
+          awayProfile !== null && adjustment.awayCoverage !== null && adjustment.awayFreshness !== null
+            ? {
+                coverage: adjustment.awayCoverage,
+                freshness: adjustment.awayFreshness,
+                matchCount: awayProfile.matchCount,
+                latestMatchAt: awayProfile.latestMatchAt,
+                weight: adjustment.awayWeight
+              }
+            : null,
+        warnings: adjustment.warnings
+      };
+    }
   }
 
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
@@ -1449,9 +1546,11 @@ export function predictMatchFromLiveElo(
       `Fallback seed ratings used: ${fallbackTeamsUsed.length === 0 ? "none" : fallbackTeamsUsed.join(", ")}.`,
       `Prediction preset: ${xgResult.preset}.`,
       "Optional Monte Carlo output is deterministic when a seed is supplied.",
-      statsBombEnabled
-        ? `StatsBomb experimental signal: ${statsBombSignalMeta?.applied === true ? "applied" : "not applied"} (reason: ${statsBombSignalMeta?.reason ?? "disabled"}).`
-        : "StatsBomb experimental signal: disabled.",
+      statsBombSignalMeta?.rolloutMode === "shadow"
+        ? `StatsBomb signal shadow mode: comparison computed when possible; baseline remains authoritative (reason: ${statsBombSignalMeta.reason}).`
+        : statsBombEnabled
+          ? `StatsBomb experimental signal: ${statsBombSignalMeta?.applied === true ? "applied" : "not applied"} (reason: ${statsBombSignalMeta?.reason ?? "disabled"}).`
+          : "StatsBomb experimental signal: disabled.",
       "No network calls, database, or external services are used."
     ])
   };

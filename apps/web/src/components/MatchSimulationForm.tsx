@@ -1,7 +1,13 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import type { ApiValidationIssue, SimulateMatchSuccessResponse, WorldCup2026FixtureFoundationResponse } from "@world-cup-2026-predictor/api";
+import type {
+  ApiValidationIssue,
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
+  SimulateMatchSuccessResponse,
+  WorldCup2026FixtureFoundationResponse
+} from "@world-cup-2026-predictor/api";
 import { getDashboardAvailableLiveEloTeams, predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 import type { EloXgPreset, PredictMatchFromLiveEloSuccessResponse, WorldCup2026MatchContext } from "../lib/api-client";
 import { buildTournamentFormRequestField } from "../lib/tournament-form-helpers";
@@ -20,6 +26,7 @@ interface MatchSimulationFormProps {
   initialResult: SimulateMatchSuccessResponse;
   fixtureFoundation: WorldCup2026FixtureFoundationResponse;
   initialMatchContextByFixtureId?: Record<string, WorldCup2026MatchContext>;
+  predictLiveEloMatch?: (request: PredictMatchFromLiveEloRequest) => Promise<PredictMatchFromLiveEloResponse> | PredictMatchFromLiveEloResponse;
 }
 
 interface MatchSimulationFormState {
@@ -106,7 +113,12 @@ const PRESET_LABELS: Record<EloXgPreset, string> = {
 
 const GROUPED_TEAM_OPTIONS = getGroupedTeamOptions();
 
-export function MatchSimulationForm({ initialResult, fixtureFoundation, initialMatchContextByFixtureId }: MatchSimulationFormProps) {
+export function MatchSimulationForm({
+  initialResult,
+  fixtureFoundation,
+  initialMatchContextByFixtureId,
+  predictLiveEloMatch = predictDashboardMatchFromLiveElo
+}: MatchSimulationFormProps) {
   const defaultScheduledSelection = getDefaultScheduledMatchSelection(fixtureFoundation);
   const [matchSelectionMode, setMatchSelectionMode] = useState<MatchSelectionMode>("scheduled");
   const [predictionMode, setPredictionMode] = useState<PredictionMode>("manual");
@@ -226,7 +238,7 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation, initialM
     clearInteractiveState();
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>): void {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setIsSubmitting(true);
 
@@ -249,26 +261,34 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation, initialM
             mostCommonScorelineLimit: 3
           };
     const tournamentFormRequest = buildTournamentFormRequestField(tournamentFormEnabled);
-    const response =
-      predictionMode === "elo"
-        ? predictDashboardMatchFromLiveElo({
-            homeTeam: formState.homeTeam,
-            awayTeam: formState.awayTeam,
-            maxGoals: parseNumber(formState.maxGoals),
-            mostLikelyScorelineLimit: 5,
-            preset,
-            ...(monteCarlo === undefined ? {} : { monteCarlo }),
-            ...(tournamentFormRequest === undefined ? {} : { tournamentFormAdjustment: tournamentFormRequest })
-          })
-        : simulateDashboardMatch({
-            homeTeam: formState.homeTeam,
-            awayTeam: formState.awayTeam,
-            expectedHomeGoals: parseNumber(formState.expectedHomeGoals),
-            expectedAwayGoals: parseNumber(formState.expectedAwayGoals),
-            maxGoals: parseNumber(formState.maxGoals),
-            mostLikelyScorelineLimit: 5,
-            ...(monteCarlo === undefined ? {} : { monteCarlo })
-          });
+    let response: MatchSimulationResultState | PredictMatchFromLiveEloResponse;
+    try {
+      response =
+        predictionMode === "elo"
+          ? await predictLiveEloMatch({
+              homeTeam: formState.homeTeam,
+              awayTeam: formState.awayTeam,
+              maxGoals: parseNumber(formState.maxGoals),
+              mostLikelyScorelineLimit: 5,
+              preset,
+              ...(monteCarlo === undefined ? {} : { monteCarlo }),
+              ...(tournamentFormRequest === undefined ? {} : { tournamentFormAdjustment: tournamentFormRequest })
+            })
+          : simulateDashboardMatch({
+              homeTeam: formState.homeTeam,
+              awayTeam: formState.awayTeam,
+              expectedHomeGoals: parseNumber(formState.expectedHomeGoals),
+              expectedAwayGoals: parseNumber(formState.expectedAwayGoals),
+              maxGoals: parseNumber(formState.maxGoals),
+              mostLikelyScorelineLimit: 5,
+              ...(monteCarlo === undefined ? {} : { monteCarlo })
+            });
+    } catch {
+      setIssues([{ field: "form", message: "Prediction service is unavailable. Try again." }]);
+      setResult(null);
+      setIsSubmitting(false);
+      return;
+    }
 
     if (response.status === "validation_error") {
       setIssues([...response.issues]);
@@ -600,7 +620,9 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation, initialM
 
         {issues.length > 0 ? (
           <div className="mt-5 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-800" role="alert">
-            Fix the highlighted fields before running the simulation.
+            {issues.some((issue) => issue.field === "form")
+              ? issues.filter((issue) => issue.field === "form").map((issue) => issue.message).join(" ")
+              : "Fix the highlighted fields before running the simulation."}
           </div>
         ) : null}
 
