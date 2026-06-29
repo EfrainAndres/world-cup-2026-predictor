@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
   PredictionHistoryPersistenceResolution,
   WorldCup2026ExternalFixtureRecord,
@@ -9,7 +9,9 @@ import {
   buildDashboardMatchEntryById,
   buildDashboardDailyMatchesFromSync,
   buildDashboardStandingsFromSync,
-  getProductionRuntimeDiagnostics
+  getDashboardLiveSyncResult,
+  getProductionRuntimeDiagnostics,
+  resetSyncResultCache
 } from "./server-runtime";
 
 function fixture(overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}): WorldCup2026ExternalFixtureRecord {
@@ -320,5 +322,105 @@ describe("server runtime helpers", () => {
     expect(apiClient).not.toContain("resolvePredictionHistoryPersistence");
     expect(apiClient).not.toContain("postgres");
     expect(matchSimulationForm).not.toContain("server-runtime");
+  });
+});
+
+describe("getDashboardLiveSyncResult — last-known-good cache", () => {
+  beforeEach(() => {
+    resetSyncResultCache();
+  });
+
+  test("returns fresh external data and stores it as the last known good result", async () => {
+    const freshSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+
+    const result = await getDashboardLiveSyncResult(async () => freshSync);
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.fixtures).toHaveLength(2);
+    expect(result.cacheUsed).toBe(false);
+  });
+
+  test("serves last known good result when the external provider degrades", async () => {
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+    const result = await getDashboardLiveSyncResult(async () => degradedSync);
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.cacheUsed).toBe(true);
+    expect(result.fixtures).toHaveLength(2);
+    expect(result.warnings.some((w) => w.includes("stale"))).toBe(true);
+  });
+
+  test("serves degraded result as-is when no prior valid result is cached", async () => {
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    const result = await getDashboardLiveSyncResult(async () => degradedSync);
+
+    expect(result.localFallbackUsed).toBe(true);
+    expect(result.fixtures).toHaveLength(0);
+  });
+
+  test("updates last known good when a valid result arrives after a degraded response", async () => {
+    const firstValidSync = syncResult({ fixtures: [fixture()] });
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+    const secondValidSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+
+    await getDashboardLiveSyncResult(async () => firstValidSync);
+    await getDashboardLiveSyncResult(async () => degradedSync);
+    const result = await getDashboardLiveSyncResult(async () => secondValidSync);
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.fixtures).toHaveLength(2);
+    expect(result.cacheUsed).toBe(false);
+  });
+
+  test("rapid sequential degraded requests all receive the same last known good result", async () => {
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+
+    const results = await Promise.all(
+      Array.from({ length: 5 }, () => getDashboardLiveSyncResult(async () => degradedSync))
+    );
+
+    for (const result of results) {
+      expect(result.cacheUsed).toBe(true);
+      expect(result.fixtures).toHaveLength(2);
+    }
   });
 });

@@ -1,11 +1,35 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function selectTeamOption(page: Page, label: string, searchText: string, optionLabel: string): Promise<void> {
-  const input = page.getByRole("combobox", { name: label });
+async function selectTeamOption(page: Page, inputLabel: string, searchText: string, optionLabel: string): Promise<void> {
+  const input = page.getByLabel(inputLabel);
 
   await input.click();
+
   await input.fill(searchText);
-  await page.getByRole("option", { name: optionLabel, exact: true }).click();
+
+  const listboxId = await input.getAttribute("aria-controls");
+
+  if (!listboxId) {
+
+    throw new Error(`Combobox "${inputLabel}" does not expose aria-controls.`);
+
+  }
+
+  const listbox = page.locator(`[id="${listboxId}"]`);
+
+  const option = listbox.getByRole("option", {
+
+    name: optionLabel,
+
+    exact: true,
+
+  });
+
+  await expect(option).toBeVisible();
+
+  await input.press("ArrowDown");
+
+  await input.press("Enter");
 }
 
 // ── Dashboard shell ───────────────────────────────────────────────────────────

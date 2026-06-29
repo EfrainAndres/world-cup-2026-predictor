@@ -102,8 +102,42 @@ export function buildDashboardDailyMatchesFromSync(
   return response;
 }
 
-export async function getDashboardLiveSyncResult(): Promise<WorldCup2026SyncResult> {
-  return synchronizeWorldCup2026Results({});
+// Process-level last-known-good cache. Persists across requests within the same
+// Node.js process instance (same Vercel function warm-up). When the external provider
+// degrades (rate-limit, transient error, local static fallback), the most recent valid
+// sync result is served instead of an empty fixture set. Updated only when the external
+// provider responds successfully (localFallbackUsed === false).
+let lastKnownGoodSyncResult: WorldCup2026SyncResult | null = null;
+
+const STALE_RESULT_WARNING =
+  "Results data may be stale. The external provider returned a degraded response; the last valid provider response was used.";
+
+export function resetSyncResultCache(): void {
+  lastKnownGoodSyncResult = null;
+}
+
+export async function getDashboardLiveSyncResult(
+  syncFn: () => Promise<WorldCup2026SyncResult> = () => synchronizeWorldCup2026Results({})
+): Promise<WorldCup2026SyncResult> {
+  const freshResult = await syncFn();
+
+  if (!freshResult.localFallbackUsed) {
+    lastKnownGoodSyncResult = freshResult;
+    return freshResult;
+  }
+
+  if (lastKnownGoodSyncResult !== null) {
+    return {
+      ...lastKnownGoodSyncResult,
+      cacheUsed: true,
+      warnings: [
+        ...lastKnownGoodSyncResult.warnings.filter((w) => w !== STALE_RESULT_WARNING),
+        STALE_RESULT_WARNING
+      ]
+    };
+  }
+
+  return freshResult;
 }
 
 export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
