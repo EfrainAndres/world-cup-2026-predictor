@@ -565,7 +565,8 @@ export type {
   WorldCup2026MatchContextSuccess,
   WorldCup2026MatchContextStandingsMode,
   WorldCup2026MatchContextTournamentForm,
-  WorldCup2026TeamStandingContext
+  WorldCup2026TeamStandingContext,
+  ScorelinePresentation
 } from "./schemas.js";
 
 export type {

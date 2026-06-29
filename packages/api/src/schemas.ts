@@ -11,8 +11,11 @@ import type {
   LiveEloRecencyWeightingMetadata,
   MonteCarloMatchSimulationResult,
   OutcomeProbabilities,
+  ScorelinePresentation,
   ScorelineProbability
 } from "../../model/src/index.js";
+
+export type { ScorelinePresentation };
 
 export type { EloXgPreset };
 
@@ -217,6 +220,7 @@ export interface PredictMatchFromLiveEloSuccessResponse {
   };
   outcomeProbabilities: OutcomeProbabilities;
   mostLikelyScorelines: ScorelineProbability[];
+  scorelinePresentation?: ScorelinePresentation;
   predictionConfidence: PredictionConfidenceAssessment;
   monteCarloSimulation?: MonteCarloMatchSimulationResult;
   tournamentAdjustment?: {

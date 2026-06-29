@@ -229,7 +229,13 @@ export type {
   RunnerUpEvaluationResult,
   SnapshotTeamProbability,
   TeamProbabilitySnapshot,
-  ValidationMetricSummary
+  ValidationMetricSummary,
+  MatchOutcome,
+  RecommendedOutcomeSelection,
+  RecommendedScoreReason,
+  ScorelineCandidate,
+  ScorelineDiversitySummary,
+  ScorelinePresentation
 } from "./types.js";
 
 export {
@@ -266,6 +272,12 @@ export {
 export { createSeededRandom, runMatchSimulations, simulateOneMatch, validateProbabilityMatrix } from "./simulation.js";
 
 export { createInitialStandings, simulateGroup, sortGroupStandings, validateGroupInput } from "./group-stage.js";
+
+export {
+  RECOMMENDED_OUTCOME_NEAR_TIE_THRESHOLD,
+  selectRecommendedOutcome,
+  selectRecommendedScoreline
+} from "./scoreline-presentation.js";
 
 export { simulateKnockoutMatch, simulateKnockoutRound, validateKnockoutFixture } from "./knockout.js";
 

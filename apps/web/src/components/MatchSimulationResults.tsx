@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
+import type { ScorelinePresentation, SimulateMatchSuccessResponse } from "@world-cup-2026-predictor/api";
 import type { PredictMatchFromLiveEloSuccessResponse, WorldCup2026MatchContext } from "../lib/api-client";
 import { formatElo, formatPercent } from "../lib/api-client";
 import { getTournamentFormDisplayState } from "../lib/tournament-form-helpers";
@@ -77,6 +77,133 @@ function formatStatsBombReason(reason: string): string {
     default:
       return formatStatsBombLabel(reason);
   }
+}
+
+function formatRecommendedScoreReason(
+  reason: ScorelinePresentation["recommendationReason"],
+  homeTeam: string,
+  awayTeam: string,
+  recommendedOutcome: ScorelinePresentation["recommendedOutcome"]
+): string {
+  switch (reason) {
+    case "modal_matches_most_likely_outcome":
+      return "The most likely scoreline also belongs to the most likely match outcome.";
+    case "selected_top_scoreline_for_most_likely_outcome": {
+      const outcomeLabel =
+        recommendedOutcome === "home_win" ? `${homeTeam} win` :
+        recommendedOutcome === "away_win" ? `${awayTeam} win` : "draw";
+      return `The modal score is in a different outcome. This is the most probable scoreline within the most likely outcome (${outcomeLabel}).`;
+    }
+    case "outcome_probabilities_near_tied":
+      return "The outcome probabilities are closely matched. Shown as the modal exact score.";
+    case "draw_is_most_likely_outcome":
+      return "A draw is the most likely outcome. Recommended scoreline is the most probable draw.";
+    case "fallback_to_modal":
+      return "No scorelines found within the most likely outcome. Showing modal as fallback.";
+  }
+}
+
+function formatOutcomeLabel(outcome: ScorelinePresentation["recommendedOutcome"], homeTeam: string, awayTeam: string): string {
+  switch (outcome) {
+    case "home_win": return `${homeTeam} win`;
+    case "draw": return "Draw";
+    case "away_win": return `${awayTeam} win`;
+  }
+}
+
+function ScorelinePresentationSection({
+  presentation,
+  homeTeam,
+  awayTeam
+}: {
+  presentation: ScorelinePresentation;
+  homeTeam: string;
+  awayTeam: string;
+}) {
+  const { modalExactScore, recommendedScore, topScorelines, recommendedOutcome, recommendationReason, diversitySummary } = presentation;
+  const recommendedIsModal = diversitySummary.recommendedIsModal;
+  const reasonText = formatRecommendedScoreReason(recommendationReason, homeTeam, awayTeam, recommendedOutcome);
+
+  return (
+    <div className="mt-6">
+      <div className="mb-3 flex items-baseline justify-between">
+        <h4 className="text-sm font-semibold text-slate-950">Scoreline prediction</h4>
+        <span className="text-xs text-slate-500">
+          Most likely outcome: <span className="font-medium text-slate-700">{formatOutcomeLabel(recommendedOutcome, homeTeam, awayTeam)}</span>
+        </span>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="rounded-md border border-indigo-200 bg-indigo-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">Recommended score</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">
+            {recommendedScore.homeGoals}–{recommendedScore.awayGoals}
+          </p>
+          <p className="mt-1 text-sm tabular-nums text-indigo-700">
+            {formatPercent(recommendedScore.probability)}
+          </p>
+        </div>
+
+        {!recommendedIsModal ? (
+          <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Modal exact score</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-slate-950">
+              {modalExactScore.homeGoals}–{modalExactScore.awayGoals}
+            </p>
+            <p className="mt-1 text-sm tabular-nums text-slate-600">
+              {formatPercent(modalExactScore.probability)}
+            </p>
+          </div>
+        ) : (
+          <div className="flex items-center rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs text-slate-500">Recommended score equals modal exact score.</p>
+          </div>
+        )}
+      </div>
+
+      <p className="mt-2 text-xs text-slate-600">{reasonText}</p>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold text-slate-500">Top {topScorelines.length} scorelines</p>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {topScorelines.map((s) => {
+            const isRecommended = s.homeGoals === recommendedScore.homeGoals && s.awayGoals === recommendedScore.awayGoals;
+            const isModal = !recommendedIsModal && s.homeGoals === modalExactScore.homeGoals && s.awayGoals === modalExactScore.awayGoals;
+            return (
+              <li
+                key={`${s.homeGoals}-${s.awayGoals}`}
+                className={`flex items-center justify-between rounded-md border px-3 py-2 text-sm ${
+                  isRecommended
+                    ? "border-indigo-200 bg-indigo-50"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="font-semibold text-slate-950">
+                    {s.homeGoals}–{s.awayGoals}
+                  </span>
+                  {isRecommended ? (
+                    <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700">rec.</span>
+                  ) : isModal ? (
+                    <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-xs font-medium text-slate-600">modal</span>
+                  ) : null}
+                </span>
+                <span className="tabular-nums text-slate-600">{formatPercent(s.probability)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <p className="mt-2 text-xs text-slate-400">
+        Top 5 cumulative: {formatPercent(diversitySummary.top5CumulativeProbability)}
+        {" · "}
+        {presentation.topScorelines.length >= 2
+          ? `Top-2 gap: ${formatPercent(diversitySummary.top1To2Gap)}`
+          : null}
+      </p>
+    </div>
+  );
 }
 
 function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
@@ -426,22 +553,30 @@ export function MatchSimulationResults({ result, matchContext }: MatchSimulation
         ))}
       </div>
 
-      <div className="mt-6">
-        <h4 className="text-sm font-semibold text-slate-950">Most likely scorelines</h4>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {result.mostLikelyScorelines.map((scoreline) => (
-            <li
-              key={`${scoreline.homeGoals}-${scoreline.awayGoals}`}
-              className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
-            >
-              <span className="font-semibold text-slate-950">
-                {scoreline.homeGoals}-{scoreline.awayGoals}
-              </span>
-              <span className="tabular-nums text-slate-600">{formatPercent(scoreline.probability)}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {isLiveEloPrediction && result.scorelinePresentation !== undefined ? (
+        <ScorelinePresentationSection
+          presentation={result.scorelinePresentation}
+          homeTeam={result.request.homeTeam}
+          awayTeam={result.request.awayTeam}
+        />
+      ) : (
+        <div className="mt-6">
+          <h4 className="text-sm font-semibold text-slate-950">Most likely scorelines</h4>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {result.mostLikelyScorelines.map((scoreline) => (
+              <li
+                key={`${scoreline.homeGoals}-${scoreline.awayGoals}`}
+                className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
+              >
+                <span className="font-semibold text-slate-950">
+                  {scoreline.homeGoals}-{scoreline.awayGoals}
+                </span>
+                <span className="tabular-nums text-slate-600">{formatPercent(scoreline.probability)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {result.monteCarloSimulation ? (
         <p className="mt-5 text-sm leading-6 text-slate-600">

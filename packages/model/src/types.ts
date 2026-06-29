@@ -845,6 +845,50 @@ export interface HistoricalMonteCarloReplayResult {
   metadata: HistoricalMonteCarloReplayMetadata;
 }
 
+export type MatchOutcome = "home_win" | "draw" | "away_win";
+
+export type RecommendedScoreReason =
+  | "modal_matches_most_likely_outcome"
+  | "selected_top_scoreline_for_most_likely_outcome"
+  | "outcome_probabilities_near_tied"
+  | "draw_is_most_likely_outcome"
+  | "fallback_to_modal";
+
+export interface ScorelineCandidate {
+  homeGoals: number;
+  awayGoals: number;
+  probability: number;
+  outcome: MatchOutcome;
+  rankOverall: number;
+  rankWithinOutcome: number;
+}
+
+export interface ScorelineDiversitySummary {
+  uniqueScorelineCount: number;
+  top1CumulativeProbability: number;
+  top3CumulativeProbability: number;
+  top5CumulativeProbability: number;
+  top1To2Gap: number;
+  modalAndRecommendedAlign: boolean;
+  recommendedIsModal: boolean;
+}
+
+export interface ScorelinePresentation {
+  modalExactScore: ScorelineCandidate;
+  recommendedScore: ScorelineCandidate;
+  topScorelines: ScorelineCandidate[];
+  recommendedOutcome: MatchOutcome;
+  recommendationReason: RecommendedScoreReason;
+  diversitySummary: ScorelineDiversitySummary;
+}
+
+export interface RecommendedOutcomeSelection {
+  recommendedOutcome: MatchOutcome;
+  isNearTie: boolean;
+  nearTieThreshold: number;
+  drawIsMostLikely: boolean;
+}
+
 export type LiveEloDataCoverage = "world_cup_fixtures_only" | "partial_international_history" | "complete_international_history";
 
 export interface LiveEloRecencyWeightingConfig {

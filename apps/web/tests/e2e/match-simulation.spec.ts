@@ -875,3 +875,125 @@ test("prediction confidence section still visible alongside tournament form sect
   await expect(resultsSection.getByRole("heading", { name: "Prediction confidence" })).toBeVisible();
   await expect(resultsSection.getByText("Tournament form", { exact: true })).toBeVisible();
 });
+
+// ── Phase 12.20E — Recommended score and scoreline diversity ──────────────────
+
+test("scoreline prediction section heading is visible for live Elo prediction", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Scoreline prediction", { exact: true })).toBeVisible();
+});
+
+test("most likely outcome label with team name is visible in scoreline prediction section", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText(/Most likely outcome:/)).toBeVisible();
+});
+
+test("recommended score card is visible for live Elo prediction", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Recommended score", { exact: true })).toBeVisible();
+});
+
+test("top scorelines list with rec. badge is visible for live Elo prediction", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText(/Top \d+ scorelines/)).toBeVisible();
+  await expect(resultsSection.getByText("rec.", { exact: true })).toBeVisible();
+});
+
+test("top 5 cumulative probability footnote is visible for live Elo prediction", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText(/Top 5 cumulative:/)).toBeVisible();
+});
+
+test("scoreline prediction section is absent for manual xG simulation", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+  await selectTeamOption(page, "Home team", "Mexico", "Mexico · Group A");
+  await selectTeamOption(page, "Away team", "South Africa", "South Africa · Group A");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Scoreline prediction", { exact: true })).not.toBeVisible();
+  await expect(resultsSection.getByText("Most likely scorelines", { exact: true })).toBeVisible();
+});
+
+test("scoreline prediction section has no horizontal overflow at 320 px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 812 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await page.getByRole("region", { name: "Mexico vs South Africa" }).waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("scoreline prediction section has no horizontal overflow at 375 px", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await page.getByRole("region", { name: "Mexico vs South Africa" }).waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("scoreline prediction section has no horizontal overflow at 390 px", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await page.getByRole("region", { name: "Mexico vs South Africa" }).waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("scoreline prediction section has no horizontal overflow at 430 px", async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  await page.getByRole("region", { name: "Mexico vs South Africa" }).waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});

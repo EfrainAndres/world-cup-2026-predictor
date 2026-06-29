@@ -469,6 +469,7 @@ describe("api contract coverage", () => {
       "outcomeProbabilities",
       "predictionConfidence",
       "request",
+      "scorelinePresentation",
       "status",
       "warnings"
     ]);
@@ -527,6 +528,37 @@ describe("api contract coverage", () => {
     expect(first.monteCarloSimulation?.simulationCount).toBe(40);
     expectWarningsContract(first.warnings);
     expectMetadataContract(first.metadata);
+
+    // scorelinePresentation shape contract
+    const sp = first.scorelinePresentation;
+    expect(sp).toBeDefined();
+    if (sp === undefined) return;
+    expect(["home_win", "draw", "away_win"]).toContain(sp.recommendedOutcome);
+    expect([
+      "modal_matches_most_likely_outcome",
+      "selected_top_scoreline_for_most_likely_outcome",
+      "outcome_probabilities_near_tied",
+      "draw_is_most_likely_outcome",
+      "fallback_to_modal"
+    ]).toContain(sp.recommendationReason);
+    for (const score of [sp.modalExactScore, sp.recommendedScore]) {
+      expect(Number.isInteger(score.homeGoals)).toBe(true);
+      expect(Number.isInteger(score.awayGoals)).toBe(true);
+      expect(score.probability).toBeGreaterThan(0);
+      expect(score.probability).toBeLessThanOrEqual(1);
+    }
+    expect(sp.topScorelines.length).toBeGreaterThan(0);
+    for (const c of sp.topScorelines) {
+      expect(Number.isInteger(c.homeGoals)).toBe(true);
+      expect(Number.isInteger(c.awayGoals)).toBe(true);
+      expect(c.probability).toBeGreaterThanOrEqual(0);
+      expect(c.rankOverall).toBeGreaterThan(0);
+      expect(c.rankWithinOutcome).toBeGreaterThan(0);
+      expect(["home_win", "draw", "away_win"]).toContain(c.outcome);
+    }
+    expect(sp.diversitySummary.uniqueScorelineCount).toBeGreaterThan(0);
+    expect(sp.diversitySummary.top1CumulativeProbability).toBeGreaterThan(0);
+    expect(sp.diversitySummary.top5CumulativeProbability).toBeGreaterThan(0);
   });
 
   it("validates the live Elo ratings contract", () => {
