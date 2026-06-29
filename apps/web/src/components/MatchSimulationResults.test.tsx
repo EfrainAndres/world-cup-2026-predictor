@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test, vi } from "vitest";
+import type { PredictMatchFromLiveEloSuccessResponse } from "@world-cup-2026-predictor/api";
 
 vi.mock("./StatusPill", () => ({
   StatusPill: () => null
@@ -8,7 +9,7 @@ vi.mock("./StatusPill", () => ({
 
 import { MatchSimulationResults } from "./MatchSimulationResults";
 import type { WorldCup2026MatchContext } from "../lib/api-client";
-import { simulateDashboardMatch } from "../lib/api-client";
+import { predictDashboardMatchFromLiveElo, simulateDashboardMatch } from "../lib/api-client";
 
 function makeResult() {
   const response = simulateDashboardMatch({
@@ -82,6 +83,25 @@ function makeContext(overrides: Partial<WorldCup2026MatchContext> = {}): WorldCu
   };
 }
 
+function makeLiveResultWithStatsBomb(
+  statsBombSignal: PredictMatchFromLiveEloSuccessResponse["statsBombSignal"]
+): PredictMatchFromLiveEloSuccessResponse {
+  const response = predictDashboardMatchFromLiveElo({
+    homeTeam: "France",
+    awayTeam: "Brazil",
+    preset: "balanced",
+    maxGoals: 6,
+    mostLikelyScorelineLimit: 3
+  });
+
+  if (response.status !== "success") throw new Error("Expected success");
+
+  return {
+    ...response,
+    statsBombSignal
+  };
+}
+
 describe("MatchSimulationResults — match context section", () => {
   test("section header is always present when matchContext is undefined", () => {
     const html = renderToStaticMarkup(
@@ -124,5 +144,90 @@ describe("MatchSimulationResults — match context section", () => {
       <MatchSimulationResults result={makeResult()} matchContext={makeContext()} />
     );
     expect(html).toContain("Match context — not used as a model input");
+  });
+
+  test("renders applied StatsBomb signal metadata without exposing raw artifacts", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults
+        result={makeLiveResultWithStatsBomb({
+          enabled: true,
+          applied: true,
+          reason: "applied",
+          rolloutMode: "on",
+          activationDecision: "production_ready",
+          authoritative: "statsbomb",
+          provider: "statsbomb_open_data",
+          cutoffAt: "2026-06-01T00:00:00.000Z",
+          artifactCutoffAt: "2026-06-01T00:00:00.000Z",
+          artifactGeneratedAt: "2026-06-29T19:48:39.341Z",
+          signalVersion: "statsbomb-signal-v1",
+          baselineExpectedGoals: { home: 1.1, away: 0.9 },
+          adjustedExpectedGoals: { home: 1.2, away: 0.8 },
+          homeProfile: {
+            coverage: "partial",
+            freshness: "stale",
+            matchCount: 10,
+            latestMatchAt: "2024-07-01",
+            weight: 0.14
+          },
+          awayProfile: {
+            coverage: "partial",
+            freshness: "stale",
+            matchCount: 8,
+            latestMatchAt: "2024-06-30",
+            weight: 0.12
+          },
+          warnings: []
+        })}
+      />
+    );
+
+    expect(html).toContain("StatsBomb enriched");
+    expect(html).toContain("Model: Elo V2 + StatsBomb");
+    expect(html).toContain("Partial / Partial");
+    expect(html).toContain("Signal weight");
+    expect(html).toContain("June 1, 2026");
+    expect(html).not.toContain("statsbomb-team-performance-profiles");
+  });
+
+  test("renders shadow mode as baseline-authoritative", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults
+        result={makeLiveResultWithStatsBomb({
+          enabled: true,
+          applied: false,
+          reason: "applied",
+          rolloutMode: "shadow",
+          activationDecision: "shadow_ready",
+          authoritative: "baseline",
+          provider: "statsbomb_open_data",
+          cutoffAt: "2026-06-01T00:00:00.000Z",
+          signalVersion: "statsbomb-signal-v1",
+          baselineExpectedGoals: { home: 1.1, away: 0.9 },
+          adjustedExpectedGoals: { home: 1.1, away: 0.9 },
+          shadowAdjustedExpectedGoals: { home: 1.2, away: 0.8 },
+          homeProfile: {
+            coverage: "partial",
+            freshness: "stale",
+            matchCount: 10,
+            latestMatchAt: "2024-07-01",
+            weight: 0.14
+          },
+          awayProfile: {
+            coverage: "partial",
+            freshness: "stale",
+            matchCount: 8,
+            latestMatchAt: "2024-06-30",
+            weight: 0.12
+          },
+          warnings: []
+        })}
+      />
+    );
+
+    expect(html).toContain("Baseline model");
+    expect(html).toContain("Shadow mode computed a comparison only");
+    expect(html).toContain("Shadow adjusted xG");
+    expect(html).not.toContain("StatsBomb enriched");
   });
 });

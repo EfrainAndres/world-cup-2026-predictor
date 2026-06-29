@@ -124,7 +124,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.17 | Multi-Tournament Architecture After Validation | Generalize the product beyond World Cup 2026 only after the live World Cup workflow and value proposition are validated. | 12.17A Done; 12.17B–D Planned |
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
 | 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A-H Done |
-| 12.20 | StatsBomb Performance Data Integration | Integrate StatsBomb Open Data xG metrics as an optional additive performance signal for the 40/48 covered WC2026 teams. | 12.20A1 Done; 12.20A2 Done; 12.20B Done; 12.20C Done; 12.20C2 Done; 12.20D Planned |
+| 12.20 | StatsBomb Performance Data Integration | Integrate StatsBomb Open Data xG metrics as an optional additive performance signal for the 40/48 covered WC2026 teams. | 12.20A1 Done; 12.20A2 Done; 12.20B Done; 12.20C Done; 12.20C2 Done; 12.20D Implementation complete, Preview validation pending |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -575,6 +575,34 @@ Exit criteria:
 - Primary routes are validated for one header, one main, one h1, no duplicate IDs, no document-level horizontal overflow, mobile bottom-navigation clearance, keyboard-reachable disclosures/popovers, visible non-color-only statuses, and route-active navigation.
 - Chromium route/viewport matrix passes; Firefox and WebKit smoke checks pass.
 - No product feature, model formula, provider, persistence, schema, snapshot, evaluation, official fixture, or topology behavior changes.
+
+## Phase 12.20D - Controlled StatsBomb Production Integration
+
+**Status:** Implementation complete, Preview validation pending
+
+Controlled server-side rollout phase for the validated StatsBomb Open Data signal. Adds private `off`, `shadow`, and `on` runtime modes with explicit artifact readiness checks, activation gating, sanitized diagnostics, process-level compact artifact caching, baseline-safe fallback, and rollback by environment variable.
+
+Deliverables:
+
+- `packages/api/src/statsbomb-production-config.ts` — pure rollout-mode parsing, artifact readiness validation, and production activation gate.
+- `packages/api/src/statsbomb-server-composition.ts` — server-only dependency factory and compact artifact cache for runtime predictions.
+- `/predictions` Auto Predict calls a private server action boundary so rollout mode is resolved server-side.
+- Server-rendered Home and Tournament prediction paths can use controlled StatsBomb dependencies for recalculable output.
+- Prediction UI presents `StatsBomb enriched` only when the signal is authoritative; shadow/unavailable/off states remain labeled as `Baseline model`.
+- `.env.example`, `turbo.json`, and Vercel runtime documentation include private server-side rollout variables.
+- `docs/operations/STATSBOMB_PRODUCTION_ROLLOUT.md` and `docs/model-results/STATSBOMB_CONTROLLED_PRODUCTION_INTEGRATION.md`.
+
+Compatibility decisions:
+
+- Automated immutable snapshot capture remains baseline-only in 12.20D to preserve existing content hashes, idempotency, and evaluation lookup behavior.
+- Group projection signal application is deferred until projection cache identity can include signal mode/version safely.
+
+Exit criteria:
+
+- Default mode is `off` and does not load the artifact.
+- `shadow` computes comparison metadata without changing authoritative output.
+- `on` applies only when artifact readiness and Phase 12.20C2 `promote_signal_candidate` evidence pass.
+- No production Elo constants, Elo-to-xG V2 constants, Poisson logic, scoreline selection, balanced preset, fixture identity, snapshot identity, evaluation identity, persistence schema, standings, qualification, official bracket topology, existing snapshots, or existing evaluations change.
 
 ## Phase 12.19D - Home Dashboard Redesign
 

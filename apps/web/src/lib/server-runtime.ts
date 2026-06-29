@@ -11,9 +11,12 @@ import {
   synchronizeWorldCup2026Results,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES,
-  WORLD_CUP_2026_DISPLAY_TIMEZONE
+  WORLD_CUP_2026_DISPLAY_TIMEZONE,
+  predictMatchFromLiveElo
 } from "@world-cup-2026-predictor/api";
 import type {
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
   LiveEvidenceGateReport,
   ModelInfoResponse,
   PredictionHistoryPersistenceMetadata,
@@ -27,6 +30,8 @@ import type {
   WorldCup2026ResultProviderMetadata,
   WorldCup2026SyncResult
 } from "@world-cup-2026-predictor/api";
+import { createProductionPredictionDependencies } from "@world-cup-2026-predictor/api/src/statsbomb-server-composition";
+import type { StatsBombRuntimeDiagnostics } from "@world-cup-2026-predictor/api/src/statsbomb-production-config";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
 import type { ModelEvidenceStateKind } from "./model-evidence-center";
 import { getMatchDetailId } from "./matches-experience";
@@ -43,6 +48,7 @@ export interface ProductionRuntimeDiagnostics {
   fixtureCount: number;
   fixturesWithKickoff: number;
   lastSuccessfulSync?: string;
+  statsBomb: StatsBombRuntimeDiagnostics;
   warnings: string[];
 }
 
@@ -142,7 +148,28 @@ export async function getDashboardLiveSyncResult(
 
 export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
   const syncResult = await getDashboardLiveSyncResult();
-  return buildOfficialWorldCup2026KnockoutProjection({ syncResult });
+  const predictionDependencies = createProductionPredictionDependencies();
+  return buildOfficialWorldCup2026KnockoutProjection({
+    syncResult,
+    predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
+  });
+}
+
+export function buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb(
+  syncResult: WorldCup2026SyncResult
+): OfficialKnockoutProjectionResult {
+  const predictionDependencies = createProductionPredictionDependencies();
+  return buildOfficialWorldCup2026KnockoutProjection({
+    syncResult,
+    predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
+  });
+}
+
+export function predictDashboardMatchFromLiveEloWithProductionStatsBomb(
+  request: PredictMatchFromLiveEloRequest
+): PredictMatchFromLiveEloResponse {
+  const predictionDependencies = createProductionPredictionDependencies();
+  return predictMatchFromLiveElo(request, predictionDependencies);
 }
 
 export async function getProductionRuntimeDiagnostics(
@@ -151,6 +178,7 @@ export async function getProductionRuntimeDiagnostics(
 ): Promise<ProductionRuntimeDiagnostics> {
   const env = input.env ?? process.env;
   const warnings = [...syncResult.warnings];
+  const predictionDependencies = createProductionPredictionDependencies({ env });
   let persistenceProviderConfigured = false;
   let databaseConnected = false;
 
@@ -192,6 +220,7 @@ export async function getProductionRuntimeDiagnostics(
     fixtureCount: syncResult.fixtures.length,
     fixturesWithKickoff: countFixturesWithKickoff(syncResult.fixtures),
     ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {}),
+    statsBomb: predictionDependencies.statsBombDiagnostics,
     warnings
   };
 }

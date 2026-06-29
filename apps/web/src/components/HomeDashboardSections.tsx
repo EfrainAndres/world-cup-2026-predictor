@@ -470,6 +470,16 @@ export function HomeTechnicalStatus({
             <dd>{runtimeDiagnostics.localFallbackUsed ? "Local fallback active" : runtimeDiagnostics.cacheUsed ? "Cached provider response" : "Primary source"}</dd>
           </div>
           <div>
+            <dt className="font-semibold text-slate-700">StatsBomb signal</dt>
+            <dd>
+              {runtimeDiagnostics.statsBomb.rolloutMode === "off"
+                ? "Off"
+                : runtimeDiagnostics.statsBomb.artifactReady
+                  ? `${runtimeDiagnostics.statsBomb.rolloutMode} mode, artifact ready`
+                  : `${runtimeDiagnostics.statsBomb.rolloutMode} mode, baseline fallback`}
+            </dd>
+          </div>
+          <div>
             <dt className="font-semibold text-slate-700">Model version</dt>
             <dd>{modelVersion ?? "Current production model"}</dd>
           </div>

@@ -41,6 +41,17 @@ const runtimeDiagnostics: ProductionRuntimeDiagnostics = {
   fixtureCount: 72,
   fixturesWithKickoff: 72,
   lastSuccessfulSync: "2026-06-10T12:00:00Z",
+  statsBomb: {
+    featureEnabled: false,
+    rolloutMode: "off",
+    activationDecision: "disabled",
+    artifactReady: false,
+    readinessReason: "feature_disabled",
+    profileCount: null,
+    artifactCutoffAt: null,
+    artifactGeneratedAt: null,
+    lastLoadStatus: "not_attempted"
+  },
   warnings: []
 };
 

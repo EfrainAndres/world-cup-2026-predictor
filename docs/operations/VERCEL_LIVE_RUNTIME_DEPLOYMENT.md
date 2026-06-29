@@ -23,6 +23,8 @@ Set these as **server-side Vercel environment variables**. Do not use any `NEXT_
 | `FOOTBALL_DATA_API_TOKEN` | required | required when `RESULTS_PROVIDER=football_data_org` | football-data.org API token. Never use `NEXT_PUBLIC_`. |
 | `FOOTBALL_DATA_COMPETITION_CODE` | `WC` | `WC` | Explicit World Cup competition code. |
 | `FOOTBALL_DATA_SEASON` | `2026` | `2026` | Explicit provider season. |
+| `STATSBOMB_PREDICTION_SIGNAL_MODE` | `off` until approved | `off`, then `shadow`, then Preview-only `on` | Private server-side rollout mode. Accepted values: `off`, `shadow`, `on`. Invalid values default to `off`. |
+| `STATSBOMB_PREDICTION_SIGNAL_ENABLED` | unset or `false` | unset or `false` | Deprecated compatibility fallback used only when `STATSBOMB_PREDICTION_SIGNAL_MODE` is absent. Accepted true values: `true`, `1`. |
 
 After changing Vercel environment variables, redeploy the application. Existing deployments do not automatically pick up new values.
 
@@ -39,6 +41,7 @@ vercel env add RESULTS_PROVIDER production
 vercel env add FOOTBALL_DATA_API_TOKEN production
 vercel env add FOOTBALL_DATA_COMPETITION_CODE production
 vercel env add FOOTBALL_DATA_SEASON production
+vercel env add STATSBOMB_PREDICTION_SIGNAL_MODE production
 ```
 
 Verify variable names and scopes without printing values:
@@ -116,6 +119,26 @@ Safe fallback states:
 - database unavailable: database status `Configured, unavailable`, prediction history returns sanitized persistence errors;
 - cached provider data: cache/stale warning visible;
 - local mode: `Local fallback` or `Disabled` labels visible.
+- StatsBomb mode off: `Baseline model` remains authoritative and no profile artifact is loaded.
+- StatsBomb shadow mode: comparison metadata may be computed server-side, but displayed predictions remain baseline-authoritative.
+- StatsBomb on mode: the signal applies only when the compact artifact is ready and Phase 12.20C2 validation remains `promote_signal_candidate`.
+
+## StatsBomb Rollout
+
+StatsBomb production integration is private and server-side only. Do not add any `NEXT_PUBLIC_` StatsBomb variable.
+
+Recommended rollout:
+
+1. Deploy with `STATSBOMB_PREDICTION_SIGNAL_MODE=off`.
+2. Confirm baseline parity and runtime diagnostics.
+3. Deploy with `STATSBOMB_PREDICTION_SIGNAL_MODE=shadow`.
+4. Inspect sanitized diagnostics and comparison metadata; prediction authority must remain baseline.
+5. Deploy with `STATSBOMB_PREDICTION_SIGNAL_MODE=on` in Preview only.
+6. Test covered and fallback teams.
+7. Verify rollback by returning `STATSBOMB_PREDICTION_SIGNAL_MODE=off`.
+8. Production activation requires explicit approval after Preview inspection.
+
+The compact profile artifact is cached per server process. Vercel cold starts reload it; no cross-instance cache guarantee exists. If the artifact is missing, stale, unreadable, or fails validation, runtime predictions fall back to the baseline model.
 
 ## Verification Checklist
 
@@ -138,6 +161,7 @@ To roll back to deterministic local behavior:
 ```text
 RESULTS_PROVIDER=local
 PERSISTENCE_PROVIDER=memory
+STATSBOMB_PREDICTION_SIGNAL_MODE=off
 ```
 
 Redeploy after changing values. This disables live provider calls and persistent history reads for the web runtime. The scheduled capture workflow has its own GitHub Actions secrets and is not changed by this rollback unless those secrets/workflow settings are also modified.

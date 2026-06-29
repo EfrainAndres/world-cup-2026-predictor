@@ -11,6 +11,7 @@ import {
   buildDashboardStandingsFromSync,
   getDashboardLiveSyncResult,
   getProductionRuntimeDiagnostics,
+  predictDashboardMatchFromLiveEloWithProductionStatsBomb,
   resetSyncResultCache
 } from "./server-runtime";
 
@@ -322,6 +323,38 @@ describe("server runtime helpers", () => {
     expect(apiClient).not.toContain("resolvePredictionHistoryPersistence");
     expect(apiClient).not.toContain("postgres");
     expect(matchSimulationForm).not.toContain("server-runtime");
+  });
+
+  test("production StatsBomb prediction helper is baseline-safe by default", () => {
+    const previousMode = process.env["STATSBOMB_PREDICTION_SIGNAL_MODE"];
+    const previousEnabled = process.env["STATSBOMB_PREDICTION_SIGNAL_ENABLED"];
+    delete process.env["STATSBOMB_PREDICTION_SIGNAL_MODE"];
+    delete process.env["STATSBOMB_PREDICTION_SIGNAL_ENABLED"];
+
+    try {
+      const result = predictDashboardMatchFromLiveEloWithProductionStatsBomb({
+        homeTeam: "France",
+        awayTeam: "Brazil",
+        preset: "balanced"
+      });
+
+      expect(result.status).toBe("success");
+      if (result.status !== "success") return;
+
+      expect(result.statsBombSignal).toMatchObject({
+        enabled: false,
+        applied: false,
+        reason: "disabled",
+        rolloutMode: "off",
+        authoritative: "baseline"
+      });
+    } finally {
+      if (previousMode === undefined) delete process.env["STATSBOMB_PREDICTION_SIGNAL_MODE"];
+      else process.env["STATSBOMB_PREDICTION_SIGNAL_MODE"] = previousMode;
+
+      if (previousEnabled === undefined) delete process.env["STATSBOMB_PREDICTION_SIGNAL_ENABLED"];
+      else process.env["STATSBOMB_PREDICTION_SIGNAL_ENABLED"] = previousEnabled;
+    }
   });
 });
 
