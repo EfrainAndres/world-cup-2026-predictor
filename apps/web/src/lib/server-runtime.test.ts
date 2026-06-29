@@ -6,6 +6,7 @@ import type {
   WorldCup2026SyncResult
 } from "@world-cup-2026-predictor/api";
 import {
+  buildDashboardMatchEntryById,
   buildDashboardDailyMatchesFromSync,
   buildDashboardStandingsFromSync,
   getProductionRuntimeDiagnostics
@@ -44,6 +45,24 @@ function syncResult(overrides: Partial<WorldCup2026SyncResult> = {}): WorldCup20
     standings: [],
     normalizationIssues: [],
     warnings: [],
+    ...overrides
+  };
+}
+
+function roundOf32Fixture(overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}): WorldCup2026ExternalFixtureRecord {
+  return {
+    providerFixtureId: "537417",
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: "LAST_32",
+    matchday: 73,
+    kickoffAt: "2026-06-28T20:00:00Z",
+    homeTeam: "South Africa",
+    awayTeam: "Canada",
+    status: "finished",
+    homeScore: 0,
+    awayScore: 1,
+    updatedAt: "2026-06-28T22:00:00Z",
     ...overrides
   };
 }
@@ -157,6 +176,103 @@ describe("server runtime helpers", () => {
     expect(standings.resultProvider.providerName).toBe("football_data_org_results_provider");
     expect(mexico?.played).toBe(1);
     expect(mexico?.points).toBe(3);
+  });
+
+  test("match detail lookup resolves canonical group fixture IDs", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult(),
+      "wc2026-group-a-md1-01-mexico-vs-south-africa"
+    );
+
+    expect(entry).not.toBeNull();
+    expect(entry?.fixtureId).toBe("wc2026-group-a-md1-01-mexico-vs-south-africa");
+    expect(entry?.homeTeam).toBe("Mexico");
+    expect(entry?.awayTeam).toBe("South Africa");
+  });
+
+  test("match detail lookup resolves numeric provider fixture IDs for official knockout records", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({ fixtures: [roundOf32Fixture()] }),
+      "537417"
+    );
+
+    expect(entry).not.toBeNull();
+    expect(entry?.fixtureId).toBe("wc2026-match-73-south-africa-vs-canada");
+    expect(entry?.providerFixtureId).toBe("537417");
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+    expect(entry?.homeScore).toBe(0);
+    expect(entry?.awayScore).toBe(1);
+  });
+
+  test("match detail lookup resolves canonical official knockout fixture IDs", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({ fixtures: [roundOf32Fixture()] }),
+      "wc2026-match-73-south-africa-vs-canada"
+    );
+
+    expect(entry).not.toBeNull();
+    expect(entry?.fixtureId).toBe("wc2026-match-73-south-africa-vs-canada");
+    expect(entry?.providerFixtureId).toBe("537417");
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+  });
+
+  test("match detail lookup preserves canonical orientation for reversed provider records", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({
+        fixtures: [
+          roundOf32Fixture({
+            homeTeam: "Canada",
+            awayTeam: "South Africa",
+            homeScore: 1,
+            awayScore: 0
+          })
+        ]
+      }),
+      "537417"
+    );
+
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+    expect(entry?.homeScore).toBe(0);
+    expect(entry?.awayScore).toBe(1);
+  });
+
+  test("match detail lookup uses canonical fallback when provider records are unavailable", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({
+        providerMode: "local_static",
+        activeProvider: "local_static_results_provider",
+        localFallbackUsed: true,
+        externalProviderEnabled: false,
+        fixtures: [],
+        completedResults: [],
+        liveMatches: []
+      }),
+      "wc2026-match-73-south-africa-vs-canada"
+    );
+
+    expect(entry).not.toBeNull();
+    expect(entry?.fixtureId).toBe("wc2026-match-73-south-africa-vs-canada");
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+    expect(entry?.state).toBe("upcoming");
+  });
+
+  test("match detail lookup returns null only for genuinely unknown IDs", () => {
+    const entry = buildDashboardMatchEntryById(syncResult(), "unknown-fixture-id");
+
+    expect(entry).toBeNull();
+  });
+
+  test("match detail lookup is deterministic across repeated requests", () => {
+    const data = syncResult({ fixtures: [roundOf32Fixture()] });
+
+    const first = buildDashboardMatchEntryById(data, "537417");
+    const second = buildDashboardMatchEntryById(data, "537417");
+
+    expect(second).toEqual(first);
   });
 
   test("provider and database secrets are not serialized in diagnostics", async () => {

@@ -218,6 +218,17 @@ test("Cross-page CTAs contain links to /predictions, /groups, /tournament", asyn
   await expect(ctaNav.getByRole("link", { name: "Tournament bracket" })).toBeVisible();
 });
 
+test("Run a prediction CTA navigates to Predictions", async ({ page }) => {
+  await page.goto("/model");
+  await page
+    .getByRole("navigation", { name: "Related pages" })
+    .getByRole("link", { name: "Run a prediction" })
+    .click();
+
+  await expect(page).toHaveURL("/predictions");
+  await expect(page.getByRole("heading", { level: 1, name: "Predictions" })).toBeVisible();
+});
+
 // ---------------------------------------------------------------------------
 // Mobile viewports — no horizontal overflow
 // ---------------------------------------------------------------------------

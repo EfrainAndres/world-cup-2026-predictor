@@ -200,9 +200,9 @@ test.describe("Final UX QA — shell behavior", () => {
     await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Predictions" })).not.toHaveAttribute("aria-current", "page");
   });
 
-  test("skip link is the first keyboard target and moves focus to main", async ({ page }) => {
+  test("skip link is the first keyboard target and moves focus to main", async ({ page, browserName }) => {
     await page.goto("/");
-    await page.keyboard.press("Tab");
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
     await expect(page.locator('a[href="#main-content"]')).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("main")).toBeFocused();

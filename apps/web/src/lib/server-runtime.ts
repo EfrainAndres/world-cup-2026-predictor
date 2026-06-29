@@ -10,6 +10,7 @@ import {
   summarizeWorldCup2026ModelReality,
   synchronizeWorldCup2026Results,
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+  WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES,
   WORLD_CUP_2026_DISPLAY_TIMEZONE
 } from "@world-cup-2026-predictor/api";
 import type {
@@ -28,6 +29,7 @@ import type {
 } from "@world-cup-2026-predictor/api";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
 import type { ModelEvidenceStateKind } from "./model-evidence-center";
+import { getMatchDetailId } from "./matches-experience";
 import { deriveEvidenceStateKind } from "./model-evidence-center";
 
 export interface ProductionRuntimeDiagnostics {
@@ -175,16 +177,191 @@ function getColombiaDate(isoTimestamp: string): string {
   return `${year}-${month}-${day}`;
 }
 
+interface CanonicalMatchFixture {
+  fixtureId: string;
+  homeTeam: string;
+  awayTeam: string;
+  group?: string;
+  matchday?: number;
+}
+
+function canonicalPair(homeTeam: string, awayTeam: string): string {
+  return `${canonicalizeTeamName(homeTeam)}|${canonicalizeTeamName(awayTeam)}`;
+}
+
+function reverseCanonicalPair(homeTeam: string, awayTeam: string): string {
+  return `${canonicalizeTeamName(awayTeam)}|${canonicalizeTeamName(homeTeam)}`;
+}
+
+const CANONICAL_MATCH_FIXTURES: readonly CanonicalMatchFixture[] = [
+  ...WORLD_CUP_2026_GROUP_STAGE_FIXTURES.map((fixture) => ({
+    fixtureId: fixture.id,
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    group: fixture.group,
+    matchday: fixture.matchday
+  })),
+  ...WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.map((fixture) => ({
+    fixtureId: fixture.fixtureId,
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    matchday: fixture.officialMatchNumber
+  }))
+];
+
+function resolveCanonicalMatchFixture(
+  requestedId: string,
+  requestedRecord: WorldCup2026ExternalFixtureRecord | undefined
+): CanonicalMatchFixture | null {
+  const byId = CANONICAL_MATCH_FIXTURES.find((fixture) => fixture.fixtureId === requestedId);
+  if (byId !== undefined) return byId;
+
+  if (requestedRecord === undefined) return null;
+
+  const directPair = canonicalPair(requestedRecord.homeTeam, requestedRecord.awayTeam);
+  const reversedPair = reverseCanonicalPair(requestedRecord.homeTeam, requestedRecord.awayTeam);
+  return (
+    CANONICAL_MATCH_FIXTURES.find((fixture) => canonicalPair(fixture.homeTeam, fixture.awayTeam) === directPair) ??
+    CANONICAL_MATCH_FIXTURES.find((fixture) => canonicalPair(fixture.homeTeam, fixture.awayTeam) === reversedPair) ??
+    null
+  );
+}
+
+function recordMatchesCanonicalFixture(
+  record: WorldCup2026ExternalFixtureRecord,
+  fixture: CanonicalMatchFixture
+): boolean {
+  if (record.providerFixtureId === fixture.fixtureId) return true;
+  const recordPair = canonicalPair(record.homeTeam, record.awayTeam);
+  return (
+    recordPair === canonicalPair(fixture.homeTeam, fixture.awayTeam) ||
+    recordPair === reverseCanonicalPair(fixture.homeTeam, fixture.awayTeam)
+  );
+}
+
+function findDailyMatchEntryByIdentity(
+  entries: readonly WorldCup2026DailyMatchEntry[],
+  requestedId: string,
+  stableFixtureId: string
+): WorldCup2026DailyMatchEntry | undefined {
+  return entries.find((entry) => {
+    if (entry.fixtureId === requestedId || entry.fixtureId === stableFixtureId) return true;
+    if (entry.providerFixtureId === requestedId || entry.providerFixtureId === stableFixtureId) return true;
+    return getMatchDetailId(entry) === stableFixtureId;
+  });
+}
+
+function isEntryReversedFromCanonical(
+  entry: WorldCup2026DailyMatchEntry,
+  fixture: CanonicalMatchFixture
+): boolean {
+  return (
+    canonicalizeTeamName(entry.homeTeam) === canonicalizeTeamName(fixture.awayTeam) &&
+    canonicalizeTeamName(entry.awayTeam) === canonicalizeTeamName(fixture.homeTeam)
+  );
+}
+
+function canonicalizeDailyMatchEntry(
+  entry: WorldCup2026DailyMatchEntry,
+  fixture: CanonicalMatchFixture | null
+): WorldCup2026DailyMatchEntry {
+  if (fixture === null) return entry;
+
+  const reversed = isEntryReversedFromCanonical(entry, fixture);
+  const prediction = entry.predictionHistory.snapshot.prediction;
+
+  return {
+    ...entry,
+    fixtureId: fixture.fixtureId,
+    ...(fixture.group === undefined ? {} : { group: fixture.group }),
+    ...(fixture.matchday === undefined ? {} : { matchday: fixture.matchday }),
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    ...(reversed && entry.awayScore !== undefined ? { homeScore: entry.awayScore } : entry.homeScore !== undefined ? { homeScore: entry.homeScore } : {}),
+    ...(reversed && entry.homeScore !== undefined ? { awayScore: entry.homeScore } : entry.awayScore !== undefined ? { awayScore: entry.awayScore } : {}),
+    predictionHistory: {
+      ...entry.predictionHistory,
+      snapshot:
+        reversed && prediction !== undefined
+          ? {
+              ...entry.predictionHistory.snapshot,
+              prediction: {
+                ...prediction,
+                homeExpectedGoals: prediction.awayExpectedGoals,
+                awayExpectedGoals: prediction.homeExpectedGoals,
+                homeWinProbability: prediction.awayWinProbability,
+                awayWinProbability: prediction.homeWinProbability,
+                ...(prediction.projectedScoreline === undefined
+                  ? {}
+                  : {
+                      projectedScoreline: {
+                        homeGoals: prediction.projectedScoreline.awayGoals,
+                        awayGoals: prediction.projectedScoreline.homeGoals
+                      }
+                    })
+              }
+            }
+          : entry.predictionHistory.snapshot
+    }
+  };
+}
+
+function mapExternalStatusToDailyState(
+  status: WorldCup2026ExternalFixtureRecord["status"]
+): WorldCup2026DailyMatchEntry["state"] {
+  switch (status) {
+    case "scheduled":
+      return "upcoming";
+    case "live":
+      return "live";
+    case "halftime":
+      return "halftime";
+    case "finished":
+      return "final";
+    case "postponed":
+      return "postponed";
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "unknown";
+  }
+}
+
+function buildCanonicalFallbackMatchEntry(
+  fixture: CanonicalMatchFixture,
+  record: WorldCup2026ExternalFixtureRecord | undefined
+): WorldCup2026DailyMatchEntry {
+  const recordIsReversed =
+    record !== undefined &&
+    canonicalizeTeamName(record.homeTeam) === canonicalizeTeamName(fixture.awayTeam) &&
+    canonicalizeTeamName(record.awayTeam) === canonicalizeTeamName(fixture.homeTeam);
+
+  return {
+    fixtureId: fixture.fixtureId,
+    ...(record?.providerFixtureId === undefined ? {} : { providerFixtureId: record.providerFixtureId }),
+    ...(fixture.group === undefined ? {} : { group: fixture.group }),
+    ...(fixture.matchday === undefined ? {} : { matchday: fixture.matchday }),
+    ...(record?.kickoffAt === undefined ? {} : { kickoffAt: record.kickoffAt }),
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    normalizedStatus: record?.status ?? "scheduled",
+    state: record === undefined ? "upcoming" : mapExternalStatusToDailyState(record.status),
+    ...(recordIsReversed && record?.awayScore !== undefined ? { homeScore: record.awayScore } : record?.homeScore !== undefined ? { homeScore: record.homeScore } : {}),
+    ...(recordIsReversed && record?.homeScore !== undefined ? { awayScore: record.homeScore } : record?.awayScore !== undefined ? { awayScore: record.awayScore } : {}),
+    ...(record?.venue === undefined ? {} : { venue: record.venue }),
+    predictionSnapshot: { available: false },
+    predictionHistory: {
+      snapshot: { available: false },
+      evaluation: { available: false },
+      warnings: []
+    }
+  };
+}
+
 export function buildDashboardMatchEntryById(
   syncResult: WorldCup2026SyncResult,
   fixtureId: string
 ): WorldCup2026DailyMatchEntry | null {
-  const fixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find((f) => f.id === fixtureId);
-  if (fixture === undefined) return null;
-
-  const canonicalHome = canonicalizeTeamName(fixture.homeTeam);
-  const canonicalAway = canonicalizeTeamName(fixture.awayTeam);
-
   const allExternalRecords: WorldCup2026ExternalFixtureRecord[] = [
     ...syncResult.fixtures,
     ...syncResult.liveMatches,
@@ -201,18 +378,25 @@ export function buildDashboardMatchEntryById(
     }
   }
 
-  const externalRecord = deduplicated.find((r) => {
-    return (
-      canonicalizeTeamName(r.homeTeam) === canonicalHome &&
-      canonicalizeTeamName(r.awayTeam) === canonicalAway
-    );
-  });
+  const requestedRecord = deduplicated.find((record) => record.providerFixtureId === fixtureId);
+  const canonicalFixture = resolveCanonicalMatchFixture(fixtureId, requestedRecord);
+
+  if (canonicalFixture === null && requestedRecord === undefined) return null;
+
+  const externalRecord = requestedRecord ?? (
+    canonicalFixture === null
+      ? undefined
+      : deduplicated.find((record) => recordMatchesCanonicalFixture(record, canonicalFixture))
+  );
+
+  const stableFixtureId = canonicalFixture?.fixtureId ?? fixtureId;
 
   if (externalRecord === undefined || externalRecord.kickoffAt === undefined) {
     const noDateResponse = buildWorldCup2026DailyMatches({ syncResult });
     if (noDateResponse.status !== "success") return null;
-    const entry = noDateResponse.unscheduledMatches.find((m) => m.fixtureId === fixtureId);
-    return entry ?? null;
+    const entry = findDailyMatchEntryByIdentity(noDateResponse.unscheduledMatches, fixtureId, stableFixtureId);
+    if (entry !== undefined) return canonicalizeDailyMatchEntry(entry, canonicalFixture);
+    return canonicalFixture === null ? null : buildCanonicalFallbackMatchEntry(canonicalFixture, externalRecord);
   }
 
   const kickoffDate = getColombiaDate(externalRecord.kickoffAt);
@@ -224,11 +408,13 @@ export function buildDashboardMatchEntryById(
 
   if (response.status !== "success") return null;
 
-  const entry = response.matches.find((m) => m.fixtureId === fixtureId);
-  if (entry !== undefined) return entry;
+  const entry = findDailyMatchEntryByIdentity(response.matches, fixtureId, stableFixtureId);
+  if (entry !== undefined) return canonicalizeDailyMatchEntry(entry, canonicalFixture);
 
-  const unscheduled = response.unscheduledMatches.find((m) => m.fixtureId === fixtureId);
-  return unscheduled ?? null;
+  const unscheduled = findDailyMatchEntryByIdentity(response.unscheduledMatches, fixtureId, stableFixtureId);
+  if (unscheduled !== undefined) return canonicalizeDailyMatchEntry(unscheduled, canonicalFixture);
+
+  return canonicalFixture === null ? null : buildCanonicalFallbackMatchEntry(canonicalFixture, externalRecord);
 }
 
 // ---------------------------------------------------------------------------

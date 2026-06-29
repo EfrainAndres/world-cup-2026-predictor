@@ -517,9 +517,9 @@ test.describe("Existing pages continue to render (no double headers)", () => {
 test.describe("Accessibility — skip link", () => {
   test.use({ viewport: DESKTOP_VIEWPORT });
 
-  test("skip link is keyboard-focusable and moves focus to main content", async ({ page }) => {
+  test("skip link is keyboard-focusable and moves focus to main content", async ({ page, browserName }) => {
     await page.goto("/");
-    await page.keyboard.press("Tab");
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
     const focusedHref = await page.evaluate(() => {
       const el = document.activeElement as HTMLAnchorElement | null;
       return el?.getAttribute("href");

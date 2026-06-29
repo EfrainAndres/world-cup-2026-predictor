@@ -4,6 +4,7 @@ import {
   applyMatchFilter,
   buildMatchesUrl,
   formatDisplayDate,
+  getMatchDetailId,
   getMatchStatusPriority,
   getNextDate,
   getPrevDate,
@@ -209,6 +210,30 @@ describe("buildMatchesUrl", () => {
   it("defaults filter to all", () => {
     const url = buildMatchesUrl("2026-06-14");
     expect(url).toBe("/matches?date=2026-06-14");
+  });
+});
+
+describe("getMatchDetailId", () => {
+  it("preserves canonical group fixture IDs", () => {
+    const id = getMatchDetailId(
+      makeEntry("wc2026-group-a-md1-01-mexico-vs-south-africa", "upcoming", {
+        homeTeam: "Mexico",
+        awayTeam: "South Africa"
+      })
+    );
+
+    expect(id).toBe("wc2026-group-a-md1-01-mexico-vs-south-africa");
+  });
+
+  it("maps official Round-of-32 provider records to stable canonical IDs", () => {
+    const id = getMatchDetailId(
+      makeEntry("537417", "final", {
+        homeTeam: "South Africa",
+        awayTeam: "Canada"
+      })
+    );
+
+    expect(id).toBe("wc2026-match-73-south-africa-vs-canada");
   });
 });
 

@@ -8,6 +8,7 @@ const REQUIRED_VIEWPORTS = [
 ];
 
 const KNOWN_FIXTURE_ID = "wc2026-group-a-md1-01-mexico-vs-south-africa";
+const SOUTH_AFRICA_CANADA_FIXTURE_ID = "wc2026-match-73-south-africa-vs-canada";
 
 // ---------------------------------------------------------------------------
 // Matches page — structure
@@ -120,6 +121,26 @@ test("Match list or empty state is present on /matches", async ({ page }) => {
   expect(hasList + hasEmpty).toBeGreaterThan(0);
 });
 
+test("Every visible linked match resolves from the match list", async ({ page }) => {
+  await page.goto("/matches");
+  const links = page.locator("ol[aria-label='Matches'] a[href^='/matches/']");
+  const count = await links.count();
+  const hrefs: string[] = [];
+
+  for (let i = 0; i < count; i += 1) {
+    const href = await links.nth(i).getAttribute("href");
+    if (href !== null && !hrefs.includes(href)) hrefs.push(href);
+  }
+
+  expect(hrefs.length).toBeGreaterThan(0);
+
+  for (const href of hrefs.slice(0, 8)) {
+    const response = await page.goto(href);
+    expect(response?.status(), `${href} should not return 404`).not.toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+});
+
 // ---------------------------------------------------------------------------
 // Match detail route
 // ---------------------------------------------------------------------------
@@ -131,6 +152,14 @@ test("Match detail page renders for a valid fixture", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Mexico vs South Africa" })).toBeVisible();
   // Should contain at least one team name
   await expect(page.getByText("Mexico").first()).toBeVisible();
+});
+
+test("Match detail page resolves the South Africa vs Canada official fixture", async ({ page }) => {
+  await page.goto(`/matches/${SOUTH_AFRICA_CANADA_FIXTURE_ID}`);
+  await expect(page.getByRole("main")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "South Africa vs Canada" })).toBeVisible();
+  await expect(page.getByText("South Africa").first()).toBeVisible();
+  await expect(page.getByText("Canada").first()).toBeVisible();
 });
 
 test("Match detail page shows a back link to matches", async ({ page }) => {
@@ -157,6 +186,7 @@ test("Match detail page shows status badge", async ({ page }) => {
 test("Match detail page returns 404 for an invalid fixture ID", async ({ page }) => {
   const response = await page.goto("/matches/invalid-fixture-id-does-not-exist");
   expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1, name: "Match not found" })).toBeVisible();
 });
 
 test("Matches nav item is active on match detail route", async ({ page }) => {
