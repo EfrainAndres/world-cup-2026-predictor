@@ -1,0 +1,7 @@
+{
+  "status": "real_data_evaluation_blocked",
+  "reason": "StatsBomb profiles artifact is empty or unavailable. Run statsbomb:download then statsbomb:build-profiles then statsbomb:backtest.",
+  "schemaVersion": "1.0.0",
+  "generatedAt": null,
+  "fixtures": []
+}

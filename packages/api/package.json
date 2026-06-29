@@ -15,6 +15,7 @@
     "evaluate:completed-predictions": "tsx ./src/completed-prediction-evaluation-cli.ts",
     "statsbomb:download": "tsx ./src/statsbomb-open-data-downloader.ts",
     "statsbomb:build-profiles": "tsx ./src/statsbomb-open-data-cli.ts",
+    "statsbomb:backtest": "tsx ./src/statsbomb-backtesting-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
