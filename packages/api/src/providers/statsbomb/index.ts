@@ -31,6 +31,3 @@ export {
   buildFallbackProfile,
   buildProfileFromAggregations,
 } from "./statsbomb-performance-profile.js";
-
-export { createStatsBombOpenDataProvider } from "./statsbomb-open-data-provider.js";
-export { createStatsBombCommercialApiProvider } from "./statsbomb-commercial-stub.js";
