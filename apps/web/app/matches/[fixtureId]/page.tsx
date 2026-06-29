@@ -18,7 +18,8 @@ import {
 import { formatPercent } from "../../../src/lib/api-client";
 import {
   buildMatchesUrl,
-  DAILY_MATCHES_DISPLAY_TIMEZONE
+  DAILY_MATCHES_DISPLAY_TIMEZONE,
+  getLocalDateFromKickoff
 } from "../../../src/lib/matches-experience";
 import { getTodayDateForTimezone } from "../../../src/lib/daily-matches-ui";
 
@@ -82,7 +83,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
 
   const todayDate = getTodayDateForTimezone(DAILY_MATCHES_DISPLAY_TIMEZONE);
   const matchesHref = match.kickoffAt !== undefined
-    ? buildMatchesUrl(match.kickoffAt.slice(0, 10), "all")
+    ? buildMatchesUrl(getLocalDateFromKickoff(match.kickoffAt), "all")
     : buildMatchesUrl(todayDate, "all");
 
   return (
@@ -95,7 +96,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
             <path fillRule="evenodd" d="M17 10a.75.75 0 01-.75.75H5.612l4.158 3.96a.75.75 0 11-1.04 1.08l-5.5-5.25a.75.75 0 010-1.08l5.5-5.25a.75.75 0 111.04 1.08L5.612 9.25H16.25A.75.75 0 0117 10z" clipRule="evenodd" />
           </svg>
-          All matches
+          Back to matches
         </Link>
       </div>
 
@@ -113,6 +114,9 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
               {getDailyMatchStateLabel(match.state)}
             </span>
           </div>
+          <h1 className="mt-3 text-xl font-semibold text-slate-950 sm:text-2xl">
+            {match.homeTeam} vs {match.awayTeam}
+          </h1>
 
           <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-4">
             <div className="flex min-w-0 flex-col items-start gap-1">
@@ -272,18 +276,18 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           <dl className="mt-3 space-y-1 text-xs text-slate-600">
             <div className="flex gap-3">
               <dt className="w-32 shrink-0 text-slate-500">Fixture ID</dt>
-              <dd className="font-mono text-slate-800">{match.fixtureId}</dd>
+              <dd className="min-w-0 break-all font-mono text-slate-800">{match.fixtureId}</dd>
             </div>
             {snapshot.modelVersion !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Model version</dt>
-                <dd>{snapshot.modelVersion}</dd>
+                <dd className="min-w-0 break-all">{snapshot.modelVersion}</dd>
               </div>
             )}
             {snapshot.capturedAt !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Captured at</dt>
-                <dd>{snapshot.capturedAt}</dd>
+                <dd className="min-w-0 break-all">{snapshot.capturedAt}</dd>
               </div>
             )}
             {snapshot.status !== undefined && (
@@ -295,7 +299,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
             {evaluation.evaluatedAt !== undefined && (
               <div className="flex gap-3">
                 <dt className="w-32 shrink-0 text-slate-500">Evaluated at</dt>
-                <dd>{evaluation.evaluatedAt}</dd>
+                <dd className="min-w-0 break-all">{evaluation.evaluatedAt}</dd>
               </div>
             )}
             {prediction !== undefined && (

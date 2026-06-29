@@ -456,28 +456,30 @@ export function MatchSimulationForm({ initialResult, fixtureFoundation, initialM
 
           {predictionMode === "manual" ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block text-sm font-semibold text-slate-700">
+              <label htmlFor="expected-home-goals" className="block text-sm font-semibold text-slate-700">
                 Expected home goals
                 <input
+                  id="expected-home-goals"
                   className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
                   value={formState.expectedHomeGoals}
                   onChange={(event) => updateField("expectedHomeGoals", event.target.value)}
+                  onInput={(event) => updateField("expectedHomeGoals", event.currentTarget.value)}
                   type="number"
-                  min="0"
                   step="0.01"
                   inputMode="decimal"
                 />
                 <FieldError issues={issues} field="expectedHomeGoals" />
               </label>
 
-              <label className="block text-sm font-semibold text-slate-700">
+              <label htmlFor="expected-away-goals" className="block text-sm font-semibold text-slate-700">
                 Expected away goals
                 <input
+                  id="expected-away-goals"
                   className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-base text-slate-950 shadow-sm"
                   value={formState.expectedAwayGoals}
                   onChange={(event) => updateField("expectedAwayGoals", event.target.value)}
+                  onInput={(event) => updateField("expectedAwayGoals", event.currentTarget.value)}
                   type="number"
-                  min="0"
                   step="0.01"
                   inputMode="decimal"
                 />

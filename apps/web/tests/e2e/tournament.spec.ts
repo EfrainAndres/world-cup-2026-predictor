@@ -93,6 +93,15 @@ test("Tournament page distinguishes projected participants from official fixture
   await expect(roundOf16.getByText("Official participant")).toHaveCount(0);
 });
 
+test("Tournament projected fixtures explain regulation score and advancement method", async ({ page }) => {
+  await page.goto("/tournament");
+
+  const firstFixture = page.locator("[data-knockout-fixture]").first();
+  await expect(firstFixture.getByText("Projected after regulation")).toBeVisible();
+  await expect(firstFixture.getByText("Projected to advance")).toBeVisible();
+  await expect(firstFixture.getByText("Advancement:")).toBeVisible();
+});
+
 test("Tournament page shows champion, runner-up, third place, and fourth place", async ({ page }) => {
   await page.goto("/tournament");
 

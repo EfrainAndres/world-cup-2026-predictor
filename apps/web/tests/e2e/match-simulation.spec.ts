@@ -1,11 +1,35 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function selectTeamOption(page: Page, label: string, searchText: string, optionLabel: string): Promise<void> {
-  const input = page.getByRole("combobox", { name: label });
+async function selectTeamOption(page: Page, inputLabel: string, searchText: string, optionLabel: string): Promise<void> {
+  const input = page.getByLabel(inputLabel);
 
   await input.click();
+
   await input.fill(searchText);
-  await page.getByRole("option", { name: optionLabel, exact: true }).click();
+
+  const listboxId = await input.getAttribute("aria-controls");
+
+  if (!listboxId) {
+
+    throw new Error(`Combobox "${inputLabel}" does not expose aria-controls.`);
+
+  }
+
+  const listbox = page.locator(`[id="${listboxId}"]`);
+
+  const option = listbox.getByRole("option", {
+
+    name: optionLabel,
+
+    exact: true,
+
+  });
+
+  await expect(option).toBeVisible();
+
+  await input.press("ArrowDown");
+
+  await input.press("Enter");
 }
 
 // ── Dashboard shell ───────────────────────────────────────────────────────────
@@ -19,323 +43,6 @@ test("loads dashboard home with main heading", async ({ page }) => {
       name: "World Cup 2026 Predictor"
     })
   ).toBeVisible();
-});
-
-test("main dashboard sections are visible on load", async ({ page }) => {
-  await page.goto("/");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Today's matches" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Featured prediction" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Group snapshot" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Tournament outlook" })).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "Model track record" })).toBeVisible();
-});
-
-test("dashboard renders World Cup 2026 groups and Group C fixtures", async ({ page }) => {
-  await page.goto("/groups");
-
-  await expect(
-    page.getByRole("heading", { level: 2, name: "World Cup 2026 Groups & Fixtures" })
-  ).toBeVisible();
-  const groupsSection = page.getByRole("region", { name: "World Cup 2026 Groups & Fixtures" });
-  await expect(groupsSection.getByText("Foundation tournament structure")).toBeVisible();
-  await expect(groupsSection.getByText("72 group fixtures")).toBeVisible();
-  await expect(groupsSection.getByText("12 groups")).toBeVisible();
-
-  const groupC = groupsSection.getByRole("article", { name: "Group C" });
-  await expect(groupC).toBeVisible();
-  await expect(groupC.getByText("Brazil", { exact: true })).toBeVisible();
-  await expect(groupC.getByText("Morocco", { exact: true })).toBeVisible();
-  await expect(groupC.getByText("Haiti", { exact: true })).toBeVisible();
-  await expect(groupC.getByText("Scotland", { exact: true })).toBeVisible();
-});
-
-test("dashboard renders World Cup 2026 group standings tables", async ({ page }) => {
-  await page.goto("/groups");
-
-  await expect(
-    page.getByRole("heading", { level: 2, name: "World Cup 2026 Group Standings" })
-  ).toBeVisible();
-  await expect(page.getByText("Live group standings")).toBeVisible();
-  await expect(page.getByText("Results source: local static provider")).toBeVisible();
-  await expect(page.getByText("External provider: disabled")).toBeVisible();
-  await expect(page.getByText("Standings are calculated from completed matches only. Scheduled fixtures are excluded.")).toBeVisible();
-
-  const groupA = page.getByRole("article", { name: "Group A standings" });
-  const groupC = page.getByRole("article", { name: "Group C standings" });
-
-  await expect(groupA).toBeVisible();
-  await expect(groupA.getByRole("row", { name: /Mexico/ })).toContainText("3");
-  await expect(groupC).toBeVisible();
-  await expect(groupC.getByRole("row", { name: /Scotland/ })).toContainText("3");
-});
-
-test("standings section shows Official tab selected by default", async ({ page }) => {
-  await page.goto("/groups");
-
-  const tablist = page.getByRole("tablist", { name: "Standings mode" });
-  await expect(tablist).toBeVisible();
-
-  const officialTab = tablist.getByRole("tab", { name: /Official/ });
-  await expect(officialTab).toBeVisible();
-  await expect(officialTab).toHaveAttribute("aria-selected", "true");
-});
-
-test("standings section shows live provisional tab in disabled state when no live matches", async ({ page }) => {
-  await page.goto("/groups");
-
-  const tablist = page.getByRole("tablist", { name: "Standings mode" });
-  const provisionalTab = tablist.getByRole("tab", { name: /Live provisional/ });
-  await expect(provisionalTab).toBeVisible();
-  await expect(provisionalTab).toBeDisabled();
-  await expect(provisionalTab).toHaveAttribute("aria-disabled", "true");
-});
-
-test("standings section shows projected tab in disabled state", async ({ page }) => {
-  await page.goto("/groups");
-
-  const tablist = page.getByRole("tablist", { name: "Standings mode" });
-  const projectedTab = tablist.getByRole("tab", { name: /Projected/ });
-  await expect(projectedTab).toBeVisible();
-  await expect(projectedTab).toBeDisabled();
-  await expect(projectedTab).toHaveAttribute("aria-disabled", "true");
-});
-
-test("standings section group tables remain accessible via Official tab", async ({ page }) => {
-  await page.goto("/groups");
-
-  const groupsSection = page.getByRole("region", { name: "World Cup 2026 Group Standings" });
-  const groupA = groupsSection.getByRole("article", { name: "Group A standings" });
-  const groupL = groupsSection.getByRole("article", { name: "Group L standings" });
-  await expect(groupA).toBeVisible();
-  await expect(groupL).toBeVisible();
-});
-
-test("dashboard renders projected World Cup 2026 Round of 32 foundation", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 32" })).toBeVisible();
-  const roundOf32Section = page.getByRole("region", { name: "Projected Round of 32" });
-  await expect(roundOf32Section.getByText("Round of 32 foundation", { exact: true })).toBeVisible();
-  await expect(roundOf32Section.getByText("Qualified teams")).toBeVisible();
-  await expect(roundOf32Section.getByText("32", { exact: true })).toBeVisible();
-  await expect(roundOf32Section.getByText("Fixtures", { exact: true })).toBeVisible();
-  await expect(roundOf32Section.getByText("16", { exact: true })).toBeVisible();
-  await expect(roundOf32Section.getByRole("article", { name: "Round of 32 fixture 1", exact: true })).toBeVisible();
-  await expect(roundOf32Section.getByText("Projected Round of 32 foundation based on current local standings.")).toBeVisible();
-});
-
-test("dashboard renders Round of 32 knockout match simulations", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Round of 32 match simulations" })).toBeVisible();
-  const simSection = page.getByRole("region", { name: "Round of 32 match simulations" });
-  await expect(simSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(page.getByText("Slot 1").first()).toBeVisible();
-  await expect(page.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
-});
-
-test("dashboard renders projected Round of 16 with advancement reasons", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Round of 16" })).toBeVisible();
-  const r16Section = page.getByRole("region", { name: "Projected Round of 16" });
-  await expect(r16Section.getByText("Projected from pre-match probabilities", { exact: true })).toBeVisible();
-  await expect(r16Section.getByText("R16 Slot 1").first()).toBeVisible();
-  await expect(r16Section.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
-});
-
-test("dashboard renders Round of 16 match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Round of 16 match simulations" })).toBeVisible();
-  const r16SimSection = page.getByRole("region", { name: "Round of 16 match simulations" });
-  await expect(r16SimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(r16SimSection.getByText("R16 Sim Slot 1").first()).toBeVisible();
-  await expect(r16SimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
-});
-
-test("dashboard renders projected Quarterfinals with advancement reasons", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Quarterfinals" })).toBeVisible();
-  const qfSection = page.getByRole("region", { name: "Projected Quarterfinals" });
-  await expect(qfSection.getByText("Projected from pre-match probabilities", { exact: true })).toBeVisible();
-  await expect(qfSection.getByText("QF Slot 1").first()).toBeVisible();
-  await expect(qfSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
-});
-
-test("dashboard renders Quarterfinal match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Quarterfinal match simulations" })).toBeVisible();
-  const qfSimSection = page.getByRole("region", { name: "Quarterfinal match simulations" });
-  await expect(qfSimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(qfSimSection.getByText("QF Sim Slot 1").first()).toBeVisible();
-  await expect(qfSimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
-});
-
-test("dashboard renders projected Semifinals with advancement reasons", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Semifinals" })).toBeVisible();
-  const sfSection = page.getByRole("region", { name: "Projected Semifinals" });
-  await expect(sfSection.getByText("Projected from quarterfinal pre-match probabilities", { exact: true })).toBeVisible();
-  await expect(sfSection.getByText("SF Slot 1").first()).toBeVisible();
-  await expect(sfSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
-});
-
-test("dashboard renders Semifinal match simulations with win and draw probabilities", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Semifinal match simulations" })).toBeVisible();
-  const sfSimSection = page.getByRole("region", { name: "Semifinal match simulations" });
-  await expect(sfSimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(sfSimSection.getByText("SF Sim Slot 1").first()).toBeVisible();
-  await expect(sfSimSection.getByText(/Draw: \d+\.\d+%/).first()).toBeVisible();
-});
-
-test("dashboard renders projected Final with advancement reasons", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Final" })).toBeVisible();
-  const finalSection = page.getByRole("region", { name: "Projected Final" });
-  await expect(finalSection.getByText("Final participants only", { exact: true })).toBeVisible();
-  await expect(finalSection.getByText("Final Slot 1").first()).toBeVisible();
-  await expect(finalSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
-});
-
-test("dashboard renders Final match simulation with win and draw probabilities", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Final match simulation", exact: true })).toBeVisible();
-  const finalSimSection = page.getByRole("region", { name: "Final match simulation", exact: true });
-  await expect(finalSimSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(finalSimSection.getByText("Final Sim Slot 1").first()).toBeVisible();
-  await expect(finalSimSection.getByText(/Draw/).first()).toBeVisible();
-});
-
-test("dashboard renders tournament projection overview with champion, runner-up, third place, and phase nav", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Tournament Projection Overview" })).toBeVisible();
-  const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview" });
-  await expect(overviewSection.getByText("Full tournament projection complete", { exact: true })).toBeVisible();
-  await expect(overviewSection.getByText("Projected Champion", { exact: true })).toBeVisible();
-  await expect(overviewSection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
-  await expect(overviewSection.getByText("Third Place Match", { exact: true })).toBeVisible();
-  await expect(overviewSection.getByText("Jump to round", { exact: true })).toBeVisible();
-  await expect(overviewSection.getByRole("link", { name: "Champion" })).toBeVisible();
-});
-
-test("dashboard renders champion projection summary with champion, runner-up, path, and warning", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Champion Projection Summary" })).toBeVisible();
-  const summarySection = page.getByRole("region", { name: "Champion Projection Summary" });
-  await expect(summarySection.getByText("Deterministic projection only", { exact: true })).toBeVisible();
-  await expect(summarySection.getByText("Projected Champion", { exact: true })).toBeVisible();
-  await expect(summarySection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
-  await expect(summarySection.getByText("Champion path", { exact: true })).toBeVisible();
-  await expect(summarySection.getByText("Round of 32").first()).toBeVisible();
-  await expect(summarySection.getByText("Final").first()).toBeVisible();
-});
-
-test("dashboard renders projected tournament winner with champion and runner-up", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Tournament Winner" })).toBeVisible();
-  const resolutionSection = page.getByRole("region", { name: "Projected Tournament Winner" });
-  await expect(resolutionSection.getByText("Deterministic projection only", { exact: true })).toBeVisible();
-  await expect(resolutionSection.getByText("Projected Champion", { exact: true })).toBeVisible();
-  await expect(resolutionSection.getByText("Projected Runner-Up", { exact: true })).toBeVisible();
-  await expect(resolutionSection.getByText("advanced via highest pre-match win probability").first()).toBeVisible();
-});
-
-test("dashboard renders projected third place match with two participants", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected Third Place Match" })).toBeVisible();
-  const thirdPlaceSection = page.getByRole("region", { name: "Projected Third Place Match" });
-  await expect(thirdPlaceSection.getByText("Fixture foundation only", { exact: true })).toBeVisible();
-  await expect(thirdPlaceSection.getByText("Home Team", { exact: true })).toBeVisible();
-  await expect(thirdPlaceSection.getByText("Away Team", { exact: true })).toBeVisible();
-  await expect(thirdPlaceSection.getByText(/wc2026-3rd-place-01/).first()).toBeVisible();
-});
-
-test("dashboard renders third place match simulation section with probabilities and scorelines", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Third Place Match simulation" })).toBeVisible();
-  const simSection = page.getByRole("region", { name: "Third Place Match simulation" });
-  await expect(simSection.getByText("Match probabilities only", { exact: true })).toBeVisible();
-  await expect(simSection.getByText("Draw", { exact: true })).toBeVisible();
-  await expect(simSection.getByText("Top scorelines", { exact: true })).toBeVisible();
-  await expect(simSection.getByText("Expected goals", { exact: true })).toBeVisible();
-});
-
-test("dashboard renders projected knockout bracket with all rounds", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page.getByRole("heading", { level: 2, name: "Projected knockout bracket" })).toBeVisible();
-  const bracketSection = page.getByRole("region", { name: "Projected knockout bracket" });
-  await expect(bracketSection.getByText("Projected bracket only")).toBeVisible();
-  await expect(bracketSection.getByText("Round of 32", { exact: true })).toBeVisible();
-  await expect(bracketSection.getByText("Round of 16", { exact: true })).toBeVisible();
-  await expect(bracketSection.getByText("Quarterfinals", { exact: true })).toBeVisible();
-  await expect(bracketSection.getByText("Semifinals", { exact: true })).toBeVisible();
-  await expect(bracketSection.getByText("Third Place", { exact: true })).toBeVisible();
-  await expect(bracketSection.getByText("Final", { exact: true })).toBeVisible();
-  await expect(page.getByText("Winner R32-01").first()).toBeVisible();
-});
-
-test("home page renders exactly eight primary sections in the approved order", async ({ page }) => {
-  await page.goto("/");
-
-  const sections = page.locator("[data-home-section]");
-  await expect(sections).toHaveCount(8);
-  await expect(sections.nth(0)).toHaveAttribute("id", "home-intro");
-  await expect(sections.nth(1)).toHaveAttribute("id", "home-todays-matches");
-  await expect(sections.nth(2)).toHaveAttribute("id", "home-featured-prediction");
-  await expect(sections.nth(3)).toHaveAttribute("id", "home-group-snapshot");
-  await expect(sections.nth(4)).toHaveAttribute("id", "home-tournament-outlook");
-  await expect(sections.nth(5)).toHaveAttribute("id", "home-model-track-record");
-  await expect(sections.nth(6)).toHaveAttribute("id", "home-quick-actions");
-  await expect(sections.nth(7)).toHaveAttribute("id", "home-technical-status");
-  await expect(page.locator("#overview")).toBeAttached();
-  await expect(page.getByRole("heading", { name: "Projected Round of 32" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "World Cup 2026 Group Standings" })).toHaveCount(0);
-});
-
-test("dashboard sections appear in correct top-to-bottom order for portfolio flow", async ({ page }) => {
-  await page.goto("/tournament");
-
-  const overviewSection = page.getByRole("region", { name: "Tournament Projection Overview", exact: true });
-  const championSection = page.getByRole("region", { name: "Champion Projection Summary", exact: true });
-  const finalSimSection = page.getByRole("region", { name: "Final match simulation", exact: true });
-  const semifinalSimSection = page.getByRole("region", { name: "Semifinal match simulations", exact: true });
-  const thirdPlaceSection = page.getByRole("region", { name: "Projected Third Place Match", exact: true });
-  const winnerResolutionSection = page.getByRole("region", { name: "Projected Tournament Winner", exact: true });
-
-  await expect(overviewSection).toBeVisible();
-  await expect(championSection).toBeVisible();
-  await expect(finalSimSection).toBeVisible();
-  await expect(semifinalSimSection).toBeVisible();
-  await expect(thirdPlaceSection).toBeVisible();
-  await expect(winnerResolutionSection).toBeVisible();
-
-  const overviewBox = await overviewSection.boundingBox();
-  const championBox = await championSection.boundingBox();
-  const finalSimBox = await finalSimSection.boundingBox();
-  const semifinalSimBox = await semifinalSimSection.boundingBox();
-  const thirdPlaceBox = await thirdPlaceSection.boundingBox();
-  const winnerResolutionBox = await winnerResolutionSection.boundingBox();
-
-  expect(overviewBox!.y).toBeLessThan(championBox!.y);
-  expect(championBox!.y).toBeLessThan(finalSimBox!.y);
-  expect(finalSimBox!.y).toBeLessThan(semifinalSimBox!.y);
-  expect(semifinalSimBox!.y).toBeLessThan(thirdPlaceBox!.y);
-  expect(thirdPlaceBox!.y).toBeLessThan(winnerResolutionBox!.y);
 });
 
 // ── Match simulation form ─────────────────────────────────────────────────────

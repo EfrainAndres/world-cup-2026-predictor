@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test("opens /prediction-history and renders the page shell", async ({ page }) => {
   await page.goto("/prediction-history");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Prediction History Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Prediction History" })).toBeVisible();
   await expect(page.getByText("Filter-scoped summary")).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "History records" })).toBeVisible();
 });
@@ -58,7 +58,7 @@ test("mobile layout remains usable", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/prediction-history");
 
-  await expect(page.getByRole("heading", { level: 1, name: "Prediction History Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Prediction History" })).toBeVisible();
   await expect(page.getByLabel("Group")).toBeVisible();
   await expect(page.getByRole("button", { name: "Apply filters" })).toBeVisible();
 });

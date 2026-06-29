@@ -44,7 +44,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
     timezone: DAILY_MATCHES_DISPLAY_TIMEZONE
   });
 
-  const allMatches = [...dailyMatches.matches, ...dailyMatches.unscheduledMatches];
+  const allMatches = dailyMatches.matches;
   const filtered = applyMatchFilter(allMatches, activeFilter);
   const sorted = sortMatchesForDisplay(filtered);
 

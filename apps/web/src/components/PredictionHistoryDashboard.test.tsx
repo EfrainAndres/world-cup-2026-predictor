@@ -75,7 +75,7 @@ describe("PredictionHistoryDashboard", () => {
   test("renders empty state and summary cards", () => {
     const html = render(makeSuccessResponse());
 
-    expect(html).toContain("Prediction History Dashboard");
+    expect(html).toContain("Prediction History");
     expect(html).toContain("Filter-scoped summary");
     expect(html).toContain("No prediction history records match the current filters.");
     expect(html).toContain("Total snapshots");

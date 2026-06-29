@@ -130,7 +130,7 @@ export default async function ModelPage() {
       <nav aria-label="Related pages" className="mb-8">
         <div className="grid gap-3 sm:grid-cols-3">
           <a
-            href="/match"
+            href="/predictions"
             className="flex min-h-[44px] items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
           >
             Run a prediction

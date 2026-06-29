@@ -1,3 +1,8 @@
+import {
+  canonicalizeTeamName,
+  WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
+  WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES
+} from "@world-cup-2026-predictor/api";
 import type { WorldCup2026DailyMatchEntry, WorldCup2026DailyMatchState } from "./api-client";
 import { shiftDailyMatchesDate, DAILY_MATCHES_DISPLAY_TIMEZONE } from "./daily-matches-ui";
 
@@ -130,6 +135,44 @@ export function buildMatchesUrl(date: string, filter: MatchFilter = "all"): stri
   const params = new URLSearchParams({ date });
   if (filter !== "all") params.set("filter", filter);
   return `/matches?${params.toString()}`;
+}
+
+function canonicalPairKey(homeTeam: string, awayTeam: string): string {
+  return `${canonicalizeTeamName(homeTeam)}|${canonicalizeTeamName(awayTeam)}`;
+}
+
+const CANONICAL_MATCH_DETAIL_IDS_BY_PAIR = new Map<string, string>([
+  ...WORLD_CUP_2026_GROUP_STAGE_FIXTURES.map((fixture) => [
+    canonicalPairKey(fixture.homeTeam, fixture.awayTeam),
+    fixture.id
+  ] as const),
+  ...WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.map((fixture) => [
+    canonicalPairKey(fixture.homeTeam, fixture.awayTeam),
+    fixture.fixtureId
+  ] as const)
+]);
+
+export function getMatchDetailId(match: Pick<WorldCup2026DailyMatchEntry, "fixtureId" | "homeTeam" | "awayTeam">): string {
+  return CANONICAL_MATCH_DETAIL_IDS_BY_PAIR.get(canonicalPairKey(match.homeTeam, match.awayTeam)) ?? match.fixtureId;
+}
+
+export function buildMatchDetailHref(match: Pick<WorldCup2026DailyMatchEntry, "fixtureId" | "homeTeam" | "awayTeam">): string {
+  return `/matches/${getMatchDetailId(match)}`;
+}
+
+export function getLocalDateFromKickoff(isoTimestamp: string): string {
+  const dt = new Date(isoTimestamp);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: DAILY_MATCHES_DISPLAY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const parts = formatter.formatToParts(dt);
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
 }
 
 export function getPrevDate(date: string): string {

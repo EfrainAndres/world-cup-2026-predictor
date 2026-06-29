@@ -9,7 +9,7 @@ interface GroupNavProps {
 
 export function GroupNav({ currentGroup }: GroupNavProps) {
   return (
-    <nav aria-label="Group navigation">
+    <nav aria-label="World Cup 2026 group navigation">
       <div className="-mx-4 overflow-x-auto sm:mx-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <div className="flex gap-1.5 px-4 pb-1 sm:px-0">
           {GROUPS.map((g) => {

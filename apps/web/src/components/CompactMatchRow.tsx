@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
 import type { WorldCup2026DailyMatchEntry } from "../lib/api-client";
 import { getDailyMatchStateClasses, getDailyMatchStateLabel, shouldShowDailyMatchScore } from "../lib/daily-matches-ui";
+import { buildMatchDetailHref } from "../lib/matches-experience";
 import { TeamIdentity } from "./TeamIdentity";
 
 interface CompactMatchRowProps {
@@ -17,7 +18,7 @@ export function CompactMatchRow({ match }: CompactMatchRowProps) {
   return (
     <li>
       <Link
-        href={`/matches/${match.fixtureId}`}
+        href={buildMatchDetailHref(match)}
         className="group flex min-h-[44px] items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-1"
         aria-label={`${match.homeTeam} vs ${match.awayTeam}, ${getDailyMatchStateLabel(match.state)}`}
       >

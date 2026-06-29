@@ -1,6 +1,7 @@
 import React from "react";
 import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
 import type {
+  KnockoutAdvancementMethod,
   OfficialKnockoutFixtureProjection,
   OfficialKnockoutParticipant,
   OfficialKnockoutProjectionResult,
@@ -45,6 +46,18 @@ function scoreText(match: OfficialKnockoutFixtureProjection): string {
   const score = match.officialScore ?? match.projectedScore;
   if (score === undefined) return "TBD";
   return `${score.homeGoals}-${score.awayGoals}`;
+}
+
+function advancementMethodLabel(method: KnockoutAdvancementMethod): string {
+  const labels: Record<KnockoutAdvancementMethod, string> = {
+    official_regulation: "official regulation",
+    official_extra_time: "official extra time",
+    official_penalties: "official penalties",
+    projected_regulation: "regulation projection",
+    projected_extra_time: "extra-time projection",
+    projected_penalties: "penalties projection"
+  };
+  return labels[method];
 }
 
 function resultBadge(match: OfficialKnockoutFixtureProjection) {
@@ -161,9 +174,24 @@ function FixtureCard({ match }: { match: OfficialKnockoutFixtureProjection }) {
       ) : null}
 
       {match.winner?.team !== undefined ? (
-        <p className="mt-3 text-xs text-slate-600">
-          Advances: <span className="font-semibold text-slate-900">{match.winner.team}</span>
-        </p>
+        <div className="mt-3 space-y-1 text-xs text-slate-600">
+          {match.projectedScore !== undefined && (
+            <p>
+              Projected after regulation:{" "}
+              <span className="font-semibold tabular-nums text-slate-900">{scoreText(match)}</span>
+            </p>
+          )}
+          <p>
+            {match.officialScore !== undefined ? "Official winner" : "Projected to advance"}:{" "}
+            <span className="font-semibold text-slate-900">{match.winner.team}</span>
+          </p>
+          {match.advancementMethod !== undefined && (
+            <p>
+              Advancement:{" "}
+              <span className="font-medium text-slate-800">{advancementMethodLabel(match.advancementMethod)}</span>
+            </p>
+          )}
+        </div>
       ) : null}
     </article>
   );
