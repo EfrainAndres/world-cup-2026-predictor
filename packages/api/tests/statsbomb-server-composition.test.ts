@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { isAbsolute } from "node:path";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeamPerformanceProfile } from "../src/providers/statsbomb/index.js";
 import { teamNameToId } from "../src/providers/statsbomb/statsbomb-team-mapping.js";
 import {
@@ -229,5 +230,178 @@ describe("StatsBomb production server composition", () => {
       path.includes("statsbomb-team-performance-profiles")
     );
     expect(profileReadsAfterReset).toHaveLength(2);
+  });
+
+  it("artifactSourceKind is 'filesystem' when readFile is used", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      readFile: makeReadFile()
+    });
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("filesystem");
+  });
+
+  it("artifactSourceKind is 'unavailable' in off mode", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "off" }
+    });
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("unavailable");
+  });
+
+  it("artifactSourceKind is 'unavailable' when the artifact is missing", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      readFile: vi.fn(() => { throw Object.assign(new Error("missing"), { code: "ENOENT" }); })
+    });
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("unavailable");
+    expect(deps.statsBombReadiness).toEqual({ ready: false, reason: "artifact_missing" });
+  });
+});
+
+describe("StatsBomb embedded artifact injection", () => {
+  let originalCwd: string;
+
+  beforeEach(() => {
+    originalCwd = process.cwd();
+    resetStatsBombProductionCache();
+  });
+
+  afterEach(() => {
+    process.chdir(originalCwd);
+    resetStatsBombProductionCache();
+  });
+
+  it("off mode does not parse or use embedded artifacts", () => {
+    const readFile = vi.fn((): string => { throw new Error("should not be called"); });
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "off" },
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact(),
+      readFile
+    });
+    expect(deps.statsBombSignalMode).toBe("off");
+    expect(deps.statsBombActivationDecision).toBe("disabled");
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("unavailable");
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
+  it("shadow mode loads profiles from an embedded artifact without any filesystem reads", () => {
+    const readFile = vi.fn((): string => { throw new Error("should not be called"); });
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact(),
+      readFile
+    });
+    expect(deps.statsBombSignalMode).toBe("shadow");
+    expect(deps.statsBombActivationDecision).toBe("shadow_ready");
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("embedded");
+    expect(deps.statsBombDiagnostics.artifactReady).toBe(true);
+    expect(deps.statsBombProfileSource?.getAvailableTeamIds()).toHaveLength(48);
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
+  it("on mode loads profiles from an embedded artifact and evaluates the activation gate", () => {
+    const readFile = vi.fn((): string => { throw new Error("should not be called"); });
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "on" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact(),
+      readFile
+    });
+    expect(deps.statsBombSignalMode).toBe("on");
+    expect(deps.statsBombActivationDecision).toBe("production_ready");
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("embedded");
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
+  it("valid embedded artifact yields readiness ready", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact()
+    });
+    expect(deps.statsBombReadiness.ready).toBe(true);
+    if (!deps.statsBombReadiness.ready) return;
+    expect(deps.statsBombReadiness.profileCount).toBe(48);
+    expect(deps.statsBombReadiness.cutoffAt).toBe("2026-06-01T00:00:00.000Z");
+  });
+
+  it("activation evidence from embedded backtest artifact passes the promotion gate", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "on" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact()
+    });
+    expect(deps.statsBombActivationDecision).toBe("production_ready");
+  });
+
+  it("invalid embedded profile artifact falls back safely", () => {
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: { invalid: true }
+    });
+    expect(deps.statsBombReadiness.ready).toBe(false);
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("unavailable");
+    expect(deps.statsBombProfileSource).toBeUndefined();
+  });
+
+  it("cache persists across calls with embedded artifacts and readFile is not called", () => {
+    const readFile = vi.fn((): string => { throw new Error("should not be called"); });
+    const artifact = profileArtifact();
+    const backtest = backtestArtifact();
+
+    createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: artifact,
+      backtestEvidenceArtifact: backtest,
+      readFile
+    });
+    createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:01.000Z",
+      profilesArtifact: artifact,
+      backtestEvidenceArtifact: backtest,
+      readFile
+    });
+
+    expect(readFile).not.toHaveBeenCalled();
+  });
+
+  it("process.cwd() change does not break the embedded runtime", () => {
+    process.chdir(tmpdir());
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact()
+    });
+    expect(deps.statsBombReadiness.ready).toBe(true);
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("embedded");
+  });
+
+  it("missing filesystem does not affect embedded runtime — readFile is not called for profiles", () => {
+    const readFile = vi.fn((_path: string): string => {
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    const deps = createProductionPredictionDependencies({
+      env: { STATSBOMB_PREDICTION_SIGNAL_MODE: "shadow" },
+      now: "2026-07-01T00:00:00.000Z",
+      profilesArtifact: profileArtifact(),
+      backtestEvidenceArtifact: backtestArtifact(),
+      readFile
+    });
+    expect(deps.statsBombReadiness.ready).toBe(true);
+    expect(deps.statsBombDiagnostics.artifactSourceKind).toBe("embedded");
+    const profileReads = readFile.mock.calls.filter(([path]) =>
+      path.includes("statsbomb-team-performance-profiles")
+    );
+    expect(profileReads).toHaveLength(0);
   });
 });

@@ -31,6 +31,7 @@ import type {
   WorldCup2026SyncResult
 } from "@world-cup-2026-predictor/api";
 import { createProductionPredictionDependencies } from "@world-cup-2026-predictor/api/src/statsbomb-server-composition";
+import { embeddedBacktestArtifact, embeddedProfilesArtifact } from "./statsbomb-embedded-artifacts.server";
 import type { StatsBombRuntimeDiagnostics } from "@world-cup-2026-predictor/api/src/statsbomb-production-config";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
 import type { ModelEvidenceStateKind } from "./model-evidence-center";
@@ -148,7 +149,10 @@ export async function getDashboardLiveSyncResult(
 
 export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
   const syncResult = await getDashboardLiveSyncResult();
-  const predictionDependencies = createProductionPredictionDependencies();
+  const predictionDependencies = createProductionPredictionDependencies({
+    profilesArtifact: embeddedProfilesArtifact,
+    backtestEvidenceArtifact: embeddedBacktestArtifact
+  });
   return buildOfficialWorldCup2026KnockoutProjection({
     syncResult,
     predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
@@ -158,7 +162,10 @@ export async function getOfficialWorldCup2026KnockoutProjection(): Promise<Offic
 export function buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb(
   syncResult: WorldCup2026SyncResult
 ): OfficialKnockoutProjectionResult {
-  const predictionDependencies = createProductionPredictionDependencies();
+  const predictionDependencies = createProductionPredictionDependencies({
+    profilesArtifact: embeddedProfilesArtifact,
+    backtestEvidenceArtifact: embeddedBacktestArtifact
+  });
   return buildOfficialWorldCup2026KnockoutProjection({
     syncResult,
     predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
@@ -168,7 +175,10 @@ export function buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBo
 export function predictDashboardMatchFromLiveEloWithProductionStatsBomb(
   request: PredictMatchFromLiveEloRequest
 ): PredictMatchFromLiveEloResponse {
-  const predictionDependencies = createProductionPredictionDependencies();
+  const predictionDependencies = createProductionPredictionDependencies({
+    profilesArtifact: embeddedProfilesArtifact,
+    backtestEvidenceArtifact: embeddedBacktestArtifact
+  });
   return predictMatchFromLiveElo(request, predictionDependencies);
 }
 
@@ -178,7 +188,11 @@ export async function getProductionRuntimeDiagnostics(
 ): Promise<ProductionRuntimeDiagnostics> {
   const env = input.env ?? process.env;
   const warnings = [...syncResult.warnings];
-  const predictionDependencies = createProductionPredictionDependencies({ env });
+  const predictionDependencies = createProductionPredictionDependencies({
+    env,
+    profilesArtifact: embeddedProfilesArtifact,
+    backtestEvidenceArtifact: embeddedBacktestArtifact
+  });
   let persistenceProviderConfigured = false;
   let databaseConnected = false;
 

@@ -26,6 +26,8 @@ export type StatsBombProductionReadiness =
   | { ready: true; profileCount: 48; cutoffAt: string; generatedAt: string }
   | { ready: false; reason: StatsBombReadinessFailureReason };
 
+export type StatsBombArtifactSourceKind = "embedded" | "filesystem" | "unavailable";
+
 export interface StatsBombRuntimeDiagnostics {
   featureEnabled: boolean;
   rolloutMode: StatsBombRolloutMode;
@@ -36,6 +38,7 @@ export interface StatsBombRuntimeDiagnostics {
   artifactCutoffAt: string | null;
   artifactGeneratedAt: string | null;
   lastLoadStatus: "not_attempted" | "loaded" | "failed";
+  artifactSourceKind: StatsBombArtifactSourceKind;
 }
 
 export interface StatsBombProductionActivationGateInput {

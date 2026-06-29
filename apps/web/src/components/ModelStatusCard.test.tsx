@@ -50,7 +50,8 @@ const runtimeDiagnostics: ProductionRuntimeDiagnostics = {
     profileCount: null,
     artifactCutoffAt: null,
     artifactGeneratedAt: null,
-    lastLoadStatus: "not_attempted"
+    lastLoadStatus: "not_attempted",
+    artifactSourceKind: "unavailable" as const
   },
   warnings: []
 };

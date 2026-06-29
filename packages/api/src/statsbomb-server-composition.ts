@@ -10,6 +10,7 @@ import {
 } from "./statsbomb-production-config.js";
 import type {
   StatsBombActivationDecision,
+  StatsBombArtifactSourceKind,
   StatsBombProductionReadiness,
   StatsBombRolloutMode,
   StatsBombRuntimeDiagnostics
@@ -45,6 +46,7 @@ interface CachedArtifactLoad {
   lastLoadStatus: "loaded" | "failed";
   readiness: StatsBombProductionReadiness;
   profileSource?: TeamPerformanceProfileSource;
+  sourceKind: StatsBombArtifactSourceKind;
 }
 
 let cachedArtifactLoad: CachedArtifactLoad | null = null;
@@ -57,12 +59,18 @@ function readJsonFile(path: string, readFile: (path: string) => string): unknown
   return JSON.parse(readFile(path));
 }
 
-function loadBacktestDecision(readFile: (path: string) => string): {
+function loadBacktestDecision(
+  readFile: (path: string) => string,
+  preloadedArtifact?: unknown
+): {
   backtestDecision: string | null;
   dataQualityDecision: string | null;
 } {
   try {
-    const parsed = readJsonFile(STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH, readFile);
+    const parsed =
+      preloadedArtifact !== undefined
+        ? preloadedArtifact
+        : readJsonFile(STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH, readFile);
     if (typeof parsed !== "object" || parsed === null) {
       return { backtestDecision: null, dataQualityDecision: null };
     }
@@ -95,6 +103,7 @@ function loadProfileArtifact(input: {
   now: string;
   readFile: (path: string) => string;
   nowMs: number;
+  preloadedArtifact?: unknown;
 }): CachedArtifactLoad {
   if (cachedArtifactLoad !== null) {
     if (
@@ -105,25 +114,33 @@ function loadProfileArtifact(input: {
     }
   }
 
+  const isEmbedded = input.preloadedArtifact !== undefined;
+
   try {
     let parsed: unknown;
-    try {
-      parsed = readJsonFile(STATSBOMB_PROFILES_ARTIFACT_PATH, input.readFile);
-    } catch (error) {
-      const reason =
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        (error as { code?: unknown }).code === "ENOENT"
-          ? "artifact_missing"
-          : "artifact_unreadable";
-      const load: CachedArtifactLoad = {
-        loadedAtMs: input.nowMs,
-        lastLoadStatus: "failed",
-        readiness: { ready: false, reason }
-      };
-      cachedArtifactLoad = load;
-      return load;
+
+    if (isEmbedded) {
+      parsed = input.preloadedArtifact;
+    } else {
+      try {
+        parsed = readJsonFile(STATSBOMB_PROFILES_ARTIFACT_PATH, input.readFile);
+      } catch (error) {
+        const reason =
+          typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          (error as { code?: unknown }).code === "ENOENT"
+            ? "artifact_missing"
+            : "artifact_unreadable";
+        const load: CachedArtifactLoad = {
+          loadedAtMs: input.nowMs,
+          lastLoadStatus: "failed",
+          readiness: { ready: false, reason },
+          sourceKind: "unavailable"
+        };
+        cachedArtifactLoad = load;
+        return load;
+      }
     }
 
     const validation = validateStatsBombProductionArtifact(parsed, input.now);
@@ -131,6 +148,7 @@ function loadProfileArtifact(input: {
       loadedAtMs: input.nowMs,
       lastLoadStatus: validation.readiness.ready ? "loaded" : "failed",
       readiness: validation.readiness,
+      sourceKind: validation.readiness.ready ? (isEmbedded ? "embedded" : "filesystem") : "unavailable",
       ...(validation.readiness.ready
         ? { profileSource: createInMemoryTeamPerformanceProfileSource(validation.profiles) }
         : {})
@@ -141,7 +159,8 @@ function loadProfileArtifact(input: {
     const load: CachedArtifactLoad = {
       loadedAtMs: input.nowMs,
       lastLoadStatus: "failed",
-      readiness: { ready: false, reason: "artifact_unreadable" }
+      readiness: { ready: false, reason: "artifact_unreadable" },
+      sourceKind: "unavailable"
     };
     cachedArtifactLoad = load;
     return load;
@@ -152,6 +171,8 @@ export function createProductionPredictionDependencies(input: {
   env?: Record<string, string | undefined>;
   now?: string;
   readFile?: (path: string) => string;
+  profilesArtifact?: unknown;
+  backtestEvidenceArtifact?: unknown;
 } = {}): ProductionPredictionDependencies {
   const env = input.env ?? process.env;
   const now = input.now ?? new Date().toISOString();
@@ -177,7 +198,8 @@ export function createProductionPredictionDependencies(input: {
         profileCount: null,
         artifactCutoffAt: null,
         artifactGeneratedAt: null,
-        lastLoadStatus: "not_attempted"
+        lastLoadStatus: "not_attempted",
+        artifactSourceKind: "unavailable"
       }
     };
   }
@@ -185,9 +207,10 @@ export function createProductionPredictionDependencies(input: {
   const artifactLoad = loadProfileArtifact({
     now,
     readFile,
-    nowMs: Number.isFinite(nowMs) ? nowMs : Date.now()
+    nowMs: Number.isFinite(nowMs) ? nowMs : Date.now(),
+    preloadedArtifact: input.profilesArtifact
   });
-  const validationDecision = loadBacktestDecision(readFile);
+  const validationDecision = loadBacktestDecision(readFile, input.backtestEvidenceArtifact);
   const activationDecision = evaluateStatsBombProductionActivationGate({
     mode,
     readiness: artifactLoad.readiness,
@@ -211,7 +234,8 @@ export function createProductionPredictionDependencies(input: {
     profileCount: artifactLoad.readiness.ready ? artifactLoad.readiness.profileCount : null,
     artifactCutoffAt: artifactLoad.readiness.ready ? artifactLoad.readiness.cutoffAt : null,
     artifactGeneratedAt: artifactLoad.readiness.ready ? artifactLoad.readiness.generatedAt : null,
-    lastLoadStatus: artifactLoad.lastLoadStatus
+    lastLoadStatus: artifactLoad.lastLoadStatus,
+    artifactSourceKind: artifactLoad.sourceKind
   };
 
   return {

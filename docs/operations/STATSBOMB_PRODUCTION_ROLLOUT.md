@@ -48,12 +48,29 @@ Failure reasons are typed: `artifact_missing`, `artifact_placeholder`, `schema_u
 
 ## Artifact Packaging (Vercel deployments)
 
-The compact profile artifact and the backtesting artifact are loaded at runtime via `readFileSync` using a path derived from `import.meta.url`. Because the path is computed dynamically, `@vercel/nft` (Next.js output file tracing) cannot statically detect them and does not include them in the deployment bundle by default.
+Both StatsBomb artifacts are made available in Vercel Preview/production deployments through two complementary mechanisms:
 
-`apps/web/next.config.ts` declares both artifacts via `outputFileTracingIncludes` so they are always packaged:
+### 1. Static JSON imports (primary — eliminates runtime path resolution)
+
+`apps/web/src/lib/statsbomb-embedded-artifacts.server.ts` uses static `import` statements:
+
+```ts
+import profilesJson from "../../../../docs/model-results/artifacts/statsbomb-team-performance-profiles.json";
+import backtestJson from "../../../../docs/model-results/artifacts/statsbomb-backtesting-expanded-elo.json";
+```
+
+webpack bundles the JSON content directly into the server chunk at build time. The runtime never calls `readFileSync` or resolves a dynamic path — so deployment works regardless of how `import.meta.url` resolves inside the Lambda container.
+
+`server-runtime.ts` passes the embedded values to `createProductionPredictionDependencies` as `profilesArtifact` and `backtestEvidenceArtifact`. When those are provided, the server composition skips all filesystem reads for those artifacts.
+
+The runtime diagnostics include `artifactSourceKind: "embedded"` when the embedded path is used.
+
+### 2. Output file tracing (belt-and-suspenders)
+
+`apps/web/next.config.ts` also declares both artifacts via `outputFileTracingIncludes` so they remain in the Vercel deployment bundle even if the import graph changes:
 
 ```
-outputFileTracingRoot: <monorepo root>   # so Vercel can resolve files outside apps/web/
+outputFileTracingRoot: <monorepo root>   # so @vercel/nft can resolve files outside apps/web/
 outputFileTracingIncludes:
   '/**':                                 # applied to every route
     - ../../docs/model-results/artifacts/statsbomb-team-performance-profiles.json
@@ -62,9 +79,9 @@ outputFileTracingIncludes:
 
 Paths in `outputFileTracingIncludes` are globs resolved relative to `apps/web/` (the Next.js app directory). `../../` traverses up to the monorepo root.
 
-Both files are tracked in Git and committed to the repository. They must not be `.gitignore`-d or excluded from the repository while this loading strategy is in use.
+Both files are tracked in Git and must remain committed. They must not be `.gitignore`-d while this loading strategy is in use.
 
-If either artifact is missing from the deployment bundle, `createProductionPredictionDependencies` returns `artifact_missing` and all predictions fall back to baseline.
+If an embedded artifact fails validation, `createProductionPredictionDependencies` returns `artifact_unreadable` and all predictions fall back to baseline. `artifact_missing` is only reported when the filesystem loader is used and the file cannot be found.
 
 ## Caching
 
