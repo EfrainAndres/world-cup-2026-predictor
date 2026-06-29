@@ -576,6 +576,31 @@ Exit criteria:
 - Chromium route/viewport matrix passes; Firefox and WebKit smoke checks pass.
 - No product feature, model formula, provider, persistence, schema, snapshot, evaluation, official fixture, or topology behavior changes.
 
+## Phase 12.20E - Recommended Score and Scoreline Diversity UX
+
+**Status:** Done
+
+Presentation-layer phase that adds a recommended score hierarchy to match predictions. When the modal exact score belongs to a minority 1X2 outcome, the UI surfaces the most probable scoreline within the most likely outcome as the "Recommended score" instead. No model constants, Elo ratings, Poisson parameters, or probabilities are modified.
+
+Deliverables:
+
+- `packages/model/src/scoreline-presentation.ts` — pure `selectRecommendedOutcome` and `selectRecommendedScoreline` functions with deterministic tie-break ranking and `ScorelineDiversitySummary`.
+- `packages/model/src/types.ts` — new exported types: `MatchOutcome`, `RecommendedScoreReason`, `ScorelineCandidate`, `ScorelineDiversitySummary`, `ScorelinePresentation`, `RecommendedOutcomeSelection`.
+- `packages/api/src/schemas.ts` — `scorelinePresentation?: ScorelinePresentation` added to `PredictMatchFromLiveEloSuccessResponse` (additive, backward compatible).
+- `packages/api/src/routes.ts` — `selectRecommendedScoreline` called in `predictMatchFromLiveElo`.
+- `apps/web/src/components/MatchSimulationResults.tsx` — `ScorelinePresentationSection` replaces plain scoreline list for live Elo predictions.
+- `packages/model/tests/scoreline-presentation.test.ts` — 22 tests covering outcome selection, scoreline selection, tie-breaks, ranking, diversity summary, and real Poisson matrices.
+- `docs/model-results/RECOMMENDED_SCORE_AND_SCORELINE_DIVERSITY.md` and `docs/ux/RECOMMENDED_SCORE_PRESENTATION.md`.
+
+Exit criteria:
+
+- `selectRecommendedScoreline` is pure, has no side effects, and does not modify any probability.
+- Deterministic tie-break produces the same ranking for any input.
+- `scorelinePresentation` is always present in live Elo prediction responses.
+- Baseline simulation responses and all other handlers are unaffected.
+- 22 new model tests pass; all existing tests pass without modification (one api-contracts key list updated to include the new field).
+- No Elo ratings, Elo-to-xG constants, Poisson parameters, score matrix generation, 1X2 probability aggregation, presets, snapshots, evaluations, or persistence schema changed.
+
 ## Phase 12.20D - Controlled StatsBomb Production Integration
 
 **Status:** Implementation complete, Preview validation pending

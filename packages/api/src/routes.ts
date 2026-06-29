@@ -10,7 +10,8 @@ import {
   getMostLikelyScorelines,
   runLiveEloPipeline,
   runMatchSimulations,
-  runTournamentRepeatedRuns
+  runTournamentRepeatedRuns,
+  selectRecommendedScoreline
 } from "../../model/src/index.js";
 import {
   LIVE_ELO_FOUNDATION_DATA_SCOPE,
@@ -1498,6 +1499,7 @@ export function predictMatchFromLiveElo(
     },
     outcomeProbabilities: aggregateOutcomeProbabilities(scoreMatrix),
     mostLikelyScorelines: getMostLikelyScorelines(scoreMatrix, mostLikelyLimit),
+    scorelinePresentation: selectRecommendedScoreline({ scoreMatrix, topN: Math.max(5, mostLikelyLimit) }),
     predictionConfidence: assessPredictionConfidence({
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
       awayTeam: awayResolution.canonicalName ?? awayEntry.team,
