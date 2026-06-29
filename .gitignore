@@ -22,3 +22,6 @@ apps/web/.next/
 node_modules/
 
 .env.production.local
+
+# StatsBomb Open Data local cache (not for commit)
+.local-data/
