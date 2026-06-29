@@ -160,6 +160,21 @@ export function buildMatchDetailHref(match: Pick<WorldCup2026DailyMatchEntry, "f
   return `/matches/${getMatchDetailId(match)}`;
 }
 
+export function getLocalDateFromKickoff(isoTimestamp: string): string {
+  const dt = new Date(isoTimestamp);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: DAILY_MATCHES_DISPLAY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+  const parts = formatter.formatToParts(dt);
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${year}-${month}-${day}`;
+}
+
 export function getPrevDate(date: string): string {
   return shiftDailyMatchesDate(date, -1);
 }

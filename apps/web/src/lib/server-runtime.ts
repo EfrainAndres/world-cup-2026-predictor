@@ -209,12 +209,24 @@ const CANONICAL_MATCH_FIXTURES: readonly CanonicalMatchFixture[] = [
   }))
 ];
 
+// Stable alias map: provider-issued numeric fixture IDs → canonical fixture IDs.
+// Used to resolve detail routes like /matches/537417 even when the provider is offline.
+const PROVIDER_FIXTURE_ALIASES = new Map<string, string>([
+  ["537417", "wc2026-match-73-south-africa-vs-canada"]
+]);
+
 function resolveCanonicalMatchFixture(
   requestedId: string,
   requestedRecord: WorldCup2026ExternalFixtureRecord | undefined
 ): CanonicalMatchFixture | null {
   const byId = CANONICAL_MATCH_FIXTURES.find((fixture) => fixture.fixtureId === requestedId);
   if (byId !== undefined) return byId;
+
+  const aliasedId = PROVIDER_FIXTURE_ALIASES.get(requestedId);
+  if (aliasedId !== undefined) {
+    const byAlias = CANONICAL_MATCH_FIXTURES.find((fixture) => fixture.fixtureId === aliasedId);
+    if (byAlias !== undefined) return byAlias;
+  }
 
   if (requestedRecord === undefined) return null;
 

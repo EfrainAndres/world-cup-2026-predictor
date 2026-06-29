@@ -260,6 +260,27 @@ describe("server runtime helpers", () => {
     expect(entry?.state).toBe("upcoming");
   });
 
+  test("match detail lookup resolves aliased provider IDs when provider records are unavailable", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({
+        providerMode: "local_static",
+        activeProvider: "local_static_results_provider",
+        localFallbackUsed: true,
+        externalProviderEnabled: false,
+        fixtures: [],
+        completedResults: [],
+        liveMatches: []
+      }),
+      "537417"
+    );
+
+    expect(entry).not.toBeNull();
+    expect(entry?.fixtureId).toBe("wc2026-match-73-south-africa-vs-canada");
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+    expect(entry?.state).toBe("upcoming");
+  });
+
   test("match detail lookup returns null only for genuinely unknown IDs", () => {
     const entry = buildDashboardMatchEntryById(syncResult(), "unknown-fixture-id");
 

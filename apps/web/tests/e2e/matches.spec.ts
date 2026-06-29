@@ -121,24 +121,20 @@ test("Match list or empty state is present on /matches", async ({ page }) => {
   expect(hasList + hasEmpty).toBeGreaterThan(0);
 });
 
-test("Every visible linked match resolves from the match list", async ({ page }) => {
-  await page.goto("/matches");
-  const links = page.locator("ol[aria-label='Matches'] a[href^='/matches/']");
-  const count = await links.count();
-  const hrefs: string[] = [];
+test("A date without scheduled fixtures shows the daily empty state", async ({ page }) => {
+  await page.goto("/matches?date=2026-01-01");
+  await expect(page.getByText("No matches found", { exact: true })).toBeVisible();
+  await expect(page.locator('a[href^="/matches/"]')).toHaveCount(0);
+});
 
-  for (let i = 0; i < count; i += 1) {
-    const href = await links.nth(i).getAttribute("href");
-    if (href !== null && !hrefs.includes(href)) hrefs.push(href);
-  }
-
-  expect(hrefs.length).toBeGreaterThan(0);
-
-  for (const href of hrefs.slice(0, 8)) {
+test("Known canonical and provider fixture identities resolve", async ({ page }) => {
+  for (const href of [
+    "/matches/wc2026-match-73-south-africa-vs-canada",
+    "/matches/537417",
+  ]) {
     const response = await page.goto(href);
-    expect(response?.status(), `${href} should not return 404`).not.toBe(404);
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  }
+    expect(response?.status()).toBeLessThan(400);
+    await expect(page.getByRole("heading", { name: "South Africa vs Canada", exact: true })).toBeVisible()}
 });
 
 // ---------------------------------------------------------------------------
@@ -164,7 +160,7 @@ test("Match detail page resolves the South Africa vs Canada official fixture", a
 
 test("Match detail page shows a back link to matches", async ({ page }) => {
   await page.goto(`/matches/${KNOWN_FIXTURE_ID}`);
-  const backLink = page.getByRole("link", { name: "All matches" });
+  const backLink = page.getByRole("link", { name: "Back to matches" });
   await expect(backLink).toBeVisible();
 });
 

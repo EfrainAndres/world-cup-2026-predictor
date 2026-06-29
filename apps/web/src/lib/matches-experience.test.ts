@@ -4,6 +4,7 @@ import {
   applyMatchFilter,
   buildMatchesUrl,
   formatDisplayDate,
+  getLocalDateFromKickoff,
   getMatchDetailId,
   getMatchStatusPriority,
   getNextDate,
@@ -249,6 +250,23 @@ describe("getPrevDate / getNextDate", () => {
   it("handles month boundary", () => {
     expect(getPrevDate("2026-07-01")).toBe("2026-06-30");
     expect(getNextDate("2026-06-30")).toBe("2026-07-01");
+  });
+});
+
+describe("getLocalDateFromKickoff", () => {
+  it("returns Colombia-local date for a UTC timestamp on the same calendar day", () => {
+    // 2026-06-28 at 15:00 UTC = 10:00 Bogota (UTC-5) — same calendar day
+    expect(getLocalDateFromKickoff("2026-06-28T15:00:00Z")).toBe("2026-06-28");
+  });
+
+  it("returns the previous Colombia-local date for a UTC timestamp that crosses midnight", () => {
+    // 2026-06-29 at 01:00 UTC = 2026-06-28 at 20:00 Bogota (UTC-5)
+    expect(getLocalDateFromKickoff("2026-06-29T01:00:00Z")).toBe("2026-06-28");
+  });
+
+  it("handles a kickoff at exactly midnight UTC", () => {
+    // 2026-07-01 at 00:00 UTC = 2026-06-30 at 19:00 Bogota (UTC-5)
+    expect(getLocalDateFromKickoff("2026-07-01T00:00:00Z")).toBe("2026-06-30");
   });
 });
 
