@@ -143,6 +143,7 @@ export interface PredictMatchFromLiveEloRequest {
     enabled: boolean;
     cutoffAt?: string;
   };
+  statsBombSignal?: StatsBombPredictionSignalRequest;
 }
 
 export interface PredictionConfidenceDataPoints {
@@ -243,6 +244,7 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     formulaVersion?: string;
     warnings: readonly string[];
   };
+  statsBombSignal?: StatsBombSignalResponseMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
 }
@@ -2155,6 +2157,49 @@ export interface WorldCup2026MatchContextSuccess {
 export type WorldCup2026MatchContextResult =
   | WorldCup2026MatchContextSuccess
   | WorldCup2026MatchContextError;
+
+export type TeamPerformanceCoverageLevel = "full" | "partial" | "sparse" | "fallback";
+export type TeamPerformanceFreshnessLevel = "fresh" | "aging" | "stale" | "unknown";
+
+export type StatsBombAdjustmentReason =
+  | "applied"
+  | "disabled"
+  | "home_profile_missing"
+  | "away_profile_missing"
+  | "both_profiles_missing"
+  | "insufficient_coverage"
+  | "stale_profile"
+  | "invalid_profile"
+  | "source_unavailable";
+
+export interface StatsBombPredictionSignalRequest {
+  enabled?: boolean;
+  profileSource?: "artifact" | "provider";
+  cutoffAt?: string;
+  maxWeight?: number;
+}
+
+export interface StatsBombSignalProfileMetadata {
+  coverage: TeamPerformanceCoverageLevel;
+  freshness: TeamPerformanceFreshnessLevel;
+  matchCount: number;
+  latestMatchAt: string | null;
+  weight: number;
+}
+
+export interface StatsBombSignalResponseMetadata {
+  enabled: boolean;
+  applied: boolean;
+  reason: StatsBombAdjustmentReason;
+  provider: "statsbomb_open_data";
+  cutoffAt: string;
+  signalVersion: "statsbomb-signal-v1";
+  baselineExpectedGoals: { home: number; away: number };
+  adjustedExpectedGoals: { home: number; away: number };
+  homeProfile: StatsBombSignalProfileMetadata | null;
+  awayProfile: StatsBombSignalProfileMetadata | null;
+  warnings: string[];
+}
 
 export const API_VERSION = "api-foundation-v1";
 export const API_MODE = "pure_handlers" as const;

@@ -54,6 +54,14 @@ import { resolveTournamentFormPredictionAdjustment } from "./tournament-form-pre
 import { buildApiMetadata } from "./schemas.js";
 import { canonicalizeTeamName, getAvailableTeamCoverage, normalizeTeamSearchText, resolveTeamAlias, suggestAvailableTeams } from "./team-aliases.js";
 import {
+  STATSBOMB_SIGNAL_VERSION,
+  STATSBOMB_GLOBAL_PRIOR_XG_FOR_PER_90,
+  STATSBOMB_GLOBAL_PRIOR_XG_AGAINST_PER_90,
+  calculateStatsBombPredictionAdjustment
+} from "./statsbomb-prediction-signal.js";
+import type { TeamPerformanceProfileSource } from "./statsbomb-prediction-signal.js";
+import { teamNameToId } from "./providers/statsbomb/statsbomb-team-mapping.js";
+import {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
@@ -144,6 +152,11 @@ import type {
 
 const MAX_API_MONTE_CARLO_SIMULATIONS = 10_000;
 const SUPPORTED_HISTORICAL_YEARS = [2010, 2014, 2018, 2022] as const;
+
+const NULL_PROFILE_SOURCE: TeamPerformanceProfileSource = {
+  getProfile(_teamId: string) { return null; },
+  getAvailableTeamIds() { return []; },
+};
 
 const HISTORICAL_TOURNAMENT_SUMMARIES: Record<SupportedHistoricalTournamentYear, HistoricalTournamentSummary> = {
   2010: {
@@ -1081,7 +1094,10 @@ function getFallbackTeamsUsed(entries: readonly WorldCup2026CoverageEntry[]): st
   return entries.filter((entry) => entry.ratingSource === "fallback_seed").map((entry) => entry.team);
 }
 
-export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse {
+export function predictMatchFromLiveElo(
+  request: PredictMatchFromLiveEloRequest,
+  deps?: { statsBombProfileSource?: TeamPerformanceProfileSource }
+): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
 
   if (issues.length > 0) {
@@ -1246,12 +1262,90 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     awayEloRating: effectiveAwayEntry.eloRating,
     ...(request.preset === undefined ? {} : { preset: request.preset })
   });
+
+  // StatsBomb experimental signal — opt-in, additive, baseline unchanged when disabled/missing
+  const statsBombEnabled = request.statsBombSignal?.enabled === true;
+  let statsBombSignalMeta: NonNullable<PredictMatchFromLiveEloSuccessResponse["statsBombSignal"]> | undefined;
+  let effectiveHomeXg = xgResult.homeExpectedGoals;
+  let effectiveAwayXg = xgResult.awayExpectedGoals;
+
+  if (statsBombEnabled) {
+    const profileSource = deps?.statsBombProfileSource ?? NULL_PROFILE_SOURCE;
+
+    const cutoffAt = request.statsBombSignal?.cutoffAt ?? new Date().toISOString();
+    const homeCanonical = homeResolution.canonicalName ?? homeEntry.team;
+    const awayCanonical = awayResolution.canonicalName ?? awayEntry.team;
+    const homeTeamId = teamNameToId(homeCanonical);
+    const awayTeamId = teamNameToId(awayCanonical);
+
+    const homeProfileRaw = profileSource.getProfile(homeTeamId);
+    const awayProfileRaw = profileSource.getProfile(awayTeamId);
+
+    const homeProfile =
+      homeProfileRaw !== null && homeProfileRaw.cutoffAt <= cutoffAt ? homeProfileRaw : null;
+    const awayProfile =
+      awayProfileRaw !== null && awayProfileRaw.cutoffAt <= cutoffAt ? awayProfileRaw : null;
+
+    const adjustment = calculateStatsBombPredictionAdjustment({
+      homeProfile,
+      awayProfile,
+      baselineHomeXg: xgResult.homeExpectedGoals,
+      baselineAwayXg: xgResult.awayExpectedGoals,
+      globalPriorXgForPer90: STATSBOMB_GLOBAL_PRIOR_XG_FOR_PER_90,
+      globalPriorXgAgainstPer90: STATSBOMB_GLOBAL_PRIOR_XG_AGAINST_PER_90,
+      ...(request.statsBombSignal?.maxWeight !== undefined
+        ? { maxWeight: request.statsBombSignal.maxWeight }
+        : {})
+    });
+
+    effectiveHomeXg = adjustment.adjustedHomeXg;
+    effectiveAwayXg = adjustment.adjustedAwayXg;
+
+    statsBombSignalMeta = {
+      enabled: true,
+      applied: adjustment.applied,
+      reason: adjustment.reason,
+      provider: "statsbomb_open_data",
+      cutoffAt,
+      signalVersion: STATSBOMB_SIGNAL_VERSION,
+      baselineExpectedGoals: {
+        home: xgResult.homeExpectedGoals,
+        away: xgResult.awayExpectedGoals
+      },
+      adjustedExpectedGoals: {
+        home: effectiveHomeXg,
+        away: effectiveAwayXg
+      },
+      homeProfile:
+        homeProfile !== null && adjustment.homeCoverage !== null && adjustment.homeFreshness !== null
+          ? {
+              coverage: adjustment.homeCoverage,
+              freshness: adjustment.homeFreshness,
+              matchCount: homeProfile.matchCount,
+              latestMatchAt: homeProfile.latestMatchAt,
+              weight: adjustment.homeWeight
+            }
+          : null,
+      awayProfile:
+        awayProfile !== null && adjustment.awayCoverage !== null && adjustment.awayFreshness !== null
+          ? {
+              coverage: adjustment.awayCoverage,
+              freshness: adjustment.awayFreshness,
+              matchCount: awayProfile.matchCount,
+              latestMatchAt: awayProfile.latestMatchAt,
+              weight: adjustment.awayWeight
+            }
+          : null,
+      warnings: adjustment.warnings
+    };
+  }
+
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
   const normalizeMatrix = request.normalizeMatrix ?? DEFAULT_POISSON_CONFIG.normalizeMatrix;
   const scoreMatrix = generateScoreMatrix(
     {
-      expectedHomeGoals: xgResult.homeExpectedGoals,
-      expectedAwayGoals: xgResult.awayExpectedGoals
+      expectedHomeGoals: effectiveHomeXg,
+      expectedAwayGoals: effectiveAwayXg
     },
     {
       maxGoals,
@@ -1264,14 +1358,14 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
     request: {
       homeTeam: homeResolution.canonicalName ?? homeEntry.team,
       awayTeam: awayResolution.canonicalName ?? awayEntry.team,
-      expectedHomeGoals: xgResult.homeExpectedGoals,
-      expectedAwayGoals: xgResult.awayExpectedGoals,
+      expectedHomeGoals: effectiveHomeXg,
+      expectedAwayGoals: effectiveAwayXg,
       maxGoals,
       normalizeMatrix
     },
     expectedGoals: {
-      home: xgResult.homeExpectedGoals,
-      away: xgResult.awayExpectedGoals,
+      home: effectiveHomeXg,
+      away: effectiveAwayXg,
       eloDifference: xgResult.eloDifference,
       baseExpectedGoals: xgResult.baseGoals,
       goalsAdjustment: xgResult.eloAdjustment,
@@ -1335,6 +1429,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       ? { tournamentAdjustment: { applied: true, matchesIncluded: tournamentMatchesIncluded } }
       : {}),
     ...(tournamentFormAdjustment === undefined ? {} : { tournamentFormAdjustment }),
+    ...(statsBombSignalMeta === undefined ? {} : { statsBombSignal: statsBombSignalMeta }),
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -1343,6 +1438,7 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       ...fallbackWarnings,
       ...(tournamentFormAdjustment?.warnings ?? []),
       ...xgResult.warnings,
+      ...(statsBombSignalMeta?.warnings ?? []),
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([
@@ -1353,6 +1449,9 @@ export function predictMatchFromLiveElo(request: PredictMatchFromLiveEloRequest)
       `Fallback seed ratings used: ${fallbackTeamsUsed.length === 0 ? "none" : fallbackTeamsUsed.join(", ")}.`,
       `Prediction preset: ${xgResult.preset}.`,
       "Optional Monte Carlo output is deterministic when a seed is supplied.",
+      statsBombEnabled
+        ? `StatsBomb experimental signal: ${statsBombSignalMeta?.applied === true ? "applied" : "not applied"} (reason: ${statsBombSignalMeta?.reason ?? "disabled"}).`
+        : "StatsBomb experimental signal: disabled.",
       "No network calls, database, or external services are used."
     ])
   };

@@ -1,0 +1,7 @@
+{
+  "note": "Placeholder. Run the StatsBomb CLI to populate team-performance profiles, then make a prediction request with statsBombSignal.enabled=true to generate a comparison.",
+  "schemaVersion": "1.0.0",
+  "generatedAt": null,
+  "signalVersion": "statsbomb-signal-v1",
+  "comparisons": []
+}
