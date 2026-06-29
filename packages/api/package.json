@@ -13,6 +13,8 @@
     "audit:prediction-usefulness": "node --experimental-strip-types ./src/prediction-usefulness-audit-cli.ts",
     "capture:prematch-snapshots": "tsx ./src/prematch-snapshot-capture-cli.ts",
     "evaluate:completed-predictions": "tsx ./src/completed-prediction-evaluation-cli.ts",
+    "statsbomb:download": "tsx ./src/statsbomb-open-data-downloader.ts",
+    "statsbomb:build-profiles": "tsx ./src/statsbomb-open-data-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

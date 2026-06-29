@@ -1,0 +1,93 @@
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createStatsBombOpenDataProvider } from "./providers/statsbomb/statsbomb-open-data-provider.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const MONOREPO_ROOT = join(__dirname, "../../..");
+
+const dataDir =
+  process.env["STATSBOMB_OPEN_DATA_DIR"] ??
+  join(MONOREPO_ROOT, ".local-data", "statsbomb-open-data");
+
+const today = new Date().toISOString().slice(0, 10);
+const cutoffAt = process.env["STATSBOMB_PROFILE_CUTOFF_AT"] ?? today;
+
+const outputPath =
+  process.env["STATSBOMB_PROFILE_OUTPUT_PATH"] ??
+  join(MONOREPO_ROOT, "docs", "model-results", "artifacts", "statsbomb-team-performance-profiles.json");
+
+async function run(): Promise<void> {
+  if (!existsSync(dataDir)) {
+    console.error(`ERROR: StatsBomb data directory not found: ${dataDir}`);
+    console.error("Run: pnpm --filter @world-cup-2026-predictor/api statsbomb:download");
+    process.exit(1);
+  }
+
+  console.log(`StatsBomb Open Data Profile Builder`);
+  console.log(`Data directory: ${dataDir}`);
+  console.log(`Cutoff: ${cutoffAt}`);
+  console.log(`Output: ${outputPath}`);
+  console.log();
+
+  const provider = createStatsBombOpenDataProvider(dataDir);
+  const results = await provider.listTeamPerformanceProfiles(cutoffAt);
+
+  const coverageCounts: Record<string, number> = {
+    full: 0,
+    partial: 0,
+    sparse: 0,
+    fallback: 0,
+  };
+
+  let totalMatchCount = 0;
+  let teamsWithWarnings = 0;
+  let teamsWithIssues = 0;
+
+  for (const result of results) {
+    const cov = result.profile.coverage;
+    if (cov in coverageCounts) {
+      coverageCounts[cov] = (coverageCounts[cov] ?? 0) + 1;
+    }
+    totalMatchCount += result.profile.matchCount;
+    if (result.profile.warnings.length > 0) teamsWithWarnings++;
+    if (result.issues.length > 0) teamsWithIssues++;
+  }
+
+  console.log(`Teams processed: ${results.length}`);
+  console.log(`  Full coverage: ${coverageCounts["full"] ?? 0}`);
+  console.log(`  Partial coverage: ${coverageCounts["partial"] ?? 0}`);
+  console.log(`  Sparse coverage: ${coverageCounts["sparse"] ?? 0}`);
+  console.log(`  Fallback (no data): ${coverageCounts["fallback"] ?? 0}`);
+  console.log(`Total match contributions: ${totalMatchCount}`);
+  if (teamsWithWarnings > 0) console.log(`Teams with warnings: ${teamsWithWarnings}`);
+  if (teamsWithIssues > 0) console.log(`Teams with issues: ${teamsWithIssues}`);
+
+  const artifact = {
+    schemaVersion: "1.0.0",
+    generatedAt: today,
+    cutoffAt,
+    source: "statsbomb_open_data",
+    teamCount: results.length,
+    coverageSummary: {
+      full: coverageCounts["full"] ?? 0,
+      partial: coverageCounts["partial"] ?? 0,
+      sparse: coverageCounts["sparse"] ?? 0,
+      fallback: coverageCounts["fallback"] ?? 0,
+    },
+    profiles: results.map((r) => r.profile),
+  };
+
+  const outputDir = dirname(outputPath);
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
+
+  writeFileSync(outputPath, JSON.stringify(artifact, null, 2), "utf-8");
+  console.log(`\nArtifact written: ${outputPath}`);
+}
+
+run().catch((e: unknown) => {
+  console.error("Fatal error:", e);
+  process.exit(1);
+});
