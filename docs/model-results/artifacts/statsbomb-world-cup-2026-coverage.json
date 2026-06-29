@@ -1,0 +1,793 @@
+{
+  "generatedAt": "2026-06-28",
+  "auditPhase": "12.20A1",
+  "source": "statsbomb/open-data (GitHub, open license — CC BY 4.0 equivalent; attribution required)",
+  "sourceUrl": "https://github.com/statsbomb/open-data",
+  "attribution": "Data provided by StatsBomb. Logo required in published work; see https://statsbomb.com/media-pack/",
+  "competitionsAudited": [
+    { "competitionId": 43, "seasonId": 106, "name": "FIFA World Cup", "season": "2022", "totalMatches": 64, "eventsAvailable": true, "xgAvailable": true },
+    { "competitionId": 43, "seasonId": 3,   "name": "FIFA World Cup", "season": "2018", "totalMatches": 64, "eventsAvailable": true, "xgAvailable": true },
+    { "competitionId": 223, "seasonId": 282, "name": "Copa América",  "season": "2024", "totalMatches": 32, "eventsAvailable": true, "xgAvailable": true },
+    { "competitionId": 1267,"seasonId": 107, "name": "AFCON",         "season": "2023", "totalMatches": 52, "eventsAvailable": true, "xgAvailable": true },
+    { "competitionId": 55,  "seasonId": 282, "name": "UEFA Euro",     "season": "2024", "totalMatches": 51, "eventsAvailable": true, "xgAvailable": true },
+    { "competitionId": 55,  "seasonId": 43,  "name": "UEFA Euro",     "season": "2020", "totalMatches": 51, "eventsAvailable": true, "xgAvailable": true }
+  ],
+  "classificationThresholds": {
+    "full":    { "minMatches": 10, "note": "Strong coverage across multiple competitions; suitable for direct xG estimation with confidence" },
+    "partial": { "minMatches": 4,  "note": "Moderate coverage; xG estimation feasible with wider confidence intervals; requires shrinkage blending" },
+    "sparse":  { "minMatches": 1,  "note": "Minimal coverage; xG estimation requires heavy confederation/global prior blending" },
+    "fallback": { "minMatches": 0,  "note": "No StatsBomb Open Data coverage found; must rely entirely on Elo-derived prior" }
+  },
+  "coverageSummary": {
+    "full": 16,
+    "partial": 21,
+    "sparse": 3,
+    "fallback": 8,
+    "total": 48
+  },
+  "xgFieldName": "shot.statsbomb_xg",
+  "xgNote": "Per-shot xG values are available in event files as shot.statsbomb_xg (float). Aggregated xG for/against per 90 requires downloading and parsing all match events files; those computed metrics are not pre-calculated here — this artifact documents source availability and match-level coverage only.",
+  "teams": [
+    {
+      "canonicalId": "mexico",
+      "canonicalName": "Mexico",
+      "group": "A",
+      "fifaCode": "MEX",
+      "confederation": "CONCACAF",
+      "statsBombNames": ["Mexico"],
+      "totalMatches": 10,
+      "recentMatchDate": "2024-07-01",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "south-africa",
+      "canonicalName": "South Africa",
+      "group": "A",
+      "fifaCode": "RSA",
+      "confederation": "CAF",
+      "statsBombNames": ["South Africa"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-02-10",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "AFCON", "season": "2023", "matchCount": 7 }
+      ]
+    },
+    {
+      "canonicalId": "south-korea",
+      "canonicalName": "South Korea",
+      "group": "A",
+      "fifaCode": "KOR",
+      "confederation": "AFC",
+      "statsBombNames": ["South Korea"],
+      "totalMatches": 7,
+      "recentMatchDate": "2022-12-05",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "czechia",
+      "canonicalName": "Czechia",
+      "group": "A",
+      "fifaCode": "CZE",
+      "confederation": "UEFA",
+      "statsBombNames": ["Czech Republic"],
+      "totalMatches": 8,
+      "recentMatchDate": "2024-06-26",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "UEFA Euro", "season": "2024", "matchCount": 3 },
+        { "competition": "UEFA Euro", "season": "2020", "matchCount": 5 }
+      ]
+    },
+    {
+      "canonicalId": "canada",
+      "canonicalName": "Canada",
+      "group": "B",
+      "fifaCode": "CAN",
+      "confederation": "CONCACAF",
+      "statsBombNames": ["Canada"],
+      "totalMatches": 9,
+      "recentMatchDate": "2024-07-14",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 6 }
+      ]
+    },
+    {
+      "canonicalId": "bosnia-herzegovina",
+      "canonicalName": "Bosnia-Herzegovina",
+      "group": "B",
+      "fifaCode": "BIH",
+      "confederation": "UEFA",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "qatar",
+      "canonicalName": "Qatar",
+      "group": "B",
+      "fifaCode": "QAT",
+      "confederation": "AFC",
+      "statsBombNames": ["Qatar"],
+      "totalMatches": 3,
+      "recentMatchDate": "2022-11-29",
+      "classification": "sparse",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "switzerland",
+      "canonicalName": "Switzerland",
+      "group": "B",
+      "fifaCode": "SUI",
+      "confederation": "UEFA",
+      "statsBombNames": ["Switzerland"],
+      "totalMatches": 18,
+      "recentMatchDate": "2024-07-06",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 5 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 5 }
+      ]
+    },
+    {
+      "canonicalId": "brazil",
+      "canonicalName": "Brazil",
+      "group": "C",
+      "fifaCode": "BRA",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Brazil"],
+      "totalMatches": 14,
+      "recentMatchDate": "2024-07-07",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 5 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 5 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "morocco",
+      "canonicalName": "Morocco",
+      "group": "C",
+      "fifaCode": "MAR",
+      "confederation": "CAF",
+      "statsBombNames": ["Morocco"],
+      "totalMatches": 14,
+      "recentMatchDate": "2024-01-30",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 7 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "AFCON",          "season": "2023", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "haiti",
+      "canonicalName": "Haiti",
+      "group": "C",
+      "fifaCode": "HAI",
+      "confederation": "CONCACAF",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "scotland",
+      "canonicalName": "Scotland",
+      "group": "C",
+      "fifaCode": "SCO",
+      "confederation": "UEFA",
+      "statsBombNames": ["Scotland"],
+      "totalMatches": 6,
+      "recentMatchDate": "2024-06-23",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "UEFA Euro", "season": "2024", "matchCount": 3 },
+        { "competition": "UEFA Euro", "season": "2020", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "united-states",
+      "canonicalName": "United States",
+      "group": "D",
+      "fifaCode": "USA",
+      "confederation": "CONCACAF",
+      "statsBombNames": ["United States"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-07-02",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "paraguay",
+      "canonicalName": "Paraguay",
+      "group": "D",
+      "fifaCode": "PAR",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Paraguay"],
+      "totalMatches": 3,
+      "recentMatchDate": "2024-07-03",
+      "classification": "sparse",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "Copa América", "season": "2024", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "australia",
+      "canonicalName": "Australia",
+      "group": "D",
+      "fifaCode": "AUS",
+      "confederation": "AFC",
+      "statsBombNames": ["Australia"],
+      "totalMatches": 7,
+      "recentMatchDate": "2022-12-03",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "turkey",
+      "canonicalName": "Turkey",
+      "group": "D",
+      "fifaCode": "TUR",
+      "confederation": "UEFA",
+      "statsBombNames": ["Turkey"],
+      "totalMatches": 8,
+      "recentMatchDate": "2024-07-06",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "UEFA Euro", "season": "2024", "matchCount": 5 },
+        { "competition": "UEFA Euro", "season": "2020", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "germany",
+      "canonicalName": "Germany",
+      "group": "E",
+      "fifaCode": "GER",
+      "confederation": "UEFA",
+      "statsBombNames": ["Germany"],
+      "totalMatches": 15,
+      "recentMatchDate": "2024-07-05",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 5 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "curacao",
+      "canonicalName": "Curacao",
+      "group": "E",
+      "fifaCode": "CUW",
+      "confederation": "CONCACAF",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "ivory-coast",
+      "canonicalName": "Ivory Coast",
+      "group": "E",
+      "fifaCode": "CIV",
+      "confederation": "CAF",
+      "statsBombNames": ["Côte d'Ivoire"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-02-11",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "AFCON", "season": "2023", "matchCount": 7 }
+      ]
+    },
+    {
+      "canonicalId": "ecuador",
+      "canonicalName": "Ecuador",
+      "group": "E",
+      "fifaCode": "ECU",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Ecuador"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-07-05",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "netherlands",
+      "canonicalName": "Netherlands",
+      "group": "F",
+      "fifaCode": "NED",
+      "confederation": "UEFA",
+      "statsBombNames": ["Netherlands"],
+      "totalMatches": 15,
+      "recentMatchDate": "2024-07-10",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 5 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 6 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "japan",
+      "canonicalName": "Japan",
+      "group": "F",
+      "fifaCode": "JPN",
+      "confederation": "AFC",
+      "statsBombNames": ["Japan"],
+      "totalMatches": 8,
+      "recentMatchDate": "2022-12-05",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "sweden",
+      "canonicalName": "Sweden",
+      "group": "F",
+      "fifaCode": "SWE",
+      "confederation": "UEFA",
+      "statsBombNames": ["Sweden"],
+      "totalMatches": 9,
+      "recentMatchDate": "2021-06-29",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 5 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "tunisia",
+      "canonicalName": "Tunisia",
+      "group": "F",
+      "fifaCode": "TUN",
+      "confederation": "CAF",
+      "statsBombNames": ["Tunisia"],
+      "totalMatches": 9,
+      "recentMatchDate": "2024-01-24",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "AFCON",          "season": "2023", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "belgium",
+      "canonicalName": "Belgium",
+      "group": "G",
+      "fifaCode": "BEL",
+      "confederation": "UEFA",
+      "statsBombNames": ["Belgium"],
+      "totalMatches": 19,
+      "recentMatchDate": "2024-07-01",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 4 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 5 }
+      ]
+    },
+    {
+      "canonicalId": "egypt",
+      "canonicalName": "Egypt",
+      "group": "G",
+      "fifaCode": "EGY",
+      "confederation": "CAF",
+      "statsBombNames": ["Egypt"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-01-28",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "AFCON",          "season": "2023", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "iran",
+      "canonicalName": "Iran",
+      "group": "G",
+      "fifaCode": "IRN",
+      "confederation": "AFC",
+      "statsBombNames": ["Iran"],
+      "totalMatches": 6,
+      "recentMatchDate": "2022-11-29",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "new-zealand",
+      "canonicalName": "New Zealand",
+      "group": "G",
+      "fifaCode": "NZL",
+      "confederation": "OFC",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "spain",
+      "canonicalName": "Spain",
+      "group": "H",
+      "fifaCode": "ESP",
+      "confederation": "UEFA",
+      "statsBombNames": ["Spain"],
+      "totalMatches": 21,
+      "recentMatchDate": "2024-07-14",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 6 }
+      ]
+    },
+    {
+      "canonicalId": "cape-verde",
+      "canonicalName": "Cape Verde",
+      "group": "H",
+      "fifaCode": "CPV",
+      "confederation": "CAF",
+      "statsBombNames": ["Cape Verde Islands"],
+      "totalMatches": 5,
+      "recentMatchDate": "2024-02-03",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "AFCON", "season": "2023", "matchCount": 5 }
+      ]
+    },
+    {
+      "canonicalId": "saudi-arabia",
+      "canonicalName": "Saudi Arabia",
+      "group": "H",
+      "fifaCode": "KSA",
+      "confederation": "AFC",
+      "statsBombNames": ["Saudi Arabia"],
+      "totalMatches": 6,
+      "recentMatchDate": "2022-11-30",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "uruguay",
+      "canonicalName": "Uruguay",
+      "group": "H",
+      "fifaCode": "URU",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Uruguay"],
+      "totalMatches": 14,
+      "recentMatchDate": "2024-07-14",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 5 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 6 }
+      ]
+    },
+    {
+      "canonicalId": "france",
+      "canonicalName": "France",
+      "group": "I",
+      "fifaCode": "FRA",
+      "confederation": "UEFA",
+      "statsBombNames": ["France"],
+      "totalMatches": 24,
+      "recentMatchDate": "2024-07-09",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 7 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 6 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "senegal",
+      "canonicalName": "Senegal",
+      "group": "I",
+      "fifaCode": "SEN",
+      "confederation": "CAF",
+      "statsBombNames": ["Senegal"],
+      "totalMatches": 11,
+      "recentMatchDate": "2024-01-29",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 4 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "AFCON",          "season": "2023", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "iraq",
+      "canonicalName": "Iraq",
+      "group": "I",
+      "fifaCode": "IRQ",
+      "confederation": "AFC",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "norway",
+      "canonicalName": "Norway",
+      "group": "I",
+      "fifaCode": "NOR",
+      "confederation": "UEFA",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "argentina",
+      "canonicalName": "Argentina",
+      "group": "J",
+      "fifaCode": "ARG",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Argentina"],
+      "totalMatches": 17,
+      "recentMatchDate": "2024-07-15",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 7 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 6 }
+      ]
+    },
+    {
+      "canonicalId": "algeria",
+      "canonicalName": "Algeria",
+      "group": "J",
+      "fifaCode": "ALG",
+      "confederation": "CAF",
+      "statsBombNames": ["Algeria"],
+      "totalMatches": 3,
+      "recentMatchDate": "2024-01-23",
+      "classification": "sparse",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "AFCON", "season": "2023", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "austria",
+      "canonicalName": "Austria",
+      "group": "J",
+      "fifaCode": "AUT",
+      "confederation": "UEFA",
+      "statsBombNames": ["Austria"],
+      "totalMatches": 8,
+      "recentMatchDate": "2024-07-02",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "UEFA Euro", "season": "2024", "matchCount": 4 },
+        { "competition": "UEFA Euro", "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "jordan",
+      "canonicalName": "Jordan",
+      "group": "J",
+      "fifaCode": "JOR",
+      "confederation": "AFC",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "portugal",
+      "canonicalName": "Portugal",
+      "group": "K",
+      "fifaCode": "POR",
+      "confederation": "UEFA",
+      "statsBombNames": ["Portugal"],
+      "totalMatches": 18,
+      "recentMatchDate": "2024-07-05",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 5 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 5 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "dr-congo",
+      "canonicalName": "DR Congo",
+      "group": "K",
+      "fifaCode": "COD",
+      "confederation": "CAF",
+      "statsBombNames": ["Congo DR"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-02-10",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "AFCON", "season": "2023", "matchCount": 7 }
+      ]
+    },
+    {
+      "canonicalId": "uzbekistan",
+      "canonicalName": "Uzbekistan",
+      "group": "K",
+      "fifaCode": "UZB",
+      "confederation": "AFC",
+      "statsBombNames": [],
+      "totalMatches": 0,
+      "recentMatchDate": null,
+      "classification": "fallback",
+      "xgAvailable": false,
+      "statsBombSources": []
+    },
+    {
+      "canonicalId": "colombia",
+      "canonicalName": "Colombia",
+      "group": "K",
+      "fifaCode": "COL",
+      "confederation": "CONMEBOL",
+      "statsBombNames": ["Colombia"],
+      "totalMatches": 10,
+      "recentMatchDate": "2024-07-15",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 4 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 6 }
+      ]
+    },
+    {
+      "canonicalId": "england",
+      "canonicalName": "England",
+      "group": "L",
+      "fifaCode": "ENG",
+      "confederation": "UEFA",
+      "statsBombNames": ["England"],
+      "totalMatches": 26,
+      "recentMatchDate": "2024-07-14",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 5 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 7 }
+      ]
+    },
+    {
+      "canonicalId": "croatia",
+      "canonicalName": "Croatia",
+      "group": "L",
+      "fifaCode": "CRO",
+      "confederation": "UEFA",
+      "statsBombNames": ["Croatia"],
+      "totalMatches": 21,
+      "recentMatchDate": "2024-06-24",
+      "classification": "full",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 7 },
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 7 },
+        { "competition": "UEFA Euro",      "season": "2024", "matchCount": 3 },
+        { "competition": "UEFA Euro",      "season": "2020", "matchCount": 4 }
+      ]
+    },
+    {
+      "canonicalId": "ghana",
+      "canonicalName": "Ghana",
+      "group": "L",
+      "fifaCode": "GHA",
+      "confederation": "CAF",
+      "statsBombNames": ["Ghana"],
+      "totalMatches": 6,
+      "recentMatchDate": "2024-01-22",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2022", "matchCount": 3 },
+        { "competition": "AFCON",          "season": "2023", "matchCount": 3 }
+      ]
+    },
+    {
+      "canonicalId": "panama",
+      "canonicalName": "Panama",
+      "group": "L",
+      "fifaCode": "PAN",
+      "confederation": "CONCACAF",
+      "statsBombNames": ["Panama"],
+      "totalMatches": 7,
+      "recentMatchDate": "2024-07-06",
+      "classification": "partial",
+      "xgAvailable": true,
+      "statsBombSources": [
+        { "competition": "FIFA World Cup", "season": "2018", "matchCount": 3 },
+        { "competition": "Copa América",   "season": "2024", "matchCount": 4 }
+      ]
+    }
+  ]
+}
