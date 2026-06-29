@@ -16,6 +16,7 @@
     "statsbomb:download": "tsx ./src/statsbomb-open-data-downloader.ts",
     "statsbomb:build-profiles": "tsx ./src/statsbomb-open-data-cli.ts",
     "statsbomb:backtest": "tsx ./src/statsbomb-backtesting-cli.ts",
+    "historical-elo:validate": "tsx ./src/historical-elo-replay-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

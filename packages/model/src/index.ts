@@ -63,7 +63,8 @@ export {
   calculateLiveEloRecencyWeight,
   classifyLiveEloCompetition,
   getLiveEloMatchLocationContext,
-  runLiveEloPipeline
+  runLiveEloPipeline,
+  updateRatingsAfterMatchWithHomeAdvantage
 } from "./live-elo-pipeline.js";
 
 export type {
