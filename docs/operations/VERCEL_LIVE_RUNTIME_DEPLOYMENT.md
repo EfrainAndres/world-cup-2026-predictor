@@ -140,6 +140,8 @@ Recommended rollout:
 
 The compact profile artifact is cached per server process. Vercel cold starts reload it; no cross-instance cache guarantee exists. If the artifact is missing, stale, unreadable, or fails validation, runtime predictions fall back to the baseline model.
 
+The profile and backtesting artifacts are loaded via a dynamically computed `readFileSync` path. `apps/web/next.config.ts` includes `outputFileTracingRoot` and `outputFileTracingIncludes` so both are packaged in the Vercel deployment bundle. If they are absent from the bundle, shadow or on mode will report `artifact_missing`. See `docs/operations/STATSBOMB_PRODUCTION_ROLLOUT.md` for the artifact packaging details.
+
 ## Verification Checklist
 
 1. Confirm Vercel env names and scopes.

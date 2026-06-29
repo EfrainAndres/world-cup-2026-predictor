@@ -46,6 +46,26 @@ The runtime checks:
 
 Failure reasons are typed: `artifact_missing`, `artifact_placeholder`, `schema_unsupported`, `profile_count_invalid`, `duplicate_team_id`, `invalid_metric`, `artifact_stale`, and `artifact_unreadable`.
 
+## Artifact Packaging (Vercel deployments)
+
+The compact profile artifact and the backtesting artifact are loaded at runtime via `readFileSync` using a path derived from `import.meta.url`. Because the path is computed dynamically, `@vercel/nft` (Next.js output file tracing) cannot statically detect them and does not include them in the deployment bundle by default.
+
+`apps/web/next.config.ts` declares both artifacts via `outputFileTracingIncludes` so they are always packaged:
+
+```
+outputFileTracingRoot: <monorepo root>   # so Vercel can resolve files outside apps/web/
+outputFileTracingIncludes:
+  '/**':                                 # applied to every route
+    - ../../docs/model-results/artifacts/statsbomb-team-performance-profiles.json
+    - ../../docs/model-results/artifacts/statsbomb-backtesting-expanded-elo.json
+```
+
+Paths in `outputFileTracingIncludes` are globs resolved relative to `apps/web/` (the Next.js app directory). `../../` traverses up to the monorepo root.
+
+Both files are tracked in Git and committed to the repository. They must not be `.gitignore`-d or excluded from the repository while this loading strategy is in use.
+
+If either artifact is missing from the deployment bundle, `createProductionPredictionDependencies` returns `artifact_missing` and all predictions fall back to baseline.
+
 ## Caching
 
 The compact profile artifact is cached in process memory after a successful load. Failed loads may retry after a bounded interval or on process restart.

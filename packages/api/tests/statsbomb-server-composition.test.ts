@@ -1,9 +1,13 @@
+import { existsSync } from "node:fs";
+import { isAbsolute } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TeamPerformanceProfile } from "../src/providers/statsbomb/index.js";
 import { teamNameToId } from "../src/providers/statsbomb/statsbomb-team-mapping.js";
 import {
   createProductionPredictionDependencies,
-  resetStatsBombProductionCache
+  resetStatsBombProductionCache,
+  STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH,
+  STATSBOMB_PROFILES_ARTIFACT_PATH
 } from "../src/statsbomb-server-composition.js";
 import { WORLD_CUP_2026_TEAM_NAMES } from "../src/world-cup-2026-teams.js";
 
@@ -71,6 +75,35 @@ function makeReadFile(input: { profile?: unknown; backtest?: unknown } = {}) {
     throw Object.assign(new Error("missing"), { code: "ENOENT" });
   });
 }
+
+describe("StatsBomb artifact path constants", () => {
+  it("STATSBOMB_PROFILES_ARTIFACT_PATH is absolute and ends with the compact profile filename", () => {
+    expect(isAbsolute(STATSBOMB_PROFILES_ARTIFACT_PATH)).toBe(true);
+    expect(STATSBOMB_PROFILES_ARTIFACT_PATH).toMatch(/statsbomb-team-performance-profiles\.json$/);
+  });
+
+  it("STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH is absolute and ends with the backtesting filename", () => {
+    expect(isAbsolute(STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH)).toBe(true);
+    expect(STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH).toMatch(/statsbomb-backtesting-expanded-elo\.json$/);
+  });
+
+  it("both artifact paths resolve to files that are tracked in the repository", () => {
+    expect(existsSync(STATSBOMB_PROFILES_ARTIFACT_PATH)).toBe(true);
+    expect(existsSync(STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH)).toBe(true);
+  });
+
+  it("both artifact paths share the same docs/model-results/artifacts directory", () => {
+    const profileDir = STATSBOMB_PROFILES_ARTIFACT_PATH.replace(/[^/\\]+$/, "");
+    const backtestDir = STATSBOMB_BACKTESTING_EXPANDED_ELO_ARTIFACT_PATH.replace(/[^/\\]+$/, "");
+    expect(profileDir).toBe(backtestDir);
+    expect(profileDir).toMatch(/docs[/\\]model-results[/\\]artifacts[/\\]$/);
+  });
+
+  it("artifact path is deterministic — calling the module twice yields the same constant", async () => {
+    const { STATSBOMB_PROFILES_ARTIFACT_PATH: path2 } = await import("../src/statsbomb-server-composition.js");
+    expect(path2).toBe(STATSBOMB_PROFILES_ARTIFACT_PATH);
+  });
+});
 
 describe("StatsBomb production server composition", () => {
   beforeEach(() => {
