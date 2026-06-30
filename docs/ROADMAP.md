@@ -125,6 +125,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
 | 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A-H Done |
 | 12.20 | StatsBomb Performance Data Integration | Integrate StatsBomb Open Data xG metrics as an optional additive performance signal for the 40/48 covered WC2026 teams. | 12.20A1 Done; 12.20A2 Done; 12.20B Done; 12.20C Done; 12.20C2 Done; 12.20D Implementation complete, Preview validation pending |
+| 12.21A | Attack/Defense Goal Model Expansion | Build a competition-neutral attack/defense strength foundation and four goal-model candidates (elo_only_v2_baseline, multiplicative, log-linear, statsbomb_blend); backtest on WC2018/WC2022; apply decision gate. | Done — `attack_defense_data_blocked`: fallback rate 62.5% due to no pre-2018 scored data; candidates show Brier improvement (−0.0025) and genuine xG diversity (60 unique pairs) but coverage threshold not met. Promotion requires additional pre-2018 international scored match data. |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -600,6 +601,45 @@ Exit criteria:
 - Baseline simulation responses and all other handlers are unaffected.
 - 22 new model tests pass; all existing tests pass without modification (one api-contracts key list updated to include the new field).
 - No Elo ratings, Elo-to-xG constants, Poisson parameters, score matrix generation, 1X2 probability aggregation, presets, snapshots, evaluations, or persistence schema changed.
+
+## Phase 12.21A — Attack/Defense Strength and Goal Model Expansion
+
+**Status:** Done — `attack_defense_data_blocked`
+
+Introduced a reusable, competition-neutral attack/defense goal-model foundation as an experimental, offline-only system. Production Elo-to-xG V2 is unchanged.
+
+Deliverables:
+
+- `packages/model/src/attack-defense-strength.ts` — pure helpers: `classifyProfileCoverage`, `computeSampleShrinkage`, `computeRecencyWeight`, `computeSosAdjustment`, `computeAttackStrength`, `computeDefenseStrength`, `computeEloMultiplier`.
+- `packages/model/src/attack-defense-goal-model.ts` — four candidates: `elo_only_v2_baseline`, `attack_defense_multiplicative`, `attack_defense_log_linear`, `attack_defense_statsbomb_blend`.
+- `packages/api/src/attack-defense-profile-builder.ts` — `buildCompetitionGoalEnvironment`, `buildTeamAttackDefenseProfile` (no-look-ahead), `buildProfilesForEvaluationSet`.
+- `packages/api/src/attack-defense-goal-model-backtest.ts` — per-year profiles, WC fixture files as historical scored records, pre-filter invariant (violations = 0), full metrics suite.
+- `packages/api/src/attack-defense-goal-model-decision.ts` — `evaluateGoalModelDecision()` with promotion thresholds.
+- `packages/api/src/attack-defense-goal-model-cli.ts` — `goal-model:compare` script; writes `docs/model-results/artifacts/attack-defense-goal-model-comparison.json` and `attack-defense-team-profiles.json`.
+- Tests: 35 strength-helper tests, 69 goal-model tests, 16 profile-builder tests, 9 decision-gate tests, 14 compatibility tests.
+- `docs/model-results/ATTACK_DEFENSE_GOAL_MODEL_EXPANSION.md`, `docs/architecture/COMPETITION_GOAL_MODEL_ADAPTER.md`, `docs/data-quality/ATTACK_DEFENSE_PROFILE_POLICY.md`.
+
+Backtest results (128 fixtures, WC2018+WC2022, `goals_strength_of_schedule_adjusted` + `exponential_half_life`):
+
+| Candidate | Brier | LogLoss | GoalMAE | UniqueXG |
+|---|---|---|---|---|
+| elo_only_v2_baseline | 0.2170 | 1.0738 | 1.3281 | 1 |
+| attack_defense_multiplicative | 0.2145 | 1.0655 | 1.3233 | 60 |
+| attack_defense_log_linear | 0.2145 | 1.0655 | 1.3233 | 60 |
+
+Decision gate: `insufficient_profile_coverage` — fallback rate 62.5% (threshold: 50%). WC2018 profiles are all fallback (no pre-2018 scored data in current sources). WC2022 profiles use WC2018 data for the 32 WC2018 participants.
+
+**Final phase status: `attack_defense_data_blocked`**
+
+Candidates show genuine Brier improvement (−0.0025) and xG diversity (60 unique pairs vs 1 baseline). Promotion requires additional pre-2018 international scored match data (qualifiers, friendlies with scores). Re-run `pnpm --filter @world-cup-2026-predictor/api goal-model:compare` after adding data.
+
+Exit criteria met:
+
+- Model is experimental and offline-only; no production prediction paths reference it.
+- All new exports are additive; no existing exports shadowed or replaced.
+- `elo_only_v2_baseline` reproduces V2 output within rounding; confirmed by compatibility tests.
+- Violations = 0 invariant holds.
+- No Elo-to-xG V2 constants, StatsBomb weights, Poisson logic, 1X2 aggregation, presets, snapshots, evaluations, persistence schema, standings, qualification, official bracket topology changed.
 
 ## Phase 12.20D - Controlled StatsBomb Production Integration
 

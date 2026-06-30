@@ -1,4 +1,50 @@
 export type {
+  AttackDefenseGoalModelCandidateId,
+  AttackDefenseGoalModelDecision,
+  AttackDefenseGoalModelInput,
+  AttackDefenseGoalModelOutput,
+  AttackDefenseProfileCoverage,
+  AttackDefenseProfileStrategy,
+  AttackDefenseRecencyStrategy,
+  AttackDefenseStrengthDiagnostic,
+  CompetitionGoalEnvironment,
+  TeamAttackDefenseProfile,
+} from "./types.js";
+
+export {
+  ATTACK_DEFENSE_ELO_MULTIPLIER_MAX,
+  ATTACK_DEFENSE_ELO_MULTIPLIER_MIN,
+  ATTACK_DEFENSE_FULL_COVERAGE_MATCH_COUNT,
+  ATTACK_DEFENSE_HOME_ADVANTAGE_MULTIPLIER,
+  ATTACK_DEFENSE_MIN_MATCH_COUNT,
+  ATTACK_DEFENSE_NEUTRAL_STRENGTH,
+  ATTACK_DEFENSE_NEUTRAL_VENUE_MULTIPLIER,
+  ATTACK_DEFENSE_PARTIAL_COVERAGE_MIN_MATCHES,
+  ATTACK_DEFENSE_RECENCY_HALF_LIFE_DAYS,
+  ATTACK_DEFENSE_REFERENCE_ELO,
+  ATTACK_DEFENSE_SOS_MAX_ADJUSTMENT,
+  ATTACK_DEFENSE_SPARSE_MAX_MATCHES,
+  ATTACK_DEFENSE_STRENGTH_MAX,
+  ATTACK_DEFENSE_STRENGTH_MIN,
+  ATTACK_DEFENSE_XG_MAX,
+  ATTACK_DEFENSE_XG_MIN,
+  classifyProfileCoverage,
+  computeAttackStrength,
+  computeDefenseStrength,
+  computeEloMultiplier,
+  computeRecencyWeight,
+  computeSampleShrinkage,
+  computeSosAdjustment,
+} from "./attack-defense-strength.js";
+
+export {
+  ATTACK_DEFENSE_GOAL_MODEL_VERSION,
+  GOAL_MODEL_CANDIDATE_IDS,
+  buildNeutralAttackDefenseProfile,
+  computeAttackDefenseGoalModel,
+} from "./attack-defense-goal-model.js";
+
+export type {
   EloToExpectedGoalsInput,
   EloToExpectedGoalsResult,
   EloToXgFormulaVersion,
