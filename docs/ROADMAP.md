@@ -127,6 +127,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.20 | StatsBomb Performance Data Integration | Integrate StatsBomb Open Data xG metrics as an optional additive performance signal for the 40/48 covered WC2026 teams. | 12.20A1 Done; 12.20A2 Done; 12.20B Done; 12.20C Done; 12.20C2 Done; 12.20D Implementation complete, Preview validation pending |
 | 12.21A | Attack/Defense Goal Model Expansion | Build a competition-neutral attack/defense strength foundation and four goal-model candidates (elo_only_v2_baseline, multiplicative, log-linear, statsbomb_blend); backtest on WC2018/WC2022; apply decision gate. | Done — `attack_defense_data_blocked`: fallback rate 62.5% due to no pre-2018 scored data; candidates show Brier improvement (−0.0025) and genuine xG diversity (60 unique pairs) but coverage threshold not met. |
 | 12.21A2 | Historical International Match Data Expansion | Expand the scored historical international match foundation for cutoff-aware attack/defense profiles, validate no-look-ahead coverage, and rerun the existing Phase 12.21A comparison without changing formulas or thresholds. | Done — `historical_data_partial`: accepted fixtures increased 184 → 312; combined fallback fell 62.5% → 20.3%; no-look-ahead violations remain 0. The model decision moved from profile-coverage-blocked to `goal_calibration_blocked` due to Log Loss and total-goal MAE regression. Production unchanged. |
+| 12.21A3 | Attack/Defense Goal Model Recalibration | Recalibrate the offline attack/defense candidate with component diagnostics, bounded parameter grid, WC2018 tuning, WC2022 validation holdout, and conservative decision gate. | Done — `promote_recalibrated_candidate`: selected damped log-linear candidate improves WC2022 Brier −0.0117 and Log Loss −0.0446 vs Elo V2 while preserving diversity; total-goal MAE delta +0.0017 remains inside threshold. Offline-only; production unchanged. |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -685,6 +686,49 @@ Exit criteria met:
 - WC2026 fixtures are excluded from historical profile construction.
 - No-look-ahead violations remain 0.
 - No formula, threshold, Elo, Elo-to-xG V2, StatsBomb, Poisson, scoreline, production route, snapshot, evaluation, persistence, standings, qualification, or topology behavior changed.
+
+## Phase 12.21A3 — Attack/Defense Goal Model Recalibration
+
+**Status:** Done — `attack_defense_recalibrated_candidate_ready`
+
+Recalibrated the experimental offline attack/defense goal model after Phase 12.21A2 cleared the combined profile-coverage blocker. The implementation adds component-level diagnostics, bounded experimental candidate families, a deterministic 200-configuration parameter grid, WC2018-only tuning, WC2022 holdout validation, and a conservative recalibration decision gate.
+
+Deliverables:
+
+- `packages/model/src/attack-defense-recalibration.ts` — pure recalibrated candidate helpers, component diagnostics, profile contribution weights, experimental bounds, and compatibility-preserving baseline path.
+- `packages/api/src/attack-defense-goal-model-recalibration.ts` — offline backtest/recalibration harness with probability calibration, goal calibration, diversity, extreme-score diagnostics, and decision gate.
+- `packages/api/src/attack-defense-goal-model-recalibration-cli.ts` — `goal-model:recalibrate` script writing compact recalibration artifacts.
+- `docs/model-results/ATTACK_DEFENSE_GOAL_MODEL_RECALIBRATION.md`.
+- `docs/model-results/artifacts/attack-defense-recalibration-comparison.json`.
+- `docs/model-results/artifacts/attack-defense-recalibration-selected-candidate.json`.
+
+Selected candidate:
+
+```text
+attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0
+```
+
+WC2022 validation holdout:
+
+| Metric | Elo V2 baseline | Selected damped | Delta |
+|---|---:|---:|---:|
+| Brier | 0.2180 | 0.2063 | -0.0117 |
+| Log Loss | 1.0785 | 1.0339 | -0.0446 |
+| Home-goal MAE | 1.1406 | 1.0916 | -0.0491 |
+| Away-goal MAE | 0.9063 | 0.8882 | -0.0181 |
+| Total-goal MAE | 1.4688 | 1.4704 | +0.0017 |
+| Unique xG pairs | 1 | 64 | +63 |
+| Unique modal scorelines | 1 | 3 | +2 |
+| Modal 1-1 frequency | 100.0% | 70.3% | -29.7 pp |
+
+Decision gate: `promote_recalibrated_candidate` for offline review. The candidate is not active in production and does not change runtime predictions.
+
+Exit criteria met:
+
+- WC2018 labels were used for tuning; WC2022 labels were reserved for validation.
+- No-look-ahead violations remain 0.
+- The Elo V2 baseline path is preserved and covered by compatibility tests.
+- No production Elo V2 constants, Elo-to-xG constants, StatsBomb constants, Poisson logic, scoreline presentation, snapshots, evaluations, persistence, standings, qualification, topology, public route, or UI behavior changed.
 
 ## Phase 12.20D - Controlled StatsBomb Production Integration
 
