@@ -4,15 +4,15 @@
 
 Team attack/defense profiles are constructed from historical scored match data. This document defines the data requirements, quality thresholds, and fallback behavior for Phase 12.21A profiles.
 
-## Data Sources (Phase 12.21A)
+## Data Sources
 
 | Source | Matches | Score Fields | Date Range |
 |---|---|---|---|
 | `LIVE_ELO_FOUNDATION_MATCHES` | ~130 | result only (no scores) | WC2010, WC2014 |
-| `LIVE_ELO_EXPANDED_INTERNATIONAL_SUPPLEMENT` | ~68 | home_score, away_score | 2022–2024 |
-| WC fixture files (`world-cup-YYYY-results.json`) | 64 per year | home_score, away_score | 2018, 2022 |
+| `international-matches-expanded-v1` supplement | 56 | home_score, away_score | 2022–2024 |
+| WC fixture files (`world-cup-YYYY-results.json`) | 64 per year | home_score, away_score | 2010, 2014, 2018, 2022 |
 
-Foundation matches have no scores and cannot be used for profile building. The WC fixture files are the primary source of scored international match data.
+Foundation matches have no scores and cannot be used for profile building. Phase 12.21A2 adds a shared historical scored-fixture loader that reuses the committed WC2010, WC2014, WC2018, and WC2022 fixture files plus the existing curated supplement.
 
 ## No-Look-Ahead Guarantee
 
@@ -47,20 +47,32 @@ The decision gate in `attack-defense-goal-model-decision.ts` blocks promotion wh
 | Log Loss regression vs baseline | > 0.008 | Candidate is worse than Elo-only |
 | Average home xG | > 3.5 | Implausible goal volume; calibration failure |
 
-## WC2018 Coverage Gap
+## Phase 12.21A2 Coverage Result
 
-For WC2018 evaluation (cutoff 2018-01-01), no pre-2018 scored international match data exists in the current data sources. All 32 WC2018 teams receive fallback profiles. This is a genuine data availability constraint.
+The Phase 12.21A2 expansion materially improves profile coverage:
 
-**To improve WC2018 coverage**: Add international scored matches from 2014–2017 (UEFA/CONMEBOL qualifiers, Confederations Cup 2017, international friendlies with scores). The profile builder will automatically incorporate them once they appear in the historical match records.
+| Evaluation | Fallback rate before | Fallback rate after | Median prior matches after |
+|---|---:|---:|---:|
+| WC2018 | 100.0% | 31.3% | 5 |
+| WC2022 | 25.0% | 9.4% | 8.5 |
+| Combined | 62.5% | 20.3% | 7 |
 
-## WC2022 Coverage Profile
+The combined fallback rate is now below the existing 50% decision threshold. However, the stricter historical data target remains only partially met:
 
-WC2022 evaluation (cutoff 2022-01-01) uses WC2018 scored data as historical context. As of Phase 12.21A:
-- 13 teams achieve **partial** coverage (4–9 WC2018 matches)
-- 11 teams achieve **sparse** coverage (1–3 WC2018 matches)
-- 40 teams remain **fallback** (no WC2018 matches)
+- WC2018 still has 10 teams with zero prior matches before 2018-01-01.
+- WC2018 fallback rate is 31.3%, above the <25% target.
+- WC2022 fallback rate is 9.4%, below the <15% target, but median prior-match count is 8.5, below the 12-match target.
 
-Teams appear in WC2022 but not WC2018 (first-time qualifiers) will always be fallback without additional data sources.
+The attack/defense candidate remains offline-only because the model decision is now `goal_calibration_blocked`, not because combined profile coverage is above the 50% threshold.
+
+## Remaining Data Gaps
+
+To improve profile quality without changing formulas, add reliable scored international fixtures before WC2018:
+
+- World Cup 2018 qualifiers.
+- Continental championships and continental qualifiers.
+- Nations League or equivalent official competitions where available.
+- Major friendlies only where source quality and redistribution policy are clear.
 
 ## Strength Bounds
 

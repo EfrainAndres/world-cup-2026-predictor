@@ -125,7 +125,8 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.18 | Prediction Usefulness Audit | Measure whether match-by-match predictions are practically useful, then audit real standings and match-context foundations before any presentation or calibration changes. | 12.18A, 12.18A1, 12.18A2, 12.18B1–B4, 12.18B7, 12.18B8, 12.18B8C, 12.18B9, 12.18C1 Done; 12.18C Planned |
 | 12.19 | Sports UI Benchmark & Information Architecture | Reorganize the overloaded Home dashboard into a match-first sports product architecture with canonical team identity, progressive disclosure, official knockout bracket integration, and staged UX migration. | 12.19A-H Done |
 | 12.20 | StatsBomb Performance Data Integration | Integrate StatsBomb Open Data xG metrics as an optional additive performance signal for the 40/48 covered WC2026 teams. | 12.20A1 Done; 12.20A2 Done; 12.20B Done; 12.20C Done; 12.20C2 Done; 12.20D Implementation complete, Preview validation pending |
-| 12.21A | Attack/Defense Goal Model Expansion | Build a competition-neutral attack/defense strength foundation and four goal-model candidates (elo_only_v2_baseline, multiplicative, log-linear, statsbomb_blend); backtest on WC2018/WC2022; apply decision gate. | Done — `attack_defense_data_blocked`: fallback rate 62.5% due to no pre-2018 scored data; candidates show Brier improvement (−0.0025) and genuine xG diversity (60 unique pairs) but coverage threshold not met. Promotion requires additional pre-2018 international scored match data. |
+| 12.21A | Attack/Defense Goal Model Expansion | Build a competition-neutral attack/defense strength foundation and four goal-model candidates (elo_only_v2_baseline, multiplicative, log-linear, statsbomb_blend); backtest on WC2018/WC2022; apply decision gate. | Done — `attack_defense_data_blocked`: fallback rate 62.5% due to no pre-2018 scored data; candidates show Brier improvement (−0.0025) and genuine xG diversity (60 unique pairs) but coverage threshold not met. |
+| 12.21A2 | Historical International Match Data Expansion | Expand the scored historical international match foundation for cutoff-aware attack/defense profiles, validate no-look-ahead coverage, and rerun the existing Phase 12.21A comparison without changing formulas or thresholds. | Done — `historical_data_partial`: accepted fixtures increased 184 → 312; combined fallback fell 62.5% → 20.3%; no-look-ahead violations remain 0. The model decision moved from profile-coverage-blocked to `goal_calibration_blocked` due to Log Loss and total-goal MAE regression. Production unchanged. |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -640,6 +641,50 @@ Exit criteria met:
 - `elo_only_v2_baseline` reproduces V2 output within rounding; confirmed by compatibility tests.
 - Violations = 0 invariant holds.
 - No Elo-to-xG V2 constants, StatsBomb weights, Poisson logic, 1X2 aggregation, presets, snapshots, evaluations, persistence schema, standings, qualification, official bracket topology changed.
+
+## Phase 12.21A2 — Historical International Match Data Expansion
+
+**Status:** Done — `historical_data_partial`
+
+Expanded the scored historical fixture foundation used by the offline attack/defense goal-model backtest. The implementation reuses existing committed WC2010/WC2014/WC2018/WC2022 scored World Cup fixtures plus the existing curated international supplement; no raw event data, runtime downloads, credentials, snapshots, evaluations, or production prediction paths were changed.
+
+Deliverables:
+
+- `packages/api/src/historical-international-fixtures.ts` — shared loader and neutral scored-fixture contract for historical international matches.
+- `packages/api/src/historical-international-data-validation.ts` — pure validation, duplicate/conflict detection, coverage summaries, no-look-ahead diagnostics, and data decision.
+- `packages/api/src/historical-international-data-cli.ts` — `historical-data:validate` script writing `docs/model-results/artifacts/historical-international-data-coverage.json`.
+- `packages/api/src/attack-defense-goal-model-backtest.ts` — backtest now uses the shared expanded scored fixture loader for profiles and strength-of-schedule Elo replay.
+- `packages/api/tests/historical-international-data-validation.test.ts` — focused validation, canonicalization, cutoff, coverage, and source integration tests.
+- `docs/data-quality/HISTORICAL_INTERNATIONAL_MATCH_DATA.md`.
+
+Coverage results:
+
+| Metric | Before | After |
+|---|---:|---:|
+| Accepted scored fixtures | 184 | 312 |
+| Unique teams | 50 | 60 |
+| WC2018 fallback rate | 100.0% | 31.3% |
+| WC2022 fallback rate | 25.0% | 9.4% |
+| Combined fallback rate | 62.5% | 20.3% |
+| Median prior-match count | 0 | 7 |
+| No-look-ahead violations | 0 | 0 |
+
+Goal-model rerun:
+
+| Candidate | Brier | LogLoss | GoalMAE | UniqueXG | Unique modal |
+|---|---:|---:|---:|---:|---:|
+| elo_only_v2_baseline | 0.2170 | 1.0738 | 1.3281 | 1 | 1 |
+| attack_defense_multiplicative | 0.2207 | 1.1123 | 1.4221 | 121 | 12 |
+| attack_defense_log_linear | 0.2207 | 1.1123 | 1.4221 | 121 | 12 |
+
+Decision gate: `goal_calibration_blocked` — combined profile coverage now passes the existing fallback threshold, but the best diagnostic candidate regresses Log Loss by +0.03850 and total-goal MAE by +0.0939.
+
+Exit criteria met:
+
+- Historical data validation is read-only and deterministic.
+- WC2026 fixtures are excluded from historical profile construction.
+- No-look-ahead violations remain 0.
+- No formula, threshold, Elo, Elo-to-xG V2, StatsBomb, Poisson, scoreline, production route, snapshot, evaluation, persistence, standings, qualification, or topology behavior changed.
 
 ## Phase 12.20D - Controlled StatsBomb Production Integration
 

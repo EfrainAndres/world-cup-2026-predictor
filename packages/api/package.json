@@ -17,6 +17,7 @@
     "statsbomb:build-profiles": "tsx ./src/statsbomb-open-data-cli.ts",
     "statsbomb:backtest": "tsx ./src/statsbomb-backtesting-cli.ts",
     "historical-elo:validate": "tsx ./src/historical-elo-replay-cli.ts",
+    "historical-data:validate": "tsx ./src/historical-international-data-cli.ts",
     "goal-model:compare": "tsx ./src/attack-defense-goal-model-cli.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"

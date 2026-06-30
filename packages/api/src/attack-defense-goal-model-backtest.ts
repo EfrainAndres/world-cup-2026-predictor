@@ -26,14 +26,12 @@ import {
 } from "./attack-defense-profile-builder.js";
 import type { HistoricalMatchRecord } from "./attack-defense-profile-builder.js";
 import {
-  LIVE_ELO_FOUNDATION_MATCHES,
-  loadLiveEloInternationalSupplement,
-} from "./live-elo-data.js";
-import { mergeEloMatchSources } from "./international-elo-adapter.js";
-import {
   DEFAULT_ELO_CONFIG,
   processMatches,
 } from "../../model/src/index.js";
+import type { EloMatch } from "../../model/src/index.js";
+import { loadHistoricalInternationalScoredFixtures } from "./historical-international-fixtures.js";
+import type { HistoricalInternationalScoredFixture } from "./historical-international-fixtures.js";
 
 const LOG_EPSILON = 1e-15;
 const MAX_GOALS = 7;
@@ -266,54 +264,27 @@ export function loadEvaluationFixtures(
 
 // ── Historical match conversion ───────────────────────────────────────────────
 
+function toHistoricalMatchRecord(fixture: HistoricalInternationalScoredFixture): HistoricalMatchRecord {
+  return {
+    matchId: fixture.fixtureId,
+    matchDate: fixture.kickoffAt.slice(0, 10),
+    homeTeam: fixture.homeTeam,
+    awayTeam: fixture.awayTeam,
+    homeScore: fixture.homeGoals,
+    awayScore: fixture.awayGoals,
+    neutralSite: fixture.neutralVenue,
+    competition: fixture.competitionId,
+    stage: fixture.stage ?? "",
+  };
+}
+
 function buildHistoricalMatchRecords(fixturesDir?: string): HistoricalMatchRecord[] {
-  const supplement = loadLiveEloInternationalSupplement();
-  const allMatches = mergeEloMatchSources(LIVE_ELO_FOUNDATION_MATCHES, supplement.matches);
-  const records: HistoricalMatchRecord[] = [];
-
-  for (const m of allMatches) {
-    if (m.home_score === undefined || m.away_score === undefined) continue;
-    if (m.match_date >= "2026-01-01") continue;
-
-    records.push({
-      matchId: m.match_id,
-      matchDate: m.match_date,
-      homeTeam: canonicalizeTeamName(m.home_team),
-      awayTeam: canonicalizeTeamName(m.away_team),
-      homeScore: m.home_score,
-      awayScore: m.away_score,
-      neutralSite: m.neutral_site === true,
-      competition: m.competition ?? "",
-      stage: "",
-    });
-  }
-
-  // Load scored matches from WC fixture files — these provide complete match
-  // scores (home_score / away_score) for WC2018 and WC2022 which are otherwise
-  // unavailable in the foundation data (result-only) and supplement (2022+).
-  const dir = fixturesDir ?? findDataFixturesDir();
-  const seenMatchIds = new Set(records.map((r) => r.matchId));
-
-  for (const year of BACKTEST_EVALUATION_YEARS) {
-    const wcFixtures = loadWcFixtureFile(join(dir, `world-cup-${year}-results.json`), year);
-    for (const f of wcFixtures) {
-      if (seenMatchIds.has(f.matchId)) continue;
-      seenMatchIds.add(f.matchId);
-      records.push({
-        matchId: f.matchId,
-        matchDate: f.kickoffDate,
-        homeTeam: f.homeTeam,
-        awayTeam: f.awayTeam,
-        homeScore: f.homeScore,
-        awayScore: f.awayScore,
-        neutralSite: f.neutralSite,
-        competition: f.competition,
-        stage: f.stage,
-      });
-    }
-  }
-
-  return records;
+  return loadHistoricalInternationalScoredFixtures({
+    mode: "expanded",
+    fixturesDir: fixturesDir ?? findDataFixturesDir(),
+  })
+    .filter((fixture) => fixture.kickoffAt < "2026-01-01")
+    .map(toHistoricalMatchRecord);
 }
 
 // ── Elo rating replay for SOS ─────────────────────────────────────────────────
@@ -321,9 +292,28 @@ function buildHistoricalMatchRecords(fixturesDir?: string): HistoricalMatchRecor
 function buildEloAtDateMap(
   historicalMatches: HistoricalMatchRecord[]
 ): Map<string, Map<string, number>> {
-  const allEloMatches = LIVE_ELO_FOUNDATION_MATCHES.filter(
-    (m) => m.match_date < "2026-01-01"
-  );
+  const allEloMatches: EloMatch[] = historicalMatches
+    .filter((match) => match.matchDate < "2026-01-01")
+    .map((match): EloMatch => {
+      const result: EloMatch["result"] =
+        match.homeScore > match.awayScore
+          ? "home_win"
+          : match.homeScore < match.awayScore
+            ? "away_win"
+            : "draw";
+      return {
+        match_id: match.matchId,
+        match_date: match.matchDate,
+        home_team: match.homeTeam,
+        away_team: match.awayTeam,
+        home_score: match.homeScore,
+        away_score: match.awayScore,
+        neutral_site: match.neutralSite,
+        competition: match.competition,
+        result,
+      };
+    })
+    .sort((a, b) => a.match_date.localeCompare(b.match_date) || a.match_id.localeCompare(b.match_id));
 
   const result = processMatches(allEloMatches, DEFAULT_ELO_CONFIG);
   const teamEloAtDate = new Map<string, Map<string, number>>();
