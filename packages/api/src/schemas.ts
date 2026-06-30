@@ -249,8 +249,29 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     warnings: readonly string[];
   };
   statsBombSignal?: StatsBombSignalResponseMetadata;
+  attackDefenseGoalModel?: AttackDefenseGoalModelRuntimeMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
+}
+
+export interface AttackDefenseGoalModelProfileSummary {
+  coverage: string;
+  matchCount: number;
+  cutoffAt: string;
+}
+
+export interface AttackDefenseGoalModelRuntimeMetadata {
+  mode: "off" | "shadow" | "on";
+  applied: boolean;
+  reason: string;
+  activationDecision?: string;
+  candidateId?: string;
+  baselineExpectedGoals: { home: number; away: number };
+  effectiveExpectedGoals: { home: number; away: number };
+  shadowExpectedGoals?: { home: number; away: number };
+  homeProfile: AttackDefenseGoalModelProfileSummary | null;
+  awayProfile: AttackDefenseGoalModelProfileSummary | null;
+  warnings: readonly string[];
 }
 
 export interface PredictMatchFromLiveEloValidationErrorResponse {

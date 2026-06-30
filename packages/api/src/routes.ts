@@ -66,6 +66,17 @@ import type {
   StatsBombProductionReadiness,
   StatsBombRolloutMode
 } from "./statsbomb-production-config.js";
+import type {
+  AttackDefenseActivationDecision,
+  AttackDefenseGoalModelMode,
+  AttackDefenseRuntimeReadiness,
+} from "./attack-defense-production-config.js";
+import type { AttackDefenseRuntimeProfilesResult } from "./attack-defense-runtime-profile-source.js";
+import { assessAttackDefenseRuntimeEligibility } from "./attack-defense-runtime-profile-source.js";
+import {
+  buildNeutralAttackDefenseProfile,
+  computeRecalibratedAttackDefenseGoalModel,
+} from "../../model/src/index.js";
 import { teamNameToId } from "./providers/statsbomb/statsbomb-team-mapping.js";
 import {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
@@ -103,6 +114,7 @@ import type {
   LiveEloRatingsFoundationResponse,
   PredictionHistoryPersistenceErrorCode,
   PredictionHistoryPersistenceErrorResponse,
+  AttackDefenseGoalModelRuntimeMetadata,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
   PredictMatchFromLiveEloSuccessResponse,
@@ -1107,6 +1119,10 @@ export function predictMatchFromLiveElo(
     statsBombSignalMode?: StatsBombRolloutMode;
     statsBombReadiness?: StatsBombProductionReadiness;
     statsBombActivationDecision?: StatsBombActivationDecision;
+    attackDefenseMode?: AttackDefenseGoalModelMode;
+    attackDefenseReadiness?: AttackDefenseRuntimeReadiness;
+    attackDefenseActivationDecision?: AttackDefenseActivationDecision;
+    attackDefenseProfiles?: AttackDefenseRuntimeProfilesResult;
   }
 ): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
@@ -1274,6 +1290,99 @@ export function predictMatchFromLiveElo(
     ...(request.preset === undefined ? {} : { preset: request.preset })
   });
 
+  // Attack/defense goal model — server-side rollout flag only; never request-controlled.
+  const adRolloutMode = deps?.attackDefenseMode;
+  const adEnabled = adRolloutMode === "shadow" || adRolloutMode === "on";
+  const adAuthoritative = adRolloutMode === "on" && deps?.attackDefenseActivationDecision === "production_ready";
+  let attackDefenseGoalModelMeta: AttackDefenseGoalModelRuntimeMetadata | undefined;
+
+  let effectiveHomeXg = xgResult.homeExpectedGoals;
+  let effectiveAwayXg = xgResult.awayExpectedGoals;
+
+  if (adRolloutMode !== undefined) {
+    const homeCanonical = homeResolution.canonicalName ?? homeEntry.team;
+    const awayCanonical = awayResolution.canonicalName ?? awayEntry.team;
+    const adReadiness = deps?.attackDefenseReadiness;
+
+    if (!adEnabled || adReadiness?.ready !== true || deps?.attackDefenseProfiles === undefined) {
+      attackDefenseGoalModelMeta = {
+        mode: adRolloutMode,
+        applied: false,
+        reason: adRolloutMode === "off" ? "disabled" : "source_unavailable",
+        ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
+        ...(adReadiness?.ready === true ? { candidateId: adReadiness.candidateId } : {}),
+        baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+        effectiveExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+        homeProfile: null,
+        awayProfile: null,
+        warnings: adEnabled && adReadiness?.ready !== true ? ["Attack/defense profile source unavailable; baseline model used."] : [],
+      };
+    } else {
+      const runtimeProfiles = deps.attackDefenseProfiles;
+      const eligibility = assessAttackDefenseRuntimeEligibility(homeCanonical, awayCanonical, runtimeProfiles.profiles);
+
+      if (!eligibility.eligible) {
+        attackDefenseGoalModelMeta = {
+          mode: adRolloutMode,
+          applied: false,
+          reason: "profile_unavailable",
+          ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
+          candidateId: adReadiness.candidateId,
+          baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+          effectiveExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+          homeProfile: null,
+          awayProfile: null,
+          warnings: [eligibility.reason],
+        };
+      } else {
+        const homeProfile = runtimeProfiles.profiles.get(homeCanonical) ?? buildNeutralAttackDefenseProfile(homeCanonical, runtimeProfiles.competitionEnv, "fallback");
+        const awayProfile = runtimeProfiles.profiles.get(awayCanonical) ?? buildNeutralAttackDefenseProfile(awayCanonical, runtimeProfiles.competitionEnv, "fallback");
+        const neutralSite = false;
+
+        const adResult = computeRecalibratedAttackDefenseGoalModel(
+          {
+            homeTeamId: homeCanonical,
+            awayTeamId: awayCanonical,
+            homeProfile,
+            awayProfile,
+            competition: runtimeProfiles.competitionEnv,
+            homeElo: effectiveHomeEntry.eloRating,
+            awayElo: effectiveAwayEntry.eloRating,
+            neutralVenue: neutralSite,
+          },
+          adReadiness.candidateConfig
+        );
+
+        if (adAuthoritative) {
+          effectiveHomeXg = adResult.homeXg;
+          effectiveAwayXg = adResult.awayXg;
+        }
+
+        attackDefenseGoalModelMeta = {
+          mode: adRolloutMode,
+          applied: adAuthoritative,
+          reason: adAuthoritative ? "applied" : adRolloutMode === "shadow" ? "shadow" : "not_authoritative",
+          ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
+          candidateId: adReadiness.candidateId,
+          baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+          effectiveExpectedGoals: { home: effectiveHomeXg, away: effectiveAwayXg },
+          ...(adRolloutMode === "shadow" ? { shadowExpectedGoals: { home: adResult.homeXg, away: adResult.awayXg } } : {}),
+          homeProfile: {
+            coverage: homeProfile.coverage,
+            matchCount: homeProfile.attackSampleSize,
+            cutoffAt: homeProfile.cutoffAt,
+          },
+          awayProfile: {
+            coverage: awayProfile.coverage,
+            matchCount: awayProfile.attackSampleSize,
+            cutoffAt: awayProfile.cutoffAt,
+          },
+          warnings: adResult.warnings ?? [],
+        };
+      }
+    }
+  }
+
   // StatsBomb signal — opt-in by request, or controlled by server-side production dependencies.
   const statsBombRolloutMode = deps?.statsBombSignalMode;
   const statsBombControlledByServer = statsBombRolloutMode !== undefined;
@@ -1281,8 +1390,6 @@ export function predictMatchFromLiveElo(
     ? statsBombRolloutMode !== "off"
     : request.statsBombSignal?.enabled === true;
   let statsBombSignalMeta: NonNullable<PredictMatchFromLiveEloSuccessResponse["statsBombSignal"]> | undefined;
-  let effectiveHomeXg = xgResult.homeExpectedGoals;
-  let effectiveAwayXg = xgResult.awayExpectedGoals;
 
   const statsBombCutoffAt =
     request.statsBombSignal?.cutoffAt ??
@@ -1529,6 +1636,7 @@ export function predictMatchFromLiveElo(
       : {}),
     ...(tournamentFormAdjustment === undefined ? {} : { tournamentFormAdjustment }),
     ...(statsBombSignalMeta === undefined ? {} : { statsBombSignal: statsBombSignalMeta }),
+    ...(attackDefenseGoalModelMeta === undefined ? {} : { attackDefenseGoalModel: attackDefenseGoalModelMeta }),
     warnings: [
       ...pipeline.warnings,
       ...internationalSupplement.loadWarnings,
@@ -1538,6 +1646,7 @@ export function predictMatchFromLiveElo(
       ...(tournamentFormAdjustment?.warnings ?? []),
       ...xgResult.warnings,
       ...(statsBombSignalMeta?.warnings ?? []),
+      ...(attackDefenseGoalModelMeta?.warnings ?? []),
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([
