@@ -1034,3 +1034,95 @@ export interface EloToExpectedGoalsResult {
   v1RollbackAvailable: boolean;
   warnings: readonly string[];
 }
+
+// === Phase 12.21A: Attack/Defense Strength and Goal Model Expansion ===
+
+export type AttackDefenseGoalModelCandidateId =
+  | "elo_only_v2_baseline"
+  | "attack_defense_multiplicative"
+  | "attack_defense_log_linear"
+  | "attack_defense_statsbomb_blend";
+
+export type AttackDefenseProfileStrategy =
+  | "goals_unadjusted"
+  | "goals_strength_of_schedule_adjusted"
+  | "goals_plus_statsbomb_xg";
+
+export type AttackDefenseRecencyStrategy =
+  | "uniform"
+  | "linear_decay"
+  | "exponential_half_life";
+
+export type AttackDefenseGoalModelDecision =
+  | "promote_candidate"
+  | "retain_elo_v2"
+  | "recalibrate_attack_defense"
+  | "insufficient_profile_coverage"
+  | "goal_calibration_blocked"
+  | "data_quality_blocked";
+
+export type AttackDefenseProfileCoverage = "full" | "partial" | "sparse" | "fallback";
+
+export interface CompetitionGoalEnvironment {
+  competitionId: string;
+  averageHomeGoals: number;
+  averageAwayGoals: number;
+  averageTotalGoals: number;
+  sampleSize: number;
+  cutoffAt: string;
+}
+
+export interface TeamAttackDefenseProfile {
+  teamId: string;
+  competitionId?: string;
+  attackStrength: number;
+  defenseStrength: number;
+  attackSampleSize: number;
+  defenseSampleSize: number;
+  goalsForPerMatch: number | null;
+  goalsAgainstPerMatch: number | null;
+  expectedGoalsForPerMatch: number | null;
+  expectedGoalsAgainstPerMatch: number | null;
+  strengthOfScheduleAdjustment: number;
+  recencyWeight: number;
+  coverage: AttackDefenseProfileCoverage;
+  cutoffAt: string;
+}
+
+export interface AttackDefenseGoalModelInput {
+  homeTeamId: string;
+  awayTeamId: string;
+  competition: CompetitionGoalEnvironment;
+  homeProfile: TeamAttackDefenseProfile;
+  awayProfile: TeamAttackDefenseProfile;
+  homeElo: number;
+  awayElo: number;
+  neutralVenue: boolean;
+}
+
+export interface AttackDefenseGoalModelOutput {
+  homeXg: number;
+  awayXg: number;
+  homeAttackContribution: number;
+  awayDefenseContribution: number;
+  awayAttackContribution: number;
+  homeDefenseContribution: number;
+  eloHomeMultiplier: number;
+  eloAwayMultiplier: number;
+  venueMultiplier: number;
+  candidateId: AttackDefenseGoalModelCandidateId;
+  warnings: string[];
+}
+
+export interface AttackDefenseStrengthDiagnostic {
+  teamId: string;
+  rawAttackStrength: number;
+  adjustedAttackStrength: number;
+  rawDefenseStrength: number;
+  adjustedDefenseStrength: number;
+  averageOpponentElo: number | null;
+  sosAdjustmentAmount: number;
+  sampleSize: number;
+  shrinkageFactor: number;
+  coverage: AttackDefenseProfileCoverage;
+}
