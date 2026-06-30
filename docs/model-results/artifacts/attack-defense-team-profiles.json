@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-30T01:22:08.220Z",
+  "generatedAt": "2026-06-30T02:04:11.138Z",
   "profileStrategy": "goals_strength_of_schedule_adjusted",
   "recencyStrategy": "exponential_half_life",
   "coverageSummary": {
-    "full": 0,
-    "partial": 13,
+    "full": 20,
+    "partial": 20,
     "sparse": 11,
-    "fallback": 40
+    "fallback": 13
   },
   "note": "Team profiles computed from available historical scored match data before cutoff. See coverage summary for data quality."
 }

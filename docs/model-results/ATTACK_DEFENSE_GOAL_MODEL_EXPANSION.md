@@ -126,11 +126,57 @@ The multiplicative and log-linear candidates improve Brier by −0.0025 and Log 
 
 The model candidates themselves are well-formed and show improvement over the baseline, but the fallback rate is too high to promote reliably. This is a data availability constraint, not a model quality failure.
 
+## Phase 12.21A2 Rerun
+
+Phase 12.21A2 expands the historical scored-match foundation by reusing the already committed WC2010 and WC2014 scored fixture files in addition to WC2018, WC2022, and the existing curated international supplement. The profile formulas, shrinkage, recency, strength-of-schedule, candidate formulas, Elo constants, Elo-to-xG V2, StatsBomb weights, Poisson implementation, and production routes remain unchanged.
+
+**Historical data validation**:
+
+| Metric | Before | After |
+|---|---:|---:|
+| Accepted scored fixtures | 184 | 312 |
+| Earliest fixture | 2018-06-14 | 2010-06-11 |
+| Latest fixture | 2024-07-14 | 2024-07-14 |
+| Unique teams | 50 | 60 |
+| Unknown competition-weight mappings | 0 | 0 |
+| Duplicate/conflicting fixtures | 0 / 0 | 0 / 0 |
+| No-look-ahead violations | 0 | 0 |
+
+**Profile coverage after expansion**:
+
+| Coverage | Teams |
+|---|---:|
+| Full | 20 |
+| Partial | 20 |
+| Sparse | 11 |
+| Fallback | 13 |
+
+Fallback rate falls from 62.5% to 20.3%, below the existing 50% combined promotion prerequisite. WC2018 remains data-partial because 10 teams still have zero prior matches before the 2018 cutoff; WC2022 fallback improves to 9.4%.
+
+**Rerun candidate metrics (128 fixtures)**:
+
+| Candidate | Brier | Log Loss | OutAcc | GoalMAE | Exact | Top-5 | UniqueXG | Unique modal |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| elo_only_v2_baseline | 0.2170 | 1.0738 | 42.97% | 1.3281 | 9.38% | 46.88% | 1 | 1 |
+| attack_defense_multiplicative | 0.2207 | 1.1123 | 43.75% | 1.4221 | 13.28% | 48.44% | 121 | 12 |
+| attack_defense_log_linear | 0.2207 | 1.1123 | 43.75% | 1.4221 | 13.28% | 48.44% | 121 | 12 |
+| attack_defense_statsbomb_blend | 0.2207 | 1.1123 | 43.75% | 1.4221 | 13.28% | 48.44% | 121 | 12 |
+
+The expanded data resolves the combined fallback-rate blocker and increases scoreline diversity, but the existing decision gate now blocks promotion on calibration:
+
+- **Decision**: `goal_calibration_blocked`
+- **Selected diagnostic candidate**: `attack_defense_log_linear`
+- **Brier delta**: +0.00376
+- **Log Loss delta**: +0.03850, above the +0.008 regression threshold
+- **Total goal MAE delta**: +0.0939, above the +0.05 regression threshold
+
+This does not promote the candidate and does not change production behavior.
+
 ## What Unlocks Promotion
 
 To reach `attack_defense_candidate_ready`:
-1. Add pre-2018 international scored match data (qualifiers, friendlies, tournaments) so WC2018 teams have historical profiles
-2. Alternatively lower the `BACKTEST_MIN_PROFILE_COVERAGE_RATE` threshold after evaluating whether partial WC2022 coverage is sufficient for the use case
+1. Add broader pre-2018 international scored match data (qualifiers, continental championships, and reliable friendlies) so remaining WC2018 teams have historical profiles
+2. Recalibrate or revise attack/defense candidate calibration only in a future dedicated phase; do not weaken decision thresholds to force promotion
 3. Re-run `pnpm --filter @world-cup-2026-predictor/api goal-model:compare` to re-evaluate
 
 ## Production Safety
