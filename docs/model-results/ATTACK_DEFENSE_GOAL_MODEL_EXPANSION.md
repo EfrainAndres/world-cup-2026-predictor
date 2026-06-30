@@ -172,12 +172,33 @@ The expanded data resolves the combined fallback-rate blocker and increases scor
 
 This does not promote the candidate and does not change production behavior.
 
-## What Unlocks Promotion
+## Phase 12.21A3 Recalibration
 
-To reach `attack_defense_candidate_ready`:
-1. Add broader pre-2018 international scored match data (qualifiers, continental championships, and reliable friendlies) so remaining WC2018 teams have historical profiles
-2. Recalibrate or revise attack/defense candidate calibration only in a future dedicated phase; do not weaken decision thresholds to force promotion
-3. Re-run `pnpm --filter @world-cup-2026-predictor/api goal-model:compare` to re-evaluate
+Phase 12.21A3 adds an offline-only recalibration harness for the attack/defense goal model. The harness keeps `elo_only_v2_baseline` unchanged, compares bounded damped, residual, regularized, and blend candidates, selects parameters on WC2018 only, and validates the selected candidate on WC2022.
+
+Selected offline candidate:
+
+```text
+attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0
+```
+
+| Split | Candidate | Brier | Log Loss | GoalMAE | UniqueXG | Unique modal | 1-1 freq |
+|---|---|---:|---:|---:|---:|---:|---:|
+| WC2022 holdout | Elo V2 baseline | 0.2180 | 1.0785 | 1.4688 | 1 | 1 | 100.0% |
+| WC2022 holdout | Current log-linear | 0.2182 | 1.0973 | 1.5283 | 64 | 10 | 35.9% |
+| WC2022 holdout | Selected damped | 0.2063 | 1.0339 | 1.4704 | 64 | 3 | 70.3% |
+| Combined | Selected damped | 0.2093 | 1.0460 | 1.3383 | 121 | 4 | 75.8% |
+
+Decision: `promote_recalibrated_candidate` for offline review. This does not change production behavior. See `docs/model-results/ATTACK_DEFENSE_GOAL_MODEL_RECALIBRATION.md`.
+
+## What Unlocks Production Promotion
+
+To promote beyond offline review:
+
+1. Run a dedicated production-integration decision phase for the selected recalibrated candidate.
+2. Define runtime provenance, compatibility, monitoring, and rollback.
+3. Decide whether richer pre-match Elo inputs should be included without double-counting strength-of-schedule.
+4. Keep production Elo V2 unchanged until an explicit promotion phase approves replacement or controlled rollout.
 
 ## Production Safety
 

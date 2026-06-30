@@ -1,0 +1,772 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-06-30T02:39:27.030Z",
+  "selectedConfig": {
+    "candidate": "attack_defense_log_linear_damped",
+    "attackWeight": 0.65,
+    "defenseWeight": 0.2,
+    "eloWeight": 0,
+    "venueWeight": 0.5,
+    "attackDefenseBlendWeight": 1,
+    "residualCap": 0.2,
+    "coverageDampingEnabled": false,
+    "id": "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0"
+  },
+  "tuning": {
+    "candidateId": "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+    "fixtureCount": 64,
+    "brierScore": 0.21237510879479268,
+    "logLoss": 1.057977289116905,
+    "outcomeAccuracy": 0.4375,
+    "homeGoalMae": 1.0031202326021198,
+    "awayGoalMae": 0.7635816058646067,
+    "totalGoalMae": 1.2062343093907544,
+    "exactScoreAccuracy": 0.125,
+    "top3ScoreCoverage": 0.359375,
+    "top5ScoreCoverage": 0.5,
+    "top10ScoreCoverage": 0.78125,
+    "uniqueXgPairCount": 57,
+    "uniqueModalScorelineCount": 4,
+    "modalOneOneFrequency": 0.8125,
+    "recommended10Frequency": 0.09375,
+    "recommended20Frequency": 0,
+    "recommended21Frequency": 0,
+    "recommended30Frequency": 0,
+    "recommended31Frequency": 0,
+    "recommendedFourPlusTotalFrequency": 0,
+    "probabilityCalibration": {
+      "homeWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.1596480365471948,
+          "observedRate": 1,
+          "absoluteError": 0.8403519634528052
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 45,
+          "averagePredicted": 0.33502654430609247,
+          "observedRate": 0.3111111111111111,
+          "absoluteError": 0.02391543319498135
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 18,
+          "averagePredicted": 0.4678584111600625,
+          "observedRate": 0.6111111111111112,
+          "absoluteError": 0.14325269995104867
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "draw": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.19680498266001986,
+          "observedRate": 0,
+          "absoluteError": 0.19680498266001986
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 63,
+          "averagePredicted": 0.267031380372399,
+          "observedRate": 0.20634920634920634,
+          "absoluteError": 0.06068217402319265
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "awayWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.19902846097401333,
+          "observedRate": 0,
+          "absoluteError": 0.19902846097401333
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 42,
+          "averagePredicted": 0.32698611165241576,
+          "observedRate": 0.3333333333333333,
+          "absoluteError": 0.0063472216809175586
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 20,
+          "averagePredicted": 0.43734659957540484,
+          "observedRate": 0.55,
+          "absoluteError": 0.11265340042459521
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6435469807927854,
+          "observedRate": 0,
+          "absoluteError": 0.6435469807927854
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "expectedCalibrationError": 0.061859915433980416,
+      "maximumCalibrationError": 0.8403519634528052,
+      "favoriteBuckets": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 25,
+          "averagePredicted": 0.38083104008937696,
+          "observedRate": 0.24,
+          "absoluteError": 0.14083104008937697
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 38,
+          "averagePredicted": 0.45179956295761114,
+          "observedRate": 0.5789473684210527,
+          "absoluteError": 0.1271478054634415
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6435469807927854,
+          "observedRate": 0,
+          "absoluteError": 0.6435469807927854
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "underConfidenceRate": 0.4375,
+      "overConfidenceRate": 0.5625
+    },
+    "goalCalibration": {
+      "avgPredictedHomeGoals": 1.2619571431940195,
+      "avgActualHomeGoals": 1.421875,
+      "avgPredictedAwayGoals": 1.2503721650743047,
+      "avgActualAwayGoals": 1.21875,
+      "avgPredictedTotalGoals": 2.5123293082683253,
+      "avgActualTotalGoals": 2.640625,
+      "totalGoalBuckets": [
+        {
+          "bucket": "0-1",
+          "count": 16,
+          "averagePredicted": 2.5070653620129892,
+          "observedRate": 0.9375,
+          "absoluteError": 1.5695653620129892
+        },
+        {
+          "bucket": "2",
+          "count": 17,
+          "averagePredicted": 2.549121408388782,
+          "observedRate": 2,
+          "absoluteError": 0.5491214083887819
+        },
+        {
+          "bucket": "3",
+          "count": 19,
+          "averagePredicted": 2.5107464195495495,
+          "observedRate": 3,
+          "absoluteError": 0.48925358045045053
+        },
+        {
+          "bucket": "4+",
+          "count": 12,
+          "averagePredicted": 2.469732001909519,
+          "observedRate": 5.25,
+          "absoluteError": 2.780267998090481
+        }
+      ],
+      "totalGoalUnderpredictionRate": 0.46875,
+      "totalGoalOverpredictionRate": 0.53125
+    },
+    "extremes": {
+      "xgBelow05": 0,
+      "xgBelow08": 0,
+      "xgAbove15": 14,
+      "xgAbove20": 1,
+      "xgAbove25": 0,
+      "xgClampedAtMinimum": 0,
+      "xgClampedAtMaximum": 0,
+      "clampRate": 0,
+      "predictedThreePlusGoalMargins": 0,
+      "predictedFourPlusGoalTotals": 0,
+      "predictedFivePlusGoalTotals": 0,
+      "actualThreePlusGoalMargins": 8,
+      "actualFourPlusGoalTotals": 12,
+      "actualFivePlusGoalTotals": 7,
+      "blowoutRateDelta": -0.125
+    },
+    "componentContributions": {
+      "averageAttackContributionLog": 0.01492293006571754,
+      "averageDefenseContributionLog": 0.00018628333519987532,
+      "averageEloContributionLog": 0,
+      "averageVenueContributionLog": 0,
+      "averageAbsoluteAttackContributionLog": 0.11013328685881237,
+      "averageAbsoluteDefenseContributionLog": 0.04124391550203078,
+      "averageAbsoluteEloContributionLog": 0,
+      "averageAbsoluteVenueContributionLog": 0,
+      "largestAverageFactor": "attack",
+      "clampFrequency": 0,
+      "combinedFactorThresholdExceedances": 2
+    }
+  },
+  "validation": {
+    "candidateId": "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+    "fixtureCount": 64,
+    "brierScore": 0.2062983872480096,
+    "logLoss": 1.0339310547299565,
+    "outcomeAccuracy": 0.484375,
+    "homeGoalMae": 1.0915614261508866,
+    "awayGoalMae": 0.8881555741408197,
+    "totalGoalMae": 1.47041505884862,
+    "exactScoreAccuracy": 0.09375,
+    "top3ScoreCoverage": 0.265625,
+    "top5ScoreCoverage": 0.421875,
+    "top10ScoreCoverage": 0.71875,
+    "uniqueXgPairCount": 64,
+    "uniqueModalScorelineCount": 3,
+    "modalOneOneFrequency": 0.703125,
+    "recommended10Frequency": 0.21875,
+    "recommended20Frequency": 0,
+    "recommended21Frequency": 0,
+    "recommended30Frequency": 0,
+    "recommended31Frequency": 0,
+    "recommendedFourPlusTotalFrequency": 0,
+    "probabilityCalibration": {
+      "homeWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.18268249471912695,
+          "observedRate": 1,
+          "absoluteError": 0.817317505280873
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 31,
+          "averagePredicted": 0.32668768137711024,
+          "observedRate": 0.25806451612903225,
+          "absoluteError": 0.06862316524807799
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 31,
+          "averagePredicted": 0.4943847907205491,
+          "observedRate": 0.6129032258064516,
+          "absoluteError": 0.11851843508590254
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6217981942259784,
+          "observedRate": 1,
+          "absoluteError": 0.3782018057740216
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "draw": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 64,
+          "averagePredicted": 0.2563572738325131,
+          "observedRate": 0.234375,
+          "absoluteError": 0.02198227383251311
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "awayWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.15772822821050075,
+          "observedRate": 0,
+          "absoluteError": 0.15772822821050075
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 44,
+          "averagePredicted": 0.28805971612688125,
+          "observedRate": 0.3181818181818182,
+          "absoluteError": 0.030122102054936928
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 19,
+          "averagePredicted": 0.44752902173438613,
+          "observedRate": 0.3157894736842105,
+          "absoluteError": 0.13173954805017563
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "expectedCalibrationError": 0.06453086759515725,
+      "maximumCalibrationError": 0.817317505280873,
+      "favoriteBuckets": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 13,
+          "averagePredicted": 0.3812762520969289,
+          "observedRate": 0.38461538461538464,
+          "absoluteError": 0.003339132518455745
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 50,
+          "averagePredicted": 0.47657959850580717,
+          "observedRate": 0.5,
+          "absoluteError": 0.023420401494192833
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6217981942259784,
+          "observedRate": 1,
+          "absoluteError": 0.3782018057740216
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "underConfidenceRate": 0.484375,
+      "overConfidenceRate": 0.515625
+    },
+    "goalCalibration": {
+      "avgPredictedHomeGoals": 1.4006197431007923,
+      "avgActualHomeGoals": 1.578125,
+      "avgPredictedAwayGoals": 1.2312053871286928,
+      "avgActualAwayGoals": 1.109375,
+      "avgPredictedTotalGoals": 2.631825130229484,
+      "avgActualTotalGoals": 2.6875,
+      "totalGoalBuckets": [
+        {
+          "bucket": "0-1",
+          "count": 17,
+          "averagePredicted": 2.5538517663947062,
+          "observedRate": 0.5882352941176471,
+          "absoluteError": 1.965616472277059
+        },
+        {
+          "bucket": "2",
+          "count": 17,
+          "averagePredicted": 2.670282588835156,
+          "observedRate": 2,
+          "absoluteError": 0.670282588835156
+        },
+        {
+          "bucket": "3",
+          "count": 14,
+          "averagePredicted": 2.6859338361201646,
+          "observedRate": 3,
+          "absoluteError": 0.31406616387983544
+        },
+        {
+          "bucket": "4+",
+          "count": 16,
+          "averagePredicted": 2.6264656618810673,
+          "observedRate": 5.375,
+          "absoluteError": 2.7485343381189327
+        }
+      ],
+      "totalGoalUnderpredictionRate": 0.421875,
+      "totalGoalOverpredictionRate": 0.578125
+    },
+    "extremes": {
+      "xgBelow05": 0,
+      "xgBelow08": 1,
+      "xgAbove15": 33,
+      "xgAbove20": 0,
+      "xgAbove25": 0,
+      "xgClampedAtMinimum": 0,
+      "xgClampedAtMaximum": 0,
+      "clampRate": 0,
+      "predictedThreePlusGoalMargins": 0,
+      "predictedFourPlusGoalTotals": 0,
+      "predictedFivePlusGoalTotals": 0,
+      "actualThreePlusGoalMargins": 9,
+      "actualFourPlusGoalTotals": 16,
+      "actualFivePlusGoalTotals": 12,
+      "blowoutRateDelta": -0.140625
+    },
+    "componentContributions": {
+      "averageAttackContributionLog": 0.06371889407493196,
+      "averageDefenseContributionLog": -0.002679826524178153,
+      "averageEloContributionLog": 0,
+      "averageVenueContributionLog": 0,
+      "averageAbsoluteAttackContributionLog": 0.17135758839710163,
+      "averageAbsoluteDefenseContributionLog": 0.042587124187404624,
+      "averageAbsoluteEloContributionLog": 0,
+      "averageAbsoluteVenueContributionLog": 0,
+      "largestAverageFactor": "attack",
+      "clampFrequency": 0,
+      "combinedFactorThresholdExceedances": 2
+    }
+  },
+  "combined": {
+    "candidateId": "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+    "fixtureCount": 128,
+    "brierScore": 0.20933674802140115,
+    "logLoss": 1.0459541719234309,
+    "outcomeAccuracy": 0.4609375,
+    "homeGoalMae": 1.0473408293765043,
+    "awayGoalMae": 0.8258685900027137,
+    "totalGoalMae": 1.3383246841196867,
+    "exactScoreAccuracy": 0.109375,
+    "top3ScoreCoverage": 0.3125,
+    "top5ScoreCoverage": 0.4609375,
+    "top10ScoreCoverage": 0.75,
+    "uniqueXgPairCount": 121,
+    "uniqueModalScorelineCount": 4,
+    "modalOneOneFrequency": 0.7578125,
+    "recommended10Frequency": 0.15625,
+    "recommended20Frequency": 0,
+    "recommended21Frequency": 0,
+    "recommended30Frequency": 0,
+    "recommended31Frequency": 0,
+    "recommendedFourPlusTotalFrequency": 0,
+    "probabilityCalibration": {
+      "homeWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 2,
+          "averagePredicted": 0.17116526563316087,
+          "observedRate": 1,
+          "absoluteError": 0.8288347343668392
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 76,
+          "averagePredicted": 0.33162516600611297,
+          "observedRate": 0.2894736842105263,
+          "absoluteError": 0.04215148179558664
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 49,
+          "averagePredicted": 0.4846404063922072,
+          "observedRate": 0.6122448979591837,
+          "absoluteError": 0.1276044915669765
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6217981942259784,
+          "observedRate": 1,
+          "absoluteError": 0.3782018057740216
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "draw": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 1,
+          "averagePredicted": 0.19680498266001986,
+          "observedRate": 0,
+          "absoluteError": 0.19680498266001986
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 127,
+          "averagePredicted": 0.26165230306096043,
+          "observedRate": 0.2204724409448819,
+          "absoluteError": 0.04117986211607855
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "awayWin": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 2,
+          "averagePredicted": 0.17837834459225704,
+          "observedRate": 0,
+          "absoluteError": 0.17837834459225704
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 86,
+          "averagePredicted": 0.3070702813835376,
+          "observedRate": 0.32558139534883723,
+          "absoluteError": 0.01851111396529964
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 39,
+          "averagePredicted": 0.44230726678106247,
+          "observedRate": 0.4358974358974359,
+          "absoluteError": 0.006409830883626566
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 1,
+          "averagePredicted": 0.6435469807927854,
+          "observedRate": 0,
+          "absoluteError": 0.6435469807927854
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "expectedCalibrationError": 0.05146066230367352,
+      "maximumCalibrationError": 0.8288347343668392,
+      "favoriteBuckets": [
+        {
+          "bucket": "0.0-0.2",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        },
+        {
+          "bucket": "0.2-0.4",
+          "count": 38,
+          "averagePredicted": 0.3809833494603816,
+          "observedRate": 0.2894736842105263,
+          "absoluteError": 0.09150966524985527
+        },
+        {
+          "bucket": "0.4-0.6",
+          "count": 88,
+          "averagePredicted": 0.4658791286099953,
+          "observedRate": 0.5340909090909091,
+          "absoluteError": 0.06821178048091375
+        },
+        {
+          "bucket": "0.6-0.8",
+          "count": 2,
+          "averagePredicted": 0.6326725875093819,
+          "observedRate": 0.5,
+          "absoluteError": 0.13267258750938193
+        },
+        {
+          "bucket": "0.8-1.0",
+          "count": 0,
+          "averagePredicted": null,
+          "observedRate": null,
+          "absoluteError": null
+        }
+      ],
+      "underConfidenceRate": 0.4609375,
+      "overConfidenceRate": 0.5390625
+    },
+    "goalCalibration": {
+      "avgPredictedHomeGoals": 1.331288443147406,
+      "avgActualHomeGoals": 1.5,
+      "avgPredictedAwayGoals": 1.240788776101499,
+      "avgActualAwayGoals": 1.1640625,
+      "avgPredictedTotalGoals": 2.5720772192489054,
+      "avgActualTotalGoals": 2.6640625,
+      "totalGoalBuckets": [
+        {
+          "bucket": "0-1",
+          "count": 33,
+          "averagePredicted": 2.5311674491187217,
+          "observedRate": 0.7575757575757576,
+          "absoluteError": 1.7735916915429641
+        },
+        {
+          "bucket": "2",
+          "count": 34,
+          "averagePredicted": 2.6097019986119694,
+          "observedRate": 2,
+          "absoluteError": 0.6097019986119694
+        },
+        {
+          "bucket": "3",
+          "count": 33,
+          "averagePredicted": 2.5850683538522348,
+          "observedRate": 3,
+          "absoluteError": 0.41493164614776523
+        },
+        {
+          "bucket": "4+",
+          "count": 28,
+          "averagePredicted": 2.5592940933218324,
+          "observedRate": 5.321428571428571,
+          "absoluteError": 2.7621344781067387
+        }
+      ],
+      "totalGoalUnderpredictionRate": 0.4453125,
+      "totalGoalOverpredictionRate": 0.5546875
+    },
+    "extremes": {
+      "xgBelow05": 0,
+      "xgBelow08": 1,
+      "xgAbove15": 47,
+      "xgAbove20": 1,
+      "xgAbove25": 0,
+      "xgClampedAtMinimum": 0,
+      "xgClampedAtMaximum": 0,
+      "clampRate": 0,
+      "predictedThreePlusGoalMargins": 0,
+      "predictedFourPlusGoalTotals": 0,
+      "predictedFivePlusGoalTotals": 0,
+      "actualThreePlusGoalMargins": 17,
+      "actualFourPlusGoalTotals": 28,
+      "actualFivePlusGoalTotals": 19,
+      "blowoutRateDelta": -0.1328125
+    },
+    "componentContributions": {
+      "averageAttackContributionLog": 0.039320912070324746,
+      "averageDefenseContributionLog": -0.0012467715944891387,
+      "averageEloContributionLog": 0,
+      "averageVenueContributionLog": 0,
+      "averageAbsoluteAttackContributionLog": 0.14074543762795697,
+      "averageAbsoluteDefenseContributionLog": 0.041915519844717704,
+      "averageAbsoluteEloContributionLog": 0,
+      "averageAbsoluteVenueContributionLog": 0,
+      "largestAverageFactor": "attack",
+      "clampFrequency": 0,
+      "combinedFactorThresholdExceedances": 4
+    }
+  },
+  "decision": {
+    "decision": "promote_recalibrated_candidate",
+    "selectedCandidateId": "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+    "reasons": [
+      "Candidate passes validation holdout gates and improves xG or modal-score diversity."
+    ],
+    "blockers": [],
+    "deltas": {
+      "brier": -0.011664630609359017,
+      "logLoss": -0.044598362466464536,
+      "homeGoalMae": -0.04906357384911342,
+      "awayGoalMae": -0.018094425859180308,
+      "totalGoalMae": 0.0016650588486200046
+    }
+  },
+  "productionCompatibility": "Offline-only experimental result. No production Elo V2, Poisson, StatsBomb, snapshot, evaluation, persistence, standings, qualification, route, or topology behavior changed."
+}

@@ -65,6 +65,29 @@ The combined fallback rate is now below the existing 50% decision threshold. How
 
 The attack/defense candidate remains offline-only because the model decision is now `goal_calibration_blocked`, not because combined profile coverage is above the 50% threshold.
 
+## Phase 12.21A3 Recalibration Result
+
+Phase 12.21A3 keeps the Phase 12.21A2 profile coverage policy unchanged and adds an offline recalibration harness over the same historical profiles. No profile-classification, shrinkage, recency, strength-of-schedule, or data thresholds were weakened.
+
+The selected offline candidate is:
+
+```text
+attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0
+```
+
+It uses damped log-linear contributions:
+
+| Contribution | Weight |
+|---|---:|
+| Attack | 0.65 |
+| Defense | 0.20 |
+| Elo | 0.00 |
+| Venue | 0.50 |
+
+The candidate was selected on WC2018 only and validated on WC2022. The WC2022 holdout result improved Brier and Log Loss versus Elo V2 while keeping total-goal MAE inside the material-regression threshold. Decision: `promote_recalibrated_candidate` for offline review only.
+
+Production profile usage remains unchanged. The recalibrated candidate is not active in runtime predictions, snapshots, evaluations, public routes, standings, qualification, or tournament projections.
+
 ## Remaining Data Gaps
 
 To improve profile quality without changing formulas, add reliable scored international fixtures before WC2018:

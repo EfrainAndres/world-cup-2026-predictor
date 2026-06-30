@@ -45,6 +45,30 @@ export {
 } from "./attack-defense-goal-model.js";
 
 export type {
+  AttackDefenseRecalibrationConfig,
+  GoalModelComponentDiagnostic,
+  ProfileContributionWeightInput,
+  RecalibratedGoalModelCandidate,
+  RecalibratedGoalModelOutput,
+} from "./attack-defense-recalibration.js";
+
+export {
+  ATTACK_DEFENSE_BLEND_WEIGHT_MAX,
+  ATTACK_DEFENSE_BLEND_WEIGHT_MIN,
+  ATTACK_DEFENSE_COMPONENT_WEIGHT_MAX,
+  ATTACK_DEFENSE_COMPONENT_WEIGHT_MIN,
+  ATTACK_DEFENSE_MAX_BLOWOUT_RATE_DELTA,
+  ATTACK_DEFENSE_MAX_CLAMP_RATE,
+  ATTACK_DEFENSE_PROFILE_CONTRIBUTION_MAX,
+  ATTACK_DEFENSE_PROFILE_CONTRIBUTION_MIN,
+  ATTACK_DEFENSE_RESIDUAL_XG_CAP,
+  computeGoalModelComponentDiagnostic,
+  computeProfileContributionWeight,
+  computeRecalibratedAttackDefenseGoalModel,
+  validateAttackDefenseRecalibrationConfig,
+} from "./attack-defense-recalibration.js";
+
+export type {
   EloToExpectedGoalsInput,
   EloToExpectedGoalsResult,
   EloToXgFormulaVersion,
