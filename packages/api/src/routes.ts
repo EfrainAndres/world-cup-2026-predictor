@@ -69,10 +69,14 @@ import type {
 import type {
   AttackDefenseActivationDecision,
   AttackDefenseGoalModelMode,
+  AttackDefenseRuntimeDiagnostics,
   AttackDefenseRuntimeReadiness,
 } from "./attack-defense-production-config.js";
 import type { AttackDefenseRuntimeProfilesResult } from "./attack-defense-runtime-profile-source.js";
-import { assessAttackDefenseRuntimeEligibility } from "./attack-defense-runtime-profile-source.js";
+import {
+  assessAttackDefenseRuntimeEligibility,
+  isValidAttackDefenseRuntimeProfile,
+} from "./attack-defense-runtime-profile-source.js";
 import {
   buildNeutralAttackDefenseProfile,
   computeRecalibratedAttackDefenseGoalModel,
@@ -1123,6 +1127,7 @@ export function predictMatchFromLiveElo(
     attackDefenseReadiness?: AttackDefenseRuntimeReadiness;
     attackDefenseActivationDecision?: AttackDefenseActivationDecision;
     attackDefenseProfiles?: AttackDefenseRuntimeProfilesResult;
+    attackDefenseDiagnostics?: AttackDefenseRuntimeDiagnostics;
   }
 ): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
@@ -1305,10 +1310,15 @@ export function predictMatchFromLiveElo(
     const adReadiness = deps?.attackDefenseReadiness;
 
     if (!adEnabled || adReadiness?.ready !== true || deps?.attackDefenseProfiles === undefined) {
+      const profileArtifactReason = deps?.attackDefenseDiagnostics?.runtimeProfileArtifactReason;
+      const unavailableReason =
+        profileArtifactReason === "artifact_unavailable" || profileArtifactReason === "artifact_mismatch"
+          ? profileArtifactReason
+          : "source_unavailable";
       attackDefenseGoalModelMeta = {
         mode: adRolloutMode,
         applied: false,
-        reason: adRolloutMode === "off" ? "disabled" : "source_unavailable",
+        reason: adRolloutMode === "off" ? "disabled" : unavailableReason,
         ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
         ...(adReadiness?.ready === true ? { candidateId: adReadiness.candidateId } : {}),
         baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
@@ -1319,69 +1329,123 @@ export function predictMatchFromLiveElo(
       };
     } else {
       const runtimeProfiles = deps.attackDefenseProfiles;
+      const resolvedHomeProfile = runtimeProfiles.profiles.get(homeCanonical);
+      const resolvedAwayProfile = runtimeProfiles.profiles.get(awayCanonical);
+      const homeProfile =
+        resolvedHomeProfile ??
+        buildNeutralAttackDefenseProfile(homeCanonical, runtimeProfiles.competitionEnv, "fallback");
+      const awayProfile =
+        resolvedAwayProfile ??
+        buildNeutralAttackDefenseProfile(awayCanonical, runtimeProfiles.competitionEnv, "fallback");
       const eligibility = assessAttackDefenseRuntimeEligibility(homeCanonical, awayCanonical, runtimeProfiles.profiles);
+      const canComputeDiagnostics =
+        isValidAttackDefenseRuntimeProfile(homeProfile) && isValidAttackDefenseRuntimeProfile(awayProfile);
 
-      if (!eligibility.eligible) {
+      if (!eligibility.eligible && adRolloutMode !== "shadow") {
         attackDefenseGoalModelMeta = {
           mode: adRolloutMode,
           applied: false,
-          reason: "profile_unavailable",
+          reason: eligibility.reason,
           ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
           candidateId: adReadiness.candidateId,
           baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
           effectiveExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
-          homeProfile: null,
-          awayProfile: null,
-          warnings: [eligibility.reason],
+          homeProfile:
+            resolvedHomeProfile === undefined
+              ? null
+              : {
+                  coverage: resolvedHomeProfile.coverage,
+                  matchCount: resolvedHomeProfile.attackSampleSize,
+                  cutoffAt: resolvedHomeProfile.cutoffAt,
+                },
+          awayProfile:
+            resolvedAwayProfile === undefined
+              ? null
+              : {
+                  coverage: resolvedAwayProfile.coverage,
+                  matchCount: resolvedAwayProfile.attackSampleSize,
+                  cutoffAt: resolvedAwayProfile.cutoffAt,
+                },
+          warnings: [],
         };
       } else {
-        const homeProfile = runtimeProfiles.profiles.get(homeCanonical) ?? buildNeutralAttackDefenseProfile(homeCanonical, runtimeProfiles.competitionEnv, "fallback");
-        const awayProfile = runtimeProfiles.profiles.get(awayCanonical) ?? buildNeutralAttackDefenseProfile(awayCanonical, runtimeProfiles.competitionEnv, "fallback");
         const neutralSite = false;
+        const shouldApplyAttackDefense = adAuthoritative && eligibility.eligible;
+        const shouldComputeShadowGoals = adRolloutMode === "shadow" && canComputeDiagnostics;
 
-        const adResult = computeRecalibratedAttackDefenseGoalModel(
-          {
-            homeTeamId: homeCanonical,
-            awayTeamId: awayCanonical,
-            homeProfile,
-            awayProfile,
-            competition: runtimeProfiles.competitionEnv,
-            homeElo: effectiveHomeEntry.eloRating,
-            awayElo: effectiveAwayEntry.eloRating,
-            neutralVenue: neutralSite,
-          },
-          adReadiness.candidateConfig
-        );
+        const adResult =
+          shouldApplyAttackDefense || shouldComputeShadowGoals
+            ? computeRecalibratedAttackDefenseGoalModel(
+                {
+                  homeTeamId: homeCanonical,
+                  awayTeamId: awayCanonical,
+                  homeProfile,
+                  awayProfile,
+                  competition: runtimeProfiles.competitionEnv,
+                  homeElo: effectiveHomeEntry.eloRating,
+                  awayElo: effectiveAwayEntry.eloRating,
+                  neutralVenue: neutralSite,
+                },
+                adReadiness.candidateConfig
+              )
+            : null;
 
-        if (adAuthoritative) {
+        if (shouldApplyAttackDefense && adResult !== null) {
           effectiveHomeXg = adResult.homeXg;
           effectiveAwayXg = adResult.awayXg;
         }
 
         attackDefenseGoalModelMeta = {
           mode: adRolloutMode,
-          applied: adAuthoritative,
-          reason: adAuthoritative ? "applied" : adRolloutMode === "shadow" ? "shadow" : "not_authoritative",
+          applied: shouldApplyAttackDefense,
+          reason:
+            eligibility.eligible
+              ? shouldApplyAttackDefense
+                ? "applied"
+                : adRolloutMode === "shadow"
+                  ? "shadow"
+                  : "not_authoritative"
+              : eligibility.reason,
           ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
           candidateId: adReadiness.candidateId,
           baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
           effectiveExpectedGoals: { home: effectiveHomeXg, away: effectiveAwayXg },
-          ...(adRolloutMode === "shadow" ? { shadowExpectedGoals: { home: adResult.homeXg, away: adResult.awayXg } } : {}),
-          homeProfile: {
-            coverage: homeProfile.coverage,
-            matchCount: homeProfile.attackSampleSize,
-            cutoffAt: homeProfile.cutoffAt,
-          },
-          awayProfile: {
-            coverage: awayProfile.coverage,
-            matchCount: awayProfile.attackSampleSize,
-            cutoffAt: awayProfile.cutoffAt,
-          },
-          warnings: adResult.warnings ?? [],
+          ...(adRolloutMode === "shadow" && adResult !== null
+            ? { shadowExpectedGoals: { home: adResult.homeXg, away: adResult.awayXg } }
+            : {}),
+          homeProfile:
+            resolvedHomeProfile === undefined
+              ? null
+              : {
+                  coverage: resolvedHomeProfile.coverage,
+                  matchCount: resolvedHomeProfile.attackSampleSize,
+                  cutoffAt: resolvedHomeProfile.cutoffAt,
+                },
+          awayProfile:
+            resolvedAwayProfile === undefined
+              ? null
+              : {
+                  coverage: resolvedAwayProfile.coverage,
+                  matchCount: resolvedAwayProfile.attackSampleSize,
+                  cutoffAt: resolvedAwayProfile.cutoffAt,
+                },
+          warnings: adResult?.warnings ?? [],
         };
       }
     }
   }
+
+  // Capture current authoritative xG as the StatsBomb stage input.
+  // After the Attack/Defense stage, effectiveHomeXg/effectiveAwayXg may already differ from the
+  // original Elo baseline. StatsBomb must compute its adjustment from the incoming authoritative value,
+  // not from the original Elo result, so that the pipeline stages compose correctly.
+  const sbStageInputHomeXg = effectiveHomeXg;
+  const sbStageInputAwayXg = effectiveAwayXg;
+  const sbStageInputDiffersFromElo =
+    sbStageInputHomeXg !== xgResult.homeExpectedGoals || sbStageInputAwayXg !== xgResult.awayExpectedGoals;
+  const originalEloXgDiagnostic = sbStageInputDiffersFromElo
+    ? { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals }
+    : undefined;
 
   // StatsBomb signal — opt-in by request, or controlled by server-side production dependencies.
   const statsBombRolloutMode = deps?.statsBombSignalMode;
@@ -1406,14 +1470,9 @@ export function predictMatchFromLiveElo(
       provider: "statsbomb_open_data",
       cutoffAt: statsBombCutoffAt,
       signalVersion: STATSBOMB_SIGNAL_VERSION,
-      baselineExpectedGoals: {
-        home: xgResult.homeExpectedGoals,
-        away: xgResult.awayExpectedGoals
-      },
-      adjustedExpectedGoals: {
-        home: xgResult.homeExpectedGoals,
-        away: xgResult.awayExpectedGoals
-      },
+      baselineExpectedGoals: { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
+      ...(originalEloXgDiagnostic !== undefined ? { originalEloExpectedGoals: originalEloXgDiagnostic } : {}),
+      adjustedExpectedGoals: { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
       homeProfile: null,
       awayProfile: null,
       warnings: []
@@ -1441,14 +1500,9 @@ export function predictMatchFromLiveElo(
         provider: "statsbomb_open_data",
         cutoffAt: statsBombCutoffAt,
         signalVersion: STATSBOMB_SIGNAL_VERSION,
-        baselineExpectedGoals: {
-          home: xgResult.homeExpectedGoals,
-          away: xgResult.awayExpectedGoals
-        },
-        adjustedExpectedGoals: {
-          home: xgResult.homeExpectedGoals,
-          away: xgResult.awayExpectedGoals
-        },
+        baselineExpectedGoals: { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
+        ...(originalEloXgDiagnostic !== undefined ? { originalEloExpectedGoals: originalEloXgDiagnostic } : {}),
+        adjustedExpectedGoals: { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
         homeProfile: null,
         awayProfile: null,
         warnings: [
@@ -1469,8 +1523,8 @@ export function predictMatchFromLiveElo(
       const adjustment = calculateStatsBombPredictionAdjustment({
         homeProfile,
         awayProfile,
-        baselineHomeXg: xgResult.homeExpectedGoals,
-        baselineAwayXg: xgResult.awayExpectedGoals,
+        baselineHomeXg: sbStageInputHomeXg,
+        baselineAwayXg: sbStageInputAwayXg,
         globalPriorXgForPer90: STATSBOMB_GLOBAL_PRIOR_XG_FOR_PER_90,
         globalPriorXgAgainstPer90: STATSBOMB_GLOBAL_PRIOR_XG_AGAINST_PER_90,
         ...(request.statsBombSignal?.maxWeight !== undefined
@@ -1504,10 +1558,8 @@ export function predictMatchFromLiveElo(
             }
           : {}),
         signalVersion: STATSBOMB_SIGNAL_VERSION,
-        baselineExpectedGoals: {
-          home: xgResult.homeExpectedGoals,
-          away: xgResult.awayExpectedGoals
-        },
+        baselineExpectedGoals: { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
+        ...(originalEloXgDiagnostic !== undefined ? { originalEloExpectedGoals: originalEloXgDiagnostic } : {}),
         adjustedExpectedGoals: {
           home: effectiveHomeXg,
           away: effectiveAwayXg

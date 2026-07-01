@@ -9,7 +9,11 @@ import type {
   AttackDefenseRuntimeDiagnostics,
   AttackDefenseRuntimeReadiness,
 } from "./attack-defense-production-config.js";
-import { buildAttackDefenseRuntimeProfiles } from "./attack-defense-runtime-profile-source.server.js";
+import {
+  AttackDefenseRuntimeProfileArtifactError,
+  buildAttackDefenseRuntimeProfiles,
+  buildAttackDefenseRuntimeProfilesFromArtifact,
+} from "./attack-defense-runtime-profile-source.server.js";
 import type { AttackDefenseRuntimeProfilesResult } from "./attack-defense-runtime-profile-source.js";
 
 export interface AttackDefenseProductionDependencies {
@@ -23,6 +27,7 @@ export interface AttackDefenseProductionDependencies {
 export function createAttackDefenseProductionDependencies(input: {
   env?: Record<string, string | undefined>;
   selectedCandidateArtifact?: unknown;
+  runtimeProfilesArtifact?: unknown;
   builtAt?: string;
 } = {}): AttackDefenseProductionDependencies {
   const env = input.env ?? process.env;
@@ -42,6 +47,13 @@ export function createAttackDefenseProductionDependencies(input: {
         readinessReason: "feature_disabled",
         candidateId: null,
         lastLoadStatus: "not_attempted",
+        runtimeProfileArtifactReady: false,
+        runtimeProfileArtifactReason: "not_attempted",
+        runtimeProfileArtifactFingerprint: null,
+        runtimeProfileArtifactFingerprintShort: null,
+        runtimeProfileArtifactSchemaVersion: null,
+        runtimeProfileCount: null,
+        runtimeProfileSourceFixtureCount: null,
       },
     };
   }
@@ -57,6 +69,13 @@ export function createAttackDefenseProductionDependencies(input: {
     readinessReason: readiness.ready ? "ready" : readiness.reason,
     candidateId: readiness.ready ? readiness.candidateId : null,
     lastLoadStatus: readiness.ready ? "loaded" : "failed",
+    runtimeProfileArtifactReady: false,
+    runtimeProfileArtifactReason: "not_attempted",
+    runtimeProfileArtifactFingerprint: null,
+    runtimeProfileArtifactFingerprintShort: null,
+    runtimeProfileArtifactSchemaVersion: null,
+    runtimeProfileCount: null,
+    runtimeProfileSourceFixtureCount: null,
   };
 
   if (!readiness.ready) {
@@ -70,13 +89,28 @@ export function createAttackDefenseProductionDependencies(input: {
 
   let profiles: AttackDefenseRuntimeProfilesResult | undefined;
   try {
-    profiles = buildAttackDefenseRuntimeProfiles(input.builtAt !== undefined ? { builtAt: input.builtAt } : {});
-  } catch {
+    profiles =
+      input.runtimeProfilesArtifact === undefined
+        ? buildAttackDefenseRuntimeProfiles(input.builtAt !== undefined ? { builtAt: input.builtAt } : {})
+        : buildAttackDefenseRuntimeProfilesFromArtifact({
+            artifact: input.runtimeProfilesArtifact,
+            ...(input.builtAt === undefined ? {} : { builtAt: input.builtAt }),
+          });
+  } catch (error) {
+    const reason =
+      error instanceof AttackDefenseRuntimeProfileArtifactError
+        ? error.reason
+        : "artifact_unavailable";
     return {
       attackDefenseMode: mode,
       attackDefenseReadiness: readiness,
       attackDefenseActivationDecision: activationDecision,
-      attackDefenseDiagnostics: { ...diagnostics, lastLoadStatus: "failed" },
+      attackDefenseDiagnostics: {
+        ...diagnostics,
+        lastLoadStatus: "failed",
+        runtimeProfileArtifactReady: false,
+        runtimeProfileArtifactReason: reason,
+      },
     };
   }
 
@@ -85,6 +119,15 @@ export function createAttackDefenseProductionDependencies(input: {
     attackDefenseReadiness: readiness,
     attackDefenseActivationDecision: activationDecision,
     attackDefenseProfiles: profiles,
-    attackDefenseDiagnostics: diagnostics,
+    attackDefenseDiagnostics: {
+      ...diagnostics,
+      runtimeProfileArtifactReady: true,
+      runtimeProfileArtifactReason: "ready",
+      runtimeProfileArtifactFingerprint: profiles.artifact.fingerprint,
+      runtimeProfileArtifactFingerprintShort: profiles.artifact.fingerprintShort,
+      runtimeProfileArtifactSchemaVersion: profiles.artifact.schemaVersion,
+      runtimeProfileCount: profiles.artifact.profileCount,
+      runtimeProfileSourceFixtureCount: profiles.artifact.sourceFixtureCount,
+    },
   };
 }

@@ -27,6 +27,13 @@ export interface AttackDefenseRuntimeDiagnostics {
   readinessReason: string;
   candidateId: string | null;
   lastLoadStatus: "not_attempted" | "loaded" | "failed";
+  runtimeProfileArtifactReady: boolean;
+  runtimeProfileArtifactReason: "not_attempted" | "ready" | "artifact_unavailable" | "artifact_mismatch";
+  runtimeProfileArtifactFingerprint: string | null;
+  runtimeProfileArtifactFingerprintShort: string | null;
+  runtimeProfileArtifactSchemaVersion: string | null;
+  runtimeProfileCount: number | null;
+  runtimeProfileSourceFixtureCount: number | null;
 }
 
 export const ATTACK_DEFENSE_SELECTED_CANDIDATE_SCHEMA_VERSION = "1.0.0";

@@ -81,6 +81,22 @@ describe("server-runtime.ts can reach Phase 12.21B production dependencies", () 
   test("imports embeddedAttackDefenseSelectedCandidateArtifact", () => {
     expect(src).toMatch(/embeddedAttackDefenseSelectedCandidateArtifact/);
   });
+
+  test("exports diagnostics-only attack/defense dependency factory", () => {
+    expect(src).toMatch(/getAttackDefenseProductionDependenciesForDiagnostics/);
+  });
+});
+
+describe("Next.js build tracing includes immutable Attack/Defense runtime artifact", () => {
+  const src = readSrc("apps/web/next.config.ts");
+
+  test("traces attack-defense-runtime-profiles.json", () => {
+    expect(src).toMatch(/attack-defense-runtime-profiles\.json/);
+  });
+
+  test("does not expose a public Attack/Defense environment variable", () => {
+    expect(src).not.toMatch(/NEXT_PUBLIC_.*ATTACK_DEFENSE/);
+  });
 });
 
 describe("index.ts barrel does not export server-only AD modules", () => {
@@ -96,5 +112,13 @@ describe("index.ts barrel does not export server-only AD modules", () => {
 
   test("does not export historical-international-fixtures", () => {
     expect(src).not.toMatch(/historical-international-fixtures/);
+  });
+
+  test("does not export the runtime eligibility diagnostic script", () => {
+    expect(src).not.toMatch(/list-attack-defense-runtime-eligibility/);
+  });
+
+  test("does not export raw runtime profile artifact", () => {
+    expect(src).not.toMatch(/attack-defense-runtime-profiles/);
   });
 });

@@ -75,5 +75,35 @@ describe("createAttackDefenseProductionDependencies — mode on", () => {
     expect(deps.attackDefenseMode).toBe("on");
     expect(deps.attackDefenseActivationDecision).toBe("production_ready");
     expect(deps.attackDefenseProfiles).toBeDefined();
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactReady).toBe(true);
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactFingerprint).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(deps.attackDefenseDiagnostics.runtimeProfileCount).toBe(48);
+    expect(deps.attackDefenseDiagnostics.runtimeProfileSourceFixtureCount).toBe(312);
+  });
+
+  test("missing runtime profile artifact fails closed", () => {
+    const deps = createAttackDefenseProductionDependencies({
+      env: { ATTACK_DEFENSE_GOAL_MODEL_MODE: "on" },
+      selectedCandidateArtifact: loadRealArtifact(),
+      runtimeProfilesArtifact: null,
+    });
+
+    expect(deps.attackDefenseActivationDecision).toBe("production_ready");
+    expect(deps.attackDefenseProfiles).toBeUndefined();
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactReady).toBe(false);
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactReason).toBe("artifact_unavailable");
+  });
+
+  test("malformed runtime profile artifact fails closed", () => {
+    const deps = createAttackDefenseProductionDependencies({
+      env: { ATTACK_DEFENSE_GOAL_MODEL_MODE: "on" },
+      selectedCandidateArtifact: loadRealArtifact(),
+      runtimeProfilesArtifact: { schemaVersion: "1.0.0" },
+    });
+
+    expect(deps.attackDefenseActivationDecision).toBe("production_ready");
+    expect(deps.attackDefenseProfiles).toBeUndefined();
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactReady).toBe(false);
+    expect(deps.attackDefenseDiagnostics.runtimeProfileArtifactReason).toBe("artifact_mismatch");
   });
 });

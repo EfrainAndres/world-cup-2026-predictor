@@ -573,3 +573,345 @@ describe("MatchSimulationResults — scoreline presentation: StatsBomb mode isol
     expect(html).not.toContain("StatsBomb enriched");
   });
 });
+
+// ── Attack/Defense goal model section ────────────────────────────────────────
+
+function makeLiveResultWithAttackDefense(
+  attackDefenseGoalModel: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"]
+): PredictMatchFromLiveEloSuccessResponse {
+  const response = predictDashboardMatchFromLiveElo({
+    homeTeam: "France",
+    awayTeam: "Brazil",
+    preset: "balanced",
+    maxGoals: 6,
+    mostLikelyScorelineLimit: 3
+  });
+  if (response.status !== "success") throw new Error("Expected success");
+  return { ...response, attackDefenseGoalModel };
+}
+
+const AD_PROFILE_SUMMARY = {
+  coverage: "partial",
+  matchCount: 12,
+  cutoffAt: "2026-06-11",
+};
+
+const AD_META_OFF: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"] = {
+  mode: "off",
+  applied: false,
+  reason: "disabled",
+  activationDecision: "disabled",
+  baselineExpectedGoals: { home: 1.35, away: 1.10 },
+  effectiveExpectedGoals: { home: 1.35, away: 1.10 },
+  homeProfile: null,
+  awayProfile: null,
+  warnings: [],
+};
+
+const AD_META_SHADOW: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"] = {
+  mode: "shadow",
+  applied: false,
+  reason: "shadow",
+  activationDecision: "shadow_ready",
+  candidateId: "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+  baselineExpectedGoals: { home: 1.35, away: 1.10 },
+  effectiveExpectedGoals: { home: 1.35, away: 1.10 },
+  shadowExpectedGoals: { home: 1.48, away: 0.95 },
+  homeProfile: AD_PROFILE_SUMMARY,
+  awayProfile: { ...AD_PROFILE_SUMMARY, coverage: "full", matchCount: 20 },
+  warnings: [],
+};
+
+const AD_META_ON_APPLIED: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"] = {
+  mode: "on",
+  applied: true,
+  reason: "applied",
+  activationDecision: "production_ready",
+  candidateId: "attack_defense_log_linear_damped__a0p65__d0p20__e0p00__v0p50__b1p00__r0p20__damp0",
+  baselineExpectedGoals: { home: 1.35, away: 1.10 },
+  effectiveExpectedGoals: { home: 1.48, away: 0.95 },
+  homeProfile: AD_PROFILE_SUMMARY,
+  awayProfile: { ...AD_PROFILE_SUMMARY, coverage: "full", matchCount: 20 },
+  warnings: [],
+};
+
+const AD_META_ON_FALLBACK: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"] = {
+  mode: "on",
+  applied: false,
+  reason: "away_profile_fallback",
+  activationDecision: "production_ready",
+  baselineExpectedGoals: { home: 1.35, away: 1.10 },
+  effectiveExpectedGoals: { home: 1.35, away: 1.10 },
+  homeProfile: AD_PROFILE_SUMMARY,
+  awayProfile: { ...AD_PROFILE_SUMMARY, coverage: "fallback", matchCount: 0 },
+  warnings: [],
+};
+
+const AD_META_ON_SPARSE: PredictMatchFromLiveEloSuccessResponse["attackDefenseGoalModel"] = {
+  mode: "on",
+  applied: false,
+  reason: "away_profile_sparse",
+  activationDecision: "production_ready",
+  baselineExpectedGoals: { home: 1.35, away: 1.10 },
+  effectiveExpectedGoals: { home: 1.35, away: 1.10 },
+  homeProfile: AD_PROFILE_SUMMARY,
+  awayProfile: { ...AD_PROFILE_SUMMARY, coverage: "sparse", matchCount: 1 },
+  warnings: [],
+};
+
+describe("MatchSimulationResults — Attack/Defense section absent", () => {
+  test("no AD disclosure when attackDefenseGoalModel is undefined", () => {
+    const response = predictDashboardMatchFromLiveElo({
+      homeTeam: "France",
+      awayTeam: "Brazil",
+      preset: "balanced",
+      maxGoals: 6,
+      mostLikelyScorelineLimit: 3
+    });
+    if (response.status !== "success") throw new Error("Expected success");
+    const html = renderToStaticMarkup(<MatchSimulationResults result={response} />);
+    expect(html).not.toContain("Attack/Defense model");
+    expect(html).not.toContain("Attack/Defense technical details");
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense off state", () => {
+  test("shows Baseline Elo V2 title and Off mode", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_OFF)} />
+    );
+    expect(html).toContain("Attack/Defense model");
+    expect(html).toContain("Baseline Elo V2");
+    expect(html).toContain("Off");
+  });
+
+  test("shows Applied: No and Authoritative: No", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_OFF)} />
+    );
+    expect(html).toContain("Authoritative");
+    expect(html).not.toContain("Yes");
+  });
+
+  test("shows human-readable reason 'Disabled' not raw enum 'disabled'", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_OFF)} />
+    );
+    expect(html).toContain("Disabled");
+    // The raw enum value 'disabled' must not appear as user-visible primary copy in a label
+    // (it may appear inside the activationDecision row with formatting, which is acceptable)
+    const labelMatches = html.match(/<dt[^>]*>Reason<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/);
+    if (labelMatches) {
+      expect(labelMatches[1]).not.toBe("disabled");
+    }
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense shadow state", () => {
+  test("shows Shadow comparison title and Shadow badge", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Shadow comparison");
+    expect(html).toContain("Attack/Defense model");
+  });
+
+  test("shadow Applied shows 'Yes, shadow calculation only'", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Yes, shadow calculation only");
+  });
+
+  test("shadow Authoritative is No", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Authoritative");
+    const authMatch = html.match(/Authoritative<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/);
+    if (authMatch) {
+      expect(authMatch[1]).toContain("No");
+    }
+  });
+
+  test("shadow reason shows human-readable value", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Shadow only — Elo V2 remains authoritative");
+  });
+
+  test("shadow Shadow xG is visible in details", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Shadow xG");
+    expect(html).toContain("1.48");
+    expect(html).toContain("0.95");
+  });
+
+  test("shadow baseline xG visible in details", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Baseline xG");
+    expect(html).toContain("1.35");
+    expect(html).toContain("1.10");
+  });
+
+  test("shadow authoritative xG equals baseline (1.35 / 1.10)", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Authoritative xG");
+    const authXgMatch = html.match(/Authoritative xG<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/);
+    if (authXgMatch) {
+      expect(authXgMatch[1]).toContain("1.35");
+    }
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense on applied state", () => {
+  test("shows Attack/Defense enriched title and badge", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    expect(html).toContain("Attack/Defense enriched");
+  });
+
+  test("on applied Applied is Yes and Authoritative is Yes", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    const yesMatches = (html.match(/>Yes</g) ?? []).length;
+    expect(yesMatches).toBeGreaterThanOrEqual(2);
+  });
+
+  test("on applied Candidate xG shows effective values", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    expect(html).toContain("Candidate xG");
+    expect(html).toContain("1.48");
+    expect(html).toContain("0.95");
+  });
+
+  test("on applied candidate ID rendered in details", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    expect(html).toContain("Candidate ID");
+    expect(html).toContain("attack_defense_log_linear_damped");
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense on fallback state", () => {
+  test("shows Baseline Elo V2 title when on mode but not applied", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_FALLBACK)} />
+    );
+    expect(html).toContain("Attack/Defense model");
+    expect(html).toContain("Baseline Elo V2");
+  });
+
+  test("fallback Applied is No", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_FALLBACK)} />
+    );
+    expect(html).not.toContain("Yes, shadow");
+    expect(html).toContain("Authoritative");
+  });
+
+  test("fallback reason shows sanitized human-readable text", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_FALLBACK)} />
+    );
+    expect(html).toContain("Away profile uses fallback data");
+    const labelMatches = html.match(/Reason<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/);
+    if (labelMatches) {
+      expect(labelMatches[1]).not.toBe("away_profile_fallback");
+    }
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense sparse rejection state", () => {
+  test("sparse reason shows sanitized human-readable text", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_SPARSE)} />
+    );
+    expect(html).toContain("Away profile coverage is sparse");
+    const labelMatches = html.match(/Reason<\/dt>\s*<dd[^>]*>(.*?)<\/dd>/);
+    if (labelMatches) {
+      expect(labelMatches[1]).not.toBe("away_profile_sparse");
+    }
+  });
+});
+
+describe("MatchSimulationResults — Attack/Defense metadata edge cases", () => {
+  test("null candidate xG shows Not available", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_OFF)} />
+    );
+    expect(html).toContain("Not available");
+  });
+
+  test("fallback profiles remain visible for coverage and sample size", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_FALLBACK)} />
+    );
+    expect(html).toContain("fallback");
+    expect(html).toContain(">0<");
+  });
+
+  test("Attack/Defense disclosure is collapsed by default (details element present)", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_SHADOW)} />
+    );
+    expect(html).toContain("Attack/Defense technical details");
+    expect(html).not.toMatch(/<details[^>]*\sopen[^>]*>[\s\S]*Attack\/Defense technical details/);
+  });
+
+  test("StatsBomb disclosure renders independently alongside AD disclosure", () => {
+    const resultWithBoth = {
+      ...makeLiveResultWithAttackDefense(AD_META_SHADOW),
+      statsBombSignal: {
+        enabled: true,
+        applied: false,
+        reason: "applied" as const,
+        rolloutMode: "shadow" as const,
+        activationDecision: "shadow_ready" as const,
+        authoritative: "baseline" as const,
+        provider: "statsbomb_open_data" as const,
+        cutoffAt: "2026-06-01T00:00:00.000Z",
+        signalVersion: "statsbomb-signal-v1",
+        baselineExpectedGoals: { home: 1.35, away: 1.10 },
+        adjustedExpectedGoals: { home: 1.35, away: 1.10 },
+        shadowAdjustedExpectedGoals: { home: 1.40, away: 1.05 },
+        homeProfile: { coverage: "partial" as const, freshness: "stale" as const, matchCount: 10, latestMatchAt: "2024-07-01", weight: 0.14 },
+        awayProfile: { coverage: "partial" as const, freshness: "stale" as const, matchCount: 8, latestMatchAt: "2024-06-30", weight: 0.12 },
+        warnings: []
+      }
+    };
+    const html = renderToStaticMarkup(<MatchSimulationResults result={resultWithBoth} />);
+    expect(html).toContain("Attack/Defense model");
+    expect(html).toContain("StatsBomb technical details");
+    expect(html).toContain("Shadow comparison");
+    expect(html).toContain("Baseline model");
+  });
+
+  test("scoreline presentation remains unchanged with AD section present", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    expect(html).toContain("Scoreline prediction");
+    expect(html).toContain("Recommended score");
+    expect(html).toContain("Most likely outcome:");
+  });
+
+  test("AD section renders without horizontal overflow risk (no long unbreakable strings in labels)", () => {
+    const html = renderToStaticMarkup(
+      <MatchSimulationResults result={makeLiveResultWithAttackDefense(AD_META_ON_APPLIED)} />
+    );
+    expect(html).toMatch(/break-all[\s\S]*attack_defense_log_linear_damped|attack_defense_log_linear_damped[\s\S]*break-all/);
+  });
+});

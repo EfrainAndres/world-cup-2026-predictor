@@ -11,14 +11,15 @@ const workspaceSourceRoots = [
 // files outside the Next.js app directory (e.g. docs/ artifacts).
 const MONOREPO_ROOT = path.resolve(process.cwd(), "../..");
 
-// StatsBomb compact artifacts are loaded at runtime via readFileSync
-// with a path derived from import.meta.url.  @vercel/nft cannot
-// statically trace dynamic paths, so we declare them explicitly.
+// Server runtime artifacts are loaded outside the app directory. Declare them
+// explicitly so @vercel/nft includes the exact immutable production artifacts
+// in Vercel's serverless output instead of relying on a fallback data path.
 // Paths are relative to the Next.js app directory (apps/web/), which is
 // process.cwd() during a Next.js build.
-const STATSBOMB_TRACING_INCLUDES = [
+const SERVER_ARTIFACT_TRACING_INCLUDES = [
   "../../docs/model-results/artifacts/statsbomb-team-performance-profiles.json",
-  "../../docs/model-results/artifacts/statsbomb-backtesting-expanded-elo.json"
+  "../../docs/model-results/artifacts/statsbomb-backtesting-expanded-elo.json",
+  "../../packages/api/src/data/attack-defense-runtime-profiles.json"
 ];
 
 function isWorkspaceSourceContext(context: string): boolean {
@@ -33,7 +34,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@world-cup-2026-predictor/api"],
   outputFileTracingRoot: MONOREPO_ROOT,
   outputFileTracingIncludes: {
-    "/**": STATSBOMB_TRACING_INCLUDES
+    "/**": SERVER_ARTIFACT_TRACING_INCLUDES
   },
   // postgres uses node: built-in imports (node:fs, node:path, node:net, etc.)
   // that webpack cannot bundle. Mark it as a server-only external so Next.js
@@ -49,6 +50,7 @@ const nextConfig: NextConfig = {
         ...config.resolve.fallback,
         crypto: false,
         fs: false,
+        module: false,
         net: false,
         tls: false,
         perf_hooks: false

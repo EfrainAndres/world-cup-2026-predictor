@@ -20,6 +20,7 @@
     "historical-data:validate": "tsx ./src/historical-international-data-cli.ts",
     "goal-model:compare": "tsx ./src/attack-defense-goal-model-cli.ts",
     "goal-model:recalibrate": "tsx ./src/attack-defense-goal-model-recalibration-cli.ts",
+    "attack-defense:eligibility": "tsx ./src/scripts/list-attack-defense-runtime-eligibility.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

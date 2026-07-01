@@ -7,6 +7,7 @@ import { formatElo, formatPercent } from "../lib/api-client";
 import { getTournamentFormDisplayState } from "../lib/tournament-form-helpers";
 import { StatusPill } from "./StatusPill";
 import { MatchContextDisplay } from "./MatchContextDisplay";
+import { TechnicalDisclosure } from "./TechnicalDisclosure";
 
 interface MatchSimulationResultsProps {
   result: SimulateMatchSuccessResponse | PredictMatchFromLiveEloSuccessResponse;
@@ -76,6 +77,30 @@ function formatStatsBombReason(reason: string): string {
       return "Stale profile";
     default:
       return formatStatsBombLabel(reason);
+  }
+}
+
+function formatAttackDefenseReason(reason: string): string {
+  switch (reason) {
+    case "disabled": return "Disabled";
+    case "applied": return "Applied";
+    case "shadow": return "Shadow only — Elo V2 remains authoritative";
+    case "not_authoritative": return "Not yet authoritative";
+    case "source_unavailable": return "Runtime profile artifact unavailable";
+    case "artifact_unavailable": return "Runtime profile artifact unavailable";
+    case "artifact_mismatch": return "Runtime profile artifact mismatch";
+    case "home_profile_missing": return "Home profile is unavailable";
+    case "away_profile_missing": return "Away profile is unavailable";
+    case "home_profile_sparse": return "Home profile coverage is sparse";
+    case "away_profile_sparse": return "Away profile coverage is sparse";
+    case "home_profile_fallback": return "Home profile uses fallback data";
+    case "away_profile_fallback": return "Away profile uses fallback data";
+    case "insufficient_home_sample": return "Home profile sample is insufficient";
+    case "insufficient_away_sample": return "Away profile sample is insufficient";
+    case "invalid_home_profile": return "Home profile is invalid";
+    case "invalid_away_profile": return "Away profile is invalid";
+    default:
+      return reason.charAt(0).toUpperCase() + reason.slice(1).replaceAll("_", " ");
   }
 }
 
@@ -206,6 +231,165 @@ function ScorelinePresentationSection({
   );
 }
 
+function AttackDefenseGoalModelSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
+  const adMeta = result.attackDefenseGoalModel;
+  if (adMeta === undefined) return null;
+
+  const { mode, applied, reason, candidateId, activationDecision, baselineExpectedGoals, effectiveExpectedGoals, shadowExpectedGoals, homeProfile, awayProfile, warnings } = adMeta;
+
+  const isShadow = mode === "shadow";
+  const isAuthoritative = mode === "on" && applied;
+
+  let sectionTitle: string;
+  let badgeLabel: string;
+  let badgeStyle: string;
+
+  if (isAuthoritative) {
+    sectionTitle = "Attack/Defense enriched";
+    badgeLabel = "Attack/Defense enriched";
+    badgeStyle = "bg-emerald-100 text-emerald-800";
+  } else if (isShadow) {
+    sectionTitle = "Shadow comparison";
+    badgeLabel = "Shadow comparison";
+    badgeStyle = "bg-amber-100 text-amber-800";
+  } else {
+    sectionTitle = "Baseline Elo V2";
+    badgeLabel = "Baseline model";
+    badgeStyle = "bg-slate-200 text-slate-800";
+  }
+
+  const candidateXg = isShadow ? (shadowExpectedGoals ?? null) : (isAuthoritative ? effectiveExpectedGoals : null);
+  const shadowDeltaHome = isShadow && shadowExpectedGoals !== undefined ? shadowExpectedGoals.home - baselineExpectedGoals.home : null;
+  const shadowDeltaAway = isShadow && shadowExpectedGoals !== undefined ? shadowExpectedGoals.away - baselineExpectedGoals.away : null;
+  const appliedDeltaHome = isAuthoritative ? effectiveExpectedGoals.home - baselineExpectedGoals.home : null;
+  const appliedDeltaAway = isAuthoritative ? effectiveExpectedGoals.away - baselineExpectedGoals.away : null;
+  const deltaHome = isShadow ? shadowDeltaHome : appliedDeltaHome;
+  const deltaAway = isShadow ? shadowDeltaAway : appliedDeltaAway;
+
+  const formattedReason = formatAttackDefenseReason(reason);
+  const appliedDisplay = isAuthoritative ? "Yes" : isShadow ? "Yes, shadow calculation only" : "No";
+  const artifactCutoff = homeProfile?.cutoffAt ?? awayProfile?.cutoffAt ?? null;
+
+  return (
+    <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h4 className="text-sm font-semibold text-slate-950">Attack/Defense model</h4>
+          <p className="mt-1 text-sm text-slate-700">{sectionTitle}</p>
+        </div>
+        <span
+          className={`inline-flex min-h-8 items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeStyle}`}
+        >
+          {badgeLabel}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Mode</dt>
+          <dd className="mt-1 text-slate-950">{mode === "off" ? "Off" : mode === "shadow" ? "Shadow" : "On"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Applied</dt>
+          <dd className="mt-1 text-slate-950">{appliedDisplay}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Authoritative</dt>
+          <dd className="mt-1 text-slate-950">{isAuthoritative ? "Yes" : "No"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Reason</dt>
+          <dd className="mt-1 text-slate-950">{formattedReason}</dd>
+        </div>
+      </dl>
+
+      <p className="mt-3 text-xs text-slate-600">
+        {isShadow
+          ? "Shadow mode computed a comparison only; the displayed prediction remains Elo V2 baseline."
+          : isAuthoritative
+            ? "Attack/Defense profile data replaced the Elo V2 baseline xG before scoreline probabilities."
+            : `Attack/Defense did not affect this prediction: ${formattedReason}.`}
+      </p>
+
+      <TechnicalDisclosure summary="Attack/Defense technical details" className="mt-3">
+        <dl className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <dt className="font-semibold text-slate-500">Baseline xG</dt>
+            <dd className="tabular-nums">
+              {baselineExpectedGoals.home.toFixed(2)} / {baselineExpectedGoals.away.toFixed(2)}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">
+              {isShadow ? "Shadow xG" : "Candidate xG"}
+            </dt>
+            <dd className="tabular-nums">
+              {candidateXg !== null
+                ? `${candidateXg.home.toFixed(2)} / ${candidateXg.away.toFixed(2)}`
+                : "Not available"}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Authoritative xG</dt>
+            <dd className="tabular-nums">
+              {effectiveExpectedGoals.home.toFixed(2)} / {effectiveExpectedGoals.away.toFixed(2)}
+            </dd>
+          </div>
+          {deltaHome !== null && deltaAway !== null ? (
+            <div>
+              <dt className="font-semibold text-slate-500">xG delta</dt>
+              <dd className="tabular-nums">
+                {deltaHome >= 0 ? "+" : ""}{deltaHome.toFixed(2)} / {deltaAway >= 0 ? "+" : ""}{deltaAway.toFixed(2)}
+              </dd>
+            </div>
+          ) : null}
+          <div>
+            <dt className="font-semibold text-slate-500">Home coverage</dt>
+            <dd>{homeProfile !== null ? homeProfile.coverage : "Not available"}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Away coverage</dt>
+            <dd>{awayProfile !== null ? awayProfile.coverage : "Not available"}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Home sample size</dt>
+            <dd className="tabular-nums">{homeProfile !== null ? homeProfile.matchCount : "Not available"}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold text-slate-500">Away sample size</dt>
+            <dd className="tabular-nums">{awayProfile !== null ? awayProfile.matchCount : "Not available"}</dd>
+          </div>
+          {artifactCutoff !== null ? (
+            <div>
+              <dt className="font-semibold text-slate-500">Artifact cutoff</dt>
+              <dd>{artifactCutoff}</dd>
+            </div>
+          ) : null}
+          {activationDecision !== undefined ? (
+            <div>
+              <dt className="font-semibold text-slate-500">Activation</dt>
+              <dd>{activationDecision.replaceAll("_", " ")}</dd>
+            </div>
+          ) : null}
+          {candidateId !== undefined ? (
+            <div className="sm:col-span-2">
+              <dt className="font-semibold text-slate-500">Candidate ID</dt>
+              <dd className="break-all font-mono text-xs">{candidateId}</dd>
+            </div>
+          ) : null}
+        </dl>
+        {warnings.length > 0 ? (
+          <ul className="mt-2 space-y-1 text-amber-800">
+            {warnings.map((w) => (
+              <li key={w}>- {w}</li>
+            ))}
+          </ul>
+        ) : null}
+      </TechnicalDisclosure>
+    </div>
+  );
+}
+
 function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuccessResponse }) {
   const signal = result.statsBombSignal;
   if (signal === undefined) return null;
@@ -261,7 +445,7 @@ function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuc
 
       <p className="mt-3 text-xs text-slate-600">
         {shadow
-          ? "Shadow mode computed a comparison only; the displayed prediction remains baseline."
+          ? "Shadow mode computed a comparison only; the current authoritative prediction remains unchanged."
           : enriched
             ? "StatsBomb profile data adjusted the xG before scoreline probabilities."
             : `StatsBomb did not affect this prediction: ${formatStatsBombReason(signal.reason)}.`}
@@ -273,11 +457,19 @@ function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuc
         </summary>
         <dl className="mt-2 grid gap-2 sm:grid-cols-2">
           <div>
-            <dt className="font-semibold text-slate-500">Baseline xG</dt>
+            <dt className="font-semibold text-slate-500">Stage input xG</dt>
             <dd className="tabular-nums">
               {signal.baselineExpectedGoals.home.toFixed(2)} / {signal.baselineExpectedGoals.away.toFixed(2)}
             </dd>
           </div>
+          {signal.originalEloExpectedGoals !== undefined ? (
+            <div>
+              <dt className="font-semibold text-slate-500">Original Elo xG</dt>
+              <dd className="tabular-nums">
+                {signal.originalEloExpectedGoals.home.toFixed(2)} / {signal.originalEloExpectedGoals.away.toFixed(2)}
+              </dd>
+            </div>
+          ) : null}
           <div>
             <dt className="font-semibold text-slate-500">Authoritative xG</dt>
             <dd className="tabular-nums">
@@ -542,6 +734,7 @@ export function MatchSimulationResults({ result, matchContext }: MatchSimulation
       ) : null}
 
       {isLiveEloPrediction ? <TournamentFormAdjustmentSection result={result} /> : null}
+      {isLiveEloPrediction ? <AttackDefenseGoalModelSection result={result} /> : null}
       {isLiveEloPrediction ? <StatsBombSignalSection result={result} /> : null}
 
       <div className="mt-6 grid gap-3 sm:grid-cols-3">

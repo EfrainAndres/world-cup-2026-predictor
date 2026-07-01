@@ -164,6 +164,15 @@ function buildProductionDependencies(env?: Record<string, string | undefined>) {
   return { ...statsBombDeps, ...attackDefenseDeps };
 }
 
+export function getAttackDefenseProductionDependenciesForDiagnostics(
+  env?: Record<string, string | undefined>
+) {
+  return createAttackDefenseProductionDependencies({
+    env,
+    selectedCandidateArtifact: embeddedAttackDefenseSelectedCandidateArtifact
+  });
+}
+
 export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
   const syncResult = await getDashboardLiveSyncResult();
   const predictionDependencies = buildProductionDependencies();

@@ -60,7 +60,14 @@ const runtimeDiagnostics: ProductionRuntimeDiagnostics = {
     artifactReady: false,
     readinessReason: "feature_disabled",
     candidateId: null,
-    lastLoadStatus: "not_attempted"
+    lastLoadStatus: "not_attempted",
+    runtimeProfileArtifactReady: false,
+    runtimeProfileArtifactReason: "not_attempted",
+    runtimeProfileArtifactFingerprint: null,
+    runtimeProfileArtifactFingerprintShort: null,
+    runtimeProfileArtifactSchemaVersion: null,
+    runtimeProfileCount: null,
+    runtimeProfileSourceFixtureCount: null
   },
   warnings: []
 };

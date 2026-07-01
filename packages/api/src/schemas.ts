@@ -2224,7 +2224,10 @@ export interface StatsBombSignalResponseMetadata {
   artifactCutoffAt?: string;
   artifactGeneratedAt?: string;
   signalVersion: "statsbomb-signal-v1";
+  /** Stage input xG entering the StatsBomb stage (current authoritative after Attack/Defense). */
   baselineExpectedGoals: { home: number; away: number };
+  /** Original Elo V2 xG before any enrichment stages, available when a prior stage changed the authoritative xG. */
+  originalEloExpectedGoals?: { home: number; away: number };
   adjustedExpectedGoals: { home: number; away: number };
   shadowAdjustedExpectedGoals?: { home: number; away: number };
   homeProfile: StatsBombSignalProfileMetadata | null;

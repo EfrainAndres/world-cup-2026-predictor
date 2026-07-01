@@ -25,3 +25,5 @@ node_modules/
 
 # StatsBomb Open Data local cache (not for commit)
 .local-data/
+.vercel
+.env*
