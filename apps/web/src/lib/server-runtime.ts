@@ -33,6 +33,9 @@ import type {
 import { createProductionPredictionDependencies } from "@world-cup-2026-predictor/api/src/statsbomb-server-composition";
 import { embeddedBacktestArtifact, embeddedProfilesArtifact } from "./statsbomb-embedded-artifacts.server";
 import type { StatsBombRuntimeDiagnostics } from "@world-cup-2026-predictor/api/src/statsbomb-production-config";
+import { createAttackDefenseProductionDependencies } from "@world-cup-2026-predictor/api/src/attack-defense-server-composition";
+import { embeddedAttackDefenseSelectedCandidateArtifact } from "./attack-defense-embedded-artifact.server";
+import type { AttackDefenseRuntimeDiagnostics } from "@world-cup-2026-predictor/api/src/attack-defense-production-config";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
 import type { ModelEvidenceStateKind } from "./model-evidence-center";
 import { getMatchDetailId } from "./matches-experience";
@@ -50,6 +53,7 @@ export interface ProductionRuntimeDiagnostics {
   fixturesWithKickoff: number;
   lastSuccessfulSync?: string;
   statsBomb: StatsBombRuntimeDiagnostics;
+  attackDefense: AttackDefenseRuntimeDiagnostics;
   warnings: string[];
 }
 
@@ -147,12 +151,31 @@ export async function getDashboardLiveSyncResult(
   return freshResult;
 }
 
-export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
-  const syncResult = await getDashboardLiveSyncResult();
-  const predictionDependencies = createProductionPredictionDependencies({
+function buildProductionDependencies(env?: Record<string, string | undefined>) {
+  const statsBombDeps = createProductionPredictionDependencies({
+    env,
     profilesArtifact: embeddedProfilesArtifact,
     backtestEvidenceArtifact: embeddedBacktestArtifact
   });
+  const attackDefenseDeps = createAttackDefenseProductionDependencies({
+    env,
+    selectedCandidateArtifact: embeddedAttackDefenseSelectedCandidateArtifact
+  });
+  return { ...statsBombDeps, ...attackDefenseDeps };
+}
+
+export function getAttackDefenseProductionDependenciesForDiagnostics(
+  env?: Record<string, string | undefined>
+) {
+  return createAttackDefenseProductionDependencies({
+    env,
+    selectedCandidateArtifact: embeddedAttackDefenseSelectedCandidateArtifact
+  });
+}
+
+export async function getOfficialWorldCup2026KnockoutProjection(): Promise<OfficialKnockoutProjectionResult> {
+  const syncResult = await getDashboardLiveSyncResult();
+  const predictionDependencies = buildProductionDependencies();
   return buildOfficialWorldCup2026KnockoutProjection({
     syncResult,
     predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
@@ -162,10 +185,7 @@ export async function getOfficialWorldCup2026KnockoutProjection(): Promise<Offic
 export function buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb(
   syncResult: WorldCup2026SyncResult
 ): OfficialKnockoutProjectionResult {
-  const predictionDependencies = createProductionPredictionDependencies({
-    profilesArtifact: embeddedProfilesArtifact,
-    backtestEvidenceArtifact: embeddedBacktestArtifact
-  });
+  const predictionDependencies = buildProductionDependencies();
   return buildOfficialWorldCup2026KnockoutProjection({
     syncResult,
     predictMatch: (request) => predictMatchFromLiveElo(request, predictionDependencies)
@@ -175,10 +195,7 @@ export function buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBo
 export function predictDashboardMatchFromLiveEloWithProductionStatsBomb(
   request: PredictMatchFromLiveEloRequest
 ): PredictMatchFromLiveEloResponse {
-  const predictionDependencies = createProductionPredictionDependencies({
-    profilesArtifact: embeddedProfilesArtifact,
-    backtestEvidenceArtifact: embeddedBacktestArtifact
-  });
+  const predictionDependencies = buildProductionDependencies();
   return predictMatchFromLiveElo(request, predictionDependencies);
 }
 
@@ -188,11 +205,7 @@ export async function getProductionRuntimeDiagnostics(
 ): Promise<ProductionRuntimeDiagnostics> {
   const env = input.env ?? process.env;
   const warnings = [...syncResult.warnings];
-  const predictionDependencies = createProductionPredictionDependencies({
-    env,
-    profilesArtifact: embeddedProfilesArtifact,
-    backtestEvidenceArtifact: embeddedBacktestArtifact
-  });
+  const predictionDependencies = buildProductionDependencies(env);
   let persistenceProviderConfigured = false;
   let databaseConnected = false;
 
@@ -235,6 +248,7 @@ export async function getProductionRuntimeDiagnostics(
     fixturesWithKickoff: countFixturesWithKickoff(syncResult.fixtures),
     ...(syncResult.lastSuccessfulSync !== undefined ? { lastSuccessfulSync: syncResult.lastSuccessfulSync } : {}),
     statsBomb: predictionDependencies.statsBombDiagnostics,
+    attackDefense: predictionDependencies.attackDefenseDiagnostics,
     warnings
   };
 }

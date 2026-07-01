@@ -128,6 +128,7 @@ This roadmap organizes the project into phases so each step has a clear purpose 
 | 12.21A | Attack/Defense Goal Model Expansion | Build a competition-neutral attack/defense strength foundation and four goal-model candidates (elo_only_v2_baseline, multiplicative, log-linear, statsbomb_blend); backtest on WC2018/WC2022; apply decision gate. | Done — `attack_defense_data_blocked`: fallback rate 62.5% due to no pre-2018 scored data; candidates show Brier improvement (−0.0025) and genuine xG diversity (60 unique pairs) but coverage threshold not met. |
 | 12.21A2 | Historical International Match Data Expansion | Expand the scored historical international match foundation for cutoff-aware attack/defense profiles, validate no-look-ahead coverage, and rerun the existing Phase 12.21A comparison without changing formulas or thresholds. | Done — `historical_data_partial`: accepted fixtures increased 184 → 312; combined fallback fell 62.5% → 20.3%; no-look-ahead violations remain 0. The model decision moved from profile-coverage-blocked to `goal_calibration_blocked` due to Log Loss and total-goal MAE regression. Production unchanged. |
 | 12.21A3 | Attack/Defense Goal Model Recalibration | Recalibrate the offline attack/defense candidate with component diagnostics, bounded parameter grid, WC2018 tuning, WC2022 validation holdout, and conservative decision gate. | Done — `promote_recalibrated_candidate`: selected damped log-linear candidate improves WC2022 Brier −0.0117 and Log Loss −0.0446 vs Elo V2 while preserving diversity; total-goal MAE delta +0.0017 remains inside threshold. Offline-only; production unchanged. |
+| 12.21B | Controlled Attack/Defense Production Integration | Integrate selected recalibrated candidate behind `ATTACK_DEFENSE_GOAL_MODEL_MODE=off|shadow|on` rollout flag. Mode off by default. | Done — `implementation_complete_validation_pending`: off/shadow/on modes implemented; StatsBomb interaction matrix (9 combos); process-cached WC2026 profiles; production schema extended. No production behavior changed until env var is set. |
 
 ## Phase 12.15A - Persistence Architecture Decision
 
@@ -729,6 +730,29 @@ Exit criteria met:
 - No-look-ahead violations remain 0.
 - The Elo V2 baseline path is preserved and covered by compatibility tests.
 - No production Elo V2 constants, Elo-to-xG constants, StatsBomb constants, Poisson logic, scoreline presentation, snapshots, evaluations, persistence, standings, qualification, topology, public route, or UI behavior changed.
+
+## Phase 12.21B — Controlled Attack/Defense Production Integration
+
+**Status:** Implementation complete, validation pending
+
+Integrated the Phase 12.21A3 selected recalibrated candidate behind a private `ATTACK_DEFENSE_GOAL_MODEL_MODE=off|shadow|on` server-side rollout flag. Default is `off`. Production Elo V2 is unchanged.
+
+Deliverables:
+
+- `packages/api/src/attack-defense-production-config.ts` — mode parser, artifact readiness validator (`validateAttackDefenseRuntimeArtifact`), activation gate.
+- `packages/api/src/attack-defense-runtime-profile-source.ts` — process-cached WC2026 runtime profiles (cutoff: 2026-06-11; 48 teams; exponential half-life recency; SOS-adjusted strategy) and `assessAttackDefenseRuntimeEligibility`.
+- `packages/api/src/attack-defense-server-composition.ts` — `createAttackDefenseProductionDependencies()` factory.
+- `apps/web/src/lib/attack-defense-embedded-artifact.server.ts` — build-time JSON embed.
+- Extended `predictMatchFromLiveElo` with off/shadow/on logic and full StatsBomb × AD interaction matrix (9 combinations).
+- `AttackDefenseGoalModelRuntimeMetadata` and `AttackDefenseGoalModelProfileSummary` added to `schemas.ts`; `attackDefenseGoalModel?` added to `PredictMatchFromLiveEloSuccessResponse`.
+- `apps/web/src/lib/server-runtime.ts` wired with combined production dependencies; `attackDefense` diagnostics in `ProductionRuntimeDiagnostics`.
+- 42 new tests (config, runtime profile source, server composition, routes integration, snapshot protection).
+- `docs/model-results/ATTACK_DEFENSE_CONTROLLED_PRODUCTION_INTEGRATION.md` and `docs/operations/ATTACK_DEFENSE_PRODUCTION_ROLLOUT.md`.
+- `.env.example` and `turbo.json` updated.
+
+**Final phase status:** `implementation_complete_validation_pending`
+
+No production behavior changed until `ATTACK_DEFENSE_GOAL_MODEL_MODE` is set. Snapshots remain baseline-only. Elo V2 constants, StatsBomb weights, Poisson, scoreline selection, standings, qualification, and tournament topology unchanged.
 
 ## Phase 12.20D - Controlled StatsBomb Production Integration
 

@@ -53,6 +53,22 @@ const runtimeDiagnostics: ProductionRuntimeDiagnostics = {
     lastLoadStatus: "not_attempted",
     artifactSourceKind: "unavailable" as const
   },
+  attackDefense: {
+    featureEnabled: false,
+    rolloutMode: "off",
+    activationDecision: "disabled",
+    artifactReady: false,
+    readinessReason: "feature_disabled",
+    candidateId: null,
+    lastLoadStatus: "not_attempted",
+    runtimeProfileArtifactReady: false,
+    runtimeProfileArtifactReason: "not_attempted",
+    runtimeProfileArtifactFingerprint: null,
+    runtimeProfileArtifactFingerprintShort: null,
+    runtimeProfileArtifactSchemaVersion: null,
+    runtimeProfileCount: null,
+    runtimeProfileSourceFixtureCount: null
+  },
   warnings: []
 };
 

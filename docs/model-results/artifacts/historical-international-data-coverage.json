@@ -1,10 +1,10 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-06-30T02:39:16.712Z",
+  "generatedAt": "2026-06-30T22:26:30.691Z",
   "phase": "12.21A2",
   "before": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-06-30T02:39:16.680Z",
+    "generatedAt": "2026-06-30T22:26:30.660Z",
     "mode": "legacy_phase_12_21a",
     "totalFixtures": 184,
     "acceptedFixtures": 184,
@@ -203,7 +203,7 @@
   },
   "after": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-06-30T02:39:16.712Z",
+    "generatedAt": "2026-06-30T22:26:30.691Z",
     "mode": "expanded",
     "totalFixtures": 312,
     "acceptedFixtures": 312,

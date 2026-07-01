@@ -997,3 +997,89 @@ test("scoreline prediction section has no horizontal overflow at 430 px", async 
   const clientWidth = await page.evaluate(() => document.body.clientWidth);
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 });
+
+// ── Phase 12.21B — Attack/Defense technical disclosure ────────────────────────
+
+test("Attack/Defense disclosure section is absent by default (off mode)", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection).toBeVisible();
+  // With ATTACK_DEFENSE_GOAL_MODEL_MODE=off (default), no AD section appears
+  await expect(resultsSection.getByText("Attack/Defense model")).not.toBeVisible();
+  await expect(resultsSection.getByText("Attack/Defense technical details")).not.toBeVisible();
+});
+
+test("Attack/Defense section absent does not affect scoreline prediction rendering", async ({ page }) => {
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Scoreline prediction", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Recommended score", { exact: true })).toBeVisible();
+});
+
+test("no horizontal overflow at 320 px with AD off mode", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 812 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const region = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await region.waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("no horizontal overflow at 375 px with AD off mode", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const region = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await region.waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("no horizontal overflow at 390 px with AD off mode", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const region = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await region.waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("no horizontal overflow at 430 px with AD off mode", async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.goto("/predictions");
+
+  await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
+  await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
+
+  const region = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await region.waitFor({ state: "visible" });
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});

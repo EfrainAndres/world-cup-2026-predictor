@@ -249,8 +249,29 @@ export interface PredictMatchFromLiveEloSuccessResponse {
     warnings: readonly string[];
   };
   statsBombSignal?: StatsBombSignalResponseMetadata;
+  attackDefenseGoalModel?: AttackDefenseGoalModelRuntimeMetadata;
   warnings: readonly string[];
   metadata: ApiMetadata;
+}
+
+export interface AttackDefenseGoalModelProfileSummary {
+  coverage: string;
+  matchCount: number;
+  cutoffAt: string;
+}
+
+export interface AttackDefenseGoalModelRuntimeMetadata {
+  mode: "off" | "shadow" | "on";
+  applied: boolean;
+  reason: string;
+  activationDecision?: string;
+  candidateId?: string;
+  baselineExpectedGoals: { home: number; away: number };
+  effectiveExpectedGoals: { home: number; away: number };
+  shadowExpectedGoals?: { home: number; away: number };
+  homeProfile: AttackDefenseGoalModelProfileSummary | null;
+  awayProfile: AttackDefenseGoalModelProfileSummary | null;
+  warnings: readonly string[];
 }
 
 export interface PredictMatchFromLiveEloValidationErrorResponse {
@@ -2203,7 +2224,10 @@ export interface StatsBombSignalResponseMetadata {
   artifactCutoffAt?: string;
   artifactGeneratedAt?: string;
   signalVersion: "statsbomb-signal-v1";
+  /** Stage input xG entering the StatsBomb stage (current authoritative after Attack/Defense). */
   baselineExpectedGoals: { home: number; away: number };
+  /** Original Elo V2 xG before any enrichment stages, available when a prior stage changed the authoritative xG. */
+  originalEloExpectedGoals?: { home: number; away: number };
   adjustedExpectedGoals: { home: number; away: number };
   shadowAdjustedExpectedGoals?: { home: number; away: number };
   homeProfile: StatsBombSignalProfileMetadata | null;

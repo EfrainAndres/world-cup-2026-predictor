@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-06-30T02:39:27.030Z",
+  "generatedAt": "2026-06-30T22:48:52.814Z",
   "selectedConfig": {
     "candidate": "attack_defense_log_linear_damped",
     "attackWeight": 0.65,
