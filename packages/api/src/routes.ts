@@ -83,6 +83,16 @@ import {
 } from "../../model/src/index.js";
 import { teamNameToId } from "./providers/statsbomb/statsbomb-team-mapping.js";
 import {
+  validateXgValues,
+  validateProbabilities,
+  checkArtifactCandidate,
+  checkProfileSampleSizes,
+  DEFAULT_GUARDRAIL_CONFIG,
+} from "./prediction-guardrails.js";
+import { buildPredictionTelemetryPayload } from "./prediction-telemetry.js";
+import type { PredictionTelemetrySink } from "./prediction-telemetry-sink.js";
+import { ATTACK_DEFENSE_EXPECTED_CANDIDATE_ID } from "./attack-defense-production-config.js";
+import {
   WORLD_CUP_2026_BEST_THIRD_PLACE_RANKING,
   WORLD_CUP_2026_FIXTURE_GROUPS,
   WORLD_CUP_2026_FALLBACK_RATING_WARNING,
@@ -1128,6 +1138,7 @@ export function predictMatchFromLiveElo(
     attackDefenseActivationDecision?: AttackDefenseActivationDecision;
     attackDefenseProfiles?: AttackDefenseRuntimeProfilesResult;
     attackDefenseDiagnostics?: AttackDefenseRuntimeDiagnostics;
+    telemetrySink?: PredictionTelemetrySink;
   }
 ): PredictMatchFromLiveEloResponse {
   const issues = validatePredictMatchFromLiveEloRequest(request);
@@ -1395,17 +1406,45 @@ export function predictMatchFromLiveElo(
           effectiveAwayXg = adResult.awayXg;
         }
 
+        // Artifact candidate ID and profile sample-size guardrails — fail-closed.
+        let adPreGuardrailViolationCode: string | null = null;
+        if (shouldApplyAttackDefense && adResult !== null) {
+          const artifactIssue = checkArtifactCandidate(
+            adReadiness.candidateId,
+            ATTACK_DEFENSE_EXPECTED_CANDIDATE_ID,
+            "attack_defense_artifact"
+          );
+          if (artifactIssue !== null) {
+            effectiveHomeXg = xgResult.homeExpectedGoals;
+            effectiveAwayXg = xgResult.awayExpectedGoals;
+            adPreGuardrailViolationCode = artifactIssue.code;
+          } else {
+            const homeSample = resolvedHomeProfile?.attackSampleSize ?? 0;
+            const awaySample = resolvedAwayProfile?.attackSampleSize ?? 0;
+            const sampleIssue = checkProfileSampleSizes(homeSample, awaySample, 3, "attack_defense_profiles");
+            if (sampleIssue !== null) {
+              effectiveHomeXg = xgResult.homeExpectedGoals;
+              effectiveAwayXg = xgResult.awayExpectedGoals;
+              adPreGuardrailViolationCode = sampleIssue.code;
+            }
+          }
+        }
+
+        const adAppliedAfterGuardrail = shouldApplyAttackDefense && adPreGuardrailViolationCode === null;
+
         attackDefenseGoalModelMeta = {
           mode: adRolloutMode,
-          applied: shouldApplyAttackDefense,
+          applied: adAppliedAfterGuardrail,
           reason:
-            eligibility.eligible
-              ? shouldApplyAttackDefense
-                ? "applied"
-                : adRolloutMode === "shadow"
-                  ? "shadow"
-                  : "not_authoritative"
-              : eligibility.reason,
+            adPreGuardrailViolationCode !== null
+              ? adPreGuardrailViolationCode
+              : eligibility.eligible
+                ? shouldApplyAttackDefense
+                  ? "applied"
+                  : adRolloutMode === "shadow"
+                    ? "shadow"
+                    : "not_authoritative"
+                : eligibility.reason,
           ...(deps?.attackDefenseActivationDecision !== undefined ? { activationDecision: deps.attackDefenseActivationDecision } : {}),
           candidateId: adReadiness.candidateId,
           baselineExpectedGoals: { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
@@ -1432,6 +1471,29 @@ export function predictMatchFromLiveElo(
           warnings: adResult?.warnings ?? [],
         };
       }
+    }
+  }
+
+  // Guardrail check after Attack/Defense stage.
+  const adGuardrailViolations: string[] = [];
+  if (attackDefenseGoalModelMeta?.applied === true) {
+    const adGuardrailResult = validateXgValues(
+      { home: effectiveHomeXg, away: effectiveAwayXg },
+      { home: xgResult.homeExpectedGoals, away: xgResult.awayExpectedGoals },
+      DEFAULT_GUARDRAIL_CONFIG,
+      "attack_defense"
+    );
+    if (adGuardrailResult.fallbackApplied) {
+      effectiveHomeXg = adGuardrailResult.safeXg.home;
+      effectiveAwayXg = adGuardrailResult.safeXg.away;
+      adGuardrailViolations.push(...adGuardrailResult.violations);
+      // Enforce: AD is not authoritative — candidate xG was rejected.
+      attackDefenseGoalModelMeta = {
+        ...attackDefenseGoalModelMeta,
+        applied: false,
+        reason: adGuardrailResult.primaryViolationCode ?? "guardrail_stage_delta_exceeded",
+        effectiveExpectedGoals: { home: effectiveHomeXg, away: effectiveAwayXg },
+      };
     }
   }
 
@@ -1597,9 +1659,34 @@ export function predictMatchFromLiveElo(
     }
   }
 
+  // Guardrail check after StatsBomb stage.
+  const sbGuardrailViolations: string[] = [];
+  if (statsBombSignalMeta?.applied === true) {
+    const sbGuardrailResult = validateXgValues(
+      { home: effectiveHomeXg, away: effectiveAwayXg },
+      { home: sbStageInputHomeXg, away: sbStageInputAwayXg },
+      DEFAULT_GUARDRAIL_CONFIG,
+      "statsbomb"
+    );
+    if (sbGuardrailResult.fallbackApplied) {
+      effectiveHomeXg = sbGuardrailResult.safeXg.home;
+      effectiveAwayXg = sbGuardrailResult.safeXg.away;
+      sbGuardrailViolations.push(...sbGuardrailResult.violations);
+      // Enforce: SB is not authoritative — candidate xG was rejected.
+      statsBombSignalMeta = {
+        ...statsBombSignalMeta,
+        applied: false,
+        authoritative: "baseline" as const,
+        // Use "invalid_profile" as the schema reason; guardrail code is in warnings.
+        reason: "invalid_profile" as const,
+        adjustedExpectedGoals: { home: effectiveHomeXg, away: effectiveAwayXg },
+      };
+    }
+  }
+
   const maxGoals = request.maxGoals ?? DEFAULT_POISSON_CONFIG.maxGoals;
   const normalizeMatrix = request.normalizeMatrix ?? DEFAULT_POISSON_CONFIG.normalizeMatrix;
-  const scoreMatrix = generateScoreMatrix(
+  let scoreMatrix = generateScoreMatrix(
     {
       expectedHomeGoals: effectiveHomeXg,
       expectedAwayGoals: effectiveAwayXg
@@ -1609,6 +1696,33 @@ export function predictMatchFromLiveElo(
       normalizeMatrix
     }
   );
+
+  // Final probability guardrail — if invalid, fall back to Elo V2 xG and recompute.
+  const probGuardrailViolations: string[] = [];
+  {
+    const rawProbs = aggregateOutcomeProbabilities(scoreMatrix);
+    const probResult = validateProbabilities(
+      { homeWin: rawProbs.homeWinProbability, draw: rawProbs.drawProbability, awayWin: rawProbs.awayWinProbability },
+      DEFAULT_GUARDRAIL_CONFIG,
+      "final_probabilities"
+    );
+    if (!probResult.valid) {
+      probGuardrailViolations.push(...probResult.violations);
+      scoreMatrix = generateScoreMatrix(
+        { expectedHomeGoals: xgResult.homeExpectedGoals, expectedAwayGoals: xgResult.awayExpectedGoals },
+        { maxGoals, normalizeMatrix }
+      );
+      const fallbackProbs = aggregateOutcomeProbabilities(scoreMatrix);
+      const fallbackProbResult = validateProbabilities(
+        { homeWin: fallbackProbs.homeWinProbability, draw: fallbackProbs.drawProbability, awayWin: fallbackProbs.awayWinProbability },
+        DEFAULT_GUARDRAIL_CONFIG,
+        "final_probabilities_elo_fallback"
+      );
+      if (!fallbackProbResult.valid) {
+        probGuardrailViolations.push(...fallbackProbResult.violations.map((v) => `[elo_fallback] ${v}`));
+      }
+    }
+  }
   const mostLikelyLimit = request.mostLikelyScorelineLimit ?? 5;
   const response = {
     status: "success" as const,
@@ -1699,6 +1813,9 @@ export function predictMatchFromLiveElo(
       ...xgResult.warnings,
       ...(statsBombSignalMeta?.warnings ?? []),
       ...(attackDefenseGoalModelMeta?.warnings ?? []),
+      ...adGuardrailViolations,
+      ...sbGuardrailViolations,
+      ...probGuardrailViolations,
       `Live Elo prediction uses ${combinedMatchCount} curated local matches and is not a public accuracy claim.`
     ],
     metadata: buildApiMetadata([
@@ -1717,6 +1834,36 @@ export function predictMatchFromLiveElo(
       "No network calls, database, or external services are used."
     ])
   };
+
+  // Emit telemetry — failure must never fail the prediction.
+  if (deps?.telemetrySink !== undefined) {
+    try {
+      const telemetryTimestamp = new Date().toISOString();
+      const diag = deps.attackDefenseDiagnostics;
+      const artifactDiagnostics =
+        diag !== undefined
+          ? {
+              ...(diag.runtimeProfileArtifactFingerprint !== null
+                ? { adFingerprint: diag.runtimeProfileArtifactFingerprint }
+                : {}),
+              ...(diag.runtimeProfileArtifactFingerprintShort !== null
+                ? { adFingerprintShort: diag.runtimeProfileArtifactFingerprintShort }
+                : {}),
+              ...(diag.candidateId !== null ? { adCandidateId: diag.candidateId } : {}),
+              ...(diag.runtimeProfileCount !== null ? { adProfileCount: diag.runtimeProfileCount } : {}),
+              ...(diag.runtimeProfileSourceFixtureCount !== null
+                ? { adSourceFixtureCount: diag.runtimeProfileSourceFixtureCount }
+                : {}),
+            }
+          : undefined;
+      deps.telemetrySink.emit(
+        "prediction_pipeline_completed",
+        buildPredictionTelemetryPayload(response, telemetryTimestamp, artifactDiagnostics)
+      );
+    } catch {
+      // Never fail the prediction due to telemetry errors.
+    }
+  }
 
   if (request.monteCarlo === undefined) {
     return response;

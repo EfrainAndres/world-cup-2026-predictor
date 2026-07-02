@@ -10,7 +10,9 @@
     "test:data": "pnpm --filter @world-cup-2026-predictor/data test",
     "test:model": "pnpm --filter @world-cup-2026-predictor/model test",
     "test:e2e": "pnpm --filter @world-cup-2026-predictor/web test:e2e",
-    "attack-defense:runtime-parity": "pnpm --filter @world-cup-2026-predictor/api exec tsx ../../scripts/attack-defense-runtime-parity.ts"
+    "attack-defense:runtime-parity": "pnpm --filter @world-cup-2026-predictor/api exec tsx ../../scripts/attack-defense-runtime-parity.ts",
+    "prediction:batch-compare": "pnpm --filter @world-cup-2026-predictor/api exec tsx ../../scripts/prediction-batch-compare.ts",
+    "prediction:distribution-report": "pnpm --filter @world-cup-2026-predictor/api exec tsx ../../scripts/prediction-distribution-report.ts"
   },
   "devDependencies": {
     "turbo": "^2.3.3",
