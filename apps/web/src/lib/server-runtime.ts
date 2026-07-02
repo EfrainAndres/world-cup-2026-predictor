@@ -36,6 +36,7 @@ import type { StatsBombRuntimeDiagnostics } from "@world-cup-2026-predictor/api/
 import { createAttackDefenseProductionDependencies } from "@world-cup-2026-predictor/api/src/attack-defense-server-composition";
 import { embeddedAttackDefenseSelectedCandidateArtifact } from "./attack-defense-embedded-artifact.server";
 import type { AttackDefenseRuntimeDiagnostics } from "@world-cup-2026-predictor/api/src/attack-defense-production-config";
+import { createStructuredLogTelemetrySink } from "@world-cup-2026-predictor/api/src/prediction-telemetry-sink";
 import type { GetWorldCup2026DailyMatchesInput } from "./api-client";
 import type { ModelEvidenceStateKind } from "./model-evidence-center";
 import { getMatchDetailId } from "./matches-experience";
@@ -161,7 +162,7 @@ function buildProductionDependencies(env?: Record<string, string | undefined>) {
     env,
     selectedCandidateArtifact: embeddedAttackDefenseSelectedCandidateArtifact
   });
-  return { ...statsBombDeps, ...attackDefenseDeps };
+  return { ...statsBombDeps, ...attackDefenseDeps, telemetrySink: createStructuredLogTelemetrySink() };
 }
 
 export function getAttackDefenseProductionDependenciesForDiagnostics(

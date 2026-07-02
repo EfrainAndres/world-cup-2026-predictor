@@ -136,6 +136,19 @@ function formatOutcomeLabel(outcome: ScorelinePresentation["recommendedOutcome"]
   }
 }
 
+function buildPipelineLabel(result: PredictMatchFromLiveEloSuccessResponse): string {
+  const parts: string[] = ["Elo V2"];
+  const ad = result.attackDefenseGoalModel;
+  if (ad !== undefined && ad.mode !== "off") {
+    parts.push("Attack/Defense");
+  }
+  const sb = result.statsBombSignal;
+  if (sb !== undefined && (sb.rolloutMode === "on" || sb.rolloutMode === "shadow")) {
+    parts.push("StatsBomb");
+  }
+  return parts.join(" → ");
+}
+
 function ScorelinePresentationSection({
   presentation,
   homeTeam,
@@ -238,13 +251,16 @@ function AttackDefenseGoalModelSection({ result }: { result: PredictMatchFromLiv
   const { mode, applied, reason, candidateId, activationDecision, baselineExpectedGoals, effectiveExpectedGoals, shadowExpectedGoals, homeProfile, awayProfile, warnings } = adMeta;
 
   const isShadow = mode === "shadow";
-  const isAuthoritative = mode === "on" && applied;
+  const isAppliedOn = mode === "on" && applied;
+  const sbApplied = result.statsBombSignal !== undefined && result.statsBombSignal.rolloutMode === "on" && result.statsBombSignal.applied;
+  const adStageAuth = isAppliedOn;
+  const adFinalAuth = isAppliedOn && !sbApplied;
 
   let sectionTitle: string;
   let badgeLabel: string;
   let badgeStyle: string;
 
-  if (isAuthoritative) {
+  if (isAppliedOn) {
     sectionTitle = "Attack/Defense enriched";
     badgeLabel = "Attack/Defense enriched";
     badgeStyle = "bg-emerald-100 text-emerald-800";
@@ -258,16 +274,16 @@ function AttackDefenseGoalModelSection({ result }: { result: PredictMatchFromLiv
     badgeStyle = "bg-slate-200 text-slate-800";
   }
 
-  const candidateXg = isShadow ? (shadowExpectedGoals ?? null) : (isAuthoritative ? effectiveExpectedGoals : null);
+  const candidateXg = isShadow ? (shadowExpectedGoals ?? null) : (isAppliedOn ? effectiveExpectedGoals : null);
   const shadowDeltaHome = isShadow && shadowExpectedGoals !== undefined ? shadowExpectedGoals.home - baselineExpectedGoals.home : null;
   const shadowDeltaAway = isShadow && shadowExpectedGoals !== undefined ? shadowExpectedGoals.away - baselineExpectedGoals.away : null;
-  const appliedDeltaHome = isAuthoritative ? effectiveExpectedGoals.home - baselineExpectedGoals.home : null;
-  const appliedDeltaAway = isAuthoritative ? effectiveExpectedGoals.away - baselineExpectedGoals.away : null;
+  const appliedDeltaHome = isAppliedOn ? effectiveExpectedGoals.home - baselineExpectedGoals.home : null;
+  const appliedDeltaAway = isAppliedOn ? effectiveExpectedGoals.away - baselineExpectedGoals.away : null;
   const deltaHome = isShadow ? shadowDeltaHome : appliedDeltaHome;
   const deltaAway = isShadow ? shadowDeltaAway : appliedDeltaAway;
 
   const formattedReason = formatAttackDefenseReason(reason);
-  const appliedDisplay = isAuthoritative ? "Yes" : isShadow ? "Yes, shadow calculation only" : "No";
+  const appliedDisplay = isAppliedOn ? "Yes" : isShadow ? "Yes, shadow calculation only" : "No";
   const artifactCutoff = homeProfile?.cutoffAt ?? awayProfile?.cutoffAt ?? null;
 
   return (
@@ -294,8 +310,12 @@ function AttackDefenseGoalModelSection({ result }: { result: PredictMatchFromLiv
           <dd className="mt-1 text-slate-950">{appliedDisplay}</dd>
         </div>
         <div>
-          <dt className="text-xs font-semibold text-slate-500">Authoritative</dt>
-          <dd className="mt-1 text-slate-950">{isAuthoritative ? "Yes" : "No"}</dd>
+          <dt className="text-xs font-semibold text-slate-500">Stage authoritative</dt>
+          <dd className="mt-1 text-slate-950">{adStageAuth ? "Yes" : "No"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Final authoritative</dt>
+          <dd className="mt-1 text-slate-950">{adFinalAuth ? "Yes" : "No"}</dd>
         </div>
         <div>
           <dt className="text-xs font-semibold text-slate-500">Reason</dt>
@@ -306,7 +326,7 @@ function AttackDefenseGoalModelSection({ result }: { result: PredictMatchFromLiv
       <p className="mt-3 text-xs text-slate-600">
         {isShadow
           ? "Shadow mode computed a comparison only; the displayed prediction remains Elo V2 baseline."
-          : isAuthoritative
+          : isAppliedOn
             ? "Attack/Defense profile data replaced the Elo V2 baseline xG before scoreline probabilities."
             : `Attack/Defense did not affect this prediction: ${formattedReason}.`}
       </p>
@@ -396,6 +416,8 @@ function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuc
 
   const enriched = signal.applied && signal.authoritative === "statsbomb";
   const shadow = signal.rolloutMode === "shadow";
+  const sbStageAuth = enriched;
+  const sbFinalAuth = enriched;
   const homeCoverage = formatStatsBombLabel(signal.homeProfile?.coverage);
   const awayCoverage = formatStatsBombLabel(signal.awayProfile?.coverage);
   const homeFreshness = formatStatsBombLabel(signal.homeProfile?.freshness);
@@ -440,6 +462,14 @@ function StatsBombSignalSection({ result }: { result: PredictMatchFromLiveEloSuc
         <div>
           <dt className="text-xs font-semibold text-slate-500">Data cutoff</dt>
           <dd className="mt-1 text-slate-950">{formatStatsBombDate(signal.artifactCutoffAt ?? signal.cutoffAt)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Stage authoritative</dt>
+          <dd className="mt-1 text-slate-950">{sbStageAuth ? "Yes" : "No"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-semibold text-slate-500">Final authoritative</dt>
+          <dd className="mt-1 text-slate-950">{sbFinalAuth ? "Yes" : "No"}</dd>
         </div>
       </dl>
 
@@ -647,28 +677,44 @@ export function MatchSimulationResults({ result, matchContext }: MatchSimulation
         </div>
       </dl>
 
-      {isLiveEloPrediction ? (
-        <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-3 py-3 text-sm leading-6 text-teal-950">
-          <p>
-            Live Elo: {result.liveElo.homeTeam}{" "}
-            {result.liveElo.homeRatingSource !== "fallback_seed" ? `rank ${result.liveElo.homeRank} ` : null}
-            ({formatElo(result.liveElo.homeEloRating)}) vs{" "}
-            {result.liveElo.awayTeam}{" "}
-            {result.liveElo.awayRatingSource !== "fallback_seed" ? `rank ${result.liveElo.awayRank} ` : null}
-            ({formatElo(result.liveElo.awayEloRating)}). Elo difference:{" "}
-            {result.expectedGoals.eloDifference.toFixed(2)}.
-          </p>
-          {(result.liveElo.homeRatingSource === "fallback_seed" || result.liveElo.awayRatingSource === "fallback_seed") ? (
-            <p className="mt-1 text-xs font-semibold text-amber-700">
-              Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only.
+      {isLiveEloPrediction ? (() => {
+        const pipelineLabel = buildPipelineLabel(result);
+        const adApplied = result.attackDefenseGoalModel !== undefined && result.attackDefenseGoalModel.mode === "on" && result.attackDefenseGoalModel.applied === true;
+        const sbApplied = result.statsBombSignal !== undefined && result.statsBombSignal.rolloutMode === "on" && result.statsBombSignal.applied === true;
+        const pipelineHasActiveStages = pipelineLabel !== "Elo V2";
+        const showFallbackNote = pipelineHasActiveStages && !adApplied && !sbApplied;
+        return (
+          <div className="mt-4 rounded-md border border-teal-200 bg-teal-50 px-3 py-3 text-sm leading-6 text-teal-950">
+            <p>
+              Live Elo: {result.liveElo.homeTeam}{" "}
+              {result.liveElo.homeRatingSource !== "fallback_seed" ? `rank ${result.liveElo.homeRank} ` : null}
+              ({formatElo(result.liveElo.homeEloRating)}) vs{" "}
+              {result.liveElo.awayTeam}{" "}
+              {result.liveElo.awayRatingSource !== "fallback_seed" ? `rank ${result.liveElo.awayRank} ` : null}
+              ({formatElo(result.liveElo.awayEloRating)}). Elo difference:{" "}
+              {result.expectedGoals.eloDifference.toFixed(2)}.
             </p>
-          ) : null}
-          <p className="mt-1 text-xs text-teal-800">
-            <span className="font-semibold capitalize">{result.expectedGoals.preset}</span> preset —{" "}
-            {result.expectedGoals.presetDescription}
-          </p>
-        </div>
-      ) : null}
+            {(result.liveElo.homeRatingSource === "fallback_seed" || result.liveElo.awayRatingSource === "fallback_seed") ? (
+              <p className="mt-1 text-xs font-semibold text-amber-700">
+                Fallback seed rating — not in the Live Elo dataset. Prediction is illustrative only.
+              </p>
+            ) : null}
+            <p className="mt-1 text-xs text-teal-800">
+              <span className="font-semibold capitalize">{result.expectedGoals.preset}</span> preset —{" "}
+              {result.expectedGoals.presetDescription}
+            </p>
+            <p className="mt-1 text-xs text-teal-800">
+              Pipeline:{" "}
+              <span className="font-semibold" aria-label={`Prediction pipeline: ${pipelineLabel}`}>{pipelineLabel}</span>
+            </p>
+            {showFallbackNote ? (
+              <p className="mt-1 text-xs font-semibold text-teal-700">
+                Elo V2 is the final authoritative model for this prediction.
+              </p>
+            ) : null}
+          </div>
+        );
+      })() : null}
 
       {isLiveEloPrediction ? (
         <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-900">
