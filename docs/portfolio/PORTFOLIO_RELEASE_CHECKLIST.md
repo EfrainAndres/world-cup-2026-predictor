@@ -34,7 +34,7 @@ Run these commands before opening or merging the release pull request:
 pnpm test
 pnpm typecheck
 pnpm build
-pnpm --filter @world-cup-2026-predictor/web test:e2e
+pnpm --filter @world-cup-2026-predictor/web test:e2e:ci
 git diff --check
 ```
 

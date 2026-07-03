@@ -17,11 +17,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] }
     },
     {
-      name: "firefox",
+      name: "firefox-smoke",
+      grep: /@smoke/,
       use: { ...devices["Desktop Firefox"] }
     },
     {
-      name: "webkit",
+      name: "webkit-smoke",
+      grep: /@smoke/,
       use: { ...devices["Desktop Safari"] }
     }
   ],

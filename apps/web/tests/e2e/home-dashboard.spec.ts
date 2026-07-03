@@ -9,7 +9,7 @@ const REQUIRED_VIEWPORTS = [
   { width: 1440, height: 900 }
 ];
 
-test("Home has exactly one header, one main, and eight primary sections in order", async ({ page }) => {
+test("Home has exactly one header, one main, and eight primary sections in order @smoke", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("banner")).toHaveCount(1);

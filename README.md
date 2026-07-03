@@ -204,10 +204,10 @@ pnpm install --frozen-lockfile
 pnpm test
 pnpm typecheck
 pnpm build
-pnpm --filter @world-cup-2026-predictor/web test:e2e
+pnpm --filter @world-cup-2026-predictor/web test:e2e:ci
 ```
 
-The workflow uses Node 20, pnpm 9.15.4, pnpm caching, and Chromium Playwright browser dependencies in CI. The Playwright config defines Chromium, Firefox, and WebKit projects for local/browser-project coverage. Vercel deployment and PostgreSQL runtime configuration are documented, but secrets and managed service operation are environment-specific and are not assumed by local checks.
+The workflow uses Node 20, pnpm 9.15.4, pnpm caching, and Playwright browser dependencies for the projects actually executed in CI. The browser policy is: full Chromium E2E suite with targeted Firefox/WebKit smoke coverage. Vercel deployment and PostgreSQL runtime configuration are documented, but secrets and managed service operation are environment-specific and are not assumed by local checks.
 
 ## Repository Structure
 
@@ -248,8 +248,8 @@ The root package does not expose a plain `pnpm dev` command; use the filtered we
 Run E2E tests for the first time after installing Playwright browsers:
 
 ```bash
-pnpm --filter @world-cup-2026-predictor/web exec playwright install chromium
-pnpm --filter @world-cup-2026-predictor/web test:e2e
+pnpm --filter @world-cup-2026-predictor/web exec playwright install chromium firefox webkit
+pnpm --filter @world-cup-2026-predictor/web test:e2e:ci
 ```
 
 ## Test Commands
@@ -260,7 +260,7 @@ From the repository root:
 pnpm test
 pnpm typecheck
 pnpm build
-pnpm --filter @world-cup-2026-predictor/web test:e2e
+pnpm --filter @world-cup-2026-predictor/web test:e2e:ci
 git diff --check
 ```
 

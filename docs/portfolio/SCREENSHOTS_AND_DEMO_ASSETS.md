@@ -29,7 +29,7 @@ Recommended rules:
 | Historical validation | `historical-validation.png` | Replay audit status, supported historical years, component availability, and known limitation framing. |
 | Tournament simulation | `tournament-simulation.png` | Foundation simulation status, champion/runner-up probability cards, run count, and simulation limitations. |
 | Team ratings | `team-ratings.png` | Top contender ratings, tier labels, offense/defense scores, and summary stats. |
-| Playwright E2E passing | `playwright-e2e-passing.png` | Terminal or CI-style output showing Chromium E2E tests passing and test count visible. |
+| Playwright E2E passing | `playwright-e2e-passing.png` | Terminal or CI-style output showing Chromium full-suite coverage plus Firefox/WebKit smoke passing, with current totals visible. |
 | GitHub Actions CI passing | `github-actions-ci-passing.png` | GitHub Actions workflow run showing the CI job passed on a pull request or `main` push. |
 
 ## Capture Guidance
@@ -71,7 +71,7 @@ Show rating tiers, offense/defense values, and summary stats. This supports a qu
 Capture terminal output after:
 
 ```bash
-pnpm --filter @world-cup-2026-predictor/web test:e2e
+pnpm --filter @world-cup-2026-predictor/web test:e2e:ci
 ```
 
 The screenshot should show that browser workflow tests pass. Avoid including unrelated shell history.

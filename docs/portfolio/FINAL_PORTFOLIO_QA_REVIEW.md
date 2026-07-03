@@ -9,7 +9,7 @@ Complete this checklist before creating the `v0.1.0-portfolio` release tag:
 - [ ] Local tests pass with `pnpm test`.
 - [ ] Typecheck passes with `pnpm typecheck`.
 - [ ] Build passes with `pnpm build`.
-- [ ] Playwright E2E passes with `pnpm --filter @world-cup-2026-predictor/web test:e2e`.
+- [ ] Playwright E2E passes with `pnpm --filter @world-cup-2026-predictor/web test:e2e:ci`.
 - [ ] Diff hygiene passes with `git diff --check`.
 - [ ] GitHub Actions CI passes on the release pull request or latest `main` commit.
 - [ ] README review is complete.

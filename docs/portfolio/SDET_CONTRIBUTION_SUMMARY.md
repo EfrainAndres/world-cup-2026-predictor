@@ -28,7 +28,7 @@ This summary lists SDET and QA automation contributions that are safe to discuss
 | API contract tests | Present and meaningful. |
 | Regression tests | Present through explicit numeric assertions, not brittle broad snapshots. |
 | E2E tests | Broad Playwright suite with 10 spec files and 253 counted test declarations. |
-| Browsers | Playwright config defines Chromium, Firefox, and WebKit projects. |
+| Browsers | Full Chromium E2E suite with targeted Firefox/WebKit smoke projects. |
 | CI | Runs E2E after install/test/typecheck/build. |
 | Custom fixtures | Not implemented. |
 | Page Object Model | Not implemented. |
