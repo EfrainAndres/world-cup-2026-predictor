@@ -15,7 +15,7 @@ Use this version for recruiter screens, quick portfolio reviews, or a short Link
 4. Demonstrate one match prediction.
    - Use manual xG or Auto Predict From Elo and point out probabilities plus scorelines.
 5. Close with quality gates.
-   - Mention deterministic tests, API contracts, 52 Playwright E2E tests, historical validation, and GitHub Actions CI.
+   - Mention deterministic tests, data fixtures, API contracts, regression snapshots, Playwright E2E coverage, historical validation, and GitHub Actions CI.
 
 Closing line:
 
@@ -30,10 +30,10 @@ Use this version for engineering interviews or deeper portfolio walkthroughs.
 2. Explain architecture.
    - `packages/data` validates and normalizes fixtures.
    - `packages/model` owns Elo, Poisson, Monte Carlo, and historical validation logic.
-   - `packages/api` exposes pure handlers and typed responses.
+   - `packages/api` exposes typed handlers, contracts, provider/persistence composition, guardrails, fallback behavior, and telemetry.
    - `apps/web` presents dashboard workflows without owning model logic.
 3. Walk through the data-to-prediction flow.
-   - Historical fixtures -> validation -> normalization -> Live Elo -> Elo-to-xG -> Poisson -> Monte Carlo -> prediction output.
+   - Historical fixtures -> validation -> normalization -> Live Elo V2 -> optional Attack/Defense/StatsBomb enrichment -> Poisson score matrix -> recommended and modal scorelines -> Monte Carlo -> prediction output.
 4. Demonstrate dashboard workflows in the order the dashboard presents them.
    - Tournament Projection Overview — headline summary with champion, runner-up, and third-place contestants.
    - Champion Projection Summary — five-round path (R32 → R16 → QF → SF → Final) with numbered step badges.
@@ -46,11 +46,13 @@ Use this version for engineering interviews or deeper portfolio walkthroughs.
    - Unit tests protect deterministic logic.
    - API contract tests protect response shape.
    - Regression snapshots catch model output drift.
+   - Deterministic seeds make probabilistic paths reproducible.
+   - Data fixtures and historical datasets support no-look-ahead validation.
    - Playwright E2E validates user workflows.
    - CI repeats core gates on pull requests and `main`.
 6. Close with limitations and next work.
    - Partial dataset, foundation model, not betting advice, no public accuracy claim.
-   - Future work: broader data, calibration, accessibility automation, deployment only when needed.
+   - Future work: broader data, calibration, accessibility automation, and deployment smoke checks around the documented Vercel runtime path.
 
 Closing line:
 
@@ -75,6 +77,7 @@ Use this version when the interviewer wants risk analysis, automation design, an
    - API contract tests for response and error shapes.
    - Regression snapshots for critical numeric outputs.
    - Playwright E2E for user workflows.
+   - Data fixtures are used; custom Playwright fixtures and a formal Page Object Model are not currently implemented.
    - GitHub Actions for repeatable PR validation.
 4. Show evidence.
    - Open architecture diagrams.
@@ -86,7 +89,7 @@ Use this version when the interviewer wants risk analysis, automation design, an
    - CI artifacts for traces and reports.
    - Data freshness checks.
    - Calibration reports.
-   - Deployment smoke tests after a deployment target exists.
+   - Deployment smoke tests for the documented Vercel runtime path.
 
 Closing line:
 
@@ -116,8 +119,9 @@ Closing line:
 - Seeded simulation makes probabilistic behavior reproducible.
 - Typed contracts support stable test assertions.
 - Playwright E2E covers workflows that unit tests cannot.
+- Direct accessible locators are used today; shared helpers are preferred before adding a heavier Page Object Model.
 - GitHub Actions mirrors the core local validation path.
-- The architecture is ready for future accessibility, artifact, data freshness, and smoke-test automation.
+- The architecture supports future accessibility, artifact, data freshness, and smoke-test automation.
 
 ## Limitations To Mention
 
@@ -125,4 +129,5 @@ Closing line:
 - The model is a foundation model, not a production-calibrated predictor.
 - Predictions are not betting advice.
 - The project does not make a public predictive accuracy claim.
-- Deployment is intentionally not part of this release.
+- Vercel runtime deployment is documented, but managed production operation, secrets, and database availability are environment-specific.
+- Do not claim custom Playwright fixtures, Page Object Model, full Clean Architecture, class-heavy OOP, Python/FastAPI runtime, betting-grade output, or guaranteed predictions.

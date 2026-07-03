@@ -4,13 +4,13 @@ Phase 9.2 adds GitHub-renderable Mermaid diagrams for portfolio and interview pr
 
 ## Monorepo Architecture
 
-This diagram shows the main packages and support systems in the monorepo. The dashboard depends on API contracts, API handlers depend on model and data packages, and CI validates the workspace through root pnpm/Turborepo commands.
+This diagram shows the main packages and support systems in the monorepo. The dashboard depends on API-shaped contracts and local API client wrappers, the API package composes model helpers and provider/persistence adapters, and CI validates the workspace through root pnpm/Turborepo commands. The data package remains focused on contracts, validation, and fixture foundations.
 
 ```mermaid
 flowchart TD
     repo["world-cup-2026-predictor monorepo"]
     web["apps/web\nNext.js dashboard"]
-    api["packages/api\nPure handlers and schemas"]
+    api["packages/api\nHandlers, schemas, providers"]
     model["packages/model\nElo, Poisson, Monte Carlo"]
     data["packages/data\nContracts, validation, fixtures"]
     docs["docs\nArchitecture, QA, portfolio"]
@@ -30,8 +30,6 @@ flowchart TD
     turbo --> data
     web --> api
     api --> model
-    api --> data
-    model --> data
 ```
 
 ## Data-To-Prediction Flow
@@ -61,31 +59,30 @@ flowchart LR
 
 ## API Flow
 
-This diagram shows how the dashboard reaches model outputs without a network server. The web app calls a local API client wrapper, which calls pure API handlers and returns typed responses to UI components.
+This diagram shows how the dashboard reaches model outputs in the local monorepo path. The web app calls a local API client wrapper, which calls API handlers and returns typed responses to UI components. The same package boundaries support configured server runtime paths for persistence, provider fallback, and Vercel deployment.
 
 ```mermaid
 flowchart LR
     dashboard["Dashboard components\nforms, cards, sections"]
     client["API client wrapper\napps/web"]
-    handlers["Pure API handlers\npackages/api"]
+    handlers["API handlers\npackages/api"]
     schemas["Typed schemas\nresponses and errors"]
     modelPkg["Model package\nratings and simulation"]
-    dataPkg["Data package\nfixtures and validation"]
+    providers["Providers and persistence\nfootball-data.org, StatsBomb, PostgreSQL or memory"]
     response["Typed response\nprobabilities, metadata, warnings"]
 
     dashboard --> client
     client --> handlers
     handlers --> schemas
     handlers --> modelPkg
-    handlers --> dataPkg
-    modelPkg --> dataPkg
+    handlers --> providers
     handlers --> response
     response --> dashboard
 ```
 
 ## QA Strategy
 
-This diagram groups the quality gates by risk area. Unit and integration tests protect deterministic logic, contract and snapshot tests protect API/model outputs, Playwright protects browser workflows, and GitHub Actions runs the core gates repeatedly.
+This diagram groups the quality gates by risk area. Unit and integration tests protect deterministic logic, contract and snapshot tests protect API/model outputs, deterministic seeds and data fixtures protect probabilistic and historical paths, Playwright protects browser workflows, and GitHub Actions runs the core gates repeatedly.
 
 ```mermaid
 flowchart TD
@@ -94,6 +91,7 @@ flowchart TD
     integration["Integration tests\nAPI handlers together"]
     contracts["API contract tests\nresponse and error shapes"]
     snapshots["Regression snapshots\ncritical numeric outputs"]
+    fixtures["Data fixtures and seeds\ndeterministic historical paths"]
     e2e["Playwright E2E\ndashboard workflows"]
     ci["GitHub Actions CI\npnpm test, typecheck, build, E2E"]
     confidence["Review confidence\nsafe pull requests"]
@@ -102,11 +100,13 @@ flowchart TD
     risk --> integration
     risk --> contracts
     risk --> snapshots
+    risk --> fixtures
     risk --> e2e
     unit --> ci
     integration --> ci
     contracts --> ci
     snapshots --> ci
+    fixtures --> ci
     e2e --> ci
     ci --> confidence
 ```
@@ -118,8 +118,8 @@ This diagram provides a concise talk track for portfolio walkthroughs. It moves 
 ```mermaid
 flowchart LR
     problem["Problem\nexplainable World Cup predictions"]
-    architecture["Architecture\nseparate data, model, API, UI"]
-    modeling["Modeling\nElo, Poisson, Monte Carlo"]
+    architecture["Architecture\nlayered data, model, API, UI"]
+    modeling["Modeling\nElo V2, AD/SB guards, Poisson"]
     validation["Validation\nhistorical replay and snapshots"]
     automation["Automation\nunit, contract, E2E tests"]
     cicd["CI/CD\nGitHub Actions gates"]
@@ -145,4 +145,4 @@ Use these diagrams in interviews to explain the project at different depths:
 | QA or SDET discussion | QA Strategy and API Flow |
 | Portfolio README reference | Monorepo Architecture and Interview Story |
 
-Keep the walkthrough honest: the diagrams describe the current local monorepo and CI foundation. They do not claim production deployment, Docker, cloud infrastructure, databases, or external services.
+Keep the walkthrough honest: the diagrams describe the current monorepo, CI foundation, documented Vercel runtime path, provider fallback behavior, and configured PostgreSQL option. They do not claim Docker, guaranteed managed production operation, complete historical data, betting-grade predictions, custom Playwright fixtures, or a formal Page Object Model.

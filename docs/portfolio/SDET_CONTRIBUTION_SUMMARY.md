@@ -44,6 +44,7 @@ This summary lists SDET and QA automation contributions that are safe to discuss
 - Integrated automated checks into GitHub Actions: install, test, typecheck, build, and browser E2E.
 - Treated model limitations, partial data coverage, fallback behavior, and calibration status as testable product risks.
 - Validated persistence and scheduled automation paths with explicit configuration checks and failure handling.
+- Documented Vercel runtime deployment, PostgreSQL configuration, provider fallback states, and secret-handling boundaries.
 
 ## Claims To Avoid
 
@@ -52,7 +53,7 @@ This summary lists SDET and QA automation contributions that are safe to discuss
 - Do not claim OOP-driven test architecture.
 - Do not claim full production calibration or public predictive accuracy.
 - Do not claim complete global football dataset coverage.
-- Do not claim deployed production infrastructure, Docker, cloud hosting, or production database operation unless separately verified.
+- Do not claim Docker, always-on managed production operation, or production database availability unless separately verified.
 - Do not claim fully implemented Clean Architecture package boundaries.
 
 ## Likely Interview Questions And Defensible Answers

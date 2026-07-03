@@ -1,6 +1,6 @@
 # Web Dashboard
 
-`apps/web` contains the dashboard for World Cup 2026 Predictor (through Phase 11.8).
+`apps/web` contains the dashboard for World Cup 2026 Predictor.
 
 The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads from the local `packages/api` pure handlers through a small client wrapper and does not call a network server.
 
@@ -42,9 +42,10 @@ The app is a minimal Next.js, TypeScript, and Tailwind dashboard shell. It reads
 ## Boundaries
 
 - No authentication.
-- No database.
+- No browser-side database access.
 - No payments.
-- No production deployment.
+- Vercel runtime deployment is documented at the repository level; local development remains deterministic.
+- PostgreSQL is used only through server-side configured runtime paths, never directly from client components.
 - No dashboard charts yet.
 - No external UI component library.
 - No public predictive accuracy claim.

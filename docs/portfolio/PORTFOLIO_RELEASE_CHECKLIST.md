@@ -1,6 +1,6 @@
 # Portfolio Release Checklist
 
-Phase 9.3 prepares World Cup 2026 Predictor for a polished portfolio release. This checklist is documentation-only and does not add deployment, dependencies, binary assets, or application behavior.
+Phase 9.3 prepares World Cup 2026 Predictor for a polished portfolio release. This checklist is documentation-only and does not add dependencies, binary assets, or application behavior.
 
 Recommended portfolio release tag:
 
@@ -21,6 +21,7 @@ Complete these items before publishing the portfolio release:
 - [ ] `pnpm typecheck` passing.
 - [ ] `pnpm build` passing.
 - [ ] Playwright E2E passing.
+- [ ] `git diff --check` passing.
 - [ ] GitHub Actions passing.
 - [ ] Pull request merged to `main`.
 - [ ] Release tag `v0.1.0-portfolio` created.
@@ -34,6 +35,7 @@ pnpm test
 pnpm typecheck
 pnpm build
 pnpm --filter @world-cup-2026-predictor/web test:e2e
+git diff --check
 ```
 
 Optional documentation hygiene check:
@@ -53,7 +55,7 @@ Use this checklist in the release pull request description:
 - [ ] Release checklist and demo script are included.
 - [ ] Final QA review and release tagging guide are included.
 - [ ] No binary screenshots or videos were added unintentionally.
-- [ ] No deployment, Docker, cloud provider, database, or secret configuration was added.
+- [ ] Any deployment, persistence, provider, or secret wording matches checked-in docs and does not expose secrets.
 - [ ] No app, API, model, data, test, or CI behavior was modified.
 - [ ] Local checks were run and documented.
 - [ ] GitHub Actions CI passed.
@@ -62,19 +64,19 @@ Use this checklist in the release pull request description:
 
 ### LinkedIn
 
-World Cup 2026 Predictor is a TypeScript monorepo portfolio project that turns a football prediction idea into a quality engineering case study. It includes data validation, Elo ratings, Poisson scoreline probabilities, Monte Carlo simulation, pure API handlers, a Next.js dashboard, API contract tests, deterministic regression snapshots, Playwright E2E coverage, and GitHub Actions CI.
+World Cup 2026 Predictor is a TypeScript monorepo portfolio project that turns a football prediction idea into a quality engineering case study. It includes data validation, Elo V2, guarded Attack/Defense and StatsBomb enrichment, Poisson scoreline probabilities, recommended versus modal scoreline presentation, Monte Carlo simulation, typed API handlers, a Next.js dashboard, API contract tests, deterministic regression snapshots, Playwright E2E coverage, fallback validation, structured telemetry, and GitHub Actions CI.
 
 The focus is not claiming perfect predictions. The focus is showing how to build a testable, explainable, and honest data/model product with visible uncertainty and repeatable quality gates.
 
 ### GitHub
 
-Portfolio-ready World Cup 2026 prediction system built with TypeScript, pnpm workspaces, Turborepo, Clean Architecture boundaries, deterministic model tests, API contract coverage, Playwright E2E workflows, historical validation, Monte Carlo simulation, and GitHub Actions CI.
+Portfolio-ready World Cup 2026 prediction system built with TypeScript, pnpm workspaces, Turborepo, layered package boundaries, deterministic model tests, API contract coverage, Playwright E2E workflows, historical validation, guardrails, fallback behavior, Monte Carlo simulation, and GitHub Actions CI.
 
 ## Release Notes Draft
 
-`v0.1.0-portfolio` is the first portfolio-ready release of World Cup 2026 Predictor. It includes the dashboard foundation, Live Elo prediction flow, Poisson and Monte Carlo simulation foundations, historical validation documentation, API contracts, regression snapshots, Playwright E2E coverage, CI foundation, architecture diagrams, screenshot planning, and interview-ready demo scripts.
+`v0.1.0-portfolio` is the first portfolio-ready release of World Cup 2026 Predictor. It includes the dashboard foundation, Live Elo V2 prediction flow, guarded Attack/Defense and StatsBomb enrichment stages, Poisson and Monte Carlo simulation foundations, recommended versus modal scoreline presentation, historical validation documentation, API contracts, regression snapshots, Playwright E2E coverage, CI foundation, Vercel runtime documentation, architecture diagrams, screenshot planning, and interview-ready demo scripts.
 
-Known limitations remain explicit: the dataset is partial, the model is a foundation model, outputs are not betting advice, and the project does not make a public predictive accuracy claim.
+Known limitations remain explicit: the dataset is partial, calibration is limited by available evidence, outputs are not betting advice, fallback behavior is expected, and the project does not make a public predictive accuracy claim.
 
 ## Final QA And Tagging
 
@@ -99,3 +101,11 @@ The project is not betting software and should not be used as financial guidance
 ### Not a public accuracy claim
 
 The dashboard and documentation present model outputs, validation methods, warnings, and limitations. They do not claim production-grade public predictive accuracy.
+
+### Automation architecture limits
+
+The repository uses data fixtures, deterministic historical datasets, unit/integration/API contract/regression tests, snapshots, deterministic seeds, Playwright E2E, and CI validation. It does not currently implement custom Playwright fixtures with `test.extend()` or a formal Page Object Model.
+
+### Known extraction candidates
+
+`packages/api/src/routes.ts` and `apps/web/src/components/MatchSimulationResults.tsx` are intentionally documented as future extraction candidates. Their size is a maintainability risk, not a publication blocker.
