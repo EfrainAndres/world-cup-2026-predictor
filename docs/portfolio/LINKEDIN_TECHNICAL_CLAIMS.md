@@ -14,6 +14,7 @@ Use these claims only if the linked repository remains consistent with the curre
 - Integrated GitHub Actions quality gates for install, tests, typecheck, build, and browser E2E.
 - Built model-quality documentation that makes uncertainty, fallback data, calibration limits, and non-betting assumptions explicit.
 - Added immutable prediction snapshot and Model-vs-Reality evaluation foundations for post-match validation.
+- Documented the Vercel runtime path with server-side environment variables, PostgreSQL configuration, provider fallback states, and secret-handling rules.
 
 ## Safe Longer Claim
 
@@ -30,7 +31,7 @@ World Cup 2026 Predictor is a TypeScript monorepo portfolio project that combine
 | "Page Object Model" | Do not claim this. |
 | "OOP architecture" | Do not claim this; the project primarily uses pure functions and composition. |
 | "Complete football dataset" | "Curated historical World Cup fixtures plus partial international samples." |
-| "Deployed production service" | Do not claim unless deployment is added and verified. |
+| "Deployed production service" | "Documented Vercel runtime deployment path and configured server-side persistence/provider boundaries." Do not claim always-on managed production operation unless verified. |
 
 ## Claims Not To Make
 
@@ -42,7 +43,7 @@ World Cup 2026 Predictor is a TypeScript monorepo portfolio project that combine
 - Do not claim complete global data coverage.
 - Do not claim betting advice or guaranteed outcomes.
 - Do not claim public predictive accuracy beyond documented validation results.
-- Do not claim production deployment, Dockerization, cloud hosting, or managed database operations unless separately implemented.
+- Do not claim Dockerization, always-on managed production operation, or managed database availability unless separately verified.
 
 ## Suggested LinkedIn Post
 
