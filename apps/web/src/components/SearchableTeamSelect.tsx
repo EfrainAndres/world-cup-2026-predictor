@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, useId, useMemo, useState } from "react";
+import { KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { GroupedTeamOption } from "../lib/grouped-team-options";
 import { filterGroupedTeamOptions, groupFilteredTeamMatches } from "../lib/grouped-team-options";
 
@@ -24,12 +24,31 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
   const selectedOption = options.find((option) => option.canonicalName === value);
   const displayValue = isOpen ? query : value;
 
+  // onBlur defers closeList() so a mousedown on an option (which preventDefault()s
+  // to keep focus on the input) has a chance to register before the list unmounts.
+  // The pending timer must be cancelled whenever the input is reopened — otherwise
+  // a blur from an earlier interaction (e.g. clicking a submit button while this
+  // input still had focus) can fire after the input has since been refocused and
+  // given a new query, force-closing a list the user is actively selecting from.
+  const blurCloseTimeoutRef = useRef<number | null>(null);
+
+  function cancelPendingBlurClose(): void {
+    if (blurCloseTimeoutRef.current !== null) {
+      window.clearTimeout(blurCloseTimeoutRef.current);
+      blurCloseTimeoutRef.current = null;
+    }
+  }
+
+  useEffect(() => cancelPendingBlurClose, []);
+
   function openList(): void {
+    cancelPendingBlurClose();
     setIsOpen(true);
     setHighlightedIndex(0);
   }
 
   function closeList(resetQuery = true): void {
+    cancelPendingBlurClose();
     setIsOpen(false);
     setHighlightedIndex(0);
 
@@ -112,7 +131,11 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
           }}
           onKeyDown={handleKeyDown}
           onBlur={() => {
-            window.setTimeout(() => closeList(), 100);
+            cancelPendingBlurClose();
+            blurCloseTimeoutRef.current = window.setTimeout(() => {
+              blurCloseTimeoutRef.current = null;
+              closeList();
+            }, 100);
           }}
         />
 

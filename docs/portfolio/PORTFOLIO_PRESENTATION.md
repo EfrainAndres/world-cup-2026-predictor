@@ -63,7 +63,7 @@ Senior-level discussion points:
 - Pure handlers make API behavior testable without starting a server.
 - Seeded Monte Carlo simulation makes probabilistic behavior reproducible.
 - Playwright covers browser workflows while Vitest covers deterministic domain logic.
-- The CI workflow mirrors local commands and installs Chromium dependencies for E2E validation.
+- The CI workflow mirrors local commands and runs the full Chromium E2E suite plus targeted Firefox/WebKit smoke coverage.
 - The architecture supports future automation layers such as accessibility scans, data freshness checks, and deployment smoke tests.
 
 SDET framing:

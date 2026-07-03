@@ -14,7 +14,7 @@ const SOUTH_AFRICA_CANADA_FIXTURE_ID = "wc2026-match-73-south-africa-vs-canada";
 // Matches page — structure
 // ---------------------------------------------------------------------------
 
-test("Matches page renders heading and core UI regions", async ({ page }) => {
+test("Matches page renders heading and core UI regions @smoke", async ({ page }) => {
   await page.goto("/matches");
 
   await expect(page.getByRole("heading", { name: "Matches", exact: true })).toBeVisible();

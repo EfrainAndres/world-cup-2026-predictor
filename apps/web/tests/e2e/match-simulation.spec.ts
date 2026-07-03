@@ -1,35 +1,25 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function selectTeamOption(page: Page, inputLabel: string, searchText: string, optionLabel: string): Promise<void> {
-  const input = page.getByLabel(inputLabel);
+async function selectTeamOption(
+  page: Page,
+  inputLabel: string,
+  searchText: string,
+  optionLabel: string,
+  expectedValue = optionLabel.split(" · ")[0]
+): Promise<void> {
+  const input = page.getByRole("combobox", { name: inputLabel });
 
   await input.click();
-
   await input.fill(searchText);
 
-  const listboxId = await input.getAttribute("aria-controls");
-
-  if (!listboxId) {
-
-    throw new Error(`Combobox "${inputLabel}" does not expose aria-controls.`);
-
-  }
-
-  const listbox = page.locator(`[id="${listboxId}"]`);
-
-  const option = listbox.getByRole("option", {
-
+  const option = page.getByRole("option", {
     name: optionLabel,
-
     exact: true,
-
   });
 
   await expect(option).toBeVisible();
-
-  await input.press("ArrowDown");
-
-  await input.press("Enter");
+  await option.click();
+  await expect(input).toHaveValue(expectedValue);
 }
 
 // ── Dashboard shell ───────────────────────────────────────────────────────────
@@ -254,6 +244,7 @@ test("changing a custom selected team clears stale results", async ({ page }) =>
 
   await selectTeamOption(page, "Away team", "England", "England · Group L");
 
+  await expect(page.getByRole("combobox", { name: "Away team" })).toHaveValue("England");
   await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).not.toBeVisible();
   await expect(page.getByText("Prediction unavailable")).toBeVisible();
 });
@@ -1000,7 +991,7 @@ test("scoreline prediction section has no horizontal overflow at 430 px", async 
 
 // ── Phase 12.21B — Attack/Defense technical disclosure ────────────────────────
 
-test("Attack/Defense disclosure section is absent by default (off mode)", async ({ page }) => {
+test("Attack/Defense off-mode metadata remains visible while Elo V2 stays authoritative @smoke", async ({ page }) => {
   await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
@@ -1008,18 +999,24 @@ test("Attack/Defense disclosure section is absent by default (off mode)", async 
 
   const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
   await expect(resultsSection).toBeVisible();
-  // With ATTACK_DEFENSE_GOAL_MODEL_MODE=off (default), no AD section appears
-  await expect(resultsSection.getByText("Attack/Defense model")).not.toBeVisible();
-  await expect(resultsSection.getByText("Attack/Defense technical details")).not.toBeVisible();
+  await expect(resultsSection.getByText("Attack/Defense model", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Baseline Elo V2", { exact: true })).toBeVisible();
+  await expect(resultsSection.getByText("Mode", { exact: true }).locator("..")).toContainText("Off");
+  await expect(resultsSection.getByText("Applied", { exact: true }).locator("..")).toContainText("No");
+  await expect(resultsSection.getByText("Stage authoritative", { exact: true }).first().locator("..")).toContainText("No");
+  await expect(resultsSection.getByText("Final authoritative", { exact: true }).first().locator("..")).toContainText("No");
+  await expect(resultsSection.getByText("Attack/Defense did not affect this prediction: Disabled.")).toBeVisible();
+  await expect(resultsSection.getByLabel("Prediction pipeline: Elo V2")).toBeVisible();
 });
 
-test("Attack/Defense section absent does not affect scoreline prediction rendering", async ({ page }) => {
+test("Attack/Defense off-mode metadata does not affect scoreline prediction rendering", async ({ page }) => {
   await page.goto("/predictions");
 
   await page.getByRole("button", { name: "Auto Predict From Elo" }).click();
   await page.getByRole("button", { name: "Auto predict from Elo", exact: true }).click();
 
   const resultsSection = page.getByRole("region", { name: "Mexico vs South Africa" });
+  await expect(resultsSection.getByText("Baseline Elo V2", { exact: true })).toBeVisible();
   await expect(resultsSection.getByText("Scoreline prediction", { exact: true })).toBeVisible();
   await expect(resultsSection.getByText("Recommended score", { exact: true })).toBeVisible();
 });

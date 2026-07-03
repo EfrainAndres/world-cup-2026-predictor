@@ -11,7 +11,7 @@ const REQUIRED_VIEWPORTS = [
 // Groups overview page — structure
 // ---------------------------------------------------------------------------
 
-test("Groups page renders heading and core regions", async ({ page }) => {
+test("Groups page renders heading and core regions @smoke", async ({ page }) => {
   await page.goto("/groups");
 
   await expect(page.getByRole("heading", { name: "Groups", exact: true })).toBeVisible();

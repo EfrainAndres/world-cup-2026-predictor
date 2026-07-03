@@ -9,7 +9,7 @@ const REQUIRED_VIEWPORTS = [
   { width: 1440, height: 900 }
 ];
 
-test("Tournament page renders the official knockout experience", async ({ page }) => {
+test("Tournament page renders the official knockout experience @smoke", async ({ page }) => {
   await page.goto("/tournament");
 
   await expect(page).toHaveTitle(/Tournament · World Cup 2026 Predictor/);
