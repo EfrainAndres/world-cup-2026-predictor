@@ -146,6 +146,56 @@ function validateScore(score: number | undefined): boolean {
   return score !== undefined && Number.isInteger(score) && score >= 0;
 }
 
+function copyOptionalResultDetails(record: WorldCup2026ExternalFixtureRecord): Partial<WorldCup2026ExternalFixtureRecord> {
+  return {
+    ...(record.regularTimeHomeScore === undefined ? {} : { regularTimeHomeScore: record.regularTimeHomeScore }),
+    ...(record.regularTimeAwayScore === undefined ? {} : { regularTimeAwayScore: record.regularTimeAwayScore }),
+    ...(record.extraTimeHomeScore === undefined ? {} : { extraTimeHomeScore: record.extraTimeHomeScore }),
+    ...(record.extraTimeAwayScore === undefined ? {} : { extraTimeAwayScore: record.extraTimeAwayScore }),
+    ...(record.penaltyHomeScore === undefined ? {} : { penaltyHomeScore: record.penaltyHomeScore }),
+    ...(record.penaltyAwayScore === undefined ? {} : { penaltyAwayScore: record.penaltyAwayScore }),
+    ...(record.winner === undefined ? {} : { winner: canonicalizeTeamName(record.winner) }),
+    ...(record.decisionMethod === undefined ? {} : { decisionMethod: record.decisionMethod })
+  };
+}
+
+function validateOptionalResultDetails(
+  providerId: string,
+  record: WorldCup2026ExternalFixtureRecord
+): WorldCup2026ResultsProviderError | undefined {
+  for (const field of [
+    "regularTimeHomeScore",
+    "regularTimeAwayScore",
+    "extraTimeHomeScore",
+    "extraTimeAwayScore",
+    "penaltyHomeScore",
+    "penaltyAwayScore"
+  ] as const) {
+    if (record[field] !== undefined && !validateScore(record[field])) {
+      return createProviderError(
+        providerId,
+        "bundle",
+        "invalid_provider_response",
+        `Fixture '${record.providerFixtureId}' has an invalid ${field} value.`
+      );
+    }
+  }
+
+  if (record.decisionMethod === "penalties") {
+    const hasPenaltyScore = record.penaltyHomeScore !== undefined && record.penaltyAwayScore !== undefined;
+    if (hasPenaltyScore && record.penaltyHomeScore === record.penaltyAwayScore) {
+      return createProviderError(
+        providerId,
+        "bundle",
+        "invalid_provider_response",
+        `Fixture '${record.providerFixtureId}' has a tied penalty shootout score.`
+      );
+    }
+  }
+
+  return undefined;
+}
+
 export function normalizeExternalFixtureRecords(
   providerId: string,
   records: readonly WorldCup2026ExternalFixtureRecord[]
@@ -226,6 +276,14 @@ export function normalizeExternalFixtureRecords(
       };
     }
 
+    const detailIssue = validateOptionalResultDetails(providerId, record);
+    if (detailIssue !== undefined) {
+      return {
+        status: "error",
+        error: detailIssue
+      };
+    }
+
     normalizedRecords.push({
       providerFixtureId: record.providerFixtureId,
       competition: record.competition,
@@ -239,6 +297,7 @@ export function normalizeExternalFixtureRecords(
       status: normalizedStatus.status,
       ...(record.homeScore === undefined ? {} : { homeScore: record.homeScore }),
       ...(record.awayScore === undefined ? {} : { awayScore: record.awayScore }),
+      ...copyOptionalResultDetails(record),
       ...(record.venue === undefined ? {} : { venue: record.venue }),
       ...(record.updatedAt === undefined ? {} : { updatedAt: record.updatedAt })
     });

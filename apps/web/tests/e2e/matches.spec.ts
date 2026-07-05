@@ -150,12 +150,34 @@ test("Match detail page renders for a valid fixture", async ({ page }) => {
   await expect(page.getByText("Mexico").first()).toBeVisible();
 });
 
+test("Match detail page shows richer match information sections", async ({ page }) => {
+  await page.goto(`/matches/${KNOWN_FIXTURE_ID}`);
+  await expect(page.getByRole("heading", { name: "Match information" })).toBeVisible();
+
+  if (await page.getByText("Final", { exact: true }).count() > 0) {
+    await expect(page.getByRole("heading", { name: "Result summary" })).toBeVisible();
+  }
+
+  const predictionSections = page
+    .getByRole("heading", { name: /Pre-match prediction|Prediction preview|Prediction context/ });
+  await expect(predictionSections.first()).toBeVisible();
+});
+
 test("Match detail page resolves the South Africa vs Canada official fixture", async ({ page }) => {
   await page.goto(`/matches/${SOUTH_AFRICA_CANADA_FIXTURE_ID}`);
   await expect(page.getByRole("main")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "South Africa vs Canada" })).toBeVisible();
   await expect(page.getByText("South Africa").first()).toBeVisible();
   await expect(page.getByText("Canada").first()).toBeVisible();
+});
+
+test("Upcoming match detail offers a prediction CTA when no stored preview exists", async ({ page }) => {
+  await page.goto(`/matches/${SOUTH_AFRICA_CANADA_FIXTURE_ID}`);
+  await expect(page.getByRole("heading", { name: "Match information" })).toBeVisible();
+
+  if (await page.getByRole("heading", { name: "Prediction preview" }).count() > 0) {
+    await expect(page.getByRole("link", { name: "Open prediction tool" })).toBeVisible();
+  }
 });
 
 test("Match detail page shows a back link to matches", async ({ page }) => {

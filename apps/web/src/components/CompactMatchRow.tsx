@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
 import type { WorldCup2026DailyMatchEntry } from "../lib/api-client";
-import { getDailyMatchStateClasses, getDailyMatchStateLabel, shouldShowDailyMatchScore } from "../lib/daily-matches-ui";
+import { getDailyMatchStateClasses, getDailyMatchStateLabel } from "../lib/daily-matches-ui";
+import { buildMatchResultDisplay } from "../lib/match-result-display";
 import { buildMatchDetailHref } from "../lib/matches-experience";
 import { TeamIdentity } from "./TeamIdentity";
 
@@ -11,7 +12,7 @@ interface CompactMatchRowProps {
 }
 
 export function CompactMatchRow({ match }: CompactMatchRowProps) {
-  const showScore = shouldShowDailyMatchScore(match);
+  const resultDisplay = buildMatchResultDisplay(match);
   const hasPrediction = match.predictionHistory.snapshot.available;
   const isLive = match.state === "live" || match.state === "halftime";
 
@@ -34,9 +35,9 @@ export function CompactMatchRow({ match }: CompactMatchRowProps) {
             </span>
 
             <span className="flex shrink-0 items-center gap-1.5 text-center">
-              {showScore ? (
+              {resultDisplay.showPrimaryScore ? (
                 <span className={`inline-block min-w-[3rem] rounded-md px-2 py-0.5 text-sm font-semibold tabular-nums ${isLive ? "bg-red-50 text-red-900" : "bg-slate-100 text-slate-900"}`}>
-                  {match.homeScore} – {match.awayScore}
+                  {resultDisplay.primaryScoreText}
                 </span>
               ) : match.localizedKickoff !== undefined ? (
                 <span className="text-xs text-slate-500">{match.localizedKickoff}</span>
@@ -63,6 +64,11 @@ export function CompactMatchRow({ match }: CompactMatchRowProps) {
               title="Prediction available"
               aria-label="Prediction available"
             />
+          ) : null}
+          {resultDisplay.resultNote !== undefined ? (
+            <span className="hidden max-w-44 truncate text-xs font-medium text-slate-600 lg:inline">
+              {resultDisplay.resultNote}
+            </span>
           ) : null}
           <span
             className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold leading-tight ${getDailyMatchStateClasses(match.state)}`}

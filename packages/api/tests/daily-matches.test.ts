@@ -36,6 +36,14 @@ function record(
     ...(overrides.matchday === undefined ? {} : { matchday: overrides.matchday }),
     ...(overrides.homeScore === undefined ? {} : { homeScore: overrides.homeScore }),
     ...(overrides.awayScore === undefined ? {} : { awayScore: overrides.awayScore }),
+    ...(overrides.regularTimeHomeScore === undefined ? {} : { regularTimeHomeScore: overrides.regularTimeHomeScore }),
+    ...(overrides.regularTimeAwayScore === undefined ? {} : { regularTimeAwayScore: overrides.regularTimeAwayScore }),
+    ...(overrides.extraTimeHomeScore === undefined ? {} : { extraTimeHomeScore: overrides.extraTimeHomeScore }),
+    ...(overrides.extraTimeAwayScore === undefined ? {} : { extraTimeAwayScore: overrides.extraTimeAwayScore }),
+    ...(overrides.penaltyHomeScore === undefined ? {} : { penaltyHomeScore: overrides.penaltyHomeScore }),
+    ...(overrides.penaltyAwayScore === undefined ? {} : { penaltyAwayScore: overrides.penaltyAwayScore }),
+    ...(overrides.winner === undefined ? {} : { winner: overrides.winner }),
+    ...(overrides.decisionMethod === undefined ? {} : { decisionMethod: overrides.decisionMethod }),
     ...(overrides.venue === undefined ? {} : { venue: overrides.venue }),
     ...(overrides.updatedAt === undefined ? {} : { updatedAt: overrides.updatedAt })
   };
@@ -382,6 +390,51 @@ describe("buildWorldCup2026DailyMatches", () => {
     ]);
     const final = result.matches.find((match) => match.providerFixtureId === "f4");
     expect(final).toMatchObject({ homeScore: 2, awayScore: 1, state: "final" });
+  });
+
+  it("preserves penalty shootout metadata separately from the official final score", () => {
+    const result = buildWorldCup2026DailyMatches({
+      date: "2026-06-11",
+      timezone: "UTC",
+      generatedAt: "2026-06-11T00:00:00Z",
+      syncResult: syncResult({
+        fixtures: [
+          record({
+            providerFixtureId: "penalty-final",
+            homeTeam: "Australia",
+            awayTeam: "Egypt",
+            status: "finished",
+            kickoffAt: "2026-06-11T13:00:00Z",
+            homeScore: 1,
+            awayScore: 1,
+            regularTimeHomeScore: 1,
+            regularTimeAwayScore: 1,
+            extraTimeHomeScore: 1,
+            extraTimeAwayScore: 1,
+            penaltyHomeScore: 3,
+            penaltyAwayScore: 5,
+            winner: "Egypt",
+            decisionMethod: "penalties"
+          })
+        ]
+      })
+    });
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.matches[0]).toMatchObject({
+      homeScore: 1,
+      awayScore: 1,
+      regularTimeHomeScore: 1,
+      regularTimeAwayScore: 1,
+      extraTimeHomeScore: 1,
+      extraTimeAwayScore: 1,
+      penaltyHomeScore: 3,
+      penaltyAwayScore: 5,
+      winner: "Egypt",
+      decisionMethod: "penalties",
+      state: "final"
+    });
   });
 
   it("separates fixtures without kickoff metadata into unscheduled matches", () => {

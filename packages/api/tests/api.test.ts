@@ -606,6 +606,26 @@ describe("getWorldCup2026GroupStandingsFoundation", () => {
     ]);
   });
 
+  it("does not count penalty shootout goals in group standings", () => {
+    const results = [
+      {
+        fixtureId: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+        status: "completed" as const,
+        homeScore: 1,
+        awayScore: 1,
+        penaltyHomeScore: 3,
+        penaltyAwayScore: 5,
+        resultSource: "external_api" as const
+      }
+    ];
+    const groupA = buildWorldCup2026GroupStandings({ results }).find((group) => group.group === "A");
+    const mexico = groupA?.standings.find((entry) => entry.team === "Mexico");
+    const southAfrica = groupA?.standings.find((entry) => entry.team === "South Africa");
+
+    expect(mexico).toMatchObject({ played: 1, draws: 1, goalsFor: 1, goalsAgainst: 1, points: 1 });
+    expect(southAfrica).toMatchObject({ played: 1, draws: 1, goalsFor: 1, goalsAgainst: 1, points: 1 });
+  });
+
   it("ignores pending fixtures even if score fields are present", () => {
     const results = [
       {

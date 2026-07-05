@@ -183,6 +183,45 @@ describe("createFootballDataOrgResultsProvider", () => {
     expect(result.records[0]?.awayScore).toBe(0);
   });
 
+  it("maps penalty shootout scores separately from the official match score", async () => {
+    const mockFetch = createMockFetch(
+      buildMatchesResponse([
+        buildMatch({
+          homeTeam: { id: 779, name: "Australia", shortName: "Australia" },
+          awayTeam: { id: 806, name: "Egypt", shortName: "Egypt" },
+          score: {
+            fullTime: { home: 3, away: 5 },
+            regularTime: { home: 1, away: 1 },
+            extraTime: { home: 1, away: 1 },
+            penalties: { home: 3, away: 5 },
+            duration: "PENALTY_SHOOTOUT",
+            winner: "AWAY_TEAM"
+          }
+        })
+      ]),
+      buildStandingsResponse([buildStandingGroup()])
+    );
+    const provider = await createFootballDataOrgResultsProvider(defaultConfig({ fetch: mockFetch }));
+    const result = provider.getFixtures();
+
+    expect(result.status).toBe("success");
+    if (result.status !== "success") return;
+    expect(result.records[0]).toMatchObject({
+      homeTeam: "Australia",
+      awayTeam: "Egypt",
+      homeScore: 1,
+      awayScore: 1,
+      regularTimeHomeScore: 1,
+      regularTimeAwayScore: 1,
+      extraTimeHomeScore: 1,
+      extraTimeAwayScore: 1,
+      penaltyHomeScore: 3,
+      penaltyAwayScore: 5,
+      winner: "Egypt",
+      decisionMethod: "penalties"
+    });
+  });
+
   it("maps PAUSED status to halftime", async () => {
     const mockFetch = createMockFetch(
       buildMatchesResponse([

@@ -6,9 +6,9 @@ import {
   formatEvaluationOutcomeLabel,
   getDailyMatchHistoryState,
   getDailyMatchStateClasses,
-  getDailyMatchStateLabel,
-  shouldShowDailyMatchScore
+  getDailyMatchStateLabel
 } from "../lib/daily-matches-ui";
+import { buildMatchResultDisplay } from "../lib/match-result-display";
 import { MatchContextDisplay } from "./MatchContextDisplay";
 
 interface GroupDetailMatchCardProps {
@@ -16,7 +16,7 @@ interface GroupDetailMatchCardProps {
 }
 
 export function GroupDetailMatchCard({ match }: GroupDetailMatchCardProps) {
-  const showScore = shouldShowDailyMatchScore(match);
+  const resultDisplay = buildMatchResultDisplay(match);
   const historyState = getDailyMatchHistoryState(match);
   const prediction = match.predictionHistory.snapshot.prediction;
   const evaluation = match.predictionHistory.evaluation;
@@ -47,14 +47,27 @@ export function GroupDetailMatchCard({ match }: GroupDetailMatchCardProps) {
         </span>
       </div>
 
-      {showScore && (
+      {resultDisplay.showPrimaryScore && (
         <div className="mt-3 border-t border-slate-100 pt-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {match.state === "final" ? "Final" : "Score"}
+            {resultDisplay.primaryScoreLabel}
           </p>
           <p className="mt-0.5 text-lg font-semibold text-slate-950">
-            {match.homeScore} – {match.awayScore}
+            {resultDisplay.primaryScoreText}
           </p>
+          {resultDisplay.resultNote !== undefined ? (
+            <p className="mt-1 text-sm font-medium text-slate-700">{resultDisplay.resultNote}</p>
+          ) : null}
+          {resultDisplay.detailRows.length > 0 ? (
+            <dl className="mt-2 space-y-1 text-xs text-slate-600">
+              {resultDisplay.detailRows.map((row) => (
+                <div key={row.label} className="flex flex-wrap gap-x-2">
+                  <dt className="font-medium text-slate-500">{row.label}:</dt>
+                  <dd>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </div>
       )}
 
