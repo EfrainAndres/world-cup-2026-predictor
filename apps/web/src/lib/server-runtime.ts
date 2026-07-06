@@ -3,7 +3,10 @@ import {
   buildOfficialWorldCup2026KnockoutProjection,
   canonicalizeTeamName,
   getPredictionHistoryPersistenceConfig,
+  computeLiveSyncCacheExpiresAt,
   getModelInfo,
+  isWorldCup2026SyncResult,
+  LIVE_SYNC_LKG_CACHE_KEY,
   getWorldCup2026LiveGroupStandings,
   resolvePredictionHistoryPersistence,
   runLiveEvidenceGate,
@@ -28,7 +31,8 @@ import type {
   WorldCup2026LiveGroupStandingsResponse,
   WorldCup2026ModelRealitySummary,
   WorldCup2026ResultProviderMetadata,
-  WorldCup2026SyncResult
+  WorldCup2026SyncResult,
+  LiveSyncCacheStore
 } from "@world-cup-2026-predictor/api";
 import { createProductionPredictionDependencies } from "@world-cup-2026-predictor/api/src/statsbomb-server-composition";
 import { embeddedBacktestArtifact, embeddedProfilesArtifact } from "./statsbomb-embedded-artifacts.server";
@@ -61,6 +65,13 @@ export interface ProductionRuntimeDiagnostics {
 export interface ProductionRuntimeDiagnosticsInput {
   env?: Record<string, string | undefined>;
   resolvePersistence?: () => Promise<PredictionHistoryPersistenceResolution>;
+}
+
+export interface DashboardLiveSyncResultInput {
+  syncFn?: () => Promise<WorldCup2026SyncResult>;
+  liveSyncCacheStore?: LiveSyncCacheStore | null;
+  resolvePersistence?: () => Promise<PredictionHistoryPersistenceResolution>;
+  now?: string;
 }
 
 function countFixturesWithKickoff(fixtures: readonly WorldCup2026ExternalFixtureRecord[]): number {
@@ -126,6 +137,12 @@ const STALE_RESULT_WARNING =
   "Results data may be stale. The external provider returned a degraded response; the last valid provider response was used.";
 const LIVE_DATA_REFRESH_WARNING =
   "Showing last successful live data while the provider refreshes.";
+const DURABLE_LIVE_CACHE_READ_WARNING =
+  "Durable live data cache is unavailable; using the current provider response.";
+const DURABLE_LIVE_CACHE_WRITE_WARNING =
+  "Durable live data cache could not be updated; process-local cache remains active.";
+const DURABLE_LIVE_CACHE_INVALID_WARNING =
+  "Durable live data cache payload was invalid and was ignored.";
 
 export function resetSyncResultCache(): void {
   lastKnownGoodSyncResult = null;
@@ -151,7 +168,12 @@ function hasUsableFixtureDataset(syncResult: WorldCup2026SyncResult): boolean {
 }
 
 function shouldPromoteLastKnownGood(syncResult: WorldCup2026SyncResult): boolean {
-  return !syncResult.localFallbackUsed && !syncResult.cacheUsed && hasUsableFixtureDataset(syncResult);
+  return (
+    syncResult.status === "success" &&
+    !syncResult.localFallbackUsed &&
+    !syncResult.cacheUsed &&
+    hasUsableFixtureDataset(syncResult)
+  );
 }
 
 function buildCachedLastKnownGoodResult(
@@ -169,21 +191,115 @@ function buildCachedLastKnownGoodResult(
   };
 }
 
+function normalizeDashboardLiveSyncInput(
+  input?: DashboardLiveSyncResultInput | (() => Promise<WorldCup2026SyncResult>)
+): Required<Pick<DashboardLiveSyncResultInput, "syncFn">> & Omit<DashboardLiveSyncResultInput, "syncFn"> {
+  if (typeof input === "function") {
+    return { syncFn: input };
+  }
+
+  return {
+    syncFn: input?.syncFn ?? (() => synchronizeWorldCup2026Results({})),
+    ...(input?.liveSyncCacheStore === undefined ? {} : { liveSyncCacheStore: input.liveSyncCacheStore }),
+    ...(input?.resolvePersistence === undefined ? {} : { resolvePersistence: input.resolvePersistence }),
+    ...(input?.now === undefined ? {} : { now: input.now })
+  };
+}
+
+async function resolveLiveSyncCacheStore(
+  input: Pick<DashboardLiveSyncResultInput, "liveSyncCacheStore" | "resolvePersistence">
+): Promise<LiveSyncCacheStore | null> {
+  if (input.liveSyncCacheStore !== undefined) {
+    return input.liveSyncCacheStore;
+  }
+
+  try {
+    const persistence = await (input.resolvePersistence ?? (() => resolvePredictionHistoryPersistence()))();
+    return persistence.liveSyncCache;
+  } catch {
+    return null;
+  }
+}
+
+async function persistDurableLastKnownGood(
+  syncResult: WorldCup2026SyncResult,
+  store: LiveSyncCacheStore | null
+): Promise<readonly string[]> {
+  if (store === null) return [];
+
+  try {
+    await store.set({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      payload: syncResult,
+      provider: syncResult.activeProvider,
+      syncedAt: syncResult.syncedAt,
+      expiresAt: computeLiveSyncCacheExpiresAt(syncResult.syncedAt)
+    });
+    return [];
+  } catch {
+    return [DURABLE_LIVE_CACHE_WRITE_WARNING];
+  }
+}
+
+async function readDurableLastKnownGood(
+  store: LiveSyncCacheStore | null,
+  now: string | undefined
+): Promise<{ syncResult: WorldCup2026SyncResult | null; warnings: readonly string[] }> {
+  if (store === null) {
+    return { syncResult: null, warnings: [] };
+  }
+
+  try {
+    const entry = await store.get({ cacheKey: LIVE_SYNC_LKG_CACHE_KEY, ...(now === undefined ? {} : { now }) });
+    if (entry === null) {
+      return { syncResult: null, warnings: [] };
+    }
+
+    if (!isWorldCup2026SyncResult(entry.payload) || !hasUsableFixtureDataset(entry.payload)) {
+      return { syncResult: null, warnings: [DURABLE_LIVE_CACHE_INVALID_WARNING] };
+    }
+
+    return { syncResult: entry.payload, warnings: [] };
+  } catch {
+    return { syncResult: null, warnings: [DURABLE_LIVE_CACHE_READ_WARNING] };
+  }
+}
+
 export async function getDashboardLiveSyncResult(
-  syncFn: () => Promise<WorldCup2026SyncResult> = () => synchronizeWorldCup2026Results({})
+  input?: DashboardLiveSyncResultInput | (() => Promise<WorldCup2026SyncResult>)
 ): Promise<WorldCup2026SyncResult> {
+  const options = normalizeDashboardLiveSyncInput(input);
+  const liveSyncCacheStore = await resolveLiveSyncCacheStore(options);
+  const syncFn = options.syncFn;
   const freshResult = await syncFn();
 
   if (shouldPromoteLastKnownGood(freshResult)) {
     lastKnownGoodSyncResult = freshResult;
-    return freshResult;
+    const durableWarnings = await persistDurableLastKnownGood(freshResult, liveSyncCacheStore);
+    return durableWarnings.length === 0
+      ? freshResult
+      : {
+          ...freshResult,
+          warnings: mergeWarnings(freshResult.warnings, durableWarnings)
+        };
   }
 
   if (lastKnownGoodSyncResult !== null) {
     return buildCachedLastKnownGoodResult(lastKnownGoodSyncResult, freshResult);
   }
 
-  return freshResult;
+  const durableResult = await readDurableLastKnownGood(liveSyncCacheStore, options.now);
+  if (durableResult.syncResult !== null) {
+    lastKnownGoodSyncResult = durableResult.syncResult;
+    return buildCachedLastKnownGoodResult(durableResult.syncResult, freshResult);
+  }
+
+  return durableResult.warnings.length === 0
+    ? freshResult
+    : {
+        ...freshResult,
+        warnings: mergeWarnings(freshResult.warnings, durableResult.warnings)
+      };
 }
 
 function buildProductionDependencies(env?: Record<string, string | undefined>) {

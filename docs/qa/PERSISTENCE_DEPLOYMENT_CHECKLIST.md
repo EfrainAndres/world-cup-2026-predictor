@@ -29,11 +29,12 @@ Expected output:
 Running migration: 0001_prediction_snapshots.sql
 Running migration: 0002_prediction_evaluations.sql
 Running migration: 0003_projection_cache.sql
+Running migration: 0004_live_sync_cache.sql
 Migrations complete.
 ```
 
 - [ ] Migration script exits with code 0.
-- [ ] All three tables exist: `prediction_snapshots`, `prediction_evaluations`, `projection_cache`.
+- [ ] All four tables exist: `prediction_snapshots`, `prediction_evaluations`, `projection_cache`, `live_sync_cache`.
 - [ ] All indexes exist (verify with `\d prediction_snapshots` etc. in psql).
 
 ---
@@ -52,6 +53,9 @@ psql $DATABASE_URL -c "\d prediction_evaluations"
 
 # Verify projection_cache natural key
 psql $DATABASE_URL -c "\d projection_cache"
+
+# Verify live_sync_cache operational LKG cache
+psql $DATABASE_URL -c "\d live_sync_cache"
 ```
 
 - [ ] `prediction_snapshots` has `UNIQUE (idempotency_key)`.
@@ -59,6 +63,8 @@ psql $DATABASE_URL -c "\d projection_cache"
 - [ ] `prediction_evaluations` has `UNIQUE (snapshot_id, result_identity, metric_version)`.
 - [ ] `projection_cache` has `UNIQUE (group_code, timezone)`.
 - [ ] `projection_cache` has `CHECK (expires_at > generated_at)`.
+- [ ] `live_sync_cache` has primary key `cache_key`.
+- [ ] `live_sync_cache` has `CHECK (expires_at > synced_at)`.
 
 ---
 
@@ -68,7 +74,7 @@ psql $DATABASE_URL -c "\d projection_cache"
 TEST_DATABASE_URL=postgresql://... pnpm --filter @world-cup-2026-predictor/api test
 ```
 
-- [ ] 28 previously-skipped PostgreSQL tests now run and pass.
+- [ ] PostgreSQL adapter tests that are skipped without `TEST_DATABASE_URL` now run and pass.
 - [ ] No `SnapshotStorageError` thrown during contract test teardown.
 - [ ] Test database cleaned up by `afterEach` hooks.
 
@@ -79,6 +85,7 @@ TEST_DATABASE_URL=postgresql://... pnpm --filter @world-cup-2026-predictor/api t
 After deploying the application:
 
 - [ ] `GET /` — Dashboard loads without error.
+- [ ] `GET /matches` — Match Center loads; stale/cache warning appears only when provider data is served from cache.
 - [ ] `GET /groups/A` — Group A page loads; no warning banner about cache unavailability.
 - [ ] `GET /groups/A` (second request) — Response is fast; projection is served from cache if unchanged.
 - [ ] `GET /api/world-cup-2026/groups/A` — API route responds with 200 and valid JSON.
@@ -92,13 +99,14 @@ If the application fails after migration:
 
 1. Revert `PERSISTENCE_PROVIDER` to `memory` in the environment config.
 2. Redeploy. The application will use in-memory adapters and skip all database reads/writes.
-3. Migrations do not need to be reversed — `prediction_snapshots`, `prediction_evaluations`, and `projection_cache` tables are backward-compatible and do not affect the memory provider path.
+3. Migrations do not need to be reversed — `prediction_snapshots`, `prediction_evaluations`, `projection_cache`, and `live_sync_cache` tables are backward-compatible and do not affect the memory provider path.
 
 To drop tables if needed:
 
 ```sql
 DROP TABLE IF EXISTS prediction_evaluations;
 DROP TABLE IF EXISTS projection_cache;
+DROP TABLE IF EXISTS live_sync_cache;
 DROP TABLE IF EXISTS prediction_snapshots;
 ```
 

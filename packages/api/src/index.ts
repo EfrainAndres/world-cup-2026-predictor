@@ -160,6 +160,24 @@ export type {
 } from "./async-projection-cache.js";
 export { createPostgresGroupProjectionCacheStore } from "./postgres-projection-cache.js";
 export {
+  LIVE_SYNC_CACHE_SCHEMA_VERSION,
+  LIVE_SYNC_LKG_CACHE_KEY,
+  LIVE_SYNC_LKG_CACHE_TTL_MS,
+  computeLiveSyncCacheExpiresAt,
+  createInMemoryLiveSyncCacheStore,
+  createNoopLiveSyncCacheStore,
+  isWorldCup2026SyncResult,
+  parseLiveSyncCachePayload
+} from "./live-sync-cache.js";
+export type {
+  LiveSyncCacheEntry,
+  LiveSyncCacheStore,
+  LiveSyncCacheGetInput,
+  LiveSyncCacheSetInput,
+  LiveSyncCacheDeleteInput
+} from "./live-sync-cache.js";
+export { createPostgresLiveSyncCacheStore } from "./postgres-live-sync-cache.js";
+export {
   PredictionHistoryPersistenceConfigError,
   getPredictionHistoryPersistenceConfig,
   isPredictionHistoryPersistenceError,

@@ -155,12 +155,59 @@ describe("prediction history persistence runtime", () => {
     expect(typeof resolution.projectionCache.get).toBe("function");
     expect(typeof resolution.projectionCache.set).toBe("function");
     expect(typeof resolution.projectionCache.delete).toBe("function");
+    expect(resolution.liveSyncCache).toBeDefined();
+    expect(typeof resolution.liveSyncCache.get).toBe("function");
+    expect(typeof resolution.liveSyncCache.set).toBe("function");
+    expect(typeof resolution.liveSyncCache.delete).toBe("function");
   });
 
   it("projectionCache is referentially stable across repeated memory resolutions", async () => {
     const first = await resolvePredictionHistoryPersistence();
     const second = await resolvePredictionHistoryPersistence();
     expect(first.projectionCache).toBe(second.projectionCache);
+    expect(first.liveSyncCache).toBe(second.liveSyncCache);
+  });
+
+  it("memory liveSyncCache is no-op so local mode remains process-local only", async () => {
+    const resolution = await resolvePredictionHistoryPersistence();
+    await resolution.liveSyncCache.set({
+      cacheKey: "world_cup_2026_live_results_lkg",
+      provider: "football_data_org_results_provider",
+      syncedAt: "2026-06-11T12:00:00.000Z",
+      expiresAt: "2026-06-11T12:15:00.000Z",
+      payload: {
+        status: "success",
+        providerMode: "football_data_org",
+        activeProvider: "football_data_org_results_provider",
+        cacheUsed: false,
+        localFallbackUsed: false,
+        externalProviderEnabled: true,
+        syncedAt: "2026-06-11T12:00:00.000Z",
+        fixtures: [
+          {
+            providerFixtureId: "fixture-1",
+            competition: "FIFA World Cup",
+            season: "2026",
+            kickoffAt: "2026-06-11T19:00:00Z",
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            status: "scheduled"
+          }
+        ],
+        liveMatches: [],
+        completedResults: [],
+        standings: [],
+        normalizationIssues: [],
+        warnings: []
+      }
+    });
+
+    await expect(
+      resolution.liveSyncCache.get({
+        cacheKey: "world_cup_2026_live_results_lkg",
+        now: "2026-06-11T12:05:00.000Z"
+      })
+    ).resolves.toBeNull();
   });
 
   it("postgres resolution includes projectionCache sharing the same SQL client", async () => {
@@ -180,6 +227,8 @@ describe("prediction history persistence runtime", () => {
     expect(typeof resolution.historyStore.list).toBe("function");
     expect(resolution.projectionCache).toBeDefined();
     expect(typeof resolution.projectionCache.get).toBe("function");
+    expect(resolution.liveSyncCache).toBeDefined();
+    expect(typeof resolution.liveSyncCache.get).toBe("function");
     // SQL factory was called only once (shared client).
     expect(factoryCalls).toBe(1);
   });
