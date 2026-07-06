@@ -11,6 +11,7 @@ import {
   getDailyMatchPredictionLabel,
   getDailyMatchScoreLabel,
   getDailyMatchStateLabel,
+  getDailyMatchesProviderWarning,
   getDailyMatchesSourceLabel,
   getTodayDateForTimezone,
   shiftDailyMatchesDate,
@@ -89,6 +90,41 @@ describe("daily matches UI helpers", () => {
         stale: false
       })
     ).toBe("Local static fallback");
+  });
+
+  test("builds provider warnings for stale cache and local fallback states", () => {
+    expect(
+      getDailyMatchesProviderWarning({
+        configuredProvider: "football_data_org",
+        activeProvider: "football-data.org",
+        externalRequestAttempted: true,
+        cacheUsed: true,
+        localFallbackUsed: false,
+        stale: true
+      })
+    ).toBe("Showing last successful live data while the provider refreshes.");
+
+    expect(
+      getDailyMatchesProviderWarning({
+        configuredProvider: "football_data_org",
+        activeProvider: "local_static_results_provider",
+        externalRequestAttempted: true,
+        cacheUsed: false,
+        localFallbackUsed: true,
+        stale: false
+      })
+    ).toBe("Live provider synchronization is unavailable. Showing local fallback fixture data.");
+
+    expect(
+      getDailyMatchesProviderWarning({
+        configuredProvider: "football_data_org",
+        activeProvider: "football-data.org",
+        externalRequestAttempted: true,
+        cacheUsed: false,
+        localFallbackUsed: false,
+        stale: false
+      })
+    ).toBeNull();
   });
 
   test("formats sync timestamps in explicit UTC and handles missing values", () => {

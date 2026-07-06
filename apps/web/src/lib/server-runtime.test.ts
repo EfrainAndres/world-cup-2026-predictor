@@ -431,6 +431,67 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
     expect(result.warnings.some((w) => w.includes("stale"))).toBe(true);
   });
 
+  test("does not replace last known good with an empty external provider success", async () => {
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["football-data.org returned no resolved fixture records for this refresh."]
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+    const result = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.cacheUsed).toBe(true);
+    expect(result.fixtures).toHaveLength(2);
+    expect(result.warnings).toContain("Showing last successful live data while the provider refreshes.");
+    expect(result.warnings).toContain("football-data.org returned no resolved fixture records for this refresh.");
+  });
+
+  test("daily matches keep valid last known good data after a false-empty external refresh", async () => {
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+    const cachedResult = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+    const dailyMatches = buildDashboardDailyMatchesFromSync(cachedResult, {
+      date: "2026-06-11",
+      timezone: "America/Bogota"
+    });
+
+    expect(dailyMatches.matches).toHaveLength(1);
+    expect(dailyMatches.providerMetadata.cacheUsed).toBe(true);
+    expect(dailyMatches.warnings).toContain("Daily matches data was served from cache and may be stale.");
+  });
+
+  test("true empty selected dates remain empty even when last known good is served", async () => {
+    const validSync = syncResult({ fixtures: [fixture()] });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+    const cachedResult = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+    const dailyMatches = buildDashboardDailyMatchesFromSync(cachedResult, {
+      date: "2026-06-12",
+      timezone: "America/Bogota"
+    });
+
+    expect(dailyMatches.matches).toHaveLength(0);
+    expect(dailyMatches.counts.total).toBe(0);
+    expect(dailyMatches.providerMetadata.cacheUsed).toBe(true);
+  });
+
   test("serves degraded result as-is when no prior valid result is cached", async () => {
     const degradedSync = syncResult({
       providerMode: "local_static",
@@ -446,6 +507,33 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
 
     expect(result.localFallbackUsed).toBe(true);
     expect(result.fixtures).toHaveLength(0);
+  });
+
+  test("does not seed last known good from an empty external provider success", async () => {
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    const firstResult = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+    const secondResult = await getDashboardLiveSyncResult(async () => degradedSync);
+
+    expect(firstResult.fixtures).toHaveLength(0);
+    expect(firstResult.cacheUsed).toBe(false);
+    expect(secondResult.localFallbackUsed).toBe(true);
+    expect(secondResult.cacheUsed).toBe(false);
+    expect(secondResult.fixtures).toHaveLength(0);
   });
 
   test("updates last known good when a valid result arrives after a degraded response", async () => {
@@ -468,6 +556,65 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
     expect(result.localFallbackUsed).toBe(false);
     expect(result.fixtures).toHaveLength(2);
     expect(result.cacheUsed).toBe(false);
+  });
+
+  test("recovers from a false-empty provider refresh when fresh fixture data returns", async () => {
+    const firstValidSync = syncResult({ fixtures: [fixture()] });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+    const secondValidSync = syncResult({
+      fixtures: [
+        fixture(),
+        roundOf32Fixture({
+          kickoffAt: "2026-06-29T01:00:00Z"
+        })
+      ],
+      syncedAt: "2026-06-11T12:00:00Z",
+      lastSuccessfulSync: "2026-06-11T12:00:00Z"
+    });
+
+    await getDashboardLiveSyncResult(async () => firstValidSync);
+    const cachedResult = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+    const recoveredResult = await getDashboardLiveSyncResult(async () => secondValidSync);
+
+    expect(cachedResult.cacheUsed).toBe(true);
+    expect(recoveredResult.cacheUsed).toBe(false);
+    expect(recoveredResult.fixtures).toHaveLength(2);
+    expect(recoveredResult.lastSuccessfulSync).toBe("2026-06-11T12:00:00Z");
+  });
+
+  test("daily date filtering uses Colombia timezone consistently with cached data", async () => {
+    const validSync = syncResult({
+      fixtures: [
+        roundOf32Fixture({
+          kickoffAt: "2026-06-29T01:00:00Z"
+        })
+      ]
+    });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    await getDashboardLiveSyncResult(async () => validSync);
+    const cachedResult = await getDashboardLiveSyncResult(async () => emptyExternalSync);
+    const colombiaDateMatches = buildDashboardDailyMatchesFromSync(cachedResult, {
+      date: "2026-06-28",
+      timezone: "America/Bogota"
+    });
+    const utcDateMatches = buildDashboardDailyMatchesFromSync(cachedResult, {
+      date: "2026-06-29",
+      timezone: "UTC"
+    });
+
+    expect(colombiaDateMatches.matches).toHaveLength(1);
+    expect(utcDateMatches.matches).toHaveLength(1);
+    expect(colombiaDateMatches.matches[0]?.fixtureId).toBe(utcDateMatches.matches[0]?.fixtureId);
   });
 
   test("rapid sequential degraded requests all receive the same last known good result", async () => {
