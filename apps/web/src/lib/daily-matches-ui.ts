@@ -117,6 +117,22 @@ export function getDailyMatchesSourceClasses(metadata: WorldCup2026DailyMatchesP
   return "border-teal-200 bg-teal-50 text-teal-800";
 }
 
+export function getDailyMatchesProviderWarning(
+  metadata: WorldCup2026DailyMatchesProviderMetadata | undefined
+): string | null {
+  if (metadata === undefined) return null;
+
+  if (metadata.cacheUsed || metadata.stale) {
+    return "Showing last successful live data while the provider refreshes.";
+  }
+
+  if (metadata.localFallbackUsed) {
+    return "Live provider synchronization is unavailable. Showing local fallback fixture data.";
+  }
+
+  return null;
+}
+
 export function formatUtcTimestamp(timestamp: string | undefined): string {
   if (timestamp === undefined) {
     return "unavailable";

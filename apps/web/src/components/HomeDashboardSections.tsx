@@ -12,6 +12,7 @@ import {
   getDailyMatchPredictionLabel,
   getDailyMatchHistoryState,
   getDailyMatchStateLabel,
+  getDailyMatchesProviderWarning
 } from "../lib/daily-matches-ui";
 import { buildMatchResultDisplay } from "../lib/match-result-display";
 import type { ProductionRuntimeDiagnostics } from "../lib/server-runtime";
@@ -207,6 +208,8 @@ export function HomeIntro({ runtimeDiagnostics }: HomeIntroProps) {
 }
 
 export function HomeTodayMatches({ matches, dailyMatches }: HomeTodayMatchesProps) {
+  const providerWarning = getDailyMatchesProviderWarning(dailyMatches.providerMetadata);
+
   return (
     <HomeSection id={HOME_SECTION_IDS[1]} labelledBy="home-todays-matches-title">
       <SectionHeader
@@ -224,6 +227,11 @@ export function HomeTodayMatches({ matches, dailyMatches }: HomeTodayMatchesProp
           <p className="text-sm font-semibold text-slate-900">{dailyMatches.requestedDate}</p>
           <p className="text-xs text-slate-500">{dailyMatches.timezone}</p>
         </div>
+        {providerWarning !== null ? (
+          <div className="border-b border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="status">
+            {providerWarning}
+          </div>
+        ) : null}
         {matches.length === 0 ? (
           <div className="p-4">
             <EmptyState

@@ -16,7 +16,10 @@ import {
   parseMatchFilter,
   sortMatchesForDisplay
 } from "../../src/lib/matches-experience";
-import { getTodayDateForTimezone } from "../../src/lib/daily-matches-ui";
+import {
+  getDailyMatchesProviderWarning,
+  getTodayDateForTimezone
+} from "../../src/lib/daily-matches-ui";
 
 export const metadata: Metadata = {
   title: "Matches · World Cup 2026 Predictor"
@@ -47,6 +50,7 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
   const allMatches = dailyMatches.matches;
   const filtered = applyMatchFilter(allMatches, activeFilter);
   const sorted = sortMatchesForDisplay(filtered);
+  const providerWarning = getDailyMatchesProviderWarning(dailyMatches.providerMetadata);
 
   const filterEmptyDescription =
     activeFilter === "all"
@@ -78,6 +82,12 @@ export default async function MatchesPage({ searchParams }: MatchesPageProps) {
           allMatches={allMatches}
         />
       </div>
+
+      {providerWarning !== null ? (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="status">
+          {providerWarning}
+        </div>
+      ) : null}
 
       <MatchList
         matches={sorted}

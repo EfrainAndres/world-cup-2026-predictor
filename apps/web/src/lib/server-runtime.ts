@@ -116,16 +116,57 @@ export function buildDashboardDailyMatchesFromSync(
 
 // Process-level last-known-good cache. Persists across requests within the same
 // Node.js process instance (same Vercel function warm-up). When the external provider
-// degrades (rate-limit, transient error, local static fallback), the most recent valid
-// sync result is served instead of an empty fixture set. Updated only when the external
-// provider responds successfully (localFallbackUsed === false).
+// degrades (rate-limit, transient error, local static fallback, or false-empty
+// provider payload), the most recent valid sync result is served instead of an
+// empty fixture set. Updated only when the external provider responds with a
+// usable, non-stale fixture dataset.
 let lastKnownGoodSyncResult: WorldCup2026SyncResult | null = null;
 
 const STALE_RESULT_WARNING =
   "Results data may be stale. The external provider returned a degraded response; the last valid provider response was used.";
+const LIVE_DATA_REFRESH_WARNING =
+  "Showing last successful live data while the provider refreshes.";
 
 export function resetSyncResultCache(): void {
   lastKnownGoodSyncResult = null;
+}
+
+function mergeWarnings(...groups: readonly (readonly string[])[]): string[] {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+
+  for (const group of groups) {
+    for (const warning of group) {
+      if (seen.has(warning)) continue;
+      seen.add(warning);
+      merged.push(warning);
+    }
+  }
+
+  return merged;
+}
+
+function hasUsableFixtureDataset(syncResult: WorldCup2026SyncResult): boolean {
+  return syncResult.fixtures.length > 0 && countFixturesWithKickoff(syncResult.fixtures) > 0;
+}
+
+function shouldPromoteLastKnownGood(syncResult: WorldCup2026SyncResult): boolean {
+  return !syncResult.localFallbackUsed && !syncResult.cacheUsed && hasUsableFixtureDataset(syncResult);
+}
+
+function buildCachedLastKnownGoodResult(
+  cachedResult: WorldCup2026SyncResult,
+  freshResult: WorldCup2026SyncResult
+): WorldCup2026SyncResult {
+  return {
+    ...cachedResult,
+    cacheUsed: true,
+    warnings: mergeWarnings(
+      cachedResult.warnings.filter((w) => w !== STALE_RESULT_WARNING && w !== LIVE_DATA_REFRESH_WARNING),
+      [STALE_RESULT_WARNING, LIVE_DATA_REFRESH_WARNING],
+      freshResult.warnings
+    )
+  };
 }
 
 export async function getDashboardLiveSyncResult(
@@ -133,20 +174,13 @@ export async function getDashboardLiveSyncResult(
 ): Promise<WorldCup2026SyncResult> {
   const freshResult = await syncFn();
 
-  if (!freshResult.localFallbackUsed) {
+  if (shouldPromoteLastKnownGood(freshResult)) {
     lastKnownGoodSyncResult = freshResult;
     return freshResult;
   }
 
   if (lastKnownGoodSyncResult !== null) {
-    return {
-      ...lastKnownGoodSyncResult,
-      cacheUsed: true,
-      warnings: [
-        ...lastKnownGoodSyncResult.warnings.filter((w) => w !== STALE_RESULT_WARNING),
-        STALE_RESULT_WARNING
-      ]
-    };
+    return buildCachedLastKnownGoodResult(lastKnownGoodSyncResult, freshResult);
   }
 
   return freshResult;

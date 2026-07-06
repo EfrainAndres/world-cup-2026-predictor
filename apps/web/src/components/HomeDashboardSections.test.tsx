@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import type {
   WorldCup2026DailyMatchEntry,
+  WorldCup2026DailyMatchesProviderMetadata,
   WorldCup2026DailyMatchesSuccessResponse
 } from "../lib/api-client";
 import { HomeTodayMatches } from "./HomeDashboardSections";
@@ -24,7 +25,10 @@ function match(overrides: Partial<WorldCup2026DailyMatchEntry> = {}): WorldCup20
   };
 }
 
-function dailyMatches(matches: readonly WorldCup2026DailyMatchEntry[]): WorldCup2026DailyMatchesSuccessResponse {
+function dailyMatches(
+  matches: readonly WorldCup2026DailyMatchEntry[],
+  providerMetadataOverrides: Partial<WorldCup2026DailyMatchesProviderMetadata> = {}
+): WorldCup2026DailyMatchesSuccessResponse {
   return {
     status: "success",
     requestedDate: "2026-06-11",
@@ -51,7 +55,8 @@ function dailyMatches(matches: readonly WorldCup2026DailyMatchEntry[]): WorldCup
       externalRequestAttempted: false,
       cacheUsed: false,
       localFallbackUsed: true,
-      stale: false
+      stale: false,
+      ...providerMetadataOverrides
     },
     metadata: {
       apiVersion: "0.1.0",
@@ -86,5 +91,28 @@ describe("HomeTodayMatches", () => {
     expect(html).toContain("vs");
     expect(html).toContain("1 – 1");
     expect(html).toContain("Egypt wins 5–3 on penalties");
+  });
+
+  test("renders provider refresh warning when today's matches are served from last known good cache", () => {
+    const matches = [
+      match({ fixtureId: "cached", homeTeam: "Mexico", awayTeam: "South Africa" })
+    ];
+    const html = renderToStaticMarkup(
+      <HomeTodayMatches
+        matches={matches}
+        dailyMatches={dailyMatches(matches, {
+          configuredProvider: "football_data_org",
+          activeProvider: "football_data_org_results_provider",
+          externalRequestAttempted: true,
+          cacheUsed: true,
+          localFallbackUsed: false,
+          stale: true
+        })}
+      />
+    );
+
+    expect(html).toContain("Showing last successful live data while the provider refreshes.");
+    expect(html).toContain("Mexico");
+    expect(html).toContain("South Africa");
   });
 });
