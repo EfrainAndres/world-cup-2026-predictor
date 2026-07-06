@@ -38,5 +38,6 @@ describe("CompactMatchRow", () => {
 
     expect(html).toContain("1 – 1");
     expect(html).toContain("Egypt wins 5–3 on penalties");
+    expect(html).toMatch(/1 – 1[\s\S]*Egypt wins 5–3 on penalties[\s\S]*Final/);
   });
 });
