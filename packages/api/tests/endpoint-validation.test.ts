@@ -141,7 +141,9 @@ describe("api endpoint validation", () => {
       "getWorldCup2026ModelRealitySummary",
       "listWorldCup2026PredictionHistory"
     ]);
-    expect(body.limitations).toContain("No HTTP server is created in Phase 5.0.");
+    expect(body.limitations).toContain(
+      "The model package is framework-independent; HTTP routing is handled by the web/API adapter layer."
+    );
     expectFoundationMetadata(body.metadata);
   });
 

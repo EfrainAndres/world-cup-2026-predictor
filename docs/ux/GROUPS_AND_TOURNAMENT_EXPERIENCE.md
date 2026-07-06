@@ -27,7 +27,7 @@ Status: Complete
 4. **Qualification overview** — winners column, runners-up column, best third-places column (top 8 advance)
 5. **Best third-place table** — full sortable table when any third-place data is available; ranked Pts → GD → GF → name
 6. **Activity summary** — matches played / live count + CTA link to `/matches`
-7. **Technical disclosure** — collapsed `<details>` with provider, cache, sync timestamp, warnings
+7. **Provider data notice** — visible provider/cache/sync summary with grouped warning notice and collapsed raw-warning disclosure
 
 ### GroupOverviewCard
 
@@ -61,7 +61,7 @@ Single `getDashboardLiveSyncResult()` call → `buildDashboardStandingsFromSync(
 | Element | Before | After |
 | --- | --- | --- |
 | Breadcrumb | "← Dashboard" (href="/") | "← Groups" (href="/groups") |
-| Provider metadata | Prominent section above matches | Collapsed `<details>` at page bottom |
+| Provider metadata | Prominent section above matches | Compact provider data summary at page bottom with collapsed raw-warning disclosure |
 | GroupNav | `<a>` tags, `flex-wrap` | `<Link>`, horizontal scroll, keyboard accessible |
 
 ### GroupNav

@@ -58,7 +58,9 @@ describe("api foundation handlers", () => {
 
     expect(info.status).toBe("ok");
     expect(info.supportedHandlers).toContain("simulateMatch");
-    expect(info.limitations).toContain("No HTTP server is created in Phase 5.0.");
+    expect(info.limitations).toContain(
+      "The model package is framework-independent; HTTP routing is handled by the web/API adapter layer."
+    );
   });
 
   it("simulates a match from expected goals", () => {

@@ -211,6 +211,34 @@ describe("GroupDetailProjection", () => {
     expect(html).toContain("Projection notes");
   });
 
+  test("groups repeated fixture warnings into shared projection notes", () => {
+    const sharedWarning = "Auto Predict used fallback seed rating.";
+    const html = renderToStaticMarkup(
+      <GroupDetailProjection
+        projection={{
+          ...partialProjection,
+          fixtures: [
+            {
+              ...partialProjection.fixtures[0],
+              fixtureId: "a",
+              warnings: [sharedWarning, "Fixture A note."]
+            },
+            {
+              ...partialProjection.fixtures[0],
+              fixtureId: "b",
+              warnings: [sharedWarning]
+            }
+          ]
+        }}
+      />
+    );
+
+    expect(html).toContain("Shared projection notes");
+    expect(html).toContain("Auto Predict used fallback seed rating. (2 fixtures)");
+    expect((html.match(/Auto Predict used fallback seed rating\./g) ?? []).length).toBe(1);
+    expect(html).toContain("Fixture A note.");
+  });
+
   // ── Refresh status UI ───────────────────────────────────────────────────────
 
   test("renders Current badge for state 'current'", () => {

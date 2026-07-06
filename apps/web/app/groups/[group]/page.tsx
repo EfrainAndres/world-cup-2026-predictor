@@ -256,27 +256,12 @@ export default async function GroupDetailPage({
           )}
         </section>
 
-        {/* Data source & warnings disclosure */}
-        <details className="group mb-8">
-          <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-700 focus-visible:outline-none">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true">
-              <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-            </svg>
-            Data source &amp; technical details
-          </summary>
-          <div className="mt-3">
-            <GroupDetailProviderMetadata metadata={providerMetadata} />
-            {allWarnings.length > 0 && (
-              <ul className="mt-3 space-y-1.5 rounded-lg border border-amber-200 bg-amber-50 p-4">
-                {allWarnings.map((warning, i) => (
-                  <li key={i} className="text-sm text-amber-900">
-                    {warning}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </details>
+        <section aria-labelledby="group-provider-heading" className="mb-8">
+          <h2 id="group-provider-heading" className="mb-3 text-lg font-semibold text-slate-950">
+            Provider data notice
+          </h2>
+          <GroupDetailProviderMetadata metadata={providerMetadata} warnings={allWarnings} />
+        </section>
     </div>
   );
 }

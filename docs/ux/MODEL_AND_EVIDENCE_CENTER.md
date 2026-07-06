@@ -143,12 +143,15 @@ message appropriate to the state kind. No metrics are shown.
 
 ## Region 7 — Technical disclosure
 
-Expandable `<details>` panels:
-- Model scope (list from `modelInfo.modelScope`).
-- Known limitations (list from `modelInfo.limitations`).
+Visible summary cards:
+- Model scope summary: Live Elo + Elo-to-xG V2, Poisson score matrix, match and knockout simulation, snapshot/evaluation persistence, model-vs-reality evidence.
+- Known limitations summary: partial international history, not production-calibrated, evidence-sample gating, PostgreSQL requirement for persistent evidence.
+
+Collapsed `<details>` disclosures:
+- Full technical scope (full `modelInfo.modelScope` list)
 - Supported prediction handlers (monospace list from
-  `modelInfo.supportedHandlers`).
-- Model package identifier (monospace string).
+  `modelInfo.supportedHandlers`)
+- Full limitation details (`modelInfo.limitations`) plus model package identifier
 
 ---
 

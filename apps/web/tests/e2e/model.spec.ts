@@ -185,25 +185,35 @@ test("Recalibration gate has evidence progress bar", async ({ page }) => {
 // Disclosure region — expandable details
 // ---------------------------------------------------------------------------
 
-test("Model disclosure has Known limitations details element", async ({ page }) => {
+test("Model disclosure shows concise scope and limitation summaries", async ({ page }) => {
   await page.goto("/model");
   const disclosureSection = page.locator("section#model-disclosure");
+  await expect(disclosureSection.getByText("Model scope summary")).toBeVisible();
   await expect(disclosureSection.getByText("Known limitations")).toBeVisible();
 });
 
-test("Model disclosure Known limitations opens on click", async ({ page }) => {
+test("Model disclosure full technical scope opens on click", async ({ page }) => {
   await page.goto("/model");
   const disclosureSection = page.locator("section#model-disclosure");
-  const detailsTrigger = disclosureSection.getByText("Known limitations");
+  const detailsTrigger = disclosureSection.getByText("View full technical scope");
   await detailsTrigger.click();
   const openDetails = disclosureSection.locator("details[open]");
   await expect(openDetails.first()).toBeVisible();
 });
 
-test("Model disclosure shows model scope details", async ({ page }) => {
+test("Model disclosure keeps supported handlers behind a collapsed disclosure", async ({ page }) => {
   await page.goto("/model");
   const disclosureSection = page.locator("section#model-disclosure");
-  await expect(disclosureSection.getByText("Model scope")).toBeVisible();
+  await expect(disclosureSection.getByText("View supported handlers")).toBeVisible();
+});
+
+test("Model disclosure replaces stale framework and xG wording", async ({ page }) => {
+  await page.goto("/model");
+  const disclosureSection = page.locator("section#model-disclosure");
+  await disclosureSection.getByText("View full limitation details").click();
+  await expect(disclosureSection.getByText("framework-independent", { exact: false })).toBeVisible();
+  await expect(disclosureSection.getByText("Manual xG mode uses caller-supplied expected goals", { exact: false })).toBeVisible();
+  await expect(disclosureSection.getByText("No HTTP server is created in Phase 5.0.")).toHaveCount(0);
 });
 
 // ---------------------------------------------------------------------------

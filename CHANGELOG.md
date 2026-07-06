@@ -430,6 +430,7 @@ This project follows a simple, human-readable changelog format and aims to use c
 - `dataScope` updated to `world_cup_2010_2014_2018_2022+copa_america_2024_euro_2024_wcq_2026_international_friendly`.
 - `LIVE_ELO_INTERNATIONAL_SUPPLEMENT_WARNING` added to every `getLiveEloRatingsFoundation()` response.
 - `modelScope` entry in `model-info.ts` updated to describe expanded partial international supplement coverage.
+- Technical disclosure UX cleanup across Home, Groups, Group Detail, and Model: concise summary-first system/provider/model notices, grouped provider warning counts, collapsed raw diagnostics, and de-duplicated per-fixture projection warnings.
 
 ### Fixed
 
