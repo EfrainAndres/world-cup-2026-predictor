@@ -1,9 +1,16 @@
 import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import type {
+  LiveSyncCacheStore,
   PredictionHistoryPersistenceResolution,
   WorldCup2026ExternalFixtureRecord,
   WorldCup2026SyncResult
+} from "@world-cup-2026-predictor/api";
+import {
+  LIVE_SYNC_LKG_CACHE_KEY,
+  computeLiveSyncCacheExpiresAt,
+  createInMemoryLiveSyncCacheStore,
+  createNoopLiveSyncCacheStore
 } from "@world-cup-2026-predictor/api";
 import {
   buildDashboardMatchEntryById,
@@ -14,6 +21,7 @@ import {
   predictDashboardMatchFromLiveEloWithProductionStatsBomb,
   resetSyncResultCache
 } from "./server-runtime";
+import { selectHomeMatches } from "./home-dashboard";
 
 function fixture(overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}): WorldCup2026ExternalFixtureRecord {
   return {
@@ -76,6 +84,7 @@ function fakePersistence(): PredictionHistoryPersistenceResolution {
     snapshotStore: {} as PredictionHistoryPersistenceResolution["snapshotStore"],
     evaluationStore: {} as PredictionHistoryPersistenceResolution["evaluationStore"],
     projectionCache: {} as PredictionHistoryPersistenceResolution["projectionCache"],
+    liveSyncCache: createNoopLiveSyncCacheStore(),
     historyStore: {
       list: vi.fn().mockResolvedValue({
         items: [],
@@ -410,6 +419,44 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
     expect(result.cacheUsed).toBe(false);
   });
 
+  test("persists durable last known good when provider response is usable", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const freshSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => freshSync,
+      liveSyncCacheStore: durableStore
+    });
+    const stored = await durableStore.get({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      now: "2026-06-10T12:05:00.000Z"
+    });
+
+    expect(result.cacheUsed).toBe(false);
+    expect(stored?.payload.fixtures).toHaveLength(2);
+  });
+
+  test("does not persist durable last known good when provider response is empty", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+
+    await getDashboardLiveSyncResult({
+      syncFn: async () => emptyExternalSync,
+      liveSyncCacheStore: durableStore
+    });
+    const stored = await durableStore.get({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      now: "2026-06-10T12:05:00.000Z"
+    });
+
+    expect(stored).toBeNull();
+  });
+
   test("serves last known good result when the external provider degrades", async () => {
     const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
     const degradedSync = syncResult({
@@ -429,6 +476,184 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
     expect(result.cacheUsed).toBe(true);
     expect(result.fixtures).toHaveLength(2);
     expect(result.warnings.some((w) => w.includes("stale"))).toBe(true);
+  });
+
+  test("cold runtime serves durable last known good when process cache is empty", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const degradedSync = syncResult({
+      providerMode: "local_static",
+      activeProvider: "local_static_results_provider",
+      localFallbackUsed: true,
+      externalProviderEnabled: false,
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["External provider failed. Local static data was used as fallback."]
+    });
+    await durableStore.set({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      payload: validSync,
+      provider: validSync.activeProvider,
+      syncedAt: validSync.syncedAt,
+      expiresAt: computeLiveSyncCacheExpiresAt(validSync.syncedAt)
+    });
+
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => degradedSync,
+      liveSyncCacheStore: durableStore,
+      now: "2026-06-10T12:05:00.000Z"
+    });
+
+    expect(result.localFallbackUsed).toBe(false);
+    expect(result.cacheUsed).toBe(true);
+    expect(result.fixtures).toHaveLength(2);
+    expect(result.warnings).toContain("Showing last successful live data while the provider refreshes.");
+    expect(result.warnings).toContain("External provider failed. Local static data was used as fallback.");
+  });
+
+  test("process last known good takes precedence over durable last known good", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const processSync = syncResult({ fixtures: [fixture()] });
+    const durableSync = syncResult({
+      fixtures: [
+        fixture({
+          providerFixtureId: "durable-fixture",
+          homeTeam: "Brazil",
+          awayTeam: "Germany",
+          kickoffAt: "2026-06-12T19:00:00Z"
+        })
+      ]
+    });
+    const degradedSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+    await durableStore.set({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      payload: durableSync,
+      provider: durableSync.activeProvider,
+      syncedAt: durableSync.syncedAt,
+      expiresAt: computeLiveSyncCacheExpiresAt(durableSync.syncedAt)
+    });
+
+    await getDashboardLiveSyncResult({
+      syncFn: async () => processSync,
+      liveSyncCacheStore: durableStore
+    });
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => degradedSync,
+      liveSyncCacheStore: durableStore
+    });
+
+    expect(result.fixtures).toHaveLength(1);
+    expect(result.fixtures[0]?.providerFixtureId).toBe("wc2026-group-a-md1-01-mexico-vs-south-africa");
+  });
+
+  test("expired durable last known good is ignored when process cache is empty", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const degradedSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+    await durableStore.set({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      payload: validSync,
+      provider: validSync.activeProvider,
+      syncedAt: validSync.syncedAt,
+      expiresAt: computeLiveSyncCacheExpiresAt(validSync.syncedAt)
+    });
+
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => degradedSync,
+      liveSyncCacheStore: durableStore,
+      now: "2026-06-10T12:16:00.000Z"
+    });
+
+    expect(result.cacheUsed).toBe(false);
+    expect(result.fixtures).toHaveLength(0);
+  });
+
+  test("invalid durable payload is ignored safely", async () => {
+    const invalidStore: LiveSyncCacheStore = {
+      async get() {
+        return {
+          cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+          payload: { status: "success" } as WorldCup2026SyncResult,
+          provider: "football_data_org_results_provider",
+          syncedAt: "2026-06-10T12:00:00.000Z",
+          expiresAt: "2026-06-10T12:15:00.000Z",
+          schemaVersion: "1"
+        };
+      },
+      async set() {
+        return undefined;
+      },
+      async delete() {
+        return undefined;
+      }
+    };
+    const degradedSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => degradedSync,
+      liveSyncCacheStore: invalidStore,
+      now: "2026-06-10T12:05:00.000Z"
+    });
+
+    expect(result.fixtures).toHaveLength(0);
+    expect(result.warnings).toContain("Durable live data cache payload was invalid and was ignored.");
+  });
+
+  test("provider recovery replaces durable last known good", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const firstValidSync = syncResult({ fixtures: [fixture()] });
+    const secondValidSync = syncResult({
+      syncedAt: "2026-06-10T12:05:00.000Z",
+      lastSuccessfulSync: "2026-06-10T12:05:00.000Z",
+      fixtures: [fixture(), roundOf32Fixture()]
+    });
+
+    await getDashboardLiveSyncResult({
+      syncFn: async () => firstValidSync,
+      liveSyncCacheStore: durableStore
+    });
+    await getDashboardLiveSyncResult({
+      syncFn: async () => secondValidSync,
+      liveSyncCacheStore: durableStore
+    });
+    const stored = await durableStore.get({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      now: "2026-06-10T12:06:00.000Z"
+    });
+
+    expect(stored?.payload.fixtures).toHaveLength(2);
+    expect(stored?.payload.syncedAt).toBe("2026-06-10T12:05:00.000Z");
+  });
+
+  test("memory mode without durable cache still returns degraded data safely on cold runtime", async () => {
+    const degradedSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: []
+    });
+
+    const result = await getDashboardLiveSyncResult({
+      syncFn: async () => degradedSync,
+      liveSyncCacheStore: null
+    });
+
+    expect(result.fixtures).toHaveLength(0);
+    expect(result.cacheUsed).toBe(false);
   });
 
   test("does not replace last known good with an empty external provider success", async () => {
@@ -469,6 +694,36 @@ describe("getDashboardLiveSyncResult — last-known-good cache", () => {
     expect(dailyMatches.matches).toHaveLength(1);
     expect(dailyMatches.providerMetadata.cacheUsed).toBe(true);
     expect(dailyMatches.warnings).toContain("Daily matches data was served from cache and may be stale.");
+  });
+
+  test("Home match selection can use durable last known good data on a cold degraded response", async () => {
+    const durableStore = createInMemoryLiveSyncCacheStore();
+    const validSync = syncResult({ fixtures: [fixture(), roundOf32Fixture()] });
+    const emptyExternalSync = syncResult({
+      fixtures: [],
+      completedResults: [],
+      liveMatches: [],
+      warnings: ["Provider refresh returned an empty match bundle."]
+    });
+    await durableStore.set({
+      cacheKey: LIVE_SYNC_LKG_CACHE_KEY,
+      payload: validSync,
+      provider: validSync.activeProvider,
+      syncedAt: validSync.syncedAt,
+      expiresAt: computeLiveSyncCacheExpiresAt(validSync.syncedAt)
+    });
+
+    const cachedResult = await getDashboardLiveSyncResult({
+      syncFn: async () => emptyExternalSync,
+      liveSyncCacheStore: durableStore,
+      now: "2026-06-10T12:05:00.000Z"
+    });
+    const dailyMatches = buildDashboardDailyMatchesFromSync(cachedResult, {
+      date: "2026-06-11",
+      timezone: "America/Bogota"
+    });
+
+    expect(selectHomeMatches(dailyMatches)).toHaveLength(1);
   });
 
   test("true empty selected dates remain empty even when last known good is served", async () => {

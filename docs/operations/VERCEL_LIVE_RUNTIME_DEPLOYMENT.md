@@ -9,7 +9,7 @@ dynamic Node.js server rendering
 safe local fallback only when live services are unavailable
 ```
 
-No prediction formula, Elo/xG constant, snapshot identity, migration, provider credential, or capture workflow changes are included.
+No prediction formula, Elo/xG constant, snapshot identity, provider credential, or capture workflow changes are included.
 
 ## Required Vercel Environment Variables
 
@@ -74,6 +74,8 @@ pnpm --filter @world-cup-2026-predictor/api db:migrate
 
 Run migrations from a trusted server-side environment with `DATABASE_URL` configured. Never run migrations from browser code or request handlers.
 
+The migration set includes the `live_sync_cache` operational table. This table stores the last usable synchronized World Cup 2026 result payload so a cold serverless instance can recover from a temporarily degraded or false-empty provider response. Rows are mutable, short-lived, and not historical audit records.
+
 ## Runtime Rendering Strategy
 
 The live pages use dynamic Node.js rendering:
@@ -100,6 +102,8 @@ The dashboard performs one server-side World Cup result synchronization per page
 This avoids separate football-data.org calls for each dashboard section during one render.
 
 Group detail and API proxy routes still perform their own request-scoped synchronization because they are independent entry points.
+
+When `PERSISTENCE_PROVIDER=postgres`, the runtime writes a durable last-known-good live-sync cache after a usable non-fallback provider response. If a later request sees an empty, fallback, or degraded provider response, the runtime serves process-local LKG first, then the durable PostgreSQL LKG if it has not expired. The UI still marks the response as stale/cache-used and preserves provider warnings.
 
 ## Expected Live UI States
 
@@ -194,6 +198,7 @@ Rotate `FOOTBALL_DATA_API_TOKEN` through football-data.org and `DATABASE_URL` th
 
 - football-data.org rate limits still apply.
 - In-memory provider cache is best-effort per server instance.
+- Durable live last-known-good recovery requires `PERSISTENCE_PROVIDER=postgres` and the `live_sync_cache` migration. Memory mode remains process-local.
 - Dynamic rendering improves freshness but is not polling.
 - Prediction history requires migrations and database connectivity.
 - Provider fallback remains visible and expected during genuine upstream or database outages.

@@ -3,6 +3,7 @@ import {
   __resetCompletedPredictionEvaluationRuntimeForTests,
   createAsyncInMemoryEvaluationStore,
   createAsyncInMemorySnapshotStore,
+  createNoopLiveSyncCacheStore,
   evaluateCompletedWorldCup2026PredictionSnapshots,
   listWorldCup2026PredictionHistory,
   resolvePredictionHistoryPersistence,
@@ -118,6 +119,7 @@ function makePersistence(): PredictionHistoryPersistenceResolution {
     evaluationStore,
     historyStore: {} as PredictionHistoryPersistenceResolution["historyStore"],
     projectionCache: {} as PredictionHistoryPersistenceResolution["projectionCache"],
+    liveSyncCache: createNoopLiveSyncCacheStore(),
     metadata: { provider: "memory", persistent: false, configuredProvider: "memory" }
   };
 }

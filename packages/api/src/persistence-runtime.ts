@@ -6,6 +6,8 @@ import {
 import type { AsyncPredictionEvaluationStore } from "./async-evaluation-store.js";
 import type { GroupProjectionCacheStore } from "./async-projection-cache.js";
 import { createInMemoryGroupProjectionCacheStore } from "./async-projection-cache.js";
+import type { LiveSyncCacheStore } from "./live-sync-cache.js";
+import { createNoopLiveSyncCacheStore } from "./live-sync-cache.js";
 import {
   createPostgresPredictionSnapshotStore
 } from "./postgres-snapshot-store.js";
@@ -13,6 +15,7 @@ import {
   createPostgresPredictionEvaluationStore
 } from "./postgres-evaluation-store.js";
 import { createPostgresGroupProjectionCacheStore } from "./postgres-projection-cache.js";
+import { createPostgresLiveSyncCacheStore } from "./postgres-live-sync-cache.js";
 import {
   createInMemoryPredictionHistoryReadStore,
   createPostgresPredictionHistoryReadStore,
@@ -45,6 +48,7 @@ export interface PredictionHistoryPersistenceResolution {
   evaluationStore: AsyncPredictionEvaluationStore;
   historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
+  liveSyncCache: LiveSyncCacheStore;
   metadata: PredictionHistoryPersistenceMetadata;
 }
 
@@ -77,6 +81,7 @@ interface MemoryResolutionCache {
   evaluationStore: AsyncPredictionEvaluationStore;
   historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
+  liveSyncCache: LiveSyncCacheStore;
 }
 
 interface PostgresResolutionCache {
@@ -85,6 +90,7 @@ interface PostgresResolutionCache {
   evaluationStore: AsyncPredictionEvaluationStore;
   historyStore: PredictionHistoryReadStore;
   projectionCache: GroupProjectionCacheStore;
+  liveSyncCache: LiveSyncCacheStore;
 }
 
 let memoryResolutionCache: MemoryResolutionCache | undefined;
@@ -239,12 +245,14 @@ export async function resolvePredictionHistoryPersistence(
         syncEvaluationStore
       );
       const projectionCache = createInMemoryGroupProjectionCacheStore();
+      const liveSyncCache = createNoopLiveSyncCacheStore();
 
       memoryResolutionCache = {
         snapshotStore,
         evaluationStore,
         historyStore,
-        projectionCache
+        projectionCache,
+        liveSyncCache
       };
     }
 
@@ -254,6 +262,7 @@ export async function resolvePredictionHistoryPersistence(
       evaluationStore: memoryResolutionCache.evaluationStore,
       historyStore: memoryResolutionCache.historyStore,
       projectionCache: memoryResolutionCache.projectionCache,
+      liveSyncCache: memoryResolutionCache.liveSyncCache,
       metadata: {
         provider: "memory",
         persistent: false,
@@ -273,7 +282,8 @@ export async function resolvePredictionHistoryPersistence(
       snapshotStore: createPostgresPredictionSnapshotStore(sql),
       evaluationStore: createPostgresPredictionEvaluationStore(sql),
       historyStore: createPostgresPredictionHistoryReadStore(sql),
-      projectionCache: createPostgresGroupProjectionCacheStore(sql)
+      projectionCache: createPostgresGroupProjectionCacheStore(sql),
+      liveSyncCache: createPostgresLiveSyncCacheStore(sql)
     };
     postgresResolutionUrl = config.databaseUrl;
   }
@@ -284,6 +294,7 @@ export async function resolvePredictionHistoryPersistence(
     evaluationStore: postgresResolutionCache.evaluationStore,
     historyStore: postgresResolutionCache.historyStore,
     projectionCache: postgresResolutionCache.projectionCache,
+    liveSyncCache: postgresResolutionCache.liveSyncCache,
     metadata: {
       provider: "postgres",
       persistent: true,
