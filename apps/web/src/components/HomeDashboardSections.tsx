@@ -11,10 +11,9 @@ import {
   formatUtcTimestamp,
   getDailyMatchPredictionLabel,
   getDailyMatchHistoryState,
-  getDailyMatchScoreLabel,
   getDailyMatchStateLabel,
-  shouldShowDailyMatchScore
 } from "../lib/daily-matches-ui";
+import { buildMatchResultDisplay } from "../lib/match-result-display";
 import type { ProductionRuntimeDiagnostics } from "../lib/server-runtime";
 import type {
   HomeFeaturedPrediction,
@@ -101,7 +100,7 @@ function formatProjectedScore(match: WorldCup2026DailyMatchEntry): string | null
 }
 
 function HomeMatchRow({ match }: { match: WorldCup2026DailyMatchEntry }) {
-  const showScore = shouldShowDailyMatchScore(match);
+  const resultDisplay = buildMatchResultDisplay(match);
   const projectedScore = formatProjectedScore(match);
   const hasPrediction = match.predictionHistory.snapshot.available;
 
@@ -126,10 +125,13 @@ function HomeMatchRow({ match }: { match: WorldCup2026DailyMatchEntry }) {
       </div>
       <div className="flex items-center justify-between gap-4 sm:min-w-32 sm:justify-end">
         <div>
-          <p className="text-xs font-medium text-slate-500">{getDailyMatchScoreLabel(match.state)}</p>
+          <p className="text-xs font-medium text-slate-500">{resultDisplay.primaryScoreLabel}</p>
           <p className="mt-0.5 text-lg font-semibold text-slate-950">
-            {showScore ? `${match.homeScore} - ${match.awayScore}` : "vs"}
+            {resultDisplay.primaryScoreText}
           </p>
+          {resultDisplay.resultNote !== undefined ? (
+            <p className="mt-0.5 max-w-44 text-xs font-medium text-slate-600">{resultDisplay.resultNote}</p>
+          ) : null}
         </div>
         {projectedScore !== null ? (
           <div className="text-right">

@@ -242,6 +242,43 @@ describe("server runtime helpers", () => {
     expect(entry?.awayScore).toBe(1);
   });
 
+  test("match detail lookup preserves canonical orientation for reversed penalty metadata", () => {
+    const entry = buildDashboardMatchEntryById(
+      syncResult({
+        fixtures: [
+          roundOf32Fixture({
+            homeTeam: "Canada",
+            awayTeam: "South Africa",
+            homeScore: 1,
+            awayScore: 1,
+            regularTimeHomeScore: 1,
+            regularTimeAwayScore: 1,
+            extraTimeHomeScore: 1,
+            extraTimeAwayScore: 1,
+            penaltyHomeScore: 4,
+            penaltyAwayScore: 5,
+            winner: "South Africa",
+            decisionMethod: "penalties"
+          })
+        ]
+      }),
+      "537417"
+    );
+
+    expect(entry?.homeTeam).toBe("South Africa");
+    expect(entry?.awayTeam).toBe("Canada");
+    expect(entry?.homeScore).toBe(1);
+    expect(entry?.awayScore).toBe(1);
+    expect(entry?.regularTimeHomeScore).toBe(1);
+    expect(entry?.regularTimeAwayScore).toBe(1);
+    expect(entry?.extraTimeHomeScore).toBe(1);
+    expect(entry?.extraTimeAwayScore).toBe(1);
+    expect(entry?.penaltyHomeScore).toBe(5);
+    expect(entry?.penaltyAwayScore).toBe(4);
+    expect(entry?.winner).toBe("South Africa");
+    expect(entry?.decisionMethod).toBe("penalties");
+  });
+
   test("match detail lookup uses canonical fallback when provider records are unavailable", () => {
     const entry = buildDashboardMatchEntryById(
       syncResult({

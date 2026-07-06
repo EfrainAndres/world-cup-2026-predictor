@@ -56,9 +56,33 @@ describe("GroupDetailMatchCard", () => {
         match={makeMatch({ state: "final", homeScore: 2, awayScore: 1, normalizedStatus: "finished" })}
       />
     );
-    expect(html).toContain("2");
-    expect(html).toContain("1");
+    expect(html).toContain("2 – 1");
     expect(html).toContain("Final");
+  });
+
+  test("renders penalty shootout note without using penalties as the primary score", () => {
+    const html = renderToStaticMarkup(
+      <GroupDetailMatchCard
+        match={makeMatch({
+          state: "final",
+          normalizedStatus: "finished",
+          homeTeam: "Australia",
+          awayTeam: "Egypt",
+          homeScore: 1,
+          awayScore: 1,
+          extraTimeHomeScore: 1,
+          extraTimeAwayScore: 1,
+          penaltyHomeScore: 3,
+          penaltyAwayScore: 5,
+          winner: "Egypt",
+          decisionMethod: "penalties"
+        })}
+      />
+    );
+
+    expect(html).toContain("1 – 1");
+    expect(html).toContain("Egypt wins 5–3 on penalties");
+    expect(html).toContain("Australia 3–5 Egypt");
   });
 
   test("renders live state badge", () => {

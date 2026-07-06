@@ -41,6 +41,11 @@ interface FootballDataOrgTeamRef {
 interface FootballDataOrgScore {
   fullTime: { home: number | null; away: number | null };
   halfTime?: { home: number | null; away: number | null };
+  regularTime?: { home: number | null; away: number | null };
+  extraTime?: { home: number | null; away: number | null };
+  penalties?: { home: number | null; away: number | null };
+  duration?: string | null;
+  winner?: string | null;
 }
 
 interface FootballDataOrgMatch {
@@ -123,6 +128,10 @@ function normalizeGroupLabel(raw: string | null): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+function optionalProviderScore(score: number | null | undefined): number | undefined {
+  return score === null || score === undefined ? undefined : score;
+}
+
 function normalizeFootballDataOrgMatches(
   matches: FootballDataOrgMatch[],
   season: string,
@@ -131,8 +140,36 @@ function normalizeFootballDataOrgMatches(
   return matches.map((match) => {
     const status = mapFootballDataOrgStatus(match.status);
     const group = normalizeGroupLabel(match.group);
-    const homeScore = match.score.fullTime.home !== null ? match.score.fullTime.home : undefined;
-    const awayScore = match.score.fullTime.away !== null ? match.score.fullTime.away : undefined;
+    const fullTimeHomeScore = optionalProviderScore(match.score.fullTime.home);
+    const fullTimeAwayScore = optionalProviderScore(match.score.fullTime.away);
+    const regularTimeHomeScore = optionalProviderScore(match.score.regularTime?.home);
+    const regularTimeAwayScore = optionalProviderScore(match.score.regularTime?.away);
+    const extraTimeHomeScore = optionalProviderScore(match.score.extraTime?.home);
+    const extraTimeAwayScore = optionalProviderScore(match.score.extraTime?.away);
+    const penaltyHomeScore = optionalProviderScore(match.score.penalties?.home);
+    const penaltyAwayScore = optionalProviderScore(match.score.penalties?.away);
+    const hasPenaltyScore = penaltyHomeScore !== undefined && penaltyAwayScore !== undefined;
+    const duration = match.score.duration?.toUpperCase();
+    const isPenaltyDecision = hasPenaltyScore || duration === "PENALTY_SHOOTOUT";
+    const isExtraTimeDecision = !isPenaltyDecision && duration === "EXTRA_TIME";
+    const homeScore =
+      isPenaltyDecision && extraTimeHomeScore !== undefined
+        ? extraTimeHomeScore
+        : isPenaltyDecision && regularTimeHomeScore !== undefined
+          ? regularTimeHomeScore
+          : fullTimeHomeScore;
+    const awayScore =
+      isPenaltyDecision && extraTimeAwayScore !== undefined
+        ? extraTimeAwayScore
+        : isPenaltyDecision && regularTimeAwayScore !== undefined
+          ? regularTimeAwayScore
+          : fullTimeAwayScore;
+    const winner =
+      match.score.winner === "HOME_TEAM"
+        ? match.homeTeam.name ?? undefined
+        : match.score.winner === "AWAY_TEAM"
+          ? match.awayTeam.name ?? undefined
+          : undefined;
 
     const record: WorldCup2026ExternalFixtureRecord = {
       providerFixtureId: String(match.id),
@@ -147,6 +184,20 @@ function normalizeFootballDataOrgMatches(
       status,
       ...(homeScore !== undefined ? { homeScore } : {}),
       ...(awayScore !== undefined ? { awayScore } : {}),
+      ...(regularTimeHomeScore !== undefined ? { regularTimeHomeScore } : {}),
+      ...(regularTimeAwayScore !== undefined ? { regularTimeAwayScore } : {}),
+      ...(extraTimeHomeScore !== undefined ? { extraTimeHomeScore } : {}),
+      ...(extraTimeAwayScore !== undefined ? { extraTimeAwayScore } : {}),
+      ...(penaltyHomeScore !== undefined ? { penaltyHomeScore } : {}),
+      ...(penaltyAwayScore !== undefined ? { penaltyAwayScore } : {}),
+      ...(winner !== undefined ? { winner } : {}),
+      ...(isPenaltyDecision
+        ? { decisionMethod: "penalties" as const }
+        : isExtraTimeDecision
+          ? { decisionMethod: "extra_time" as const }
+          : status === "finished"
+            ? { decisionMethod: "regular_time" as const }
+            : {}),
       ...(match.venue ? { venue: match.venue } : {}),
       updatedAt: match.lastUpdated ?? syncedAt
     };

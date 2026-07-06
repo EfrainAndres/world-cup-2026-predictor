@@ -12,9 +12,9 @@ import {
 } from "../../../src/lib/server-runtime";
 import {
   getDailyMatchStateClasses,
-  getDailyMatchStateLabel,
-  shouldShowDailyMatchScore
+  getDailyMatchStateLabel
 } from "../../../src/lib/daily-matches-ui";
+import { buildMatchResultDisplay } from "../../../src/lib/match-result-display";
 import { formatPercent } from "../../../src/lib/api-client";
 import {
   buildMatchesUrl,
@@ -75,7 +75,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
     notFound();
   }
 
-  const showScore = shouldShowDailyMatchScore(match);
+  const resultDisplay = buildMatchResultDisplay(match);
   const isLive = match.state === "live" || match.state === "halftime";
   const prediction = match.predictionHistory.snapshot.prediction;
   const evaluation = match.predictionHistory.evaluation;
@@ -129,17 +129,22 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
             </div>
 
             <div className="flex flex-col items-center gap-1">
-              {showScore ? (
+              {resultDisplay.showPrimaryScore ? (
                 <span
                   className={`rounded-lg px-4 py-2 text-2xl font-bold tabular-nums ${isLive ? "bg-red-50 text-red-900" : "bg-slate-100 text-slate-900"}`}
                 >
-                  {match.homeScore} – {match.awayScore}
+                  {resultDisplay.primaryScoreText}
                 </span>
               ) : (
                 <span className="text-base font-semibold text-slate-500">
                   {match.localizedKickoff ?? "TBD"}
                 </span>
               )}
+              {resultDisplay.resultNote !== undefined ? (
+                <span className="max-w-52 text-center text-xs font-medium text-slate-600">
+                  {resultDisplay.resultNote}
+                </span>
+              ) : null}
             </div>
 
             <div className="flex min-w-0 flex-col items-end gap-1">
@@ -152,6 +157,69 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
               />
             </div>
           </div>
+        </div>
+
+        {resultDisplay.showPrimaryScore && (
+          <div className="border-b border-slate-100 px-6 py-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Result summary
+            </h2>
+            <div className="rounded-md bg-slate-50 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                {resultDisplay.primaryScoreLabel}
+              </p>
+              <p className="mt-1 text-xl font-bold tabular-nums text-slate-950">
+                {match.homeTeam} {resultDisplay.primaryScoreText} {match.awayTeam}
+              </p>
+              {resultDisplay.resultNote !== undefined ? (
+                <p className="mt-1 text-sm font-medium text-slate-700">{resultDisplay.resultNote}</p>
+              ) : resultDisplay.winnerName !== undefined ? (
+                <p className="mt-1 text-sm font-medium text-slate-700">Winner: {resultDisplay.winnerName}</p>
+              ) : null}
+            </div>
+            {resultDisplay.detailRows.length > 0 ? (
+              <dl className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
+                {resultDisplay.detailRows.map((row) => (
+                  <div key={row.label} className="rounded-md border border-slate-200 px-3 py-2">
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">{row.label}</dt>
+                    <dd className="mt-1 font-medium text-slate-900">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+          </div>
+        )}
+
+        <div className="border-b border-slate-100 px-6 py-5">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+            Match information
+          </h2>
+          <dl className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-md bg-slate-50 px-3 py-2">
+              <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Status</dt>
+              <dd className="mt-1 font-medium text-slate-900">{getDailyMatchStateLabel(match.state)}</dd>
+            </div>
+            <div className="rounded-md bg-slate-50 px-3 py-2">
+              <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Kickoff</dt>
+              <dd className="mt-1 font-medium text-slate-900">{match.localizedKickoff ?? match.kickoffAt ?? "TBD"}</dd>
+            </div>
+            <div className="rounded-md bg-slate-50 px-3 py-2">
+              <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Context</dt>
+              <dd className="mt-1 font-medium text-slate-900">
+                {match.group !== undefined ? `Group ${match.group}` : "World Cup 2026"}
+              </dd>
+            </div>
+            <div className="rounded-md bg-slate-50 px-3 py-2">
+              <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Matchday</dt>
+              <dd className="mt-1 font-medium text-slate-900">{match.matchday ?? "TBD"}</dd>
+            </div>
+            {match.venue !== undefined ? (
+              <div className="rounded-md bg-slate-50 px-3 py-2 sm:col-span-2">
+                <dt className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Venue</dt>
+                <dd className="mt-1 font-medium text-slate-900">{match.venue}</dd>
+              </div>
+            ) : null}
+          </dl>
         </div>
 
         {prediction !== undefined && (
@@ -214,6 +282,29 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                 Coverage: <span className="font-medium capitalize text-slate-700">{prediction.coverageType}</span>
               </p>
             )}
+          </div>
+        )}
+
+        {prediction === undefined && (
+          <div className="border-b border-slate-100 px-6 py-5">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
+              {match.state === "final" ? "Prediction context" : "Prediction preview"}
+            </h2>
+            <div className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+              <p className="text-sm text-slate-700">
+                {match.state === "final"
+                  ? "No stored pre-match prediction is available for this fixture."
+                  : "Open the prediction tool to create or review model output for this matchup."}
+              </p>
+              {match.state !== "final" ? (
+                <Link
+                  href="/predictions"
+                  className="mt-3 inline-flex items-center justify-center rounded-md border border-teal-700 bg-teal-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                >
+                  Open prediction tool
+                </Link>
+              ) : null}
+            </div>
           </div>
         )}
 

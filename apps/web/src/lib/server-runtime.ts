@@ -365,6 +365,63 @@ function isEntryReversedFromCanonical(
   );
 }
 
+type MatchResultDetailsSource = Pick<
+  WorldCup2026ExternalFixtureRecord,
+  | "homeScore"
+  | "awayScore"
+  | "regularTimeHomeScore"
+  | "regularTimeAwayScore"
+  | "extraTimeHomeScore"
+  | "extraTimeAwayScore"
+  | "penaltyHomeScore"
+  | "penaltyAwayScore"
+  | "winner"
+  | "decisionMethod"
+>;
+
+function orientScorePair(
+  homeScore: number | undefined,
+  awayScore: number | undefined,
+  reversed: boolean
+): [number | undefined, number | undefined] {
+  return reversed ? [awayScore, homeScore] : [homeScore, awayScore];
+}
+
+function orientedDailyMatchResultDetails(
+  entry: MatchResultDetailsSource,
+  reversed: boolean
+): Partial<WorldCup2026DailyMatchEntry> {
+  const [homeScore, awayScore] = orientScorePair(entry.homeScore, entry.awayScore, reversed);
+  const [regularTimeHomeScore, regularTimeAwayScore] = orientScorePair(
+    entry.regularTimeHomeScore,
+    entry.regularTimeAwayScore,
+    reversed
+  );
+  const [extraTimeHomeScore, extraTimeAwayScore] = orientScorePair(
+    entry.extraTimeHomeScore,
+    entry.extraTimeAwayScore,
+    reversed
+  );
+  const [penaltyHomeScore, penaltyAwayScore] = orientScorePair(
+    entry.penaltyHomeScore,
+    entry.penaltyAwayScore,
+    reversed
+  );
+
+  return {
+    ...(homeScore === undefined ? {} : { homeScore }),
+    ...(awayScore === undefined ? {} : { awayScore }),
+    ...(regularTimeHomeScore === undefined ? {} : { regularTimeHomeScore }),
+    ...(regularTimeAwayScore === undefined ? {} : { regularTimeAwayScore }),
+    ...(extraTimeHomeScore === undefined ? {} : { extraTimeHomeScore }),
+    ...(extraTimeAwayScore === undefined ? {} : { extraTimeAwayScore }),
+    ...(penaltyHomeScore === undefined ? {} : { penaltyHomeScore }),
+    ...(penaltyAwayScore === undefined ? {} : { penaltyAwayScore }),
+    ...(entry.winner === undefined ? {} : { winner: entry.winner }),
+    ...(entry.decisionMethod === undefined ? {} : { decisionMethod: entry.decisionMethod })
+  };
+}
+
 function canonicalizeDailyMatchEntry(
   entry: WorldCup2026DailyMatchEntry,
   fixture: CanonicalMatchFixture | null
@@ -381,8 +438,7 @@ function canonicalizeDailyMatchEntry(
     ...(fixture.matchday === undefined ? {} : { matchday: fixture.matchday }),
     homeTeam: fixture.homeTeam,
     awayTeam: fixture.awayTeam,
-    ...(reversed && entry.awayScore !== undefined ? { homeScore: entry.awayScore } : entry.homeScore !== undefined ? { homeScore: entry.homeScore } : {}),
-    ...(reversed && entry.homeScore !== undefined ? { awayScore: entry.homeScore } : entry.awayScore !== undefined ? { awayScore: entry.awayScore } : {}),
+    ...orientedDailyMatchResultDetails(entry, reversed),
     predictionHistory: {
       ...entry.predictionHistory,
       snapshot:
@@ -450,8 +506,7 @@ function buildCanonicalFallbackMatchEntry(
     awayTeam: fixture.awayTeam,
     normalizedStatus: record?.status ?? "scheduled",
     state: record === undefined ? "upcoming" : mapExternalStatusToDailyState(record.status),
-    ...(recordIsReversed && record?.awayScore !== undefined ? { homeScore: record.awayScore } : record?.homeScore !== undefined ? { homeScore: record.homeScore } : {}),
-    ...(recordIsReversed && record?.homeScore !== undefined ? { awayScore: record.homeScore } : record?.awayScore !== undefined ? { awayScore: record.awayScore } : {}),
+    ...(record === undefined ? {} : orientedDailyMatchResultDetails(record, recordIsReversed)),
     ...(record?.venue === undefined ? {} : { venue: record.venue }),
     predictionSnapshot: { available: false },
     predictionHistory: {

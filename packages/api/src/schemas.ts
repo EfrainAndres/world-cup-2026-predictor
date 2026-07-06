@@ -408,6 +408,8 @@ export type WorldCup2026ExternalMatchStatus =
   | "cancelled"
   | "unknown";
 
+export type WorldCup2026MatchDecisionMethod = "regular_time" | "extra_time" | "penalties";
+
 export interface WorldCup2026ExternalFixtureRecord {
   providerFixtureId: string;
   competition: string;
@@ -421,6 +423,14 @@ export interface WorldCup2026ExternalFixtureRecord {
   status: WorldCup2026ExternalMatchStatus;
   homeScore?: number;
   awayScore?: number;
+  regularTimeHomeScore?: number;
+  regularTimeAwayScore?: number;
+  extraTimeHomeScore?: number;
+  extraTimeAwayScore?: number;
+  penaltyHomeScore?: number;
+  penaltyAwayScore?: number;
+  winner?: string;
+  decisionMethod?: WorldCup2026MatchDecisionMethod;
   venue?: string;
   updatedAt?: string;
 }
@@ -691,6 +701,14 @@ export interface WorldCup2026DailyMatchEntry {
   state: WorldCup2026DailyMatchState;
   homeScore?: number;
   awayScore?: number;
+  regularTimeHomeScore?: number;
+  regularTimeAwayScore?: number;
+  extraTimeHomeScore?: number;
+  extraTimeAwayScore?: number;
+  penaltyHomeScore?: number;
+  penaltyAwayScore?: number;
+  winner?: string;
+  decisionMethod?: WorldCup2026MatchDecisionMethod;
   venue?: string;
   predictionSnapshot: WorldCup2026DailyMatchSnapshotSummary;
   predictionHistory: WorldCup2026DailyMatchPredictionHistorySummary;

@@ -112,7 +112,7 @@ describe("DailyMatchCard", () => {
 
     expect(html).toContain("Pre-match prediction");
     expect(html).toContain("Current score");
-    expect(html).toContain("1 - 1");
+    expect(html).toContain("1 – 1");
   });
 
   test("renders final cards with evaluation pending when no evaluation exists", () => {
@@ -144,9 +144,38 @@ describe("DailyMatchCard", () => {
       />
     );
 
-    expect(html).toContain("Final result");
+    expect(html).toContain("Final");
     expect(html).toContain("Prediction saved");
     expect(html).toContain("Evaluation pending");
+  });
+
+  test("renders penalty shootout results separately from the primary final score", () => {
+    const html = renderToStaticMarkup(
+      <DailyMatchCard
+        match={makeMatch({
+          state: "final",
+          normalizedStatus: "finished",
+          homeTeam: "Australia",
+          awayTeam: "Egypt",
+          homeScore: 1,
+          awayScore: 1,
+          regularTimeHomeScore: 1,
+          regularTimeAwayScore: 1,
+          extraTimeHomeScore: 1,
+          extraTimeAwayScore: 1,
+          penaltyHomeScore: 3,
+          penaltyAwayScore: 5,
+          winner: "Egypt",
+          decisionMethod: "penalties"
+        })}
+      />
+    );
+
+    expect(html).toContain("After extra time");
+    expect(html).toContain("1 – 1");
+    expect(html).toContain("Egypt wins 5–3 on penalties");
+    expect(html).toContain("Penalties:");
+    expect(html).toContain("Australia 3–5 Egypt");
   });
 
   test("renders final evaluation metrics separately from the final result", () => {
@@ -187,8 +216,8 @@ describe("DailyMatchCard", () => {
       />
     );
 
-    expect(html).toContain("Final result");
-    expect(html).toContain("2 - 0");
+    expect(html).toContain("Final");
+    expect(html).toContain("2 – 0");
     expect(html).toContain("Outcome prediction: Correct");
     expect(html).toContain("Exact score: Miss");
     expect(html).toContain("Brier Score: 0.342");

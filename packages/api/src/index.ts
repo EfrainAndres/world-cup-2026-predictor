@@ -403,6 +403,7 @@ export type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchIssue,
   WorldCup2026DailyMatchIssueCode,
+  WorldCup2026MatchDecisionMethod,
   WorldCup2026DailyMatchSnapshotSummary,
   WorldCup2026DailyMatchState,
   WorldCup2026DailyMatchesCounts,
