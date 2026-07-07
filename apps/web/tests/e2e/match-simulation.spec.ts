@@ -232,6 +232,106 @@ test("custom matchup supports keyboard selection and canonical team labels", asy
   await expect(homeTeamInput).toHaveValue("United States");
 });
 
+// ── SearchableTeamSelect selection UX (Phase 5: mobile combobox fix) ──────────
+
+test("dropdown closes and selected value is visible immediately after a pointer selection", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  // No further interaction (no tap-elsewhere) — the value and closed state
+  // must already be correct at this point.
+  await expect(homeTeamInput).toHaveValue("Brazil");
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+});
+
+test("dropdown does not reopen on its own shortly after a pointer selection", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  // Give any stray reopen/refocus a window to occur, then assert the list
+  // is still closed and the confirmed value is still showing.
+  await page.waitForTimeout(300);
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expect(homeTeamInput).toHaveValue("Brazil");
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "false");
+});
+
+test("keyboard Enter selection closes the dropdown and confirms the value", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  await homeTeamInput.click();
+  await homeTeamInput.fill("USA");
+  await homeTeamInput.press("ArrowDown");
+  await homeTeamInput.press("Enter");
+
+  await expect(homeTeamInput).toHaveValue("United States");
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+});
+
+test("Escape closes the dropdown without selecting a team", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  // Custom matchup mode starts pre-filled with the previously scheduled team
+  // (Mexico by default). Escape must restore that existing value, not clear it.
+  await expect(homeTeamInput).toHaveValue("Mexico");
+  await homeTeamInput.click();
+  await homeTeamInput.fill("Braz");
+  await expect(page.getByRole("listbox")).toBeVisible();
+
+  await homeTeamInput.press("Escape");
+
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "false");
+  await expect(homeTeamInput).toHaveValue("Mexico");
+});
+
+test("Tab after a keyboard selection moves focus to the next field, not back to the top of the page", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  await homeTeamInput.click();
+  await homeTeamInput.fill("Brazil");
+  await homeTeamInput.press("ArrowDown");
+  await homeTeamInput.press("Enter");
+
+  await expect(homeTeamInput).toHaveValue("Brazil");
+
+  await page.keyboard.press("Tab");
+
+  await expect(page.getByRole("button", { name: "Swap teams" })).toBeFocused();
+});
+
+test("reopening the combobox after a selection still works (intentional refocus is not blocked)", async ({ page }) => {
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+
+  // Wait past the short reopen-guard window so this exercises a genuine,
+  // later, user-intentional re-tap rather than an immediate accidental bounce
+  // (which the previous test already asserts must NOT reopen the list).
+  await page.waitForTimeout(300);
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  await homeTeamInput.click();
+
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "true");
+});
+
 test("changing a custom selected team clears stale results", async ({ page }) => {
   await page.goto("/predictions");
 
@@ -1079,4 +1179,77 @@ test("no horizontal overflow at 430 px with AD off mode", async ({ page }) => {
   const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
   const clientWidth = await page.evaluate(() => document.body.clientWidth);
   expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+// ── Mobile Custom matchup combobox UX (Phase 5) — iPhone 12 Pro Max ───────────
+// Reported by manual QA: the Home/Away team combobox could remain open, or
+// close and immediately reopen, after a mobile tap selection.
+
+const IPHONE_12_PRO_MAX_VIEWPORT = { width: 428, height: 926 };
+
+test("mobile: selecting Home team closes the dropdown and shows the confirmed value", async ({ page }) => {
+  await page.setViewportSize(IPHONE_12_PRO_MAX_VIEWPORT);
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+
+  const homeTeamInput = page.getByRole("combobox", { name: "Home team" });
+  await expect(homeTeamInput).toHaveValue("Brazil");
+  await expect(homeTeamInput).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+});
+
+test("mobile: selecting Away team closes the dropdown and shows the confirmed value", async ({ page }) => {
+  await page.setViewportSize(IPHONE_12_PRO_MAX_VIEWPORT);
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+
+  const awayTeamInput = page.getByRole("combobox", { name: "Away team" });
+  await expect(awayTeamInput).toHaveValue("Germany");
+  await expect(awayTeamInput).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+});
+
+test("mobile: dropdown does not reopen on its own after selecting either team", async ({ page }) => {
+  await page.setViewportSize(IPHONE_12_PRO_MAX_VIEWPORT);
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+
+  await page.waitForTimeout(300);
+
+  await expect(page.getByRole("listbox")).toHaveCount(0);
+  await expect(page.getByRole("combobox", { name: "Home team" })).toHaveValue("Brazil");
+  await expect(page.getByRole("combobox", { name: "Away team" })).toHaveValue("Germany");
+});
+
+test("mobile: no horizontal overflow on Custom matchup after selecting both teams", async ({ page }) => {
+  await page.setViewportSize(IPHONE_12_PRO_MAX_VIEWPORT);
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+
+  const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
+  const clientWidth = await page.evaluate(() => document.body.clientWidth);
+  expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+});
+
+test("mobile: running a prediction still works after selecting teams via the combobox", async ({ page }) => {
+  await page.setViewportSize(IPHONE_12_PRO_MAX_VIEWPORT);
+  await page.goto("/predictions");
+  await page.getByRole("button", { name: "Custom matchup" }).click();
+
+  await selectTeamOption(page, "Home team", "Brazil", "Brazil · Group C");
+  await selectTeamOption(page, "Away team", "Germany", "Germany · Group E");
+  await page.getByRole("button", { name: "Run simulation" }).click();
+
+  await expect(page.getByRole("heading", { name: "Brazil vs Germany" })).toBeVisible();
 });
