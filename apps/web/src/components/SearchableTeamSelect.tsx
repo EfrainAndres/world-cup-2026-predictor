@@ -1,6 +1,6 @@
 "use client";
 
-import { KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from "react";
+import React, { KeyboardEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 import type { GroupedTeamOption } from "../lib/grouped-team-options";
 import { filterGroupedTeamOptions, groupFilteredTeamMatches } from "../lib/grouped-team-options";
 
@@ -31,6 +31,19 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
   // input still had focus) can fire after the input has since been refocused and
   // given a new query, force-closing a list the user is actively selecting from.
   const blurCloseTimeoutRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Because onMouseDown on an option preventDefault()s (see above), the input
+  // never actually blurs during a pointer-based selection — it stays focused
+  // through mousedown/mouseup/click. On mobile that means the keyboard stays
+  // open, and some browsers deliver a stray refocus/click to the still-focused
+  // input once the tapped option is removed from the DOM (the option collapses
+  // out from under the finger), which re-triggers onFocus/onClick -> openList()
+  // immediately after handleSelect() just closed the list. justSelectedRef is a
+  // short-lived guard consulted by openList() so that stray reopen attempt is
+  // ignored; it auto-clears quickly so an intentional, later reopen still works.
+  const justSelectedRef = useRef(false);
+  const justSelectedTimeoutRef = useRef<number | null>(null);
 
   function cancelPendingBlurClose(): void {
     if (blurCloseTimeoutRef.current !== null) {
@@ -39,9 +52,30 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
     }
   }
 
-  useEffect(() => cancelPendingBlurClose, []);
+  function markJustSelected(): void {
+    justSelectedRef.current = true;
+
+    if (justSelectedTimeoutRef.current !== null) {
+      window.clearTimeout(justSelectedTimeoutRef.current);
+    }
+
+    justSelectedTimeoutRef.current = window.setTimeout(() => {
+      justSelectedRef.current = false;
+      justSelectedTimeoutRef.current = null;
+    }, 150);
+  }
+
+  useEffect(() => {
+    return () => {
+      cancelPendingBlurClose();
+      if (justSelectedTimeoutRef.current !== null) {
+        window.clearTimeout(justSelectedTimeoutRef.current);
+      }
+    };
+  }, []);
 
   function openList(): void {
+    if (justSelectedRef.current) return;
     cancelPendingBlurClose();
     setIsOpen(true);
     setHighlightedIndex(0);
@@ -57,9 +91,16 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
     }
   }
 
+  // Shared by both pointer and keyboard selection. Blurring is intentionally
+  // NOT done here: keyboard (Enter) selection keeps focus on the input so Tab
+  // continues to the next field per the ARIA combobox convention, while
+  // pointer/touch selection blurs explicitly from the option's onClick — the
+  // two interaction types warrant different focus outcomes, which is not the
+  // same thing as branching on device/browser.
   function handleSelect(canonicalName: string): void {
     onChange(canonicalName);
     closeList();
+    markJustSelected();
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
@@ -109,6 +150,7 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
       {label}
       <div className="relative mt-2">
         <input
+          ref={inputRef}
           id={inputId}
           role="combobox"
           aria-autocomplete="list"
@@ -171,7 +213,15 @@ export function SearchableTeamSelect({ label, value, options, excludedTeam, onCh
                             } ${isSelected ? "font-semibold" : "font-medium"}`}
                             onMouseDown={(event) => event.preventDefault()}
                             onMouseEnter={() => setHighlightedIndex(optionIndex)}
-                            onClick={() => handleSelect(match.option.canonicalName)}
+                            onClick={() => {
+                              handleSelect(match.option.canonicalName);
+                              // Pointer/touch selection: proactively give up
+                              // focus so the mobile keyboard dismisses and the
+                              // confirmed value is visible immediately, rather
+                              // than leaving the input focused (and reopen-prone)
+                              // until the user taps elsewhere.
+                              inputRef.current?.blur();
+                            }}
                           >
                             <span>{match.label}</span>
                           </button>
