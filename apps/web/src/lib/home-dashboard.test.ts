@@ -1,11 +1,16 @@
 import { describe, expect, test } from "vitest";
+import type { WorldCup2026Fixture } from "@world-cup-2026-predictor/api";
 import type {
+  PredictMatchFromLiveEloSuccessResponse,
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse,
   WorldCup2026LiveGroupStandingsResponse
 } from "./api-client";
 import {
+  buildGeneratedFeaturedPrediction,
   buildHomeModelTrackRecordMetrics,
+  getHomeGroupStatusDisplay,
+  isHomePodiumSlotResolved,
   HOME_SECTION_IDS,
   HOME_SECTION_TITLES,
   selectHomeGroups,
@@ -292,5 +297,78 @@ describe("buildHomeModelTrackRecordMetrics", () => {
         detail: "History evidence is unavailable during this render."
       }
     ]);
+  });
+});
+
+describe("buildGeneratedFeaturedPrediction", () => {
+  const fixture: WorldCup2026Fixture = {
+    id: "wc2026-group-a-md1-01-mexico-vs-south-africa",
+    group: "A",
+    matchday: 1,
+    order: 1,
+    groupFixtureOrder: 1,
+    homeTeam: "Mexico",
+    awayTeam: "South Africa",
+    status: "scheduled",
+    dateStatus: "deferred",
+    venueStatus: "deferred"
+  };
+
+  // Only the fields the builder reads are stubbed; the full success-response
+  // shape is irrelevant to this presentation-copy test.
+  const prediction = {
+    mostLikelyScorelines: [{ homeGoals: 2, awayGoals: 1, probability: 0.11 }],
+    outcomeProbabilities: {
+      homeWinProbability: 0.5,
+      drawProbability: 0.3,
+      awayWinProbability: 0.2
+    },
+    predictionConfidence: { level: "medium", coverageType: "partial" }
+  } as unknown as PredictMatchFromLiveEloSuccessResponse;
+
+  test("uses portfolio-friendly live-preview copy instead of internal snapshot wording", () => {
+    const featured = buildGeneratedFeaturedPrediction(fixture, prediction);
+
+    expect(featured.context).toBe(
+      "Live preview from the current Elo/xG model. Saved prediction history remains unchanged."
+    );
+    expect(featured.context).not.toContain("without creating a saved snapshot");
+  });
+});
+
+describe("getHomeGroupStatusDisplay", () => {
+  test("reports Complete when every group fixture has finished", () => {
+    expect(getHomeGroupStatusDisplay({ completedFixtureCount: 6, pendingFixtureCount: 0 })).toEqual({
+      label: "Complete",
+      variant: "success"
+    });
+  });
+
+  test("reports In progress when some fixtures have finished and some remain", () => {
+    expect(getHomeGroupStatusDisplay({ completedFixtureCount: 2, pendingFixtureCount: 4 })).toEqual({
+      label: "In progress",
+      variant: "info"
+    });
+  });
+
+  test("reports Not started when no fixtures have finished", () => {
+    expect(getHomeGroupStatusDisplay({ completedFixtureCount: 0, pendingFixtureCount: 6 })).toEqual({
+      label: "Not started",
+      variant: "neutral"
+    });
+  });
+});
+
+describe("isHomePodiumSlotResolved", () => {
+  test("treats a known World Cup 2026 team as resolved", () => {
+    expect(isHomePodiumSlotResolved("Brazil")).toBe(true);
+  });
+
+  test("treats the projection's literal Unavailable sentinel as unresolved", () => {
+    expect(isHomePodiumSlotResolved("Unavailable")).toBe(false);
+  });
+
+  test("treats any string that does not map to a known team identity as unresolved", () => {
+    expect(isHomePodiumSlotResolved("Winner of match 104")).toBe(false);
   });
 });
