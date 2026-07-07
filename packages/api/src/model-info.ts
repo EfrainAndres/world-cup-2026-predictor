@@ -109,10 +109,10 @@ export function getModelInfo(): ModelInfoResponse {
       "listWorldCup2026PredictionHistory"
     ],
     limitations: [
-      "No HTTP server is created in Phase 5.0.",
+      "The model package is framework-independent; HTTP routing is handled by the web/API adapter layer.",
       persistenceLimitation,
       "Historical replay outputs are foundation evidence, not final predictive accuracy.",
-      "Expected-goals inputs are caller supplied and are not calibrated by this API package."
+      "Manual xG mode uses caller-supplied expected goals. Auto Predict derives expected goals from Elo-to-xG V2 and controlled enrichment stages where configured."
     ],
     metadata: buildApiMetadata([
       "Model info is static package metadata for the API foundation.",

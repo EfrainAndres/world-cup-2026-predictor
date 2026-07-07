@@ -10,6 +10,8 @@ import { ProductionModelConfiguration } from "../../src/components/ProductionMod
 import { RecalibrationGateSummary } from "../../src/components/RecalibrationGateSummary";
 import { getProductionModelConfig } from "../../src/lib/model-evidence-center";
 import { getModelEvidenceCenterData } from "../../src/lib/server-runtime";
+import { buildModelDisclosureSummary } from "../../src/lib/technical-disclosure";
+import { TechnicalDisclosure } from "../../src/components/TechnicalDisclosure";
 
 export const metadata: Metadata = {
   title: "Model · World Cup 2026 Predictor"
@@ -24,6 +26,7 @@ export default async function ModelPage() {
 
   const limitationsList = data.modelInfo.limitations;
   const scopeList = data.modelInfo.modelScope;
+  const disclosureSummary = buildModelDisclosureSummary(data.modelInfo);
 
   return (
     <PageContainer className="py-8">
@@ -70,59 +73,49 @@ export default async function ModelPage() {
           Technical disclosure
         </h2>
 
-        <div className="space-y-3">
-          {/* Scope */}
-          <details className="group rounded-lg border border-slate-200 bg-white shadow-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-semibold text-slate-700 hover:text-slate-900 focus-visible:outline-none">
-              Model scope
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-              </svg>
-            </summary>
-            <ul className="border-t border-slate-100 px-5 pb-4 pt-3 space-y-1">
+        <div className="space-y-4">
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-950">Model scope summary</p>
+            <ul className="mt-3 space-y-1.5">
+              {disclosureSummary.scopeSummary.map((item) => (
+                <li key={item} className="text-sm text-slate-700">{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-950">Known limitations</p>
+            <ul className="mt-3 space-y-1.5">
+              {disclosureSummary.limitationSummary.map((item) => (
+                <li key={item} className="text-sm text-slate-700">{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <TechnicalDisclosure summary="View full technical scope">
+            <ul className="space-y-1">
               {scopeList.map((item, i) => (
-                <li key={i} className="text-xs text-slate-600">{item}</li>
+                <li key={i}>{item}</li>
               ))}
             </ul>
-          </details>
+          </TechnicalDisclosure>
 
-          {/* Limitations */}
-          <details className="group rounded-lg border border-slate-200 bg-white shadow-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-semibold text-slate-700 hover:text-slate-900 focus-visible:outline-none">
-              Known limitations
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-              </svg>
-            </summary>
-            <ul className="border-t border-slate-100 px-5 pb-4 pt-3 space-y-1">
-              {limitationsList.map((limitation, i) => (
-                <li key={i} className="text-xs text-slate-600">{limitation}</li>
-              ))}
-            </ul>
-          </details>
-
-          {/* Supported handlers */}
-          <details className="group rounded-lg border border-slate-200 bg-white shadow-sm">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-3 text-sm font-semibold text-slate-700 hover:text-slate-900 focus-visible:outline-none">
-              Supported prediction handlers
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden="true">
-                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-              </svg>
-            </summary>
-            <ul className="border-t border-slate-100 px-5 pb-4 pt-3 space-y-1">
+          <TechnicalDisclosure summary="View supported handlers">
+            <ul className="space-y-1">
               {data.modelInfo.supportedHandlers.map((handler, i) => (
                 <li key={i} className="font-mono text-[11px] text-slate-600">{handler}</li>
               ))}
             </ul>
-          </details>
+          </TechnicalDisclosure>
 
-          {/* Model package identifier */}
-          <div className="rounded-lg border border-slate-200 bg-white px-5 py-3 shadow-sm">
-            <p className="text-xs text-slate-500">Model package</p>
-            <p className="mt-0.5 break-all font-mono text-[11px] text-slate-700">
-              {data.modelInfo.modelPackage}
-            </p>
-          </div>
+          <TechnicalDisclosure summary="View full limitation details">
+            <ul className="space-y-1">
+              {limitationsList.map((limitation, i) => (
+                <li key={i}>{limitation}</li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[11px] text-slate-500">Model package: {data.modelInfo.modelPackage}</p>
+          </TechnicalDisclosure>
         </div>
       </section>
 

@@ -28,7 +28,7 @@ Home now has exactly 8 primary sections:
 | 5 | Tournament outlook | Champion, runner-up, current phase, and a tournament CTA. |
 | 6 | Model track record | Up to 4 public evidence metrics. |
 | 7 | Quick actions | Four compact route actions. |
-| 8 | Technical status disclosure | Collapsed provider/runtime/persistence status. |
+| 8 | System status | Short runtime summary with collapsed provider/runtime details. |
 
 ## Content Moved
 
@@ -52,7 +52,7 @@ Home retains only summary-level content:
 - champion and runner-up outlook;
 - compact model track record;
 - route CTAs for deeper workflows;
-- a single collapsed technical disclosure.
+- a short system-status summary with one collapsed runtime disclosure.
 
 ## Route Ownership
 

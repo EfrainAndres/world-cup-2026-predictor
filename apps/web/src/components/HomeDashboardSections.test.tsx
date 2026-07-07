@@ -1,12 +1,13 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
+import type { ProductionRuntimeDiagnostics } from "../lib/server-runtime";
 import type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesProviderMetadata,
   WorldCup2026DailyMatchesSuccessResponse
 } from "../lib/api-client";
-import { HomeTodayMatches } from "./HomeDashboardSections";
+import { HomeTechnicalStatus, HomeTodayMatches } from "./HomeDashboardSections";
 
 function match(overrides: Partial<WorldCup2026DailyMatchEntry> = {}): WorldCup2026DailyMatchEntry {
   return {
@@ -114,5 +115,65 @@ describe("HomeTodayMatches", () => {
     expect(html).toContain("Showing last successful live data while the provider refreshes.");
     expect(html).toContain("Mexico");
     expect(html).toContain("South Africa");
+  });
+});
+
+describe("HomeTechnicalStatus", () => {
+  test("renders a concise system-status summary with collapsed runtime details", () => {
+    const runtimeDiagnostics: ProductionRuntimeDiagnostics = {
+      persistenceProviderConfigured: true,
+      databaseConnected: true,
+      resultsProviderConfigured: true,
+      externalProviderActive: true,
+      activeProvider: "football-data.org",
+      localFallbackUsed: false,
+      cacheUsed: false,
+      fixtureCount: 72,
+      fixturesWithKickoff: 72,
+      lastSuccessfulSync: "2026-06-11T10:00:00Z",
+      statsBomb: {
+        featureEnabled: false,
+        rolloutMode: "off",
+        activationDecision: "disabled",
+        artifactReady: false,
+        readinessReason: "feature_disabled",
+        profileCount: null,
+        artifactCutoffAt: null,
+        artifactGeneratedAt: null,
+        lastLoadStatus: "not_attempted",
+        artifactSourceKind: "unavailable"
+      },
+      attackDefense: {
+        featureEnabled: false,
+        rolloutMode: "off",
+        activationDecision: "disabled",
+        artifactReady: false,
+        readinessReason: "feature_disabled",
+        candidateId: null,
+        lastLoadStatus: "not_attempted",
+        runtimeProfileArtifactReady: false,
+        runtimeProfileArtifactReason: "not_attempted",
+        runtimeProfileArtifactFingerprint: null,
+        runtimeProfileArtifactFingerprintShort: null,
+        runtimeProfileArtifactSchemaVersion: null,
+        runtimeProfileCount: null,
+        runtimeProfileSourceFixtureCount: null
+      },
+      warnings: []
+    };
+
+    const html = renderToStaticMarkup(
+      <HomeTechnicalStatus
+        runtimeDiagnostics={runtimeDiagnostics}
+        dailyMatches={dailyMatches([])}
+        modelVersion="wc2026-prediction-v1"
+        formulaVersion="v2"
+      />
+    );
+
+    expect(html).toContain("System status");
+    expect(html).toContain("Live data connected · Persistence connected · Model v2 active");
+    expect(html).toContain("View runtime details");
+    expect(html).not.toContain(" open");
   });
 });

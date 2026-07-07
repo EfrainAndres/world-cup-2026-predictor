@@ -21,6 +21,7 @@ import type {
   HomeModelTrackRecordMetric
 } from "../lib/home-dashboard";
 import { buildHomeRuntimeStatusLine, HOME_SECTION_IDS } from "../lib/home-dashboard";
+import { buildHomeSystemStatusSummary } from "../lib/technical-disclosure";
 import { EmptyState } from "./EmptyState";
 import { PageContainer } from "./PageContainer";
 import { PageHeader } from "./PageHeader";
@@ -456,49 +457,69 @@ export function HomeTechnicalStatus({
   modelVersion,
   formulaVersion
 }: HomeTechnicalStatusProps) {
+  const systemStatusSummary = buildHomeSystemStatusSummary(runtimeDiagnostics, formulaVersion);
+
   return (
     <HomeSection id={HOME_SECTION_IDS[7]} labelledBy="home-technical-status-title" className="pb-10 pt-6">
-      <h2 id="home-technical-status-title" className="sr-only">
-        Technical status
-      </h2>
-      <TechnicalDisclosure summary="Technical status">
-        <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          <div>
-            <dt className="font-semibold text-slate-700">Live data</dt>
-            <dd>{buildHomeRuntimeStatusLine(runtimeDiagnostics)}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">Persistence</dt>
-            <dd>{runtimeDiagnostics.databaseConnected ? "Connected" : runtimeDiagnostics.persistenceProviderConfigured ? "Configured, unavailable" : "Disabled"}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">Last synchronization</dt>
-            <dd>{formatUtcTimestamp(runtimeDiagnostics.lastSuccessfulSync ?? dailyMatches.providerMetadata?.lastSuccessfulSync)}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">Fallback status</dt>
-            <dd>{runtimeDiagnostics.localFallbackUsed ? "Local fallback active" : runtimeDiagnostics.cacheUsed ? "Cached provider response" : "Primary source"}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">StatsBomb signal</dt>
-            <dd>
-              {runtimeDiagnostics.statsBomb.rolloutMode === "off"
-                ? "Off"
-                : runtimeDiagnostics.statsBomb.artifactReady
-                  ? `${runtimeDiagnostics.statsBomb.rolloutMode} mode, artifact ready`
-                  : `${runtimeDiagnostics.statsBomb.rolloutMode} mode, baseline fallback`}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">Model version</dt>
-            <dd>{modelVersion ?? "Current production model"}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-slate-700">Formula version</dt>
-            <dd>{formulaVersion ?? "Current Elo/xG formula"}</dd>
-          </div>
-        </dl>
-      </TechnicalDisclosure>
+      <Surface className="p-4">
+        <h2 id="home-technical-status-title" className="text-base font-semibold text-slate-950">
+          System status
+        </h2>
+        <p className="mt-2 text-sm text-slate-700">{systemStatusSummary}</p>
+        <p className="mt-1 text-xs text-slate-500">
+          Runtime fields remain available for QA, debugging, and portfolio review.
+        </p>
+
+        <TechnicalDisclosure summary="View runtime details" className="mt-3">
+          <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <dt className="font-semibold text-slate-700">Live data</dt>
+              <dd>{buildHomeRuntimeStatusLine(runtimeDiagnostics)}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Persistence</dt>
+              <dd>{runtimeDiagnostics.databaseConnected ? "Connected" : runtimeDiagnostics.persistenceProviderConfigured ? "Configured, unavailable" : "Disabled"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Last synchronization</dt>
+              <dd>{formatUtcTimestamp(runtimeDiagnostics.lastSuccessfulSync ?? dailyMatches.providerMetadata?.lastSuccessfulSync)}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Fallback status</dt>
+              <dd>{runtimeDiagnostics.localFallbackUsed ? "Local fallback active" : runtimeDiagnostics.cacheUsed ? "Cached provider response" : "Primary source"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">StatsBomb signal</dt>
+              <dd>
+                {runtimeDiagnostics.statsBomb.rolloutMode === "off"
+                  ? "Off"
+                  : runtimeDiagnostics.statsBomb.artifactReady
+                    ? `${runtimeDiagnostics.statsBomb.rolloutMode} mode, artifact ready`
+                    : `${runtimeDiagnostics.statsBomb.rolloutMode} mode, baseline fallback`}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Attack/Defense mode</dt>
+              <dd>{runtimeDiagnostics.attackDefense.rolloutMode}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Model version</dt>
+              <dd>{modelVersion ?? "Current production model"}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-slate-700">Formula version</dt>
+              <dd>{formulaVersion ?? "Current Elo/xG formula"}</dd>
+            </div>
+          </dl>
+          {runtimeDiagnostics.warnings.length > 0 && (
+            <ul className="mt-3 space-y-1 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
+              {runtimeDiagnostics.warnings.map((warning, index) => (
+                <li key={`${warning}-${index}`}>{warning}</li>
+              ))}
+            </ul>
+          )}
+        </TechnicalDisclosure>
+      </Surface>
     </HomeSection>
   );
 }

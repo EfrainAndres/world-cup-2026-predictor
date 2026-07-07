@@ -40,6 +40,7 @@ test("Home does not render obsolete full-detail sections", async ({ page }) => {
 test("Home technical status is collapsed by default", async ({ page }) => {
   await page.goto("/");
 
+  await expect(page.getByText("System status", { exact: true })).toBeVisible();
   const disclosure = page.locator("#home-technical-status details");
   await expect(disclosure).toBeVisible();
   await expect(disclosure).not.toHaveAttribute("open", "");

@@ -51,9 +51,9 @@ test("Groups page activity section has matches CTA link", async ({ page }) => {
   await expect(cta).toHaveAttribute("href", "/matches");
 });
 
-test("Groups page technical details disclosure is collapsed by default", async ({ page }) => {
+test("Groups page raw technical warnings disclosure is collapsed by default", async ({ page }) => {
   await page.goto("/groups");
-  const details = page.locator("details").filter({ hasText: "Technical details" });
+  const details = page.locator("details").filter({ hasText: "View raw technical warnings" });
   await expect(details).not.toHaveAttribute("open");
 });
 
@@ -108,9 +108,10 @@ test("Group detail page shows GroupNav with group links", async ({ page }) => {
   await expect(linkA).toBeVisible();
 });
 
-test("Group detail page provider metadata is behind disclosure", async ({ page }) => {
+test("Group detail page keeps raw provider warnings behind disclosure", async ({ page }) => {
   await page.goto("/groups/A");
-  const details = page.locator("details").filter({ hasText: "Data source" });
+  await expect(page.getByRole("heading", { name: "Provider data notice" })).toBeVisible();
+  const details = page.locator("details").filter({ hasText: "View raw technical warnings" });
   await expect(details).not.toHaveAttribute("open");
   await details.locator("summary").click();
   await expect(details).toHaveAttribute("open");

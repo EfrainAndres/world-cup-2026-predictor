@@ -14,7 +14,7 @@ import {
   getDashboardLiveSyncResult
 } from "../../src/lib/server-runtime";
 import { formatGD, toBestThirdPlaceRankingInput } from "../../src/lib/groups-tournament-ui";
-import { formatUtcTimestamp } from "../../src/lib/daily-matches-ui";
+import { GroupDetailProviderMetadata } from "../../src/components/GroupDetailProviderMetadata";
 
 export const metadata: Metadata = {
   title: "Groups · World Cup 2026 Predictor"
@@ -281,45 +281,25 @@ export default async function GroupsPage() {
         </div>
       </section>
 
-      {/* Technical disclosure */}
-      <details className="group">
-        <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-slate-500 hover:text-slate-700 focus-visible:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 transition-transform group-open:rotate-90" aria-hidden="true">
-            <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
-          </svg>
-          Technical details
-        </summary>
-        <dl className="mt-3 space-y-1 text-xs text-slate-600">
-          <div className="flex gap-3">
-            <dt className="w-32 shrink-0 text-slate-500">Active provider</dt>
-            <dd>{standings.syncMetadata.activeProvider}</dd>
-          </div>
-          <div className="flex gap-3">
-            <dt className="w-32 shrink-0 text-slate-500">Cache used</dt>
-            <dd>{standings.syncMetadata.cacheUsed ? "Yes" : "No"}</dd>
-          </div>
-          <div className="flex gap-3">
-            <dt className="w-32 shrink-0 text-slate-500">Local fallback</dt>
-            <dd>{standings.syncMetadata.localFallbackUsed ? "Yes" : "No"}</dd>
-          </div>
-          {standings.syncMetadata.lastSuccessfulSync !== undefined && (
-            <div className="flex gap-3">
-              <dt className="w-32 shrink-0 text-slate-500">Last sync</dt>
-              <dd>{formatUtcTimestamp(standings.syncMetadata.lastSuccessfulSync)}</dd>
-            </div>
-          )}
-          {standings.warnings.length > 0 && (
-            <div className="mt-2">
-              <dt className="text-slate-500">Warnings</dt>
-              <dd>
-                <ul className="mt-1 space-y-0.5 text-amber-800">
-                  {standings.warnings.map((w) => <li key={w}>{w}</li>)}
-                </ul>
-              </dd>
-            </div>
-          )}
-        </dl>
-      </details>
+      <section aria-labelledby="groups-provider-heading" className="mb-8">
+        <h2 id="groups-provider-heading" className="mb-3 text-base font-semibold text-slate-900">
+          Provider data notice
+        </h2>
+        <GroupDetailProviderMetadata
+          title="Data source"
+          metadata={{
+            configuredProvider: standings.syncMetadata.localFallbackUsed ? "local_static" : "football_data_org",
+            activeProvider: standings.syncMetadata.activeProvider,
+            cacheUsed: standings.syncMetadata.cacheUsed,
+            localFallbackUsed: standings.syncMetadata.localFallbackUsed,
+            stale: standings.syncMetadata.cacheUsed,
+            ...(standings.syncMetadata.lastSuccessfulSync === undefined
+              ? {}
+              : { lastSuccessfulSync: standings.syncMetadata.lastSuccessfulSync })
+          }}
+          warnings={standings.warnings}
+        />
+      </section>
     </PageContainer>
   );
 }

@@ -6,6 +6,7 @@ import type {
   ProjectionRefreshAssessment,
   ProjectionRefreshExecution
 } from "../lib/api-client";
+import { summarizeRepeatedProjectionWarnings } from "../lib/technical-disclosure";
 import { GroupDetailStandingsTable } from "./GroupDetailStandingsTable";
 
 interface GroupDetailProjectionProps {
@@ -132,7 +133,13 @@ function formatProbability(value: number | undefined): string {
   return `${(value * 100).toFixed(0)}%`;
 }
 
-function ProjectionFixtureRow({ fixture }: { fixture: WorldCup2026GroupProjectionFixture }) {
+function ProjectionFixtureRow({
+  fixture,
+  warnings
+}: {
+  fixture: WorldCup2026GroupProjectionFixture;
+  warnings: readonly string[];
+}) {
   const hasScore = fixture.projectedScoreline !== undefined;
   return (
     <li className="rounded-md border border-slate-100 bg-slate-50 px-3 py-2">
@@ -177,9 +184,9 @@ function ProjectionFixtureRow({ fixture }: { fixture: WorldCup2026GroupProjectio
         </p>
       )}
 
-      {fixture.warnings.length > 0 && (
+      {warnings.length > 0 && (
         <ul className="mt-1 space-y-0.5">
-          {fixture.warnings.map((w, i) => (
+          {warnings.map((w, i) => (
             <li key={i} className="text-xs text-amber-700">
               {w}
             </li>
@@ -197,6 +204,8 @@ function ProjectionFixtureRow({ fixture }: { fixture: WorldCup2026GroupProjectio
 }
 
 export function GroupDetailProjection({ projection }: GroupDetailProjectionProps) {
+  const projectionWarningSummary = summarizeRepeatedProjectionWarnings(projection.fixtures);
+
   if (!projection.available) {
     return (
       <section aria-labelledby="projection-heading">
@@ -283,9 +292,25 @@ export function GroupDetailProjection({ projection }: GroupDetailProjectionProps
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             Per-fixture projections
           </p>
+          {projectionWarningSummary.sharedWarnings.length > 0 && (
+            <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="mb-1 text-xs font-semibold text-amber-800">Shared projection notes</p>
+              <ul className="space-y-0.5">
+                {projectionWarningSummary.sharedWarnings.map(({ warning, fixtureCount }) => (
+                  <li key={warning} className="text-xs text-amber-700">
+                    {warning} ({fixtureCount} fixture{fixtureCount === 1 ? "" : "s"})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <ul className="space-y-2">
             {projection.fixtures.map((f) => (
-              <ProjectionFixtureRow key={f.fixtureId} fixture={f} />
+              <ProjectionFixtureRow
+                key={f.fixtureId}
+                fixture={f}
+                warnings={projectionWarningSummary.fixtureWarningsById.get(f.fixtureId) ?? f.warnings}
+              />
             ))}
           </ul>
         </div>

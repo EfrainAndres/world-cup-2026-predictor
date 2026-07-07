@@ -192,10 +192,10 @@ test("local fallback is labeled when API returns localFallbackUsed=true", async 
 
   await page.goto("/groups/A");
 
-  await page.locator("summary").filter({ hasText: "Data source & technical details" }).click();
   const dataSrcSummary = page.getByLabel("Data source summary");
-  await expect(dataSrcSummary.getByText("Local fallback")).toBeVisible();
-  await expect(dataSrcSummary.getByText("Local static fallback is active.", { exact: false })).toBeVisible();
+  await expect(dataSrcSummary.getByText("Local fallback", { exact: true })).toBeVisible();
+  await expect(dataSrcSummary.getByText("Provider data notice")).toBeVisible();
+  await expect(dataSrcSummary.getByText("Live provider synchronization is unavailable.", { exact: false })).toBeVisible();
 });
 
 test("prediction history section is absent when no snapshots exist for the group", async ({ page }) => {
