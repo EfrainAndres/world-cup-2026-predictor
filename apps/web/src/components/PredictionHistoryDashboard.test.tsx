@@ -243,4 +243,175 @@ describe("PredictionHistoryDashboard", () => {
     expect(html).toContain("Previous page");
     expect(html).toContain("Next page");
   });
+
+  test("moves raw Fixture ID and Snapshot status into an Advanced filters details block", () => {
+    const html = render(makeSuccessResponse());
+
+    expect(html).toContain("Advanced filters");
+    const advancedIndex = html.indexOf("<details");
+    const fixtureIdIndex = html.indexOf("Fixture ID");
+    const snapshotStatusIndex = html.indexOf("Snapshot status");
+    expect(advancedIndex).toBeGreaterThan(-1);
+    expect(fixtureIdIndex).toBeGreaterThan(advancedIndex);
+    expect(snapshotStatusIndex).toBeGreaterThan(advancedIndex);
+  });
+
+  test("renames the Team filter to a team-or-match-search field without changing its name attribute", () => {
+    const html = render(makeSuccessResponse());
+
+    expect(html).toContain("Team or match search");
+    expect(html).toContain('name="team"');
+  });
+
+  test("shows a snapshot status explainer with exact-semantics copy", () => {
+    const html = render(makeSuccessResponse());
+
+    expect(html).toContain("What do snapshot statuses mean?");
+    expect(html).toContain("Verified as a genuine pre-match prediction and safe for accuracy evaluation.");
+    expect(html).toContain("Retained for audit, but not treated as a verified pre-match lock.");
+  });
+
+  test("shows a concise Brier Score explainer", () => {
+    const html = render(makeSuccessResponse());
+
+    expect(html).toContain("Brier Score:");
+    expect(html).toContain("Lower is better");
+    expect(html).toContain("predicted 1X2 probabilities");
+  });
+
+  test("team labels have explicit spacing around vs", () => {
+    const html = render(
+      makeSuccessResponse({
+        items: [
+          {
+            snapshotId: "snap-vs-1",
+            fixtureId: "fixture-vs-1",
+            group: "C",
+            matchday: 1,
+            homeTeam: "DR Congo",
+            awayTeam: "Uzbekistan",
+            kickoffAt: "2026-06-18T20:00:00Z",
+            capturedAt: "2026-06-18T10:00:00Z",
+            snapshotStatus: "pre_match_locked",
+            projectedScore: { home: 1, away: 1 },
+            expectedGoals: { home: 1.1, away: 1.05 },
+            outcomeProbabilities: { homeWin: 0.35, draw: 0.34, awayWin: 0.31 },
+            confidence: { level: "medium", coverage: "partial" },
+            evaluation: null
+          }
+        ]
+      })
+    );
+
+    expect(html).toContain("DR Congo");
+    expect(html).toContain("Uzbekistan");
+    expect(html).not.toContain("Congovs");
+    expect(html).not.toContain("vsUzbekistan");
+  });
+
+  function duplicateFixtureItems(): PredictionHistoryListSuccessResponse["items"] {
+    return [
+      {
+        snapshotId: "snap-dup-old",
+        fixtureId: "fixture-dup-1",
+        group: "A",
+        matchday: 1,
+        homeTeam: "Brazil",
+        awayTeam: "Morocco",
+        kickoffAt: "2026-06-15T18:00:00Z",
+        capturedAt: "2026-06-14T09:00:00Z",
+        snapshotStatus: "foundation_unverified",
+        projectedScore: { home: 1, away: 1 },
+        expectedGoals: { home: 1.1, away: 1.0 },
+        outcomeProbabilities: { homeWin: 0.4, draw: 0.3, awayWin: 0.3 },
+        confidence: { level: "low", coverage: "fallback" },
+        evaluation: null
+      },
+      {
+        snapshotId: "snap-dup-preferred",
+        fixtureId: "fixture-dup-1",
+        group: "A",
+        matchday: 1,
+        homeTeam: "Brazil",
+        awayTeam: "Morocco",
+        kickoffAt: "2026-06-15T18:00:00Z",
+        capturedAt: "2026-06-15T10:00:00Z",
+        snapshotStatus: "pre_match_locked",
+        projectedScore: { home: 2, away: 0 },
+        expectedGoals: { home: 1.8, away: 0.6 },
+        outcomeProbabilities: { homeWin: 0.6, draw: 0.25, awayWin: 0.15 },
+        confidence: { level: "high", coverage: "partial" },
+        evaluation: {
+          evaluationId: "eval-dup-1",
+          evaluatedAt: "2026-06-15T20:00:00Z",
+          actualScore: { home: 2, away: 0 },
+          actualOutcome: "home_win",
+          brierScore: 0.12,
+          logLoss: 0.3,
+          homeGoalAbsoluteError: 0,
+          awayGoalAbsoluteError: 0,
+          scorelineCorrect: true,
+          outcomeCorrect: true
+        }
+      }
+    ];
+  }
+
+  test("groups duplicate snapshots by fixture and shows a fixture header with counts", () => {
+    const html = render(makeSuccessResponse({ items: duplicateFixtureItems() }));
+
+    expect(html).toContain("Brazil");
+    expect(html).toContain("Morocco");
+    expect(html).toContain("Group A · Matchday 1 · 2 snapshots · 1 evaluated");
+  });
+
+  test("shows the pre_match_locked snapshot as preferred over foundation_unverified duplicates", () => {
+    const html = render(makeSuccessResponse({ items: duplicateFixtureItems() }));
+
+    expect(html).toContain("Preferred snapshot");
+    expect(html).toContain("Projected score: 2 - 0");
+    expect(html).toContain("View all 2 snapshots for this fixture");
+  });
+
+  test("keeps every snapshot's raw fixture ID accessible for QA/audit inside the fixture group", () => {
+    const html = render(makeSuccessResponse({ items: duplicateFixtureItems() }));
+
+    expect(html).toContain("fixture-dup-1");
+  });
+
+  test("does not repeat the historical match context note per snapshot within a fixture group", () => {
+    const html = render(makeSuccessResponse({ items: duplicateFixtureItems() }));
+
+    const occurrences = html.split("Historical match context was not captured").length - 1;
+    expect(occurrences).toBe(1);
+  });
+
+  test("single-snapshot fixtures render without a 'view all snapshots' toggle", () => {
+    const html = render(
+      makeSuccessResponse({
+        items: [
+          {
+            snapshotId: "snap-single",
+            fixtureId: "fixture-single",
+            group: "A",
+            matchday: 1,
+            homeTeam: "Mexico",
+            awayTeam: "South Africa",
+            kickoffAt: "2026-06-18T20:00:00Z",
+            capturedAt: "2026-06-18T10:00:00Z",
+            snapshotStatus: "pre_match_locked",
+            projectedScore: { home: 1, away: 0 },
+            expectedGoals: { home: 1.2, away: 0.8 },
+            outcomeProbabilities: { homeWin: 0.5, draw: 0.3, awayWin: 0.2 },
+            confidence: { level: "medium", coverage: "partial" },
+            evaluation: null
+          }
+        ]
+      })
+    );
+
+    expect(html).toContain("Group A · Matchday 1 · 1 snapshot · 0 evaluated");
+    expect(html).not.toContain("View all");
+    expect(html).toContain("fixture-single");
+  });
 });

@@ -8,6 +8,7 @@ import {
   formatSampleSize,
   getConfidenceLevelPresentation,
   getCoverageTypePresentation,
+  getEvidenceCountTaxonomy,
   getEvidenceProgress,
   getEvidenceState,
   getModelVersionLabel,
@@ -15,7 +16,28 @@ import {
   getRecalibrationProgress,
   getVerdictPresentation
 } from "./model-evidence-center";
-import type { LiveEvidenceGateDecision } from "@world-cup-2026-predictor/api";
+import type { LiveEvidenceGateDecision, LiveEvidenceGateReport } from "@world-cup-2026-predictor/api";
+
+// Only `evidenceCounts` (and `decision`/`generatedAt`) matter to
+// getEvidenceCountTaxonomy; the remaining gate-report sections are
+// irrelevant to this view model and are stubbed out via an `unknown` cast.
+function buildGateReport(overrides: Partial<LiveEvidenceGateReport["evidenceCounts"]> = {}): LiveEvidenceGateReport {
+  return {
+    generatedAt: "2026-01-01T00:00:00Z",
+    persistenceMetadata: { provider: "postgres", persistent: true, configuredProvider: "postgres" },
+    evidenceCounts: {
+      totalSnapshots: 20,
+      evaluatedSnapshots: 17,
+      pendingSnapshots: 3,
+      uniqueFixtures: 20,
+      uniqueEvaluatedFixtures: 17,
+      fixturesWithMultipleSnapshots: 2,
+      totalExcludedFromPrimary: 1,
+      ...overrides
+    },
+    decision: "evidence_collection_continue"
+  } as unknown as LiveEvidenceGateReport;
+}
 
 // ---------------------------------------------------------------------------
 // deriveEvidenceStateKind
@@ -285,6 +307,11 @@ describe("getEvidenceProgress", () => {
     expect(p.threshold).toBe(8);
     expect(p.percent).toBe(50);
   });
+
+  it("label clarifies unique evaluated fixtures and the display threshold", () => {
+    const p = getEvidenceProgress(17);
+    expect(p.label).toBe("17 / 8 unique evaluated fixtures (display threshold)");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -300,6 +327,11 @@ describe("getRecalibrationProgress", () => {
   it("returns complete=true at 20", () => {
     const p = getRecalibrationProgress(20);
     expect(p.complete).toBe(true);
+  });
+
+  it("label clarifies unique evaluated fixtures and the recalibration review threshold", () => {
+    const p = getRecalibrationProgress(17);
+    expect(p.label).toBe("17 / 20 unique evaluated fixtures (recalibration review threshold)");
   });
 });
 
@@ -379,5 +411,46 @@ describe("getModelVersionLabel", () => {
     const label = getModelVersionLabel();
     expect(typeof label).toBe("string");
     expect(label.length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getEvidenceCountTaxonomy
+// ---------------------------------------------------------------------------
+
+describe("getEvidenceCountTaxonomy", () => {
+  it("labels stored snapshots, evaluation records, and unique evaluated fixtures distinctly", () => {
+    const taxonomy = getEvidenceCountTaxonomy({
+      snapshotCount: 20,
+      evaluationCount: 20,
+      gateReport: buildGateReport({ uniqueEvaluatedFixtures: 17, pendingSnapshots: 3 })
+    });
+
+    expect(taxonomy.storedSnapshotCount).toBe(20);
+    expect(taxonomy.evaluationRecordCount).toBe(20);
+    expect(taxonomy.uniqueEvaluatedFixtureCount).toBe(17);
+    expect(taxonomy.pendingEvaluationCount).toBe(3);
+  });
+
+  it("exposes the display and recalibration review thresholds", () => {
+    const taxonomy = getEvidenceCountTaxonomy({
+      snapshotCount: 20,
+      evaluationCount: 20,
+      gateReport: buildGateReport()
+    });
+
+    expect(taxonomy.evidenceDisplayThreshold).toBe(8);
+    expect(taxonomy.recalibrationReviewThreshold).toBe(20);
+  });
+
+  it("falls back to evaluationCount for uniqueEvaluatedFixtureCount and null pending when no gate report exists", () => {
+    const taxonomy = getEvidenceCountTaxonomy({
+      snapshotCount: 5,
+      evaluationCount: 3,
+      gateReport: null
+    });
+
+    expect(taxonomy.uniqueEvaluatedFixtureCount).toBe(3);
+    expect(taxonomy.pendingEvaluationCount).toBeNull();
   });
 });

@@ -72,17 +72,60 @@ PostgreSQL pagination is query-backed and does not load the full snapshot histor
 
 ## Filters
 
-The dashboard exposes accessible controls for:
+Filters are split into a basic tier and a collapsed advanced tier so the raw
+fixture ID (an internal identifier) does not compete with the filters a
+recruiter/QA reader actually needs first:
+
+Basic filters:
 
 - group A–L;
-- team text filter;
-- fixture ID;
-- snapshot status;
+- team or match search (substring match against home or away team name);
 - evaluated / pending / all;
-- sort order;
+- sort order.
+
+Advanced filters (collapsed behind an "Advanced filters" `<details>` toggle):
+
+- fixture ID (exact internal identifier, for QA/audit lookups);
+- snapshot status;
 - page size.
 
-Filters are represented in the URL so refresh and direct linking preserve the current state.
+All filters share the same underlying query parameters and URL representation
+as before — only the visual grouping changed. Filters are represented in the
+URL so refresh and direct linking preserve the current state.
+
+## Duplicate-Fixture Grouping (Display Only)
+
+The current page's items are grouped by `fixtureId` for display. Each fixture
+group shows:
+
+- a header with team names, group, matchday, snapshot count, and evaluated count;
+- one **preferred snapshot** shown prominently, selected using the same
+  precedence as the evidence gate's one-per-fixture selection policy
+  (`packages/api/src/live-prediction-evidence-gate.ts`): prefer
+  `pre_match_locked` over `foundation_unverified`, then the latest
+  `capturedAt`, then `snapshotId` descending;
+- when a fixture has more than one stored snapshot, a "View all N snapshots
+  for this fixture" details block containing every snapshot's full
+  prediction/reality/accuracy detail, including its raw fixture ID.
+
+This is a presentation-only grouping over already-fetched, already-valid
+items. It does not alter pagination, persistence, or the evidence gate's own
+audit selection — every stored snapshot remains reachable for QA/audit.
+
+## Explainers
+
+Two short, static explainer blocks accompany the summary and records:
+
+- a Brier Score explainer near the filter-scoped summary
+  ("Lower is better ... measures how close the predicted 1X2 probabilities
+  were to the actual outcome");
+- a "What do snapshot statuses mean?" details block using the exact
+  capture-timing semantics from
+  `docs/model-results/PREDICTION_SNAPSHOT_STORAGE.md` (pre_match_locked vs.
+  foundation_unverified).
+
+The "Historical match context was not captured for this snapshot" note is
+shown once per fixture group rather than once per individual snapshot row.
 
 ## Prediction / Reality / Accuracy Separation
 

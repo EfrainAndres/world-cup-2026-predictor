@@ -88,6 +88,35 @@ test("Model status has evidence progress bar", async ({ page }) => {
 });
 
 // ---------------------------------------------------------------------------
+// Evidence count taxonomy — stored snapshots vs. evaluation records vs.
+// unique evaluated fixtures must be labeled distinctly, not conflated.
+// ---------------------------------------------------------------------------
+
+test("Model status distinguishes stored snapshots, evaluation records, and unique evaluated fixtures", async ({ page }) => {
+  await page.goto("/model");
+  const statusSection = page.locator("section#model-status");
+
+  await expect(statusSection.getByText("Stored snapshots", { exact: true })).toBeVisible();
+  await expect(statusSection.getByText("Evaluation records", { exact: true })).toBeVisible();
+  await expect(statusSection.getByText("Unique evaluated fixtures", { exact: true })).toBeVisible();
+});
+
+test("Model status shows an evidence-counts explainer with display and recalibration thresholds", async ({ page }) => {
+  await page.goto("/model");
+  const statusSection = page.locator("section#model-status");
+
+  await expect(statusSection.getByText("Evidence counts", { exact: true })).toBeVisible();
+  await expect(statusSection.getByText("Display threshold:", { exact: false })).toBeVisible();
+  await expect(statusSection.getByText("Recalibration review threshold:", { exact: false })).toBeVisible();
+});
+
+test("Recalibration threshold footnote references unique evaluated fixtures", async ({ page }) => {
+  await page.goto("/model");
+  const gateSection = page.locator("section#model-recalibration");
+  await expect(gateSection.getByText("unique evaluated fixtures required", { exact: false })).toBeVisible();
+});
+
+// ---------------------------------------------------------------------------
 // Pipeline region — 8 steps in ordered list
 // ---------------------------------------------------------------------------
 

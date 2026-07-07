@@ -5,7 +5,8 @@ import {
   formatEvidencePercent,
   formatEvidenceGoals,
   formatEvidenceDecimal,
-  formatSampleSize
+  formatSampleSize,
+  formatEvidenceCount
 } from "../lib/model-evidence-center";
 
 interface MetricCardProps {
@@ -76,9 +77,10 @@ function EvidenceEmptyState({ stateKind }: EmptyStateProps) {
 interface ModelEvidenceSummaryProps {
   realitySummary: WorldCup2026ModelRealitySummary | null;
   stateKind: ModelEvidenceStateKind;
+  uniqueEvaluatedFixtureCount: number;
 }
 
-export function ModelEvidenceSummary({ realitySummary, stateKind }: ModelEvidenceSummaryProps) {
+export function ModelEvidenceSummary({ realitySummary, stateKind, uniqueEvaluatedFixtureCount }: ModelEvidenceSummaryProps) {
   const isUsable = stateKind === "usable" && realitySummary !== null;
 
   return (
@@ -96,7 +98,8 @@ export function ModelEvidenceSummary({ realitySummary, stateKind }: ModelEvidenc
       ) : (
         <>
           <div className="mb-2 text-xs text-slate-400">
-            {formatSampleSize(realitySummary.evaluationsCount)} evaluated fixtures
+            {formatSampleSize(realitySummary.evaluationsCount)} evaluation records across{" "}
+            {formatEvidenceCount(uniqueEvaluatedFixtureCount, "unique evaluated fixture")}
           </div>
 
           {/* Primary outcome metrics */}

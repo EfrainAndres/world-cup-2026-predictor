@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import type {
   PredictionHistoryListFilters,
+  PredictionHistoryListItem,
   PredictionHistoryListResponse,
   PredictionHistoryListSuccessResponse,
   PredictionHistoryPersistenceMetadata,
@@ -14,7 +15,12 @@ import {
   formatPredictionHistoryTimestamp,
   getPersistenceSourceLabel,
   getPredictionHistoryAccuracyLabel,
-  getSnapshotStatusLabel
+  getSnapshotStatusExplanation,
+  getSnapshotStatusLabel,
+  groupPredictionHistoryItemsByFixture,
+  PREDICTION_HISTORY_BRIER_SCORE_EXPLANATION,
+  PREDICTION_HISTORY_MATCH_CONTEXT_NOTE,
+  type PredictionHistoryFixtureGroup
 } from "../lib/prediction-history-ui";
 
 interface PredictionHistoryDashboardProps {
@@ -59,7 +65,7 @@ function FiltersForm({ values }: { values: PredictionHistoryDashboardProps["form
         </label>
 
         <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">Team</span>
+          <span className="font-medium">Team or match search</span>
           <input
             name="team"
             defaultValue={values.team}
@@ -67,26 +73,7 @@ function FiltersForm({ values }: { values: PredictionHistoryDashboardProps["form
             placeholder="Mexico"
             type="text"
           />
-        </label>
-
-        <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">Fixture ID</span>
-          <input
-            name="fixtureId"
-            defaultValue={values.fixtureId}
-            className="rounded-md border border-slate-300 px-3 py-2"
-            placeholder="wc2026-group-a-md1-01-..."
-            type="text"
-          />
-        </label>
-
-        <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">Snapshot status</span>
-          <select name="status" defaultValue={values.status} className="rounded-md border border-slate-300 px-3 py-2">
-            <option value="">All statuses</option>
-            <option value="pre_match_locked">Pre-match locked</option>
-            <option value="foundation_unverified">Foundation-unverified</option>
-          </select>
+          <span className="text-xs text-slate-500">Matches either the home or away team name.</span>
         </label>
 
         <label className="grid gap-1 text-sm text-slate-700">
@@ -107,16 +94,58 @@ function FiltersForm({ values }: { values: PredictionHistoryDashboardProps["form
             <option value="kickoff_asc">Kickoff date, oldest first</option>
           </select>
         </label>
-
-        <label className="grid gap-1 text-sm text-slate-700">
-          <span className="font-medium">Page size</span>
-          <select name="pageSize" defaultValue={values.pageSize} className="rounded-md border border-slate-300 px-3 py-2">
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-          </select>
-        </label>
       </fieldset>
+
+      <details className="group mt-4 rounded-md border border-slate-200 bg-slate-50 px-4 py-3">
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950 focus-visible:outline-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Advanced filters
+        </summary>
+
+        <div className="mt-3 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <label className="grid gap-1 text-sm text-slate-700">
+            <span className="font-medium">Fixture ID</span>
+            <input
+              name="fixtureId"
+              defaultValue={values.fixtureId}
+              className="rounded-md border border-slate-300 px-3 py-2"
+              placeholder="wc2026-group-a-md1-01-..."
+              type="text"
+            />
+            <span className="text-xs text-slate-500">Exact internal fixture identifier, for QA/audit lookups.</span>
+          </label>
+
+          <label className="grid gap-1 text-sm text-slate-700">
+            <span className="font-medium">Snapshot status</span>
+            <select name="status" defaultValue={values.status} className="rounded-md border border-slate-300 px-3 py-2">
+              <option value="">All statuses</option>
+              <option value="pre_match_locked">Pre-match locked</option>
+              <option value="foundation_unverified">Foundation-unverified</option>
+            </select>
+          </label>
+
+          <label className="grid gap-1 text-sm text-slate-700">
+            <span className="font-medium">Page size</span>
+            <select name="pageSize" defaultValue={values.pageSize} className="rounded-md border border-slate-300 px-3 py-2">
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </label>
+        </div>
+      </details>
 
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -149,184 +178,165 @@ function HistoryStatusBadge({ status }: { status: PredictionSnapshotStatus }) {
   );
 }
 
-function PredictionHistoryDesktopTable({
-  items
+function SnapshotStatusExplainer() {
+  return (
+    <details className="group mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950 focus-visible:outline-none">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+          aria-hidden="true"
+        >
+          <path
+            fillRule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clipRule="evenodd"
+          />
+        </svg>
+        What do snapshot statuses mean?
+      </summary>
+      <dl className="mt-3 space-y-2 text-sm text-slate-600">
+        <div>
+          <dt className="font-semibold text-slate-800">{getSnapshotStatusLabel("pre_match_locked")}</dt>
+          <dd className="mt-0.5">{getSnapshotStatusExplanation("pre_match_locked")}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-slate-800">{getSnapshotStatusLabel("foundation_unverified")}</dt>
+          <dd className="mt-0.5">{getSnapshotStatusExplanation("foundation_unverified")}</dd>
+        </div>
+      </dl>
+    </details>
+  );
+}
+
+function SnapshotDetailCard({
+  item,
+  showFixtureId
 }: {
-  items: PredictionHistoryListSuccessResponse["items"];
+  item: PredictionHistoryListItem;
+  showFixtureId: boolean;
 }) {
   return (
-    <div className="hidden overflow-x-auto lg:block">
-      <table className="min-w-full border-collapse text-sm">
-        <caption className="sr-only">Prediction history table</caption>
-        <thead>
-          <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-            <th className="px-4 py-3">Fixture</th>
-            <th className="px-4 py-3">Prediction</th>
-            <th className="px-4 py-3">Reality</th>
-            <th className="px-4 py-3">Accuracy</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.snapshotId} className="border-b border-slate-100 align-top">
-              <td className="px-4 py-4">
-                <div className="space-y-1">
-                  <p className="font-semibold text-slate-950">
-                    {item.homeTeam} <span className="text-slate-400">vs</span> {item.awayTeam}
-                  </p>
-                  <p className="text-slate-600">
-                    Group {item.group} · Matchday {item.matchday}
-                  </p>
-                  <p className="text-slate-600">Fixture ID: {item.fixtureId}</p>
-                  <p className="text-slate-600">Kickoff: {formatPredictionHistoryTimestamp(item.kickoffAt)}</p>
-                  <p className="text-slate-600">Captured: {formatPredictionHistoryTimestamp(item.capturedAt)}</p>
-                  <HistoryStatusBadge status={item.snapshotStatus} />
-                </div>
-              </td>
-              <td className="px-4 py-4">
-                <div className="space-y-1">
-                  <p className="font-medium text-slate-950">
-                    Projected score: {item.projectedScore.home} - {item.projectedScore.away}
-                  </p>
-                  <p className="text-slate-700">
-                    xG: {item.expectedGoals.home.toFixed(2)} - {item.expectedGoals.away.toFixed(2)}
-                  </p>
-                  <p className="text-slate-700">
-                    1X2: {formatPredictionHistoryProbability(item.outcomeProbabilities.homeWin)} /{" "}
-                    {formatPredictionHistoryProbability(item.outcomeProbabilities.draw)} /{" "}
-                    {formatPredictionHistoryProbability(item.outcomeProbabilities.awayWin)}
-                  </p>
-                  <p className="text-slate-700">
-                    Confidence: {item.confidence.level} · Coverage: {item.confidence.coverage}
-                  </p>
-                </div>
-              </td>
-              <td className="px-4 py-4">
-                {item.evaluation === null ? (
-                  <p className="text-slate-600">Awaiting official completed result</p>
-                ) : (
-                  <div className="space-y-1">
-                    <p className="font-medium text-slate-950">
-                      Actual score: {item.evaluation.actualScore.home} - {item.evaluation.actualScore.away}
-                    </p>
-                    <p className="text-slate-700">Actual outcome: {item.evaluation.actualOutcome}</p>
-                    <p className="text-slate-700">
-                      Evaluated: {formatPredictionHistoryTimestamp(item.evaluation.evaluatedAt)}
-                    </p>
-                  </div>
-                )}
-              </td>
-              <td className="px-4 py-4">
-                {item.evaluation === null ? (
-                  <p className="text-slate-600">Awaiting official completed result</p>
-                ) : (
-                  <div className="space-y-1">
-                    <p className="font-medium text-slate-950">{getPredictionHistoryAccuracyLabel(item)}</p>
-                    <p className="text-slate-700">
-                      Exact scoreline: {item.evaluation.scorelineCorrect ? "Correct" : "Miss"}
-                    </p>
-                    <p className="text-slate-700">Brier Score: {formatPredictionHistoryMetric(item.evaluation.brierScore)}</p>
-                    <p className="text-slate-700">Log Loss: {formatPredictionHistoryMetric(item.evaluation.logLoss)}</p>
-                    <p className="text-slate-700">
-                      Home goal error: {formatPredictionHistoryMetric(item.evaluation.homeGoalAbsoluteError, 2)}
-                    </p>
-                    <p className="text-slate-700">
-                      Away goal error: {formatPredictionHistoryMetric(item.evaluation.awayGoalAbsoluteError, 2)}
-                    </p>
-                  </div>
-                )}
-                <div className="mt-3 border-t border-slate-100 pt-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Match context</p>
-                  <p className="mt-1 text-xs text-slate-500">Historical match context was not captured for this snapshot.</p>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="rounded-md border border-slate-200 bg-white p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <HistoryStatusBadge status={item.snapshotStatus} />
+        <p className="text-xs text-slate-500">Captured: {formatPredictionHistoryTimestamp(item.capturedAt)}</p>
+      </div>
+      {showFixtureId ? <p className="mt-2 text-xs text-slate-500">Fixture ID: {item.fixtureId}</p> : null}
+      <p className="mt-1 text-xs text-slate-500">Kickoff: {formatPredictionHistoryTimestamp(item.kickoffAt)}</p>
+
+      <div className="mt-3 grid gap-4 sm:grid-cols-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Prediction</p>
+          <p className="mt-2 text-sm text-slate-700">
+            Projected score: {item.projectedScore.home} - {item.projectedScore.away}
+          </p>
+          <p className="text-sm text-slate-700">
+            xG: {item.expectedGoals.home.toFixed(2)} - {item.expectedGoals.away.toFixed(2)}
+          </p>
+          <p className="text-sm text-slate-700">
+            1X2: {formatPredictionHistoryProbability(item.outcomeProbabilities.homeWin)} /{" "}
+            {formatPredictionHistoryProbability(item.outcomeProbabilities.draw)} /{" "}
+            {formatPredictionHistoryProbability(item.outcomeProbabilities.awayWin)}
+          </p>
+          <p className="text-sm text-slate-700">
+            Confidence: {item.confidence.level} · Coverage: {item.confidence.coverage}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reality</p>
+          {item.evaluation === null ? (
+            <p className="mt-2 text-sm text-slate-600">Awaiting official completed result</p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-slate-700">
+                Actual score: {item.evaluation.actualScore.home} - {item.evaluation.actualScore.away}
+              </p>
+              <p className="text-sm text-slate-700">Actual outcome: {item.evaluation.actualOutcome}</p>
+              <p className="text-sm text-slate-700">
+                Evaluated: {formatPredictionHistoryTimestamp(item.evaluation.evaluatedAt)}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Accuracy</p>
+          {item.evaluation === null ? (
+            <p className="mt-2 text-sm text-slate-600">Awaiting official completed result</p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-slate-700">{getPredictionHistoryAccuracyLabel(item)}</p>
+              <p className="text-sm text-slate-700">
+                Exact scoreline: {item.evaluation.scorelineCorrect ? "Correct" : "Miss"}
+              </p>
+              <p className="text-sm text-slate-700">Brier Score: {formatPredictionHistoryMetric(item.evaluation.brierScore)}</p>
+              <p className="text-sm text-slate-700">Log Loss: {formatPredictionHistoryMetric(item.evaluation.logLoss)}</p>
+              <p className="text-sm text-slate-700">
+                Home goal error: {formatPredictionHistoryMetric(item.evaluation.homeGoalAbsoluteError, 2)}
+              </p>
+              <p className="text-sm text-slate-700">
+                Away goal error: {formatPredictionHistoryMetric(item.evaluation.awayGoalAbsoluteError, 2)}
+              </p>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
 
-function PredictionHistoryMobileCards({
-  items
-}: {
-  items: PredictionHistoryListSuccessResponse["items"];
-}) {
+function PredictionHistoryFixtureGroupCard({ group }: { group: PredictionHistoryFixtureGroup }) {
   return (
-    <div className="grid gap-4 lg:hidden">
-      {items.map((item) => (
-        <article key={item.snapshotId} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Group {item.group} · Matchday {item.matchday}
-              </p>
-              <h2 className="mt-1 text-lg font-semibold text-slate-950">
-                {item.homeTeam} <span className="text-slate-400">vs</span> {item.awayTeam}
-              </h2>
-            </div>
-            <HistoryStatusBadge status={item.snapshotStatus} />
+    <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Group {group.group} · Matchday {group.matchday} · {group.totalCount}{" "}
+            {group.totalCount === 1 ? "snapshot" : "snapshots"} · {group.evaluatedCount} evaluated
+          </p>
+          <h3 className="mt-1 text-lg font-semibold text-slate-950">
+            {group.homeTeam} <span className="text-slate-400">vs</span> {group.awayTeam}
+          </h3>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Preferred snapshot</p>
+        <SnapshotDetailCard item={group.preferred} showFixtureId={group.totalCount === 1} />
+      </div>
+
+      <p className="mt-3 text-xs text-slate-500">{PREDICTION_HISTORY_MATCH_CONTEXT_NOTE}</p>
+
+      {group.totalCount > 1 ? (
+        <details className="group mt-4">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-teal-700 hover:text-teal-900 focus-visible:outline-none">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="h-3.5 w-3.5 transition-transform group-open:rotate-90"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+                clipRule="evenodd"
+              />
+            </svg>
+            View all {group.totalCount} snapshots for this fixture
+          </summary>
+          <div className="mt-3 space-y-3">
+            {group.snapshots.map((snapshot) => (
+              <SnapshotDetailCard key={snapshot.snapshotId} item={snapshot} showFixtureId />
+            ))}
           </div>
-
-          <div className="mt-4 grid gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Prediction</p>
-              <p className="mt-2 text-sm text-slate-700">
-                Projected score: {item.projectedScore.home} - {item.projectedScore.away}
-              </p>
-              <p className="text-sm text-slate-700">
-                xG: {item.expectedGoals.home.toFixed(2)} - {item.expectedGoals.away.toFixed(2)}
-              </p>
-              <p className="text-sm text-slate-700">
-                1X2: {formatPredictionHistoryProbability(item.outcomeProbabilities.homeWin)} /{" "}
-                {formatPredictionHistoryProbability(item.outcomeProbabilities.draw)} /{" "}
-                {formatPredictionHistoryProbability(item.outcomeProbabilities.awayWin)}
-              </p>
-              <p className="text-sm text-slate-700">
-                Confidence: {item.confidence.level} · Coverage: {item.confidence.coverage}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Reality</p>
-              {item.evaluation === null ? (
-                <p className="mt-2 text-sm text-slate-600">Awaiting official completed result</p>
-              ) : (
-                <>
-                  <p className="mt-2 text-sm text-slate-700">
-                    Actual score: {item.evaluation.actualScore.home} - {item.evaluation.actualScore.away}
-                  </p>
-                  <p className="text-sm text-slate-700">Actual outcome: {item.evaluation.actualOutcome}</p>
-                </>
-              )}
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Accuracy</p>
-              {item.evaluation === null ? (
-                <p className="mt-2 text-sm text-slate-600">Awaiting official completed result</p>
-              ) : (
-                <>
-                  <p className="mt-2 text-sm text-slate-700">{getPredictionHistoryAccuracyLabel(item)}</p>
-                  <p className="text-sm text-slate-700">
-                    Exact scoreline: {item.evaluation.scorelineCorrect ? "Correct" : "Miss"}
-                  </p>
-                  <p className="text-sm text-slate-700">
-                    Brier Score: {formatPredictionHistoryMetric(item.evaluation.brierScore)}
-                  </p>
-                </>
-              )}
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Match context</p>
-              <p className="mt-2 text-sm text-slate-500">Historical match context was not captured for this snapshot.</p>
-            </div>
-          </div>
-        </article>
-      ))}
-    </div>
+        </details>
+      ) : null}
+    </article>
   );
 }
 
@@ -394,6 +404,9 @@ export function PredictionHistoryDashboard({
     "persistenceMetadata" in response
       ? (response.persistenceMetadata as PredictionHistoryPersistenceMetadata | undefined)
       : undefined;
+
+  const fixtureGroups =
+    response.status === "success" ? groupPredictionHistoryItemsByFixture(response.items) : [];
 
   return (
     <div className="bg-slate-50">
@@ -487,7 +500,12 @@ export function PredictionHistoryDashboard({
                   "Evaluated snapshots only"
                 )}
               </div>
+              <p className="mt-3 text-xs text-slate-500">
+                <strong className="font-semibold text-slate-700">Brier Score:</strong> {PREDICTION_HISTORY_BRIER_SCORE_EXPLANATION}
+              </p>
             </section>
+
+            <SnapshotStatusExplainer />
 
             <section aria-labelledby="prediction-history-results" className="mb-8">
               <h2 id="prediction-history-results" className="mb-3 text-lg font-semibold text-slate-950">
@@ -500,10 +518,14 @@ export function PredictionHistoryDashboard({
               ) : (
                 <>
                   <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                    Showing {response.items.length} of {response.pagination.totalItems} matching snapshot record(s).
+                    Showing {response.items.length} of {response.pagination.totalItems} matching snapshot record(s)
+                    across {fixtureGroups.length} {fixtureGroups.length === 1 ? "fixture" : "fixtures"} on this page.
                   </div>
-                  <PredictionHistoryDesktopTable items={response.items} />
-                  <PredictionHistoryMobileCards items={response.items} />
+                  <div className="grid gap-4">
+                    {fixtureGroups.map((group) => (
+                      <PredictionHistoryFixtureGroupCard key={group.fixtureId} group={group} />
+                    ))}
+                  </div>
                   <Pagination
                     filters={response.filters}
                     page={response.pagination.page}
