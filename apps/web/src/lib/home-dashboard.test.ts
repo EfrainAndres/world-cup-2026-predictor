@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import type { PredictionHistoryListSummary } from "@world-cup-2026-predictor/api";
 import type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse,
@@ -11,8 +10,10 @@ import {
   HOME_SECTION_TITLES,
   selectHomeGroups,
   selectHomeMatches,
-  selectStoredFeaturedPrediction
+  selectStoredFeaturedPrediction,
+  type HomeModelTrackRecordInput
 } from "./home-dashboard";
+import type { EvidenceCountTaxonomy } from "./model-evidence-center";
 
 function match(overrides: Partial<WorldCup2026DailyMatchEntry>): WorldCup2026DailyMatchEntry {
   return {
@@ -231,23 +232,56 @@ describe("selectHomeGroups", () => {
   });
 });
 
+function taxonomy(overrides: Partial<EvidenceCountTaxonomy> = {}): EvidenceCountTaxonomy {
+  return {
+    storedSnapshotCount: 12,
+    evaluationRecordCount: 9,
+    uniqueEvaluatedFixtureCount: 9,
+    pendingEvaluationCount: 3,
+    evidenceDisplayThreshold: 8,
+    recalibrationReviewThreshold: 20,
+    ...overrides
+  };
+}
+
 describe("buildHomeModelTrackRecordMetrics", () => {
-  test("formats evidence values and preliminary status", () => {
-    const summary: PredictionHistoryListSummary = {
-      totalSnapshots: 12,
-      evaluatedSnapshots: 9,
-      pendingSnapshots: 3,
-      outcomeAccuracy: 4 / 9,
-      exactScoreAccuracy: 1 / 9,
-      averageBrierScore: 0.32
+  test("formats evidence values and preliminary status using the /model taxonomy", () => {
+    const input: HomeModelTrackRecordInput = {
+      taxonomy: taxonomy(),
+      outcomeAccuracy: 4 / 9
     };
 
-    expect(buildHomeModelTrackRecordMetrics(summary)).toEqual([
-      { label: "Evaluated fixtures", value: "9", detail: "12 stored snapshots" },
-      { label: "Outcomes correct", value: "44%", detail: "Winner/draw result" },
-      { label: "Exact scores", value: "11%", detail: "Projected scoreline hit rate" },
+    expect(buildHomeModelTrackRecordMetrics(input)).toEqual([
+      { label: "Evaluation records", value: "9", detail: "12 stored snapshots" },
+      { label: "Unique evaluated fixtures", value: "9", detail: "Recalibration review at 20" },
+      { label: "Outcome accuracy", value: "44%", detail: "Winner/draw result" },
       { label: "Sample status", value: "Evidence still preliminary", detail: "3 pending evaluations" }
     ]);
+  });
+
+  test("reports evidence sample growing once unique fixtures reach the recalibration threshold", () => {
+    const input: HomeModelTrackRecordInput = {
+      taxonomy: taxonomy({ uniqueEvaluatedFixtureCount: 20, pendingEvaluationCount: 0 }),
+      outcomeAccuracy: 0.5
+    };
+
+    const metrics = buildHomeModelTrackRecordMetrics(input);
+    expect(metrics.find((m) => m.label === "Sample status")).toEqual({
+      label: "Sample status",
+      value: "Evidence sample growing",
+      detail: "0 pending evaluations"
+    });
+  });
+
+  test("reports evidence collection in progress when no fixtures are evaluated yet", () => {
+    const input: HomeModelTrackRecordInput = {
+      taxonomy: taxonomy({ uniqueEvaluatedFixtureCount: 0, evaluationRecordCount: 0 }),
+      outcomeAccuracy: null
+    };
+
+    const metrics = buildHomeModelTrackRecordMetrics(input);
+    expect(metrics.find((m) => m.label === "Sample status")?.value).toBe("Evidence collection in progress");
+    expect(metrics.find((m) => m.label === "Outcome accuracy")?.value).toBe("In progress");
   });
 
   test("degrades gracefully when evidence is unavailable", () => {

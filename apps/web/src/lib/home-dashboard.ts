@@ -1,5 +1,4 @@
 import type {
-  PredictionHistoryListSummary,
   WorldCup2026Fixture,
   WorldCup2026GroupStandings
 } from "@world-cup-2026-predictor/api";
@@ -10,6 +9,7 @@ import type {
   WorldCup2026FixtureFoundationResponse,
   WorldCup2026LiveGroupStandingsResponse
 } from "./api-client";
+import type { EvidenceCountTaxonomy } from "./model-evidence-center";
 import type { ProductionRuntimeDiagnostics } from "./server-runtime";
 
 export const HOME_SECTION_IDS = [
@@ -225,10 +225,18 @@ function formatAccuracy(value: number | null): string {
   return value === null ? "In progress" : `${Math.round(value * 100)}%`;
 }
 
+export interface HomeModelTrackRecordInput {
+  taxonomy: EvidenceCountTaxonomy;
+  outcomeAccuracy: number | null;
+}
+
+// Mirrors the /model page's "Evidence counts" naming exactly (see
+// getEvidenceCountTaxonomy in model-evidence-center.ts) so Home never shows a
+// number that reads as inconsistent with the Model and Evidence Center.
 export function buildHomeModelTrackRecordMetrics(
-  summary: PredictionHistoryListSummary | null
+  input: HomeModelTrackRecordInput | null
 ): HomeModelTrackRecordMetric[] {
-  if (summary === null) {
+  if (input === null) {
     return [
       {
         label: "Evidence status",
@@ -238,33 +246,35 @@ export function buildHomeModelTrackRecordMetrics(
     ];
   }
 
+  const { taxonomy, outcomeAccuracy } = input;
+
   const evidenceStatus =
-    summary.evaluatedSnapshots === 0
+    taxonomy.uniqueEvaluatedFixtureCount === 0
       ? "Evidence collection in progress"
-      : summary.evaluatedSnapshots < 30
+      : taxonomy.uniqueEvaluatedFixtureCount < taxonomy.recalibrationReviewThreshold
         ? "Evidence still preliminary"
         : "Evidence sample growing";
 
   return [
     {
-      label: "Evaluated fixtures",
-      value: summary.evaluatedSnapshots.toString(),
-      detail: `${summary.totalSnapshots} stored snapshots`
+      label: "Evaluation records",
+      value: taxonomy.evaluationRecordCount.toString(),
+      detail: `${taxonomy.storedSnapshotCount} stored snapshots`
     },
     {
-      label: "Outcomes correct",
-      value: formatAccuracy(summary.outcomeAccuracy),
+      label: "Unique evaluated fixtures",
+      value: taxonomy.uniqueEvaluatedFixtureCount.toString(),
+      detail: `Recalibration review at ${taxonomy.recalibrationReviewThreshold}`
+    },
+    {
+      label: "Outcome accuracy",
+      value: formatAccuracy(outcomeAccuracy),
       detail: "Winner/draw result"
-    },
-    {
-      label: "Exact scores",
-      value: formatAccuracy(summary.exactScoreAccuracy),
-      detail: "Projected scoreline hit rate"
     },
     {
       label: "Sample status",
       value: evidenceStatus,
-      detail: `${summary.pendingSnapshots} pending evaluations`
+      detail: `${taxonomy.pendingEvaluationCount ?? 0} pending evaluations`
     }
   ];
 }

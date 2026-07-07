@@ -105,3 +105,19 @@ test("mobile bottom navigation does not obscure Home content", async ({ page }) 
     expect(summaryBox.y + summaryBox.height).toBeLessThanOrEqual(navBox.y);
   }
 });
+
+// ---------------------------------------------------------------------------
+// Model track record — labels must match the /model page's count taxonomy
+// (evaluation records vs. unique evaluated fixtures), not an ambiguous
+// single "evaluated fixtures" number.
+// ---------------------------------------------------------------------------
+
+test("Home model track record uses the same evidence-count labels as /model", async ({ page }) => {
+  await page.goto("/");
+  const trackRecord = page.locator("#home-model-track-record");
+
+  await expect(trackRecord.getByText("Evaluation records", { exact: true })).toBeVisible();
+  await expect(trackRecord.getByText("Unique evaluated fixtures", { exact: true })).toBeVisible();
+  await expect(trackRecord.getByText("Outcome accuracy", { exact: true })).toBeVisible();
+  await expect(trackRecord.getByText("Sample status", { exact: true })).toBeVisible();
+});

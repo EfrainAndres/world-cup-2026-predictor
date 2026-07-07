@@ -6,6 +6,7 @@ import {
 } from "@world-cup-2026-predictor/api";
 import type {
   LiveEvidenceGateDecision,
+  LiveEvidenceGateReport,
   PredictionConfidenceLevel,
   PredictionCoverageType
 } from "@world-cup-2026-predictor/api";
@@ -291,29 +292,76 @@ export interface EvidenceProgressViewModel {
   complete: boolean;
 }
 
-export function getEvidenceProgress(evaluatedFixtures: number): EvidenceProgressViewModel {
+export function getEvidenceProgress(uniqueEvaluatedFixtures: number): EvidenceProgressViewModel {
   const threshold = LIVE_EVIDENCE_GATE_THRESHOLDS.minUniqueEvaluatedFixtures;
-  const clamped = Math.min(evaluatedFixtures, threshold);
+  const clamped = Math.min(uniqueEvaluatedFixtures, threshold);
   const percent = threshold > 0 ? Math.round((clamped / threshold) * 100) : 0;
   return {
-    current: evaluatedFixtures,
+    current: uniqueEvaluatedFixtures,
     threshold,
     percent: Math.min(percent, 100),
-    label: `${evaluatedFixtures} / ${threshold} minimum evaluated fixtures`,
-    complete: evaluatedFixtures >= threshold
+    label: `${uniqueEvaluatedFixtures} / ${threshold} unique evaluated fixtures (display threshold)`,
+    complete: uniqueEvaluatedFixtures >= threshold
   };
 }
 
-export function getRecalibrationProgress(evaluatedFixtures: number): EvidenceProgressViewModel {
+export function getRecalibrationProgress(uniqueEvaluatedFixtures: number): EvidenceProgressViewModel {
   const threshold = LIVE_EVIDENCE_GATE_THRESHOLDS.minForRecalibrationEvidence;
-  const clamped = Math.min(evaluatedFixtures, threshold);
+  const clamped = Math.min(uniqueEvaluatedFixtures, threshold);
   const percent = threshold > 0 ? Math.round((clamped / threshold) * 100) : 0;
   return {
-    current: evaluatedFixtures,
+    current: uniqueEvaluatedFixtures,
     threshold,
     percent: Math.min(percent, 100),
-    label: `${evaluatedFixtures} / ${threshold} for recalibration review`,
-    complete: evaluatedFixtures >= threshold
+    label: `${uniqueEvaluatedFixtures} / ${threshold} unique evaluated fixtures (recalibration review threshold)`,
+    complete: uniqueEvaluatedFixtures >= threshold
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Evidence count taxonomy
+//
+// The evidence system exposes several related-but-distinct counts. Without a
+// shared vocabulary these read as inconsistent (e.g. "20 snapshots" next to
+// "17 evaluated fixtures" next to "n=20 evaluated fixtures"). This view model
+// gives every consumer (/model, Home, /prediction-history) one naming scheme:
+//
+// - storedSnapshotCount: total immutable prediction snapshots ever captured.
+// - evaluationRecordCount: total snapshot-vs-result evaluation rows. One
+//   fixture can have more than one evaluated snapshot (duplicates), so this
+//   can exceed uniqueEvaluatedFixtureCount.
+// - uniqueEvaluatedFixtureCount: distinct fixtures with a canonical evaluated
+//   snapshot, per the evidence gate's one-per-fixture selection policy. This
+//   is the number gate thresholds and decisions are measured against.
+// - evidenceDisplayThreshold / recalibrationReviewThreshold: the two
+//   unique-fixture thresholds from LIVE_EVIDENCE_GATE_THRESHOLDS.
+// - pendingEvaluationCount: unique fixtures with a stored snapshot but no
+//   evaluation yet (null when the gate report is unavailable).
+// ---------------------------------------------------------------------------
+
+export interface EvidenceCountTaxonomy {
+  storedSnapshotCount: number;
+  evaluationRecordCount: number;
+  uniqueEvaluatedFixtureCount: number;
+  pendingEvaluationCount: number | null;
+  evidenceDisplayThreshold: number;
+  recalibrationReviewThreshold: number;
+}
+
+export interface EvidenceCountTaxonomyInput {
+  snapshotCount: number;
+  evaluationCount: number;
+  gateReport: LiveEvidenceGateReport | null;
+}
+
+export function getEvidenceCountTaxonomy(input: EvidenceCountTaxonomyInput): EvidenceCountTaxonomy {
+  return {
+    storedSnapshotCount: input.snapshotCount,
+    evaluationRecordCount: input.evaluationCount,
+    uniqueEvaluatedFixtureCount: input.gateReport?.evidenceCounts.uniqueEvaluatedFixtures ?? input.evaluationCount,
+    pendingEvaluationCount: input.gateReport?.evidenceCounts.pendingSnapshots ?? null,
+    evidenceDisplayThreshold: LIVE_EVIDENCE_GATE_THRESHOLDS.minUniqueEvaluatedFixtures,
+    recalibrationReviewThreshold: LIVE_EVIDENCE_GATE_THRESHOLDS.minForRecalibrationEvidence
   };
 }
 

@@ -51,6 +51,21 @@ export function getSnapshotStatusLabel(status: PredictionSnapshotStatus): string
     : "Foundation-unverified";
 }
 
+// Wording mirrors the canonical status rules documented in
+// docs/model-results/PREDICTION_SNAPSHOT_STORAGE.md — do not invent new
+// semantics here.
+export function getSnapshotStatusExplanation(status: PredictionSnapshotStatus): string {
+  return status === "pre_match_locked"
+    ? "Captured with a confirmed kickoff time, strictly before kickoff. Verified as a genuine pre-match prediction and safe for accuracy evaluation."
+    : "No kickoff time was available to confirm the snapshot was captured before kickoff. Retained for audit, but not treated as a verified pre-match lock.";
+}
+
+export const PREDICTION_HISTORY_BRIER_SCORE_EXPLANATION =
+  "Lower is better (range 0–2). Measures how close the predicted 1X2 probabilities were to the actual outcome.";
+
+export const PREDICTION_HISTORY_MATCH_CONTEXT_NOTE =
+  "Historical match context was not captured for these snapshots.";
+
 export function getPersistenceSourceLabel(
   metadata: PredictionHistoryPersistenceMetadata | undefined
 ): string {
@@ -135,4 +150,94 @@ export function toPredictionHistoryQuery(
     ...(pageText === undefined ? {} : { page: Number(pageText) }),
     ...(pageSizeText === undefined ? {} : { pageSize: Number(pageSizeText) })
   };
+}
+
+// ---------------------------------------------------------------------------
+// Duplicate-fixture grouping (display only)
+//
+// A single fixture can have more than one stored snapshot (retries, repeated
+// captures, an unverified capture followed by a locked one, and so on). The
+// flat list is hard to scan when duplicates repeat the same match. This
+// groups the CURRENT PAGE's items by fixtureId and picks a single "preferred"
+// snapshot per fixture to show prominently, while keeping every snapshot
+// available for QA/audit inside collapsed details.
+//
+// The preference order intentionally mirrors the evidence gate's
+// one-per-fixture selection policy in
+// packages/api/src/live-prediction-evidence-gate.ts
+// (`one_per_fixture_prefer_pre_match_locked_latest_pre_kickoff`):
+// prefer pre_match_locked over foundation_unverified, then the latest
+// capturedAt, then snapshotId descending. This is a display-time
+// approximation over already-fetched, already-valid list items — it does not
+// re-run or conflict with the gate's own audit-grade selection, and it never
+// mutates, hides, or discards stored data.
+// ---------------------------------------------------------------------------
+
+export interface PredictionHistoryFixtureGroup {
+  fixtureId: string;
+  homeTeam: string;
+  awayTeam: string;
+  group: string;
+  matchday: number;
+  snapshots: readonly PredictionHistoryListItem[];
+  preferred: PredictionHistoryListItem;
+  evaluatedCount: number;
+  totalCount: number;
+}
+
+function compareSnapshotPreference(
+  a: PredictionHistoryListItem,
+  b: PredictionHistoryListItem
+): number {
+  const statusPriority = (status: PredictionSnapshotStatus): number =>
+    status === "pre_match_locked" ? 0 : 1;
+
+  const statusDelta = statusPriority(a.snapshotStatus) - statusPriority(b.snapshotStatus);
+  if (statusDelta !== 0) return statusDelta;
+
+  if (a.capturedAt !== b.capturedAt) {
+    return a.capturedAt < b.capturedAt ? 1 : -1;
+  }
+
+  return a.snapshotId < b.snapshotId ? 1 : a.snapshotId > b.snapshotId ? -1 : 0;
+}
+
+export function selectPreferredHistorySnapshot(
+  items: readonly PredictionHistoryListItem[]
+): PredictionHistoryListItem {
+  return [...items].sort(compareSnapshotPreference)[0]!;
+}
+
+export function groupPredictionHistoryItemsByFixture(
+  items: readonly PredictionHistoryListItem[]
+): PredictionHistoryFixtureGroup[] {
+  const fixtureOrder: string[] = [];
+  const byFixture = new Map<string, PredictionHistoryListItem[]>();
+
+  for (const item of items) {
+    const existing = byFixture.get(item.fixtureId);
+    if (existing === undefined) {
+      fixtureOrder.push(item.fixtureId);
+      byFixture.set(item.fixtureId, [item]);
+    } else {
+      existing.push(item);
+    }
+  }
+
+  return fixtureOrder.map((fixtureId) => {
+    const snapshots = byFixture.get(fixtureId)!;
+    const first = snapshots[0]!;
+
+    return {
+      fixtureId,
+      homeTeam: first.homeTeam,
+      awayTeam: first.awayTeam,
+      group: first.group,
+      matchday: first.matchday,
+      snapshots,
+      preferred: selectPreferredHistorySnapshot(snapshots),
+      evaluatedCount: snapshots.filter((s) => s.evaluation !== null).length,
+      totalCount: snapshots.length
+    };
+  });
 }

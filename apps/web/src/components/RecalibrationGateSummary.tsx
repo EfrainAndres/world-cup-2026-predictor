@@ -101,7 +101,7 @@ export function RecalibrationGateSummary({ gateReport }: RecalibrationGateSummar
           />
         </div>
         <p className="mt-1.5 text-[10px] text-slate-400">
-          {recalibrationProgress.threshold} evaluated fixtures required before any recalibration recommendation is considered credible.
+          {recalibrationProgress.threshold} unique evaluated fixtures required before any recalibration recommendation is considered credible.
         </p>
       </div>
 

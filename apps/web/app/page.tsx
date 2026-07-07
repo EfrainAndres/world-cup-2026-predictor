@@ -1,9 +1,7 @@
 import {
   getModelInfo,
-  getWorldCup2026FixtureFoundation,
-  listWorldCup2026PredictionHistory
+  getWorldCup2026FixtureFoundation
 } from "@world-cup-2026-predictor/api";
-import type { PredictionHistoryListSummary } from "@world-cup-2026-predictor/api";
 import { HomeDashboard } from "../src/components/HomeDashboardSections";
 import { DAILY_MATCHES_DISPLAY_TIMEZONE } from "../src/lib/daily-matches-ui";
 import {
@@ -12,13 +10,16 @@ import {
   selectFallbackFeaturedFixture,
   selectHomeGroups,
   selectHomeMatches,
-  selectStoredFeaturedPrediction
+  selectStoredFeaturedPrediction,
+  type HomeModelTrackRecordInput
 } from "../src/lib/home-dashboard";
+import { getEvidenceCountTaxonomy } from "../src/lib/model-evidence-center";
 import {
   buildDashboardDailyMatchesFromSync,
   buildDashboardStandingsFromSync,
   buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb,
   getDashboardLiveSyncResult,
+  getModelEvidenceCenterData,
   getProductionRuntimeDiagnostics,
   predictDashboardMatchFromLiveEloWithProductionStatsBomb
 } from "../src/lib/server-runtime";
@@ -26,16 +27,19 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-async function getHomePredictionHistorySummary(): Promise<PredictionHistoryListSummary | null> {
+// Uses the same evidence source and count taxonomy as the /model page so the
+// Home track record never shows a number that reads as inconsistent with the
+// Model and Evidence Center.
+async function getHomeModelTrackRecordInput(): Promise<HomeModelTrackRecordInput | null> {
   try {
-    const response = await listWorldCup2026PredictionHistory({
-      evaluationState: "all",
-      sort: "captured_desc",
-      page: 1,
-      pageSize: 10
+    const data = await getModelEvidenceCenterData();
+    const taxonomy = getEvidenceCountTaxonomy({
+      snapshotCount: data.snapshotCount,
+      evaluationCount: data.evaluationCount,
+      gateReport: data.gateReport
     });
 
-    return response.status === "success" ? response.summary : null;
+    return { taxonomy, outcomeAccuracy: data.realitySummary?.outcomeAccuracy ?? null };
   } catch {
     return null;
   }
@@ -49,7 +53,7 @@ export default async function DashboardHomePage() {
   const fixtureFoundation = getWorldCup2026FixtureFoundation();
   const modelInfo = getModelInfo();
   const tournamentProjection = buildOfficialWorldCup2026KnockoutProjectionWithProductionStatsBomb(syncResult);
-  const predictionHistorySummary = await getHomePredictionHistorySummary();
+  const modelTrackRecordInput = await getHomeModelTrackRecordInput();
 
   const homeMatches = selectHomeMatches(dailyMatches);
   const storedFeaturedPrediction = selectStoredFeaturedPrediction(dailyMatches);
@@ -80,7 +84,7 @@ export default async function DashboardHomePage() {
       featuredPrediction={featuredPrediction}
       groups={selectHomeGroups(standings, dailyMatches)}
       tournamentProjection={tournamentProjection}
-      modelTrackRecordMetrics={buildHomeModelTrackRecordMetrics(predictionHistorySummary)}
+      modelTrackRecordMetrics={buildHomeModelTrackRecordMetrics(modelTrackRecordInput)}
       modelVersion={modelInfo.modelPackage}
       formulaVersion={featuredPrediction?.source === "generated_fixture" ? formulaVersion : undefined}
     />

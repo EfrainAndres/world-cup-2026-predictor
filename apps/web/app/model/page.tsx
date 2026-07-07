@@ -8,7 +8,7 @@ import { PageHeader } from "../../src/components/PageHeader";
 import { PredictionPipelineOverview } from "../../src/components/PredictionPipelineOverview";
 import { ProductionModelConfiguration } from "../../src/components/ProductionModelConfiguration";
 import { RecalibrationGateSummary } from "../../src/components/RecalibrationGateSummary";
-import { getProductionModelConfig } from "../../src/lib/model-evidence-center";
+import { getEvidenceCountTaxonomy, getProductionModelConfig } from "../../src/lib/model-evidence-center";
 import { getModelEvidenceCenterData } from "../../src/lib/server-runtime";
 import { buildModelDisclosureSummary } from "../../src/lib/technical-disclosure";
 import { TechnicalDisclosure } from "../../src/components/TechnicalDisclosure";
@@ -23,6 +23,11 @@ export const runtime = "nodejs";
 export default async function ModelPage() {
   const data = await getModelEvidenceCenterData();
   const cfg = getProductionModelConfig();
+  const taxonomy = getEvidenceCountTaxonomy({
+    snapshotCount: data.snapshotCount,
+    evaluationCount: data.evaluationCount,
+    gateReport: data.gateReport
+  });
 
   const limitationsList = data.modelInfo.limitations;
   const scopeList = data.modelInfo.modelScope;
@@ -42,6 +47,7 @@ export default async function ModelPage() {
           data={data}
           modelVersion={cfg.modelVersion}
           formulaVersion={cfg.formulaVersion}
+          taxonomy={taxonomy}
         />
       </div>
 
@@ -58,6 +64,7 @@ export default async function ModelPage() {
       <ModelEvidenceSummary
         realitySummary={data.realitySummary}
         stateKind={data.stateKind}
+        uniqueEvaluatedFixtureCount={taxonomy.uniqueEvaluatedFixtureCount}
       />
 
       {/* Region 6 — Recalibration gate */}

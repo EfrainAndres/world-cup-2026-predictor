@@ -3,13 +3,15 @@ import type { ModelEvidenceCenterData } from "../lib/server-runtime";
 import {
   getEvidenceState,
   getEvidenceProgress,
-  formatEvidenceCount
+  formatEvidenceCount,
+  type EvidenceCountTaxonomy
 } from "../lib/model-evidence-center";
 
 interface ModelStatusSummaryProps {
   data: ModelEvidenceCenterData;
   modelVersion: string;
   formulaVersion: string;
+  taxonomy: EvidenceCountTaxonomy;
 }
 
 function StatusBadge({ variant, label }: { variant: string; label: string }) {
@@ -27,11 +29,9 @@ function StatusBadge({ variant, label }: { variant: string; label: string }) {
   );
 }
 
-export function ModelStatusSummary({ data, modelVersion, formulaVersion }: ModelStatusSummaryProps) {
+export function ModelStatusSummary({ data, modelVersion, formulaVersion, taxonomy }: ModelStatusSummaryProps) {
   const evidenceState = getEvidenceState(data.stateKind);
-  const progress = getEvidenceProgress(
-    data.gateReport?.evidenceCounts.uniqueEvaluatedFixtures ?? 0
-  );
+  const progress = getEvidenceProgress(taxonomy.uniqueEvaluatedFixtureCount);
 
   const persistenceLabel =
     data.persistenceMetadata === null
@@ -83,16 +83,19 @@ export function ModelStatusSummary({ data, modelVersion, formulaVersion }: Model
         <div>
           <dt className="text-xs text-slate-500">Stored snapshots</dt>
           <dd className="mt-0.5 font-semibold text-slate-900">
-            {formatEvidenceCount(data.snapshotCount, "snapshot")}
+            {formatEvidenceCount(taxonomy.storedSnapshotCount, "snapshot")}
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-slate-500">Evaluated fixtures</dt>
+          <dt className="text-xs text-slate-500">Evaluation records</dt>
           <dd className="mt-0.5 font-semibold text-slate-900">
-            {formatEvidenceCount(
-              data.gateReport?.evidenceCounts.uniqueEvaluatedFixtures ?? data.evaluationCount,
-              "fixture"
-            )}
+            {formatEvidenceCount(taxonomy.evaluationRecordCount, "record")}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-slate-500">Unique evaluated fixtures</dt>
+          <dd className="mt-0.5 font-semibold text-slate-900">
+            {formatEvidenceCount(taxonomy.uniqueEvaluatedFixtureCount, "fixture")}
           </dd>
         </div>
         {data.gateReport !== null && (
@@ -110,6 +113,41 @@ export function ModelStatusSummary({ data, modelVersion, formulaVersion }: Model
           </div>
         )}
       </dl>
+
+      {/* Evidence count taxonomy — clarifies stored snapshots vs. evaluation
+          records vs. unique evaluated fixtures, since these three counts are
+          frequently confused with one another. */}
+      <div className="mt-4 rounded-md border border-slate-100 bg-slate-50 px-3 py-2.5">
+        <p className="text-xs font-semibold text-slate-600">Evidence counts</p>
+        <ul className="mt-1.5 space-y-1 text-xs text-slate-600">
+          <li>
+            <strong className="font-semibold text-slate-800">
+              {formatEvidenceCount(taxonomy.storedSnapshotCount, "stored snapshot")}
+            </strong>{" "}
+            — total immutable predictions captured.
+          </li>
+          <li>
+            <strong className="font-semibold text-slate-800">
+              {formatEvidenceCount(taxonomy.evaluationRecordCount, "evaluation record")}
+            </strong>{" "}
+            — total snapshot-vs-result comparisons.
+          </li>
+          <li>
+            <strong className="font-semibold text-slate-800">
+              {formatEvidenceCount(taxonomy.uniqueEvaluatedFixtureCount, "unique evaluated fixture")}
+            </strong>{" "}
+            — distinct fixtures used by the recalibration gate.
+          </li>
+          <li>
+            <strong className="font-semibold text-slate-800">Display threshold:</strong>{" "}
+            {taxonomy.evidenceDisplayThreshold} unique fixtures.
+          </li>
+          <li>
+            <strong className="font-semibold text-slate-800">Recalibration review threshold:</strong>{" "}
+            {taxonomy.recalibrationReviewThreshold} unique fixtures.
+          </li>
+        </ul>
+      </div>
 
       {/* Evidence progress toward minimum threshold */}
       <div className="mt-4 border-t border-slate-100 pt-3">
