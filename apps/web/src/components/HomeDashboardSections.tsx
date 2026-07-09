@@ -20,7 +20,12 @@ import type {
   HomeFeaturedPrediction,
   HomeModelTrackRecordMetric
 } from "../lib/home-dashboard";
-import { buildHomeRuntimeStatusLine, HOME_SECTION_IDS } from "../lib/home-dashboard";
+import {
+  buildHomeRuntimeStatusLine,
+  getHomeGroupStatusDisplay,
+  isHomePodiumSlotResolved,
+  HOME_SECTION_IDS
+} from "../lib/home-dashboard";
 import { buildHomeSystemStatusSummary } from "../lib/technical-disclosure";
 import { EmptyState } from "./EmptyState";
 import { PageContainer } from "./PageContainer";
@@ -328,12 +333,18 @@ export function HomeGroupSnapshot({ groups }: HomeGroupSnapshotProps) {
         }
       />
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-        {groups.map((group) => (
+        {groups.map((group) => {
+          const status = getHomeGroupStatusDisplay(group);
+
+          return (
           <Surface key={group.group} className="p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <h3 className="text-base font-semibold text-slate-950">{group.groupName}</h3>
-              <Link href={`/groups/${group.group}`} className="text-xs font-semibold text-teal-700 hover:underline">
-                Open
+              <div className="flex min-w-0 items-center gap-2">
+                <h3 className="text-base font-semibold text-slate-950">{group.groupName}</h3>
+                <StatusBadge label={status.label} variant={status.variant} />
+              </div>
+              <Link href={`/groups/${group.group}`} className="shrink-0 text-xs font-semibold text-teal-700 hover:underline">
+                View group
               </Link>
             </div>
             <ol className="space-y-2">
@@ -350,10 +361,19 @@ export function HomeGroupSnapshot({ groups }: HomeGroupSnapshotProps) {
               ))}
             </ol>
           </Surface>
-        ))}
+          );
+        })}
       </div>
     </HomeSection>
   );
+}
+
+function HomePodiumSlot({ team, placeholder }: { team: string; placeholder: string }) {
+  if (!isHomePodiumSlotResolved(team)) {
+    return <p className="mt-2 text-sm font-medium text-slate-500">{placeholder}</p>;
+  }
+
+  return <TeamIdentity identity={getTeamVisualIdentity(team)} size="lg" showFifaCode className="mt-2 min-w-0" />;
 }
 
 export function HomeTournamentOutlook({ projection }: HomeTournamentOutlookProps) {
@@ -373,21 +393,21 @@ export function HomeTournamentOutlook({ projection }: HomeTournamentOutlookProps
         <div className="grid gap-4 md:grid-cols-3">
           <div>
             <p className="text-xs font-semibold text-teal-700">Projected champion</p>
-            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.champion)} size="lg" showFifaCode className="mt-2 min-w-0" />
+            <HomePodiumSlot team={projection.podium.champion} placeholder="Awaiting bracket resolution" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500">Projected runner-up</p>
-            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.runnerUp)} size="lg" showFifaCode className="mt-2 min-w-0" />
+            <HomePodiumSlot team={projection.podium.runnerUp} placeholder="Pending official results" />
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500">Projected third place</p>
-            <TeamIdentity identity={getTeamVisualIdentity(projection.podium.thirdPlace)} size="lg" showFifaCode className="mt-2 min-w-0" />
+            <HomePodiumSlot team={projection.podium.thirdPlace} placeholder="Pending official results" />
           </div>
         </div>
         <div className="mt-4 border-t border-slate-100 pt-4">
           <p className="text-xs font-semibold text-slate-500">Official knockout phase</p>
           <p className="mt-1 text-sm text-slate-700">
-            {projection.rounds.round_of_32.length} official fixtures; {projection.metadata.predictorCallCount} unresolved fixtures projected.
+            {projection.rounds.round_of_32.length} official fixtures confirmed · {projection.metadata.predictorCallCount} remaining fixtures projected by the model.
           </p>
           <p className="mt-2 text-xs text-slate-500">Official completed results override projections. Remaining paths may change as results update.</p>
         </div>

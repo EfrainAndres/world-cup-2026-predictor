@@ -121,3 +121,28 @@ test("Home model track record uses the same evidence-count labels as /model", as
   await expect(trackRecord.getByText("Outcome accuracy", { exact: true })).toBeVisible();
   await expect(trackRecord.getByText("Sample status", { exact: true })).toBeVisible();
 });
+
+// ---------------------------------------------------------------------------
+// Home dashboard polish — landing-page presentation (Phase 6)
+// ---------------------------------------------------------------------------
+
+test("Home never renders unresolved teams as Unknown Team placeholders", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByText("Unknown Team")).toHaveCount(0);
+  await expect(page.getByText("???")).toHaveCount(0);
+});
+
+test("Featured prediction copy avoids internal snapshot wording", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.getByText("without creating a saved snapshot")).toHaveCount(0);
+});
+
+test("Group snapshot cards show a clear status label and View group links", async ({ page }) => {
+  await page.goto("/");
+  const groupSnapshot = page.locator("#home-group-snapshot");
+
+  await expect(groupSnapshot.getByText(/^(Complete|In progress|Not started)$/).first()).toBeVisible();
+  await expect(groupSnapshot.getByRole("link", { name: "View group" }).first()).toBeVisible();
+});

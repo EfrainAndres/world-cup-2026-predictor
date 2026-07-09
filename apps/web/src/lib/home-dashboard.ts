@@ -1,3 +1,4 @@
+import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
 import type {
   WorldCup2026Fixture,
   WorldCup2026GroupStandings
@@ -210,9 +211,50 @@ export function buildGeneratedFeaturedPrediction(
     awayWinProbability: prediction.outcomeProbabilities.awayWinProbability,
     confidenceLevel: prediction.predictionConfidence.level,
     coverageType: prediction.predictionConfidence.coverageType,
-    context: "Generated from the current Elo/xG model without creating a saved snapshot.",
+    context: "Live preview from the current Elo/xG model. Saved prediction history remains unchanged.",
     ctaLabel: "Create prediction"
   };
+}
+
+// ---------------------------------------------------------------------------
+// Group snapshot status (display only)
+//
+// Derived purely from the fixture counts the standings response already
+// carries — no standings or qualification logic is recomputed here.
+// ---------------------------------------------------------------------------
+
+export interface HomeGroupStatusDisplay {
+  label: "Complete" | "In progress" | "Not started";
+  variant: "success" | "info" | "neutral";
+}
+
+export function getHomeGroupStatusDisplay(
+  group: Pick<WorldCup2026GroupStandings, "completedFixtureCount" | "pendingFixtureCount">
+): HomeGroupStatusDisplay {
+  if (group.completedFixtureCount > 0 && group.pendingFixtureCount === 0) {
+    return { label: "Complete", variant: "success" };
+  }
+
+  if (group.completedFixtureCount > 0) {
+    return { label: "In progress", variant: "info" };
+  }
+
+  return { label: "Not started", variant: "neutral" };
+}
+
+// ---------------------------------------------------------------------------
+// Tournament podium slot resolution (display only)
+//
+// The knockout projection reports unresolved podium slots as the literal
+// string "Unavailable", which the visual identity lookup renders as
+// "??? Unknown Team" — too rough for the Home landing page. Any slot whose
+// team does not resolve to a known World Cup 2026 identity is treated as
+// unresolved so Home can show a friendly placeholder instead. Bracket
+// computation and the full /tournament view are unaffected.
+// ---------------------------------------------------------------------------
+
+export function isHomePodiumSlotResolved(team: string): boolean {
+  return getTeamVisualIdentity(team).teamId !== "unknown";
 }
 
 export interface HomeModelTrackRecordMetric {

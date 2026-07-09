@@ -1,13 +1,19 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
+import type { OfficialKnockoutProjectionResult, WorldCup2026GroupStandings } from "@world-cup-2026-predictor/api";
 import type { ProductionRuntimeDiagnostics } from "../lib/server-runtime";
 import type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesProviderMetadata,
   WorldCup2026DailyMatchesSuccessResponse
 } from "../lib/api-client";
-import { HomeTechnicalStatus, HomeTodayMatches } from "./HomeDashboardSections";
+import {
+  HomeGroupSnapshot,
+  HomeTechnicalStatus,
+  HomeTodayMatches,
+  HomeTournamentOutlook
+} from "./HomeDashboardSections";
 
 function match(overrides: Partial<WorldCup2026DailyMatchEntry> = {}): WorldCup2026DailyMatchEntry {
   return {
@@ -175,5 +181,91 @@ describe("HomeTechnicalStatus", () => {
     expect(html).toContain("Live data connected · Persistence connected · Model v2 active");
     expect(html).toContain("View runtime details");
     expect(html).not.toContain(" open");
+  });
+});
+
+function groupStandings(overrides: Partial<WorldCup2026GroupStandings> = {}): WorldCup2026GroupStandings {
+  return {
+    group: "A",
+    groupName: "Group A",
+    completedFixtureCount: 6,
+    pendingFixtureCount: 0,
+    standings: [
+      { team: "Mexico", played: 3, wins: 3, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 1, goalDifference: 5, points: 9 },
+      { team: "South Korea", played: 3, wins: 1, draws: 1, losses: 1, goalsFor: 3, goalsAgainst: 3, goalDifference: 0, points: 4 },
+      { team: "South Africa", played: 3, wins: 1, draws: 0, losses: 2, goalsFor: 2, goalsAgainst: 4, goalDifference: -2, points: 3 }
+    ],
+    ...overrides
+  };
+}
+
+describe("HomeGroupSnapshot", () => {
+  test("shows Complete for finished groups and links with an unambiguous View group label", () => {
+    const html = renderToStaticMarkup(
+      <HomeGroupSnapshot groups={[groupStandings({ completedFixtureCount: 6, pendingFixtureCount: 0 })]} />
+    );
+
+    expect(html).toContain("Complete");
+    expect(html).toContain("View group");
+    expect(html).not.toContain(">Open<");
+  });
+
+  test("shows In progress while a group still has pending fixtures", () => {
+    const html = renderToStaticMarkup(
+      <HomeGroupSnapshot groups={[groupStandings({ completedFixtureCount: 2, pendingFixtureCount: 4 })]} />
+    );
+
+    expect(html).toContain("In progress");
+  });
+
+  test("shows Not started before any group fixture has finished", () => {
+    const html = renderToStaticMarkup(
+      <HomeGroupSnapshot groups={[groupStandings({ completedFixtureCount: 0, pendingFixtureCount: 6 })]} />
+    );
+
+    expect(html).toContain("Not started");
+  });
+});
+
+// Only the fields HomeTournamentOutlook reads are stubbed; the remaining
+// projection sections are irrelevant to this presentation test.
+function knockoutProjection(podium: {
+  champion: string;
+  runnerUp: string;
+  thirdPlace: string;
+}): OfficialKnockoutProjectionResult {
+  return {
+    podium: { ...podium, fourthPlace: "Unavailable" },
+    rounds: { round_of_32: [] },
+    metadata: { predictorCallCount: 16 }
+  } as unknown as OfficialKnockoutProjectionResult;
+}
+
+describe("HomeTournamentOutlook", () => {
+  test("shows friendly placeholders instead of Unknown Team when the podium is unresolved", () => {
+    const html = renderToStaticMarkup(
+      <HomeTournamentOutlook
+        projection={knockoutProjection({ champion: "Unavailable", runnerUp: "Unavailable", thirdPlace: "Unavailable" })}
+      />
+    );
+
+    expect(html).toContain("Awaiting bracket resolution");
+    expect(html).toContain("Pending official results");
+    expect(html).not.toContain("Unknown Team");
+    expect(html).not.toContain("???");
+  });
+
+  test("shows resolved podium teams with their identities when available", () => {
+    const html = renderToStaticMarkup(
+      <HomeTournamentOutlook
+        projection={knockoutProjection({ champion: "Brazil", runnerUp: "France", thirdPlace: "Argentina" })}
+      />
+    );
+
+    expect(html).toContain("Brazil");
+    expect(html).toContain("France");
+    expect(html).toContain("Argentina");
+    expect(html).not.toContain("Awaiting bracket resolution");
+    expect(html).not.toContain("Unknown Team");
   });
 });
