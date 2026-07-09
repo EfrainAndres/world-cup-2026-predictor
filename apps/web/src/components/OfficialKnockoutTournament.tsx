@@ -4,6 +4,7 @@ import type {
   KnockoutAdvancementMethod,
   OfficialKnockoutFixtureProjection,
   OfficialKnockoutParticipant,
+  OfficialKnockoutPodiumEntry,
   OfficialKnockoutProjectionResult,
   OfficialKnockoutStage
 } from "@world-cup-2026-predictor/api";
@@ -48,6 +49,23 @@ function scoreText(match: OfficialKnockoutFixtureProjection): string {
   return `${score.homeGoals}-${score.awayGoals}`;
 }
 
+function officialDecisionText(match: OfficialKnockoutFixtureProjection): string | null {
+  if (match.officialScore === undefined || match.winner?.team === undefined) return null;
+  if (match.advancementMethod === "official_penalties") {
+    if (match.officialPenaltyScore !== undefined) {
+      const winnerIsHome = match.winner.team === match.home.team;
+      const winnerGoals = winnerIsHome ? match.officialPenaltyScore.homeGoals : match.officialPenaltyScore.awayGoals;
+      const loserGoals = winnerIsHome ? match.officialPenaltyScore.awayGoals : match.officialPenaltyScore.homeGoals;
+      return `${match.winner.team} wins ${winnerGoals}–${loserGoals} on penalties`;
+    }
+    return `${match.winner.team} wins on penalties`;
+  }
+  if (match.advancementMethod === "official_extra_time") {
+    return `${match.winner.team} wins after extra time`;
+  }
+  return null;
+}
+
 function advancementMethodLabel(method: KnockoutAdvancementMethod): string {
   const labels: Record<KnockoutAdvancementMethod, string> = {
     official_regulation: "official regulation",
@@ -71,12 +89,12 @@ function resultBadge(match: OfficialKnockoutFixtureProjection) {
     return <StatusBadge label="Postponed" variant="warning" />;
   }
   if (match.status === "cancelled") {
-    return <StatusBadge label="Unavailable" variant="danger" />;
+    return <StatusBadge label="Cancelled" variant="danger" />;
   }
   if (match.projectedScore !== undefined) {
     return <StatusBadge label="Projected result" variant="warning" />;
   }
-  return <StatusBadge label="Awaiting result" variant="neutral" />;
+  return <StatusBadge label="Awaiting official confirmation" variant="neutral" />;
 }
 
 function fixtureBadge(match: OfficialKnockoutFixtureProjection) {
@@ -185,6 +203,11 @@ function FixtureCard({ match }: { match: OfficialKnockoutFixtureProjection }) {
             {match.officialScore !== undefined ? "Official winner" : "Projected to advance"}:{" "}
             <span className="font-semibold text-slate-900">{match.winner.team}</span>
           </p>
+          {officialDecisionText(match) !== null && (
+            <p className="font-medium text-slate-800" data-official-decision>
+              {officialDecisionText(match)}
+            </p>
+          )}
           {match.advancementMethod !== undefined && (
             <p>
               Advancement:{" "}
@@ -197,11 +220,24 @@ function FixtureCard({ match }: { match: OfficialKnockoutFixtureProjection }) {
   );
 }
 
-function PodiumTeam({ label, team }: { label: string; team: string }) {
+function podiumResolutionBadge(entry: OfficialKnockoutPodiumEntry) {
+  if (entry.resolution === "official") return <StatusBadge label="Official" variant="success" />;
+  if (entry.resolution === "projected") return <StatusBadge label="Projected" variant="warning" />;
+  return <StatusBadge label="Awaiting official confirmation" variant="neutral" />;
+}
+
+function PodiumTeam({ label, entry }: { label: string; entry: OfficialKnockoutPodiumEntry }) {
   return (
     <div className="min-w-0 rounded-lg border border-slate-200 bg-white px-4 py-3">
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
-      <TeamIdentity identity={getTeamVisualIdentity(team)} size="md" showFifaCode className="mt-2 min-w-0" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-slate-500">{label}</p>
+        {podiumResolutionBadge(entry)}
+      </div>
+      {entry.team !== undefined ? (
+        <TeamIdentity identity={getTeamVisualIdentity(entry.team)} size="md" showFifaCode className="mt-2 min-w-0" />
+      ) : (
+        <p className="mt-2 text-sm font-medium text-slate-500">Awaiting bracket resolution</p>
+      )}
     </div>
   );
 }
@@ -275,10 +311,10 @@ export function OfficialKnockoutTournament({ projection }: { projection: Officia
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <PodiumTeam label="Champion" team={projection.podium.champion} />
-          <PodiumTeam label="Runner-up" team={projection.podium.runnerUp} />
-          <PodiumTeam label="Third place" team={projection.podium.thirdPlace} />
-          <PodiumTeam label="Fourth place" team={projection.podium.fourthPlace} />
+          <PodiumTeam label="Champion" entry={projection.podium.champion} />
+          <PodiumTeam label="Runner-up" entry={projection.podium.runnerUp} />
+          <PodiumTeam label="Third place" entry={projection.podium.thirdPlace} />
+          <PodiumTeam label="Fourth place" entry={projection.podium.fourthPlace} />
         </div>
       </section>
 

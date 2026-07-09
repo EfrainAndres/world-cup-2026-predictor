@@ -245,16 +245,16 @@ export function getHomeGroupStatusDisplay(
 // ---------------------------------------------------------------------------
 // Tournament podium slot resolution (display only)
 //
-// The knockout projection reports unresolved podium slots as the literal
-// string "Unavailable", which the visual identity lookup renders as
-// "??? Unknown Team" — too rough for the Home landing page. Any slot whose
-// team does not resolve to a known World Cup 2026 identity is treated as
-// unresolved so Home can show a friendly placeholder instead. Bracket
-// computation and the full /tournament view are unaffected.
+// The knockout projection reports unresolved podium slots with an undefined
+// team. Any slot whose team is missing or does not resolve to a known World
+// Cup 2026 identity (which the visual identity lookup would render as
+// "??? Unknown Team") is treated as unresolved so Home can show a friendly
+// placeholder instead. Bracket computation and the full /tournament view are
+// unaffected.
 // ---------------------------------------------------------------------------
 
-export function isHomePodiumSlotResolved(team: string): boolean {
-  return getTeamVisualIdentity(team).teamId !== "unknown";
+export function isHomePodiumSlotResolved(team: string | undefined): team is string {
+  return team !== undefined && getTeamVisualIdentity(team).teamId !== "unknown";
 }
 
 export interface HomeModelTrackRecordMetric {

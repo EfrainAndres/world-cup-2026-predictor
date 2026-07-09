@@ -1,7 +1,11 @@
 import React from "react";
 import Link from "next/link";
 import { getTeamVisualIdentity } from "@world-cup-2026-predictor/api";
-import type { OfficialKnockoutProjectionResult, WorldCup2026GroupStandings } from "@world-cup-2026-predictor/api";
+import type {
+  OfficialKnockoutPodiumResolution,
+  OfficialKnockoutProjectionResult,
+  WorldCup2026GroupStandings
+} from "@world-cup-2026-predictor/api";
 import type {
   WorldCup2026DailyMatchEntry,
   WorldCup2026DailyMatchesSuccessResponse
@@ -368,12 +372,16 @@ export function HomeGroupSnapshot({ groups }: HomeGroupSnapshotProps) {
   );
 }
 
-function HomePodiumSlot({ team, placeholder }: { team: string; placeholder: string }) {
+function HomePodiumSlot({ team, placeholder }: { team: string | undefined; placeholder: string }) {
   if (!isHomePodiumSlotResolved(team)) {
     return <p className="mt-2 text-sm font-medium text-slate-500">{placeholder}</p>;
   }
 
   return <TeamIdentity identity={getTeamVisualIdentity(team)} size="lg" showFifaCode className="mt-2 min-w-0" />;
+}
+
+function homePodiumLabel(base: string, resolution: OfficialKnockoutPodiumResolution): string {
+  return resolution === "official" ? `Official ${base}` : `Projected ${base}`;
 }
 
 export function HomeTournamentOutlook({ projection }: HomeTournamentOutlookProps) {
@@ -392,16 +400,16 @@ export function HomeTournamentOutlook({ projection }: HomeTournamentOutlookProps
       <Surface className="mt-4 p-4">
         <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <p className="text-xs font-semibold text-teal-700">Projected champion</p>
-            <HomePodiumSlot team={projection.podium.champion} placeholder="Awaiting bracket resolution" />
+            <p className="text-xs font-semibold text-teal-700">{homePodiumLabel("champion", projection.podium.champion.resolution)}</p>
+            <HomePodiumSlot team={projection.podium.champion.team} placeholder="Awaiting bracket resolution" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500">Projected runner-up</p>
-            <HomePodiumSlot team={projection.podium.runnerUp} placeholder="Pending official results" />
+            <p className="text-xs font-semibold text-slate-500">{homePodiumLabel("runner-up", projection.podium.runnerUp.resolution)}</p>
+            <HomePodiumSlot team={projection.podium.runnerUp.team} placeholder="Pending official results" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500">Projected third place</p>
-            <HomePodiumSlot team={projection.podium.thirdPlace} placeholder="Pending official results" />
+            <p className="text-xs font-semibold text-slate-500">{homePodiumLabel("third place", projection.podium.thirdPlace.resolution)}</p>
+            <HomePodiumSlot team={projection.podium.thirdPlace.team} placeholder="Pending official results" />
           </div>
         </div>
         <div className="mt-4 border-t border-slate-100 pt-4">

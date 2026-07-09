@@ -42,6 +42,11 @@ function record(input: {
   status?: WorldCup2026ExternalFixtureRecord["status"];
   homeScore?: number;
   awayScore?: number;
+  penaltyHomeScore?: number;
+  penaltyAwayScore?: number;
+  winner?: string;
+  decisionMethod?: WorldCup2026ExternalFixtureRecord["decisionMethod"];
+  updatedAt?: string;
 }): WorldCup2026ExternalFixtureRecord {
   return {
     providerFixtureId: input.id,
@@ -55,7 +60,11 @@ function record(input: {
     status: input.status ?? "finished",
     ...(input.homeScore === undefined ? {} : { homeScore: input.homeScore }),
     ...(input.awayScore === undefined ? {} : { awayScore: input.awayScore }),
-    updatedAt: "2026-06-28T18:00:00.000Z"
+    ...(input.penaltyHomeScore === undefined ? {} : { penaltyHomeScore: input.penaltyHomeScore }),
+    ...(input.penaltyAwayScore === undefined ? {} : { penaltyAwayScore: input.penaltyAwayScore }),
+    ...(input.winner === undefined ? {} : { winner: input.winner }),
+    ...(input.decisionMethod === undefined ? {} : { decisionMethod: input.decisionMethod }),
+    updatedAt: input.updatedAt ?? "2026-06-28T18:00:00.000Z"
   };
 }
 
@@ -408,11 +417,460 @@ describe("official World Cup 2026 knockout bracket", () => {
 
     expect(first).toEqual(second);
     expect(first.matches).toHaveLength(32);
-    expect(new Set(Object.values(first.podium)).size).toBe(4);
+    const podiumTeams = Object.values(first.podium).map((entry) => entry.team);
+    expect(podiumTeams.every((team) => team !== undefined)).toBe(true);
+    expect(new Set(podiumTeams).size).toBe(4);
+    expect(Object.values(first.podium).every((entry) => entry.resolution === "projected")).toBe(true);
     expect(first.validationWarnings).toEqual([]);
 
     const roundOf16 = first.matches.find((match) => match.officialMatchNumber === 89);
     expect(roundOf16?.home.state).toBe("projected_winner");
     expect(roundOf16?.away.state).toBe("projected_winner");
+  });
+});
+
+describe("official extra-time and penalty winner resolution", () => {
+  it("advances the official penalty winner despite a tied aggregate score", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 1,
+          awayScore: 1,
+          penaltyHomeScore: 4,
+          penaltyAwayScore: 2,
+          decisionMethod: "penalties"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.sourceState).toBe("official_result");
+    expect(match73?.winner?.team).toBe("South Africa");
+    expect(match73?.winner?.state).toBe("official_winner");
+    expect(match73?.advancementMethod).toBe("official_penalties");
+    expect(match73?.officialScore).toEqual({ homeGoals: 1, awayGoals: 1 });
+    expect(match73?.officialPenaltyScore).toEqual({ homeGoals: 4, awayGoals: 2 });
+
+    const match89 = result.matches.find((match) => match.officialMatchNumber === 89);
+    expect(match89?.home.team).toBe("South Africa");
+    expect(match89?.home.state).toBe("official_winner");
+  });
+
+  it("advances a tied official result using provider winner metadata alone", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 2,
+          winner: "Canada"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.winner?.team).toBe("Canada");
+    expect(match73?.advancementMethod).toBe("official_penalties");
+    expect(match73?.sourceState).toBe("official_result");
+  });
+
+  it("labels a tied official result decided in extra time when the provider says so", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 1,
+          awayScore: 1,
+          winner: "South Africa",
+          decisionMethod: "extra_time"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.winner?.team).toBe("South Africa");
+    expect(match73?.advancementMethod).toBe("official_extra_time");
+  });
+
+  it("labels a decisive extra-time-inclusive score as an official extra-time win", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 1,
+          decisionMethod: "extra_time"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.winner?.team).toBe("South Africa");
+    expect(match73?.advancementMethod).toBe("official_extra_time");
+  });
+
+  it("swaps penalty score orientation when the provider record is reversed", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "Canada",
+          awayTeam: "South Africa",
+          homeScore: 1,
+          awayScore: 1,
+          penaltyHomeScore: 3,
+          penaltyAwayScore: 5,
+          winner: "South Africa",
+          decisionMethod: "penalties"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.officialScore).toEqual({ homeGoals: 1, awayGoals: 1 });
+    expect(match73?.officialPenaltyScore).toEqual({ homeGoals: 5, awayGoals: 3 });
+    expect(match73?.winner?.team).toBe("South Africa");
+    expect(match73?.advancementMethod).toBe("official_penalties");
+    expect(match73?.warnings.join(" ")).toContain("score orientation was corrected");
+  });
+
+  it("canonicalizes the provider winner name before comparing it to participants", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-77",
+          matchday: 77,
+          homeTeam: "Côte d'Ivoire",
+          awayTeam: "Norway",
+          homeScore: 0,
+          awayScore: 0,
+          penaltyHomeScore: 4,
+          penaltyAwayScore: 3,
+          winner: "Côte d'Ivoire",
+          decisionMethod: "penalties"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match77 = result.matches.find((match) => match.officialMatchNumber === 77);
+    expect(match77?.winner?.team).toBe("Ivory Coast");
+    expect(match77?.advancementMethod).toBe("official_penalties");
+  });
+
+  it("rejects an official result whose declared winner conflicts with a decisive score", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 0,
+          winner: "Canada"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.winner).toBeUndefined();
+    expect(match73?.sourceState).toBe("unresolved");
+    expect(match73?.warnings.join(" ")).toContain("conflicts with the provider-declared winner");
+  });
+
+  it("keeps a tied official result without winner metadata unresolved", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 1,
+          awayScore: 1
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.winner).toBeUndefined();
+    expect(match73?.sourceState).toBe("unresolved");
+    expect(match73?.warnings.join(" ")).toContain("did not include extra-time or penalty winner metadata");
+  });
+});
+
+describe("elimination integrity", () => {
+  it("replaces a projected winner with the official winner and keeps the official loser out of every later round", () => {
+    const predictor = makePredictor(fakePrediction({ homeGoals: 0, awayGoals: 2 }));
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 3,
+          awayScore: 1
+        })
+      ]),
+      predictMatch: predictor.predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match89 = result.matches.find((match) => match.officialMatchNumber === 89);
+    expect(match89?.home.team).toBe("South Africa");
+    expect(match89?.home.state).toBe("official_winner");
+
+    for (const match of result.matches) {
+      if (match.officialMatchNumber === 73) continue;
+      expect(match.home.team).not.toBe("Canada");
+      expect(match.away.team).not.toBe("Canada");
+    }
+    expect(result.validationWarnings).toEqual([]);
+  });
+
+  it("never lets any projected loser reappear later except semifinal losers in the third-place match", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult(),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    for (const match of result.matches) {
+      const loser = match.loser?.team;
+      if (loser === undefined) continue;
+      for (const later of result.matches) {
+        if (later.officialMatchNumber <= match.officialMatchNumber) continue;
+        if (later.officialMatchNumber === 103 && match.stage === "semifinal") continue;
+        expect([later.home.team, later.away.team]).not.toContain(loser);
+      }
+    }
+    expect(result.validationWarnings).toEqual([]);
+  });
+});
+
+describe("duplicate provider record precedence", () => {
+  it("prefers a finished record over a stale live record for the same official match", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73-live",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          status: "live",
+          homeScore: 1,
+          awayScore: 1,
+          updatedAt: "2026-06-28T17:00:00.000Z"
+        }),
+        record({
+          id: "provider-73-final",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 0,
+          updatedAt: "2026-06-28T18:00:00.000Z"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.sourceState).toBe("official_result");
+    expect(match73?.officialScore).toEqual({ homeGoals: 2, awayGoals: 0 });
+    expect(match73?.winner?.team).toBe("South Africa");
+    expect(result.matchingIssues.some((issue) => issue.includes("official match 73"))).toBe(false);
+  });
+
+  it("rejects conflicting equal-authority duplicate records as ambiguous with a first-class warning", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73-a",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 0
+        }),
+        record({
+          id: "provider-73-b",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 0,
+          awayScore: 2
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.officialScore).toBeUndefined();
+    expect(match73?.sourceState).toBe("projected_result");
+    expect(
+      result.matchingIssues.some((issue) =>
+        issue.includes("Conflicting equal-authority provider records for official match 73")
+      )
+    ).toBe(true);
+  });
+
+  it("deterministically selects the newest of identical equal-authority duplicates", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-73-early",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 0,
+          updatedAt: "2026-06-28T17:00:00.000Z"
+        }),
+        record({
+          id: "provider-73-late",
+          matchday: 73,
+          homeTeam: "South Africa",
+          awayTeam: "Canada",
+          homeScore: 2,
+          awayScore: 0,
+          updatedAt: "2026-06-28T18:00:00.000Z"
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match73 = result.matches.find((match) => match.officialMatchNumber === 73);
+    expect(match73?.sourceState).toBe("official_result");
+    expect(match73?.providerFixtureId).toBe("provider-73-late");
+  });
+});
+
+describe("provider-ahead later-round records", () => {
+  it("defers a finished later-round record that conflicts with projected participants and warns instead of dropping it silently", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-89-ahead",
+          matchday: 89,
+          homeTeam: "Mexico",
+          awayTeam: "Portugal",
+          homeScore: 2,
+          awayScore: 1
+        })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match89 = result.matches.find((match) => match.officialMatchNumber === 89);
+    expect(match89?.officialScore).toBeUndefined();
+    expect(match89?.projectedScore).toBeDefined();
+    expect(match89?.sourceState).toBe("mixed_official_projected");
+    expect(
+      result.matchingIssues.some(
+        (issue) => issue.startsWith("provider_ahead_unresolved_dependency") && issue.includes("official match 89")
+      )
+    ).toBe(true);
+  });
+
+  it("defers a finished later-round record while its upstream participants are unresolved", () => {
+    const failingPredictor = (request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse => ({
+      status: "validation_error",
+      issues: [{ field: "homeTeam", message: `No Elo coverage for ${request.homeTeam}.` }],
+      metadata: buildApiMetadata(["test"])
+    });
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-89-ahead",
+          matchday: 89,
+          homeTeam: "South Africa",
+          awayTeam: "Germany",
+          homeScore: 1,
+          awayScore: 3
+        })
+      ]),
+      predictMatch: failingPredictor,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const match89 = result.matches.find((match) => match.officialMatchNumber === 89);
+    expect(match89?.officialScore).toBeUndefined();
+    expect(match89?.winner).toBeUndefined();
+    expect(match89?.sourceState).toBe("unresolved");
+    expect(
+      result.matchingIssues.some(
+        (issue) => issue.startsWith("provider_ahead_unresolved_dependency") && issue.includes("official match 89")
+      )
+    ).toBe(true);
+  });
+});
+
+describe("knockout view model sentinel safety", () => {
+  it("emits no Unavailable or Unknown Team sentinel anywhere in a fully projected result", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult(),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toContain("Unavailable");
+    expect(serialized).not.toContain("Unknown Team");
+    expect(serialized).not.toContain("???");
+  });
+
+  it("returns unresolved podium entries without sentinel team names when every prediction fails", () => {
+    const failingPredictor = (): PredictMatchFromLiveEloResponse => ({
+      status: "validation_error",
+      issues: [{ field: "homeTeam", message: "No Elo coverage." }],
+      metadata: buildApiMetadata(["test"])
+    });
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult(),
+      predictMatch: failingPredictor,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    for (const entry of Object.values(result.podium)) {
+      expect(entry.team).toBeUndefined();
+      expect(entry.resolution).toBe("unresolved");
+    }
+    expect(JSON.stringify(result)).not.toContain("Unavailable");
   });
 });

@@ -229,43 +229,75 @@ describe("HomeGroupSnapshot", () => {
 
 // Only the fields HomeTournamentOutlook reads are stubbed; the remaining
 // projection sections are irrelevant to this presentation test.
+type PodiumEntryStub = { team?: string; resolution: "official" | "projected" | "unresolved" };
+
 function knockoutProjection(podium: {
-  champion: string;
-  runnerUp: string;
-  thirdPlace: string;
+  champion: PodiumEntryStub;
+  runnerUp: PodiumEntryStub;
+  thirdPlace: PodiumEntryStub;
 }): OfficialKnockoutProjectionResult {
   return {
-    podium: { ...podium, fourthPlace: "Unavailable" },
+    podium: { ...podium, fourthPlace: { resolution: "unresolved" } },
     rounds: { round_of_32: [] },
     metadata: { predictorCallCount: 16 }
   } as unknown as OfficialKnockoutProjectionResult;
+}
+
+function projected(team: string): PodiumEntryStub {
+  return { team, resolution: "projected" };
 }
 
 describe("HomeTournamentOutlook", () => {
   test("shows friendly placeholders instead of Unknown Team when the podium is unresolved", () => {
     const html = renderToStaticMarkup(
       <HomeTournamentOutlook
-        projection={knockoutProjection({ champion: "Unavailable", runnerUp: "Unavailable", thirdPlace: "Unavailable" })}
+        projection={knockoutProjection({
+          champion: { resolution: "unresolved" },
+          runnerUp: { resolution: "unresolved" },
+          thirdPlace: { resolution: "unresolved" }
+        })}
       />
     );
 
     expect(html).toContain("Awaiting bracket resolution");
     expect(html).toContain("Pending official results");
     expect(html).not.toContain("Unknown Team");
+    expect(html).not.toContain("Unavailable");
     expect(html).not.toContain("???");
   });
 
   test("shows resolved podium teams with their identities when available", () => {
     const html = renderToStaticMarkup(
       <HomeTournamentOutlook
-        projection={knockoutProjection({ champion: "Brazil", runnerUp: "France", thirdPlace: "Argentina" })}
+        projection={knockoutProjection({
+          champion: projected("Brazil"),
+          runnerUp: projected("France"),
+          thirdPlace: projected("Argentina")
+        })}
       />
     );
 
     expect(html).toContain("Brazil");
     expect(html).toContain("France");
     expect(html).toContain("Argentina");
+    expect(html).toContain("Projected champion");
     expect(html).not.toContain("Awaiting bracket resolution");
     expect(html).not.toContain("Unknown Team");
+  });
+
+  test("labels an officially decided champion as official instead of projected", () => {
+    const html = renderToStaticMarkup(
+      <HomeTournamentOutlook
+        projection={knockoutProjection({
+          champion: { team: "Brazil", resolution: "official" },
+          runnerUp: { team: "France", resolution: "official" },
+          thirdPlace: projected("Argentina")
+        })}
+      />
+    );
+
+    expect(html).toContain("Official champion");
+    expect(html).toContain("Official runner-up");
+    expect(html).toContain("Projected third place");
   });
 });
