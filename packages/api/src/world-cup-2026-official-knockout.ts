@@ -10,6 +10,7 @@ import { buildApiMetadata } from "./schemas.js";
 import { predictMatchFromLiveElo } from "./routes.js";
 import { CURRENT_FORMULA_VERSION, CURRENT_MODEL_VERSION } from "./projection-refresh-policy.js";
 import { canonicalizeTeamName, normalizeTeamSearchText } from "./team-aliases.js";
+import { WORLD_CUP_2026_TEAM_NAMES } from "./world-cup-2026-teams.js";
 
 export type OfficialKnockoutStage =
   | "round_of_32"
@@ -477,9 +478,7 @@ function isNonCompletedTerminalStatus(status: WorldCup2026ExternalMatchStatus): 
   return status === "postponed" || status === "cancelled";
 }
 
-function isKnockoutRecord(record: WorldCup2026ExternalFixtureRecord): boolean {
-  if (record.matchday !== undefined && record.matchday >= 73 && record.matchday <= 104) return true;
-
+function hasKnockoutStageSignal(record: WorldCup2026ExternalFixtureRecord): boolean {
   const stage = (record.stage ?? "").toLowerCase();
   return (
     stage.includes("knockout") ||
@@ -492,6 +491,11 @@ function isKnockoutRecord(record: WorldCup2026ExternalFixtureRecord): boolean {
     stage.includes("third") ||
     stage.includes("final")
   );
+}
+
+function isKnockoutRecord(record: WorldCup2026ExternalFixtureRecord): boolean {
+  if (hasKnockoutStageSignal(record)) return true;
+  return record.matchday !== undefined && record.matchday >= 73 && record.matchday <= 104;
 }
 
 function uniqueRecords(records: readonly WorldCup2026ExternalFixtureRecord[]): readonly WorldCup2026ExternalFixtureRecord[] {
@@ -580,11 +584,105 @@ function selectAuthoritativeRecord(
 interface ProviderRecordLookup {
   match: ProviderMatchResult | null;
   ambiguity?: string;
-  providerAhead?: string;
 }
 
-function providerAheadIssue(officialMatchNumber: number, record: WorldCup2026ExternalFixtureRecord): string {
-  return `provider_ahead_unresolved_dependency: finished provider record ${record.providerFixtureId} (${record.homeTeam} vs ${record.awayTeam}) targets official match ${officialMatchNumber} but its upstream bracket dependencies are not officially resolved; the official result is deferred, not dropped.`;
+interface ProviderParticipantResolution {
+  home: OfficialKnockoutParticipant;
+  away: OfficialKnockoutParticipant;
+  warning?: string;
+}
+
+const WORLD_CUP_2026_TEAM_BY_KEY = new Map(
+  WORLD_CUP_2026_TEAM_NAMES.map((team) => [normalizeTeamKey(team), team])
+);
+
+function isProviderPlaceholderTeam(value: string): boolean {
+  const key = normalizeTeamSearchText(value);
+  return (
+    key.length === 0 ||
+    key === "tbd" ||
+    key === "tba" ||
+    key === "to be determined" ||
+    key === "to be confirmed" ||
+    key === "unknown" ||
+    key.startsWith("winner ") ||
+    key.startsWith("winner of ") ||
+    key.startsWith("loser ") ||
+    key.startsWith("loser of ")
+  );
+}
+
+function canonicalProviderTeam(value: string): string | undefined {
+  if (isProviderPlaceholderTeam(value)) return undefined;
+  return WORLD_CUP_2026_TEAM_BY_KEY.get(normalizeTeamKey(value));
+}
+
+function formatParticipantPair(homeTeam: string | undefined, awayTeam: string | undefined): string {
+  return `${homeTeam ?? "unresolved"} vs ${awayTeam ?? "unresolved"}`;
+}
+
+function providerFixtureParticipantWarning(input: {
+  code: "provider_fixture_participants_override_internal_topology" | "provider_fixture_participants_unresolved";
+  matchNumber: number;
+  stage: OfficialKnockoutStage;
+  providerFixtureId: string;
+  providerHomeTeam: string;
+  providerAwayTeam: string;
+  internalHomeTeam?: string;
+  internalAwayTeam?: string;
+}): string {
+  return `${input.code}: match=${input.matchNumber} round=${input.stage} providerFixtureId=${input.providerFixtureId} providerTeams="${formatParticipantPair(input.providerHomeTeam, input.providerAwayTeam)}" internalDerivedTeams="${formatParticipantPair(input.internalHomeTeam, input.internalAwayTeam)}"`;
+}
+
+function resolveProviderFixtureParticipants(input: {
+  topology: OfficialKnockoutTopologyMatch;
+  providerMatch: ProviderMatchResult;
+  internalHome: OfficialKnockoutParticipant;
+  internalAway: OfficialKnockoutParticipant;
+}): ProviderParticipantResolution | { warning: string } {
+  const providerHomeTeam = canonicalProviderTeam(input.providerMatch.record.homeTeam);
+  const providerAwayTeam = canonicalProviderTeam(input.providerMatch.record.awayTeam);
+  const warningInput = {
+    matchNumber: input.topology.matchNumber,
+    stage: input.topology.stage,
+    providerFixtureId: input.providerMatch.record.providerFixtureId,
+    providerHomeTeam: input.providerMatch.record.homeTeam,
+    providerAwayTeam: input.providerMatch.record.awayTeam,
+    ...(input.internalHome.team === undefined ? {} : { internalHomeTeam: input.internalHome.team }),
+    ...(input.internalAway.team === undefined ? {} : { internalAwayTeam: input.internalAway.team })
+  };
+
+  if (
+    providerHomeTeam === undefined ||
+    providerAwayTeam === undefined ||
+    normalizeTeamKey(providerHomeTeam) === normalizeTeamKey(providerAwayTeam)
+  ) {
+    return {
+      warning: providerFixtureParticipantWarning({
+        code: "provider_fixture_participants_unresolved",
+        ...warningInput
+      })
+    };
+  }
+
+  const conflictsWithInternal =
+    input.internalHome.team !== undefined &&
+    input.internalAway.team !== undefined &&
+    (normalizeTeamKey(providerHomeTeam) !== normalizeTeamKey(input.internalHome.team) ||
+      normalizeTeamKey(providerAwayTeam) !== normalizeTeamKey(input.internalAway.team));
+
+  return {
+    home: participantFromTeam(providerHomeTeam, officialTeam(providerHomeTeam), "official_participant", []),
+    away: participantFromTeam(providerAwayTeam, officialTeam(providerAwayTeam), "official_participant", []),
+    ...(conflictsWithInternal
+      ? {
+          warning: providerFixtureParticipantWarning({
+            code: "provider_fixture_participants_override_internal_topology",
+            ...warningInput
+          })
+        }
+      : {})
+  };
 }
 
 function findProviderRecord(
@@ -593,7 +691,6 @@ function findProviderRecord(
     providerFixtureId?: string;
     homeTeam?: string;
     awayTeam?: string;
-    participantsAuthoritative: boolean;
   },
   records: readonly WorldCup2026ExternalFixtureRecord[]
 ): ProviderRecordLookup {
@@ -608,33 +705,14 @@ function findProviderRecord(
     }
   }
 
-  const matchNumberMatches = knockoutRecords.filter((record) => record.matchday === identity.officialMatchNumber);
+  const matchNumberMatches = knockoutRecords.filter(
+    (record) => record.matchday === identity.officialMatchNumber && hasKnockoutStageSignal(record)
+  );
   const selectedByNumber = selectAuthoritativeRecord(matchNumberMatches, identity.officialMatchNumber);
   if (selectedByNumber.conflict !== undefined) return { match: null, ambiguity: selectedByNumber.conflict };
   if (selectedByNumber.record !== undefined) {
-    const record = selectedByNumber.record;
-    if (identity.homeTeam === undefined || identity.awayTeam === undefined) {
-      if (isCompletedStatus(record.status)) {
-        return { match: null, providerAhead: providerAheadIssue(identity.officialMatchNumber, record) };
-      }
-      return { match: { record, orientation: "canonical", method: "official_match_number" } };
-    }
-
-    const canonicalOrder =
-      normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identity.homeTeam) &&
-      normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identity.awayTeam);
-    const reversedOrder =
-      normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identity.awayTeam) &&
-      normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identity.homeTeam);
-
-    if (!canonicalOrder && !reversedOrder) {
-      if (!identity.participantsAuthoritative && isCompletedStatus(record.status)) {
-        return { match: null, providerAhead: providerAheadIssue(identity.officialMatchNumber, record) };
-      }
-      return { match: null };
-    }
     return {
-      match: { record, orientation: reversedOrder ? "reversed" : "canonical", method: "official_match_number" }
+      match: { record: selectedByNumber.record, orientation: "canonical", method: "official_match_number" }
     };
   }
 
@@ -663,7 +741,7 @@ function findProviderRecord(
   const selectedReversed = selectAuthoritativeRecord(reversedTeamMatches, identity.officialMatchNumber);
   if (selectedReversed.conflict !== undefined) return { match: null, ambiguity: selectedReversed.conflict };
   if (selectedReversed.record !== undefined) {
-    return { match: { record: selectedReversed.record, orientation: "reversed", method: "reversed_teams" } };
+    return { match: { record: selectedReversed.record, orientation: "canonical", method: "reversed_teams" } };
   }
 
   return { match: null };
@@ -1039,6 +1117,15 @@ function validateEliminationIntegrity(matches: readonly OfficialKnockoutFixtureP
 
       for (const participant of [later.home, later.away]) {
         if (participant.team !== undefined && normalizeTeamKey(participant.team) === loserKey) {
+          if (match.loser?.state === "projected_loser" && !participant.path.includes(match.officialMatchNumber)) {
+            continue;
+          }
+          const laterProviderFixture =
+            later.sourceClassification === "provider_official_fixture" ||
+            later.sourceClassification === "provider_official_result";
+          if (match.loser?.state === "projected_loser" && laterProviderFixture) {
+            continue;
+          }
           warnings.push(
             `Eliminated team ${loserTeam} (lost match ${match.officialMatchNumber}) appears in match ${later.officialMatchNumber}.`
           );
@@ -1155,25 +1242,21 @@ export function buildOfficialWorldCup2026KnockoutProjection(
   const matches: OfficialKnockoutFixtureProjection[] = [];
 
   for (const topology of WORLD_CUP_2026_OFFICIAL_KNOCKOUT_TOPOLOGY) {
-    const home = resolveParticipant(topology.homeSource, records);
-    const away = resolveParticipant(topology.awaySource, records);
+    let home = resolveParticipant(topology.homeSource, records);
+    let away = resolveParticipant(topology.awaySource, records);
     const fixtureFoundation: OfficialRoundOf32FixtureFoundation | undefined = WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.find(
       (fixture) => fixture.officialMatchNumber === topology.matchNumber
     );
-    const participantsAuthoritative =
-      (home.state === "official_participant" || home.state === "official_winner" || home.state === "official_loser") &&
-      (away.state === "official_participant" || away.state === "official_winner" || away.state === "official_loser");
     const providerLookup = findProviderRecord(
       {
         officialMatchNumber: topology.matchNumber,
         ...(fixtureFoundation?.providerFixtureId === undefined ? {} : { providerFixtureId: fixtureFoundation.providerFixtureId }),
         ...(home.team === undefined ? {} : { homeTeam: home.team }),
-        ...(away.team === undefined ? {} : { awayTeam: away.team }),
-        participantsAuthoritative
+        ...(away.team === undefined ? {} : { awayTeam: away.team })
       },
       providerRecords
     );
-    const providerMatch = providerLookup.match;
+    let providerMatch = providerLookup.match;
     const matchWarnings: string[] = [];
 
     let officialScore: OfficialKnockoutScore | undefined;
@@ -1194,17 +1277,37 @@ export function buildOfficialWorldCup2026KnockoutProjection(
       matchingIssues.push(providerLookup.ambiguity);
       matchWarnings.push(providerLookup.ambiguity);
     }
-    if (providerLookup.providerAhead !== undefined) {
-      matchingIssues.push(providerLookup.providerAhead);
-      matchWarnings.push(providerLookup.providerAhead);
-    }
     if (
       providerMatch === null &&
       providerRecords.length > 0 &&
-      providerLookup.ambiguity === undefined &&
-      providerLookup.providerAhead === undefined
+      providerLookup.ambiguity === undefined
     ) {
       matchingIssues.push(`No unambiguous provider match found for official match ${topology.matchNumber}.`);
+    }
+
+    if (providerMatch !== null) {
+      const providerParticipants = resolveProviderFixtureParticipants({
+        topology,
+        providerMatch,
+        internalHome: home,
+        internalAway: away
+      });
+      if ("home" in providerParticipants) {
+        home = providerParticipants.home;
+        away = providerParticipants.away;
+        if (providerParticipants.warning !== undefined) {
+          warnings.push(providerParticipants.warning);
+          matchingIssues.push(providerParticipants.warning);
+          matchWarnings.push(providerParticipants.warning);
+        }
+      } else {
+        warnings.push(providerParticipants.warning);
+        matchingIssues.push(providerParticipants.warning);
+        matchWarnings.push(providerParticipants.warning);
+        providerMatch = null;
+        status = "scheduled";
+        sourceClassification = topology.stage === "round_of_32" ? "canonical_static_official_fixture" : "projected";
+      }
     }
 
     if (providerMatch !== null) {
@@ -1251,10 +1354,12 @@ export function buildOfficialWorldCup2026KnockoutProjection(
         projectedScore = projectedResolution.projectedScore;
         projection = projectedResolution.projection;
         sourceState =
-          topology.stage === "round_of_32" && home.state === "official_participant" && away.state === "official_participant"
+          home.state === "official_participant" && away.state === "official_participant"
             ? "projected_result"
             : "mixed_official_projected";
-        sourceClassification = providerMatch === null && topology.stage === "round_of_32" ? "canonical_static_official_fixture" : "projected";
+        if (providerMatch === null) {
+          sourceClassification = topology.stage === "round_of_32" ? "canonical_static_official_fixture" : "projected";
+        }
       } else {
         sourceState = "unresolved";
         matchWarnings.push(
@@ -1328,7 +1433,9 @@ export function buildOfficialWorldCup2026KnockoutProjection(
       providerFallbackUsed: providerRecords.length === 0 || input.syncResult?.localFallbackUsed === true || input.syncResult?.status === "error",
       predictorCallCount,
       metadata: buildApiMetadata([
-        "Official knockout projection uses canonical match-number topology for matches 73-104.",
+        "Provider-backed official fixture participants override internal knockout topology when both teams are canonicalizable.",
+        "Internal match-number topology for matches 73-104 is used only as a fallback when provider participants are unavailable or unresolved.",
+        "Provider identity prefers fixture id when available; otherwise guarded knockout-stage records may use provider matchday and team identity.",
         "Completed official results override model projections.",
         "Unresolved fixtures reuse the production balanced Auto Predict path without writes."
       ])

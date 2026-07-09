@@ -158,6 +158,51 @@ describe("OfficialKnockoutTournament", () => {
     expect(card).not.toContain("Official winner");
   });
 
+  test("labels provider-backed later-round fixtures as official fixtures with projected results", () => {
+    const html = renderToStaticMarkup(
+      <OfficialKnockoutTournament
+        projection={projection([
+          fixture({
+            fixtureId: "wc2026-match-89",
+            officialMatchNumber: 89,
+            stage: "round_of_16",
+            sourceState: "projected_result",
+            status: "scheduled",
+            sourceClassification: "provider_official_fixture",
+            providerFixtureId: "provider-89",
+            home: {
+              team: "Canada",
+              source: { kind: "official_team", team: "Canada" },
+              state: "official_participant",
+              path: []
+            },
+            away: {
+              team: "Morocco",
+              source: { kind: "official_team", team: "Morocco" },
+              state: "official_participant",
+              path: []
+            },
+            projectedScore: { homeGoals: 2, awayGoals: 1 },
+            winner: {
+              team: "Canada",
+              source: { kind: "official_team", team: "Canada" },
+              state: "projected_winner",
+              path: []
+            },
+            advancementMethod: "projected_regulation"
+          })
+        ])}
+      />
+    );
+
+    const card = html.slice(html.indexOf("<article"), html.indexOf("</article>"));
+    expect(card).toContain("Official fixture");
+    expect(card).toContain("Projected result");
+    expect(card).toContain("Canada");
+    expect(card).toContain("Morocco");
+    expect(card).not.toContain("Projected participant");
+  });
+
   test("shows Awaiting official confirmation for an unresolved fixture and Cancelled for a cancelled one", () => {
     const html = renderToStaticMarkup(
       <OfficialKnockoutTournament

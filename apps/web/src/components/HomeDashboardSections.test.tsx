@@ -285,6 +285,24 @@ describe("HomeTournamentOutlook", () => {
     expect(html).not.toContain("Unknown Team");
   });
 
+  test("renders podium teams from the corrected provider-backed knockout path", () => {
+    const html = renderToStaticMarkup(
+      <HomeTournamentOutlook
+        projection={knockoutProjection({
+          champion: projected("Morocco"),
+          runnerUp: projected("Brazil"),
+          thirdPlace: projected("Canada")
+        })}
+      />
+    );
+
+    expect(html).toContain("Morocco");
+    expect(html).toContain("Brazil");
+    expect(html).toContain("Canada");
+    expect(html).not.toContain("Unknown Team");
+    expect(html).not.toContain("???");
+  });
+
   test("labels an officially decided champion as official instead of projected", () => {
     const html = renderToStaticMarkup(
       <HomeTournamentOutlook
