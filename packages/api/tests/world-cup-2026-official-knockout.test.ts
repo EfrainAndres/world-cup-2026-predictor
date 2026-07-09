@@ -181,6 +181,90 @@ function predictorFavoring(favoredTeams: readonly string[]) {
   return { predict, calls };
 }
 
+function officialResultRecord(input: {
+  id?: string;
+  matchday: number;
+  homeTeam: string;
+  awayTeam: string;
+  winnerTeam: string;
+}): WorldCup2026ExternalFixtureRecord {
+  const homeWins = input.homeTeam === input.winnerTeam;
+  return record({
+    id: input.id ?? `official-${input.matchday}`,
+    matchday: input.matchday,
+    homeTeam: input.homeTeam,
+    awayTeam: input.awayTeam,
+    homeScore: homeWins ? 2 : 0,
+    awayScore: homeWins ? 0 : 2,
+    winner: input.winnerTeam
+  });
+}
+
+function completedQf97DependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    officialResultRecord({ matchday: 73, homeTeam: "South Africa", awayTeam: "Canada", winnerTeam: "Canada" }),
+    officialResultRecord({ matchday: 75, homeTeam: "Germany", awayTeam: "Paraguay", winnerTeam: "Paraguay" }),
+    officialResultRecord({ matchday: 74, homeTeam: "Brazil", awayTeam: "Japan", winnerTeam: "Brazil" }),
+    officialResultRecord({ matchday: 77, homeTeam: "Ivory Coast", awayTeam: "Norway", winnerTeam: "Norway" }),
+    officialResultRecord({ matchday: 89, homeTeam: "Canada", awayTeam: "Paraguay", winnerTeam: "Canada" }),
+    officialResultRecord({ matchday: 90, homeTeam: "Brazil", awayTeam: "Norway", winnerTeam: "Brazil" })
+  ];
+}
+
+function completedQf98DependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    officialResultRecord({ matchday: 83, homeTeam: "Spain", awayTeam: "Austria", winnerTeam: "Spain" }),
+    officialResultRecord({ matchday: 84, homeTeam: "Portugal", awayTeam: "Croatia", winnerTeam: "Portugal" }),
+    officialResultRecord({ matchday: 81, homeTeam: "Belgium", awayTeam: "Senegal", winnerTeam: "Belgium" }),
+    officialResultRecord({ matchday: 82, homeTeam: "United States", awayTeam: "Bosnia-Herzegovina", winnerTeam: "United States" }),
+    officialResultRecord({ matchday: 93, homeTeam: "Spain", awayTeam: "Portugal", winnerTeam: "Spain" }),
+    officialResultRecord({ matchday: 94, homeTeam: "Belgium", awayTeam: "United States", winnerTeam: "Belgium" })
+  ];
+}
+
+function completedQf99DependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    officialResultRecord({ matchday: 76, homeTeam: "Netherlands", awayTeam: "Morocco", winnerTeam: "Morocco" }),
+    officialResultRecord({ matchday: 78, homeTeam: "France", awayTeam: "Sweden", winnerTeam: "France" }),
+    officialResultRecord({ matchday: 79, homeTeam: "Mexico", awayTeam: "Ecuador", winnerTeam: "Mexico" }),
+    officialResultRecord({ matchday: 80, homeTeam: "England", awayTeam: "DR Congo", winnerTeam: "England" }),
+    officialResultRecord({ matchday: 91, homeTeam: "Morocco", awayTeam: "France", winnerTeam: "France" }),
+    officialResultRecord({ matchday: 92, homeTeam: "Mexico", awayTeam: "England", winnerTeam: "England" })
+  ];
+}
+
+function completedQf100DependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    officialResultRecord({ matchday: 86, homeTeam: "Australia", awayTeam: "Egypt", winnerTeam: "Egypt" }),
+    officialResultRecord({ matchday: 88, homeTeam: "Colombia", awayTeam: "Ghana", winnerTeam: "Colombia" }),
+    officialResultRecord({ matchday: 85, homeTeam: "Switzerland", awayTeam: "Algeria", winnerTeam: "Switzerland" }),
+    officialResultRecord({ matchday: 87, homeTeam: "Argentina", awayTeam: "Cape Verde", winnerTeam: "Argentina" }),
+    officialResultRecord({ matchday: 95, homeTeam: "Egypt", awayTeam: "Colombia", winnerTeam: "Colombia" }),
+    officialResultRecord({ matchday: 96, homeTeam: "Switzerland", awayTeam: "Argentina", winnerTeam: "Argentina" })
+  ];
+}
+
+function completedSemifinalDependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    ...completedQf97DependencyRecords(),
+    ...completedQf98DependencyRecords(),
+    ...completedQf99DependencyRecords(),
+    ...completedQf100DependencyRecords(),
+    officialResultRecord({ matchday: 97, homeTeam: "Canada", awayTeam: "Brazil", winnerTeam: "Canada" }),
+    officialResultRecord({ matchday: 98, homeTeam: "Spain", awayTeam: "Belgium", winnerTeam: "Spain" }),
+    officialResultRecord({ matchday: 99, homeTeam: "France", awayTeam: "England", winnerTeam: "France" }),
+    officialResultRecord({ matchday: 100, homeTeam: "Colombia", awayTeam: "Argentina", winnerTeam: "Argentina" })
+  ];
+}
+
+function completedFinalDependencyRecords(): readonly WorldCup2026ExternalFixtureRecord[] {
+  return [
+    ...completedSemifinalDependencyRecords(),
+    officialResultRecord({ matchday: 101, homeTeam: "Canada", awayTeam: "Spain", winnerTeam: "Canada" }),
+    officialResultRecord({ matchday: 102, homeTeam: "France", awayTeam: "Argentina", winnerTeam: "France" })
+  ];
+}
+
 const EXPECTED_OFFICIAL_ROUND_OF_32_FIXTURES = [
   [73, "South Africa", "Canada"],
   [74, "Brazil", "Japan"],
@@ -877,6 +961,8 @@ describe("provider-backed knockout participant reconciliation", () => {
   it("advances the official winner from a completed provider-backed later-round fixture", () => {
     const result = buildOfficialWorldCup2026KnockoutProjection({
       syncResult: syncResult([
+        record({ id: "provider-73", matchday: 73, homeTeam: "South Africa", awayTeam: "Canada", homeScore: 0, awayScore: 1 }),
+        record({ id: "provider-75", matchday: 75, homeTeam: "Germany", awayTeam: "Paraguay", homeScore: 0, awayScore: 1 }),
         record({ id: "provider-89", matchday: 89, homeTeam: "Canada", awayTeam: "Morocco", homeScore: 0, awayScore: 2 })
       ]),
       predictMatch: makePredictor(fakePrediction()).predict,
@@ -912,6 +998,8 @@ describe("provider-backed knockout participant reconciliation", () => {
   it("does not allow a provider-eliminated team to reappear downstream", () => {
     const result = buildOfficialWorldCup2026KnockoutProjection({
       syncResult: syncResult([
+        record({ id: "provider-73", matchday: 73, homeTeam: "South Africa", awayTeam: "Canada", homeScore: 0, awayScore: 1 }),
+        record({ id: "provider-75", matchday: 75, homeTeam: "Germany", awayTeam: "Paraguay", homeScore: 0, awayScore: 1 }),
         record({ id: "provider-89", matchday: 89, homeTeam: "Canada", awayTeam: "Morocco", homeScore: 1, awayScore: 2 })
       ]),
       predictMatch: makePredictor(fakePrediction()).predict,
@@ -967,6 +1055,161 @@ describe("provider-backed knockout participant reconciliation", () => {
     });
 
     expect(first).toEqual(second);
+  });
+});
+
+describe("provider-driven knockout advancement", () => {
+  it("automatically advances a completed provider-backed R16 winner to the QF", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        officialResultRecord({ matchday: 73, homeTeam: "South Africa", awayTeam: "Canada", winnerTeam: "Canada" }),
+        officialResultRecord({ matchday: 75, homeTeam: "Germany", awayTeam: "Paraguay", winnerTeam: "Paraguay" }),
+        officialResultRecord({ matchday: 89, homeTeam: "Canada", awayTeam: "Paraguay", winnerTeam: "Canada" })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const r16 = result.matches.find((match) => match.officialMatchNumber === 89);
+    const qf = result.matches.find((match) => match.officialMatchNumber === 97);
+    expect(r16?.sourceState).toBe("official_result");
+    expect(r16?.winner?.team).toBe("Canada");
+    expect(qf?.home.team).toBe("Canada");
+    expect(qf?.home.state).toBe("official_winner");
+  });
+
+  it("automatically advances a completed provider-backed QF winner to the SF", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        ...completedQf97DependencyRecords(),
+        officialResultRecord({ matchday: 97, homeTeam: "Canada", awayTeam: "Brazil", winnerTeam: "Brazil" })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const qf = result.matches.find((match) => match.officialMatchNumber === 97);
+    const sf = result.matches.find((match) => match.officialMatchNumber === 101);
+    expect(qf?.sourceState).toBe("official_result");
+    expect(qf?.winner?.team).toBe("Brazil");
+    expect(sf?.home.team).toBe("Brazil");
+    expect(sf?.home.state).toBe("official_winner");
+  });
+
+  it("automatically advances a completed provider-backed SF winner to the Final and loser to Third Place", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        ...completedQf97DependencyRecords(),
+        ...completedQf98DependencyRecords(),
+        officialResultRecord({ matchday: 97, homeTeam: "Canada", awayTeam: "Brazil", winnerTeam: "Canada" }),
+        officialResultRecord({ matchday: 98, homeTeam: "Spain", awayTeam: "Belgium", winnerTeam: "Spain" }),
+        officialResultRecord({ matchday: 101, homeTeam: "Canada", awayTeam: "Spain", winnerTeam: "Canada" })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const sf = result.matches.find((match) => match.officialMatchNumber === 101);
+    const thirdPlace = result.matches.find((match) => match.officialMatchNumber === 103);
+    const final = result.matches.find((match) => match.officialMatchNumber === 104);
+    expect(sf?.sourceState).toBe("official_result");
+    expect(sf?.winner?.team).toBe("Canada");
+    expect(sf?.loser?.team).toBe("Spain");
+    expect(final?.home.team).toBe("Canada");
+    expect(final?.home.state).toBe("official_winner");
+    expect(thirdPlace?.home.team).toBe("Spain");
+    expect(thirdPlace?.home.state).toBe("official_loser");
+  });
+
+  it("marks Final podium entries official only when semifinal dependencies are official and matching", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        ...completedFinalDependencyRecords(),
+        officialResultRecord({ matchday: 104, homeTeam: "Canada", awayTeam: "France", winnerTeam: "France" })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const final = result.matches.find((match) => match.officialMatchNumber === 104);
+    expect(final?.sourceState).toBe("official_result");
+    expect(result.podium.champion).toEqual({ team: "France", resolution: "official" });
+    expect(result.podium.runnerUp).toEqual({ team: "Canada", resolution: "official" });
+  });
+
+  it("marks Third Place podium entries official only when semifinal loser dependencies are official and matching", () => {
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        ...completedFinalDependencyRecords(),
+        officialResultRecord({ matchday: 103, homeTeam: "Spain", awayTeam: "Argentina", winnerTeam: "Spain" })
+      ]),
+      predictMatch: makePredictor(fakePrediction()).predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const thirdPlace = result.matches.find((match) => match.officialMatchNumber === 103);
+    expect(thirdPlace?.sourceState).toBe("official_result");
+    expect(result.podium.thirdPlace).toEqual({ team: "Spain", resolution: "official" });
+    expect(result.podium.fourthPlace).toEqual({ team: "Argentina", resolution: "official" });
+  });
+
+  it("defers provider-ahead Final and Third Place results while a QF is live", () => {
+    const predictor = predictorFavoring(["France", "Morocco"]);
+    const result = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        record({
+          id: "provider-qf-live",
+          matchday: 97,
+          homeTeam: "France",
+          awayTeam: "Morocco",
+          status: "live",
+          homeScore: 1,
+          awayScore: 1
+        }),
+        officialResultRecord({
+          id: "provider-final-ahead",
+          matchday: 104,
+          homeTeam: "France",
+          awayTeam: "Brazil",
+          winnerTeam: "France"
+        }),
+        officialResultRecord({
+          id: "provider-third-ahead",
+          matchday: 103,
+          homeTeam: "Morocco",
+          awayTeam: "Canada",
+          winnerTeam: "Morocco"
+        })
+      ]),
+      predictMatch: predictor.predict,
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+
+    const qf = result.matches.find((match) => match.officialMatchNumber === 97);
+    const final = result.matches.find((match) => match.officialMatchNumber === 104);
+    const thirdPlace = result.matches.find((match) => match.officialMatchNumber === 103);
+
+    expect(qf?.home.team).toBe("France");
+    expect(qf?.away.team).toBe("Morocco");
+    expect(qf?.sourceClassification).toBe("provider_official_fixture");
+    expect(qf?.status).toBe("live");
+    expect(qf?.sourceState).toBe("projected_result");
+    expect(final?.sourceState).not.toBe("official_result");
+    expect(thirdPlace?.sourceState).not.toBe("official_result");
+    expect(result.podium.champion.resolution).not.toBe("official");
+    expect(result.podium.runnerUp.resolution).not.toBe("official");
+    expect(result.podium.thirdPlace.resolution).not.toBe("official");
+    expect(result.warnings.some((warning) => warning.includes("provider_ahead_unresolved_dependency") && warning.includes("104"))).toBe(
+      true
+    );
+    expect(result.warnings.some((warning) => warning.includes("provider_ahead_unresolved_dependency") && warning.includes("103"))).toBe(
+      true
+    );
+    expect(JSON.stringify(result)).not.toContain("Canada vs Paraguay");
+    expect(JSON.stringify(result)).not.toContain("Canada vs Norway");
+    expect(JSON.stringify(result)).not.toContain("Unknown");
+    expect(JSON.stringify(result)).not.toContain("Unavailable");
+    expect(JSON.stringify(result)).not.toContain("???");
   });
 });
 

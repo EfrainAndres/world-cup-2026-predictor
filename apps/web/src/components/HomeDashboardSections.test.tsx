@@ -299,6 +299,10 @@ describe("HomeTournamentOutlook", () => {
     expect(html).toContain("Morocco");
     expect(html).toContain("Brazil");
     expect(html).toContain("Canada");
+    expect(html).toContain("Projected champion");
+    expect(html).not.toContain("Official champion");
+    expect(html).not.toContain("Official runner-up");
+    expect(html).not.toContain("Official third place");
     expect(html).not.toContain("Unknown Team");
     expect(html).not.toContain("???");
   });

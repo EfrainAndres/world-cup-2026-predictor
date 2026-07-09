@@ -634,6 +634,17 @@ function providerFixtureParticipantWarning(input: {
   return `${input.code}: match=${input.matchNumber} round=${input.stage} providerFixtureId=${input.providerFixtureId} providerTeams="${formatParticipantPair(input.providerHomeTeam, input.providerAwayTeam)}" internalDerivedTeams="${formatParticipantPair(input.internalHomeTeam, input.internalAwayTeam)}"`;
 }
 
+function providerAheadDependencyWarning(input: {
+  matchNumber: number;
+  stage: OfficialKnockoutStage;
+  providerFixtureId: string;
+  providerHomeTeam: string;
+  providerAwayTeam: string;
+  issues: readonly string[];
+}): string {
+  return `provider_ahead_unresolved_dependency: match=${input.matchNumber} round=${input.stage} providerFixtureId=${input.providerFixtureId} providerTeams="${formatParticipantPair(input.providerHomeTeam, input.providerAwayTeam)}" dependencyIssues="${input.issues.join("; ")}"`;
+}
+
 function resolveProviderFixtureParticipants(input: {
   topology: OfficialKnockoutTopologyMatch;
   providerMatch: ProviderMatchResult;
@@ -752,6 +763,11 @@ function findProviderRecord(
   const knockoutRecords = records.filter(
     (record) => isKnockoutRecord(record) && !excludeProviderFixtureIds.has(record.providerFixtureId)
   );
+  const looseIdentityRecords = knockoutRecords.filter((record) => {
+    if (record.matchday === undefined) return true;
+    const providerMatchdayStage = stageForMatchNumber(record.matchday);
+    return providerMatchdayStage === null || record.matchday === identity.officialMatchNumber;
+  });
 
   if (identity.providerFixtureId !== undefined) {
     const providerIdMatches = knockoutRecords.filter((record) => record.providerFixtureId === identity.providerFixtureId);
@@ -777,7 +793,7 @@ function findProviderRecord(
     const identityHomeTeam = identity.homeTeam;
     const identityAwayTeam = identity.awayTeam;
 
-    const directTeamMatches = knockoutRecords.filter((record) => {
+    const directTeamMatches = looseIdentityRecords.filter((record) => {
       return (
         normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityHomeTeam) &&
         normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityAwayTeam)
@@ -789,7 +805,7 @@ function findProviderRecord(
       return { match: { record: selectedDirect.record, orientation: "canonical", method: "teams" } };
     }
 
-    const reversedTeamMatches = knockoutRecords.filter((record) => {
+    const reversedTeamMatches = looseIdentityRecords.filter((record) => {
       return (
         normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityAwayTeam) &&
         normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityHomeTeam)
@@ -803,7 +819,7 @@ function findProviderRecord(
   }
 
   if (!identity.allowRoundOverlapFallback) return { match: null };
-  return findRoundOverlapProviderRecord(identity, knockoutRecords);
+  return findRoundOverlapProviderRecord(identity, looseIdentityRecords);
 }
 
 function sourcePath(source: KnockoutParticipantSource, records: Map<number, ResolvedMatchRecord>): readonly number[] {
@@ -872,6 +888,84 @@ function participantFromTeam(
   path: readonly number[]
 ): OfficialKnockoutParticipant {
   return { team, source, state, path };
+}
+
+function officialDependencyParticipant(
+  source: KnockoutParticipantSource,
+  records: Map<number, ResolvedMatchRecord>
+): OfficialKnockoutParticipant | undefined {
+  if (source.kind === "official_team") {
+    return participantFromTeam(source.team, source, "official_participant", []);
+  }
+  if (source.kind === "unresolved") return undefined;
+
+  const upstream = records.get(source.matchNumber);
+  return source.kind === "winner_of" ? upstream?.winner : upstream?.loser;
+}
+
+function expectedOfficialDependencyState(source: KnockoutParticipantSource): KnockoutParticipantState | undefined {
+  if (source.kind === "winner_of") return "official_winner";
+  if (source.kind === "loser_of") return "official_loser";
+  return undefined;
+}
+
+function shouldValidateDependencyTeamMatch(stage: OfficialKnockoutStage): boolean {
+  return stage === "final" || stage === "third_place";
+}
+
+function validateProviderOfficialResultDependencies(input: {
+  topology: OfficialKnockoutTopologyMatch;
+  providerMatch: ProviderMatchResult;
+  home: OfficialKnockoutParticipant;
+  away: OfficialKnockoutParticipant;
+  records: Map<number, ResolvedMatchRecord>;
+}): string | undefined {
+  const issues: string[] = [];
+  const dependencySlots = [
+    { slot: "home", source: input.topology.homeSource, participant: input.home },
+    { slot: "away", source: input.topology.awaySource, participant: input.away }
+  ] as const;
+  const requireTeamMatch = shouldValidateDependencyTeamMatch(input.topology.stage);
+
+  for (const dependency of dependencySlots) {
+    if (dependency.source.kind !== "winner_of" && dependency.source.kind !== "loser_of") continue;
+    const expectedState = expectedOfficialDependencyState(dependency.source);
+    if (expectedState === undefined) continue;
+
+    const upstreamMatchNumber = dependency.source.matchNumber;
+    const upstreamParticipant = officialDependencyParticipant(dependency.source, input.records);
+    const dependencyLabel = `${dependency.slot} ${dependency.source.kind} match ${upstreamMatchNumber}`;
+
+    if (upstreamParticipant?.team === undefined) {
+      issues.push(`${dependencyLabel} is unresolved`);
+      continue;
+    }
+
+    if (upstreamParticipant.state !== expectedState) {
+      issues.push(`${dependencyLabel} is ${upstreamParticipant.state}, expected ${expectedState}`);
+      continue;
+    }
+
+    if (
+      requireTeamMatch &&
+      (dependency.participant.team === undefined ||
+        normalizeTeamKey(dependency.participant.team) !== normalizeTeamKey(upstreamParticipant.team))
+    ) {
+      issues.push(
+        `${dependencyLabel} resolved ${upstreamParticipant.team}, provider supplied ${dependency.participant.team ?? "unresolved"}`
+      );
+    }
+  }
+
+  if (issues.length === 0) return undefined;
+  return providerAheadDependencyWarning({
+    matchNumber: input.topology.matchNumber,
+    stage: input.topology.stage,
+    providerFixtureId: input.providerMatch.record.providerFixtureId,
+    providerHomeTeam: input.providerMatch.record.homeTeam,
+    providerAwayTeam: input.providerMatch.record.awayTeam,
+    issues
+  });
 }
 
 function providerScore(
@@ -1304,6 +1398,8 @@ export function buildOfficialWorldCup2026KnockoutProjection(
   for (const topology of WORLD_CUP_2026_OFFICIAL_KNOCKOUT_TOPOLOGY) {
     let home = resolveParticipant(topology.homeSource, records);
     let away = resolveParticipant(topology.awaySource, records);
+    const internalHome = home;
+    const internalAway = away;
     const fixtureFoundation: OfficialRoundOf32FixtureFoundation | undefined = WORLD_CUP_2026_OFFICIAL_ROUND_OF_32_FIXTURES.find(
       (fixture) => fixture.officialMatchNumber === topology.matchNumber
     );
@@ -1352,8 +1448,8 @@ export function buildOfficialWorldCup2026KnockoutProjection(
       const providerParticipants = resolveProviderFixtureParticipants({
         topology,
         providerMatch,
-        internalHome: home,
-        internalAway: away
+        internalHome,
+        internalAway
       });
       if ("home" in providerParticipants) {
         home = providerParticipants.home;
@@ -1370,6 +1466,29 @@ export function buildOfficialWorldCup2026KnockoutProjection(
         providerMatch = null;
         status = "scheduled";
         sourceClassification = topology.stage === "round_of_32" ? "canonical_static_official_fixture" : "projected";
+      }
+    }
+
+    if (providerMatch !== null && isCompletedStatus(providerMatch.record.status)) {
+      const score = providerScore(providerMatch);
+      if (score !== undefined) {
+        const dependencyWarning = validateProviderOfficialResultDependencies({
+          topology,
+          providerMatch,
+          home,
+          away,
+          records
+        });
+        if (dependencyWarning !== undefined) {
+          warnings.push(dependencyWarning);
+          matchingIssues.push(dependencyWarning);
+          matchWarnings.push(dependencyWarning);
+          providerMatch = null;
+          home = internalHome;
+          away = internalAway;
+          status = "scheduled";
+          sourceClassification = topology.stage === "round_of_32" ? "canonical_static_official_fixture" : "projected";
+        }
       }
     }
 

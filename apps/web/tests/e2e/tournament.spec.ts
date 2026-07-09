@@ -130,6 +130,17 @@ test("Tournament later rounds are fully populated from projections", async ({ pa
   }
 });
 
+test("Tournament Final and Third Place stay projected until official dependencies resolve", async ({ page }) => {
+  await page.goto("/tournament");
+
+  const final = page.locator("section#tournament-final");
+  const thirdPlace = page.locator("section#tournament-third-place");
+  await expect(final.getByText("Projected result")).toBeVisible();
+  await expect(thirdPlace.getByText("Projected result")).toBeVisible();
+  await expect(final.getByText("Official result")).toHaveCount(0);
+  await expect(thirdPlace.getByText("Official result")).toHaveCount(0);
+});
+
 test("Tournament page never shows sentinel team names", async ({ page }) => {
   await page.goto("/tournament");
 
