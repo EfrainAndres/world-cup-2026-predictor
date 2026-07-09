@@ -87,6 +87,8 @@ export type {
   OfficialKnockoutFixtureProjection,
   OfficialKnockoutParticipant,
   OfficialKnockoutPodium,
+  OfficialKnockoutPodiumEntry,
+  OfficialKnockoutPodiumResolution,
   OfficialKnockoutProjectionData,
   OfficialKnockoutProjectionResult,
   OfficialKnockoutSourceState,

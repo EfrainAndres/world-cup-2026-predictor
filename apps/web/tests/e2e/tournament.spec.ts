@@ -110,6 +110,42 @@ test("Tournament page shows champion, runner-up, third place, and fourth place",
   await expect(champion.getByText("Runner-up", { exact: true })).toBeVisible();
   await expect(champion.getByText("Third place", { exact: true })).toBeVisible();
   await expect(champion.getByText("Fourth place", { exact: true })).toBeVisible();
+  await expect(champion.getByText("Projected", { exact: true })).toHaveCount(4);
+});
+
+test("Tournament later rounds are fully populated from projections", async ({ page }) => {
+  await page.goto("/tournament");
+
+  for (const [sectionId, fixtureCount] of [
+    ["tournament-round-of-16", 8],
+    ["tournament-quarterfinals", 4],
+    ["tournament-semifinals", 2],
+    ["tournament-final", 1],
+    ["tournament-third-place", 1]
+  ] as const) {
+    const section = page.locator(`section#${sectionId}`);
+    await expect(section.locator("[data-knockout-fixture]")).toHaveCount(fixtureCount);
+    await expect(section.getByText("Awaiting participant")).toHaveCount(0);
+    await expect(section.getByText("Projected to advance").first()).toBeVisible();
+  }
+});
+
+test("Tournament page never shows sentinel team names", async ({ page }) => {
+  await page.goto("/tournament");
+
+  await expect(page.getByText("Unknown Team")).toHaveCount(0);
+  await expect(page.getByText("Unavailable")).toHaveCount(0);
+  await expect(page.getByText("???")).toHaveCount(0);
+});
+
+test("Home tournament outlook shows a resolved projected podium without sentinels", async ({ page }) => {
+  await page.goto("/");
+
+  const outlook = page.locator("#home-tournament-outlook");
+  await expect(outlook.getByText("Projected champion")).toBeVisible();
+  await expect(outlook.getByText("Unknown Team")).toHaveCount(0);
+  await expect(outlook.getByText("Unavailable")).toHaveCount(0);
+  await expect(outlook.getByText("???")).toHaveCount(0);
 });
 
 test("Tournament page surfaces TeamIdentity flags in bracket and podium summaries", async ({ page }) => {
