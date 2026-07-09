@@ -122,6 +122,12 @@ Provider fixture orientation can differ from canonical bracket orientation. The 
 
 Ambiguous provider records must be rejected instead of attached to a similar-looking fixture.
 
+## 2026-07-09 Hotfix Update
+
+The live knockout projection now treats provider-backed official fixture participants as authoritative when both teams are canonicalizable. Provider fixture orientation is preserved for display and prediction input. The internal match 73-104 topology remains the fallback graph only when provider participants are missing, TBD, uncanonicalizable, or rejected due to duplicate-record ambiguity.
+
+The current provider identity policy still prefers provider fixture IDs when static metadata has them. Because the static knockout fallback does not yet carry provider fixture IDs, the service may use guarded knockout `matchday` records as a compatibility bridge. This is not treated as a universal proof that provider `matchday` equals the official match number. See `docs/data-quality/KNOCKOUT_PROVIDER_TOPOLOGY_RECONCILIATION.md`.
+
 ## Kickoff and Venue Availability
 
 The normalized provider record type supports kickoff timestamps and venue values. Current foundation Round-of-32 fixtures do not include official kickoff timestamps or venues.

@@ -98,7 +98,11 @@ function resultBadge(match: OfficialKnockoutFixtureProjection) {
 }
 
 function fixtureBadge(match: OfficialKnockoutFixtureProjection) {
-  if (match.stage === "round_of_32") {
+  if (
+    match.stage === "round_of_32" ||
+    match.sourceClassification === "provider_official_fixture" ||
+    match.sourceClassification === "provider_official_result"
+  ) {
     return <StatusBadge label="Official fixture" variant="info" />;
   }
   if (match.sourceState === "mixed_official_projected" || match.sourceState === "projected_participants") {
