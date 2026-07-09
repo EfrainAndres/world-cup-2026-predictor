@@ -191,7 +191,7 @@ export interface BuildOfficialWorldCup2026KnockoutProjectionInput {
 interface ProviderMatchResult {
   record: WorldCup2026ExternalFixtureRecord;
   orientation: "canonical" | "reversed";
-  method: "provider_fixture_id" | "official_match_number" | "teams" | "reversed_teams";
+  method: "provider_fixture_id" | "official_match_number" | "teams" | "reversed_teams" | "round_participant_overlap";
 }
 
 interface ResolvedMatchRecord {
@@ -685,16 +685,73 @@ function resolveProviderFixtureParticipants(input: {
   };
 }
 
+function overlapCandidateTeamPair(record: WorldCup2026ExternalFixtureRecord): { home: string; away: string } | null {
+  const home = canonicalProviderTeam(record.homeTeam);
+  const away = canonicalProviderTeam(record.awayTeam);
+  if (home === undefined || away === undefined) return null;
+  if (normalizeTeamKey(home) === normalizeTeamKey(away)) return null;
+  return { home, away };
+}
+
+// Fallback of last resort, applied only after provider fixture id, official
+// match number, and exact/reversed team-pair matching all fail to attach a
+// record for this topology match. Internal winner_of/loser_of derivation can
+// legitimately disagree with the provider's real bracket pairing (e.g. our
+// static Round-of-32 fallback data was wrong for an upstream match), so a
+// provider record that shares exactly one team with the already-resolved
+// participant(s) of this match is treated as the authoritative real fixture
+// for this slot, superseding the internally derived opponent. Matching on
+// both teams would already have been found above, so only single-team
+// overlap reaches this step. Multiple equally-plausible overlapping records
+// are rejected as ambiguous rather than guessed.
+function findRoundOverlapProviderRecord(
+  identity: { officialMatchNumber: number; homeTeam?: string; awayTeam?: string },
+  knockoutRecords: readonly WorldCup2026ExternalFixtureRecord[]
+): ProviderRecordLookup {
+  const anchorKeys = [identity.homeTeam, identity.awayTeam]
+    .filter((team): team is string => team !== undefined)
+    .map(normalizeTeamKey);
+  if (anchorKeys.length === 0) return { match: null };
+
+  const candidates = knockoutRecords.filter((record) => {
+    const pair = overlapCandidateTeamPair(record);
+    if (pair === null) return false;
+    const overlapCount = [normalizeTeamKey(pair.home), normalizeTeamKey(pair.away)].filter((key) =>
+      anchorKeys.includes(key)
+    ).length;
+    return overlapCount === 1;
+  });
+
+  if (candidates.length === 0) return { match: null };
+  if (candidates.length === 1) {
+    return { match: { record: candidates[0]!, orientation: "canonical", method: "round_participant_overlap" } };
+  }
+
+  const fingerprints = new Set(candidates.map(providerRecordEssentialFingerprint));
+  if (fingerprints.size === 1) {
+    return { match: { record: candidates[0]!, orientation: "canonical", method: "round_participant_overlap" } };
+  }
+
+  return {
+    match: null,
+    ambiguity: `Conflicting provider records overlap the resolved participant(s) of official match ${identity.officialMatchNumber} and were rejected as ambiguous.`
+  };
+}
+
 function findProviderRecord(
   identity: {
     officialMatchNumber: number;
     providerFixtureId?: string;
     homeTeam?: string;
     awayTeam?: string;
+    allowRoundOverlapFallback: boolean;
   },
-  records: readonly WorldCup2026ExternalFixtureRecord[]
+  records: readonly WorldCup2026ExternalFixtureRecord[],
+  excludeProviderFixtureIds: ReadonlySet<string> = new Set()
 ): ProviderRecordLookup {
-  const knockoutRecords = records.filter(isKnockoutRecord);
+  const knockoutRecords = records.filter(
+    (record) => isKnockoutRecord(record) && !excludeProviderFixtureIds.has(record.providerFixtureId)
+  );
 
   if (identity.providerFixtureId !== undefined) {
     const providerIdMatches = knockoutRecords.filter((record) => record.providerFixtureId === identity.providerFixtureId);
@@ -716,35 +773,37 @@ function findProviderRecord(
     };
   }
 
-  if (identity.homeTeam === undefined || identity.awayTeam === undefined) return { match: null };
-  const identityHomeTeam = identity.homeTeam;
-  const identityAwayTeam = identity.awayTeam;
+  if (identity.homeTeam !== undefined && identity.awayTeam !== undefined) {
+    const identityHomeTeam = identity.homeTeam;
+    const identityAwayTeam = identity.awayTeam;
 
-  const directTeamMatches = knockoutRecords.filter((record) => {
-    return (
-      normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityHomeTeam) &&
-      normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityAwayTeam)
-    );
-  });
-  const selectedDirect = selectAuthoritativeRecord(directTeamMatches, identity.officialMatchNumber);
-  if (selectedDirect.conflict !== undefined) return { match: null, ambiguity: selectedDirect.conflict };
-  if (selectedDirect.record !== undefined) {
-    return { match: { record: selectedDirect.record, orientation: "canonical", method: "teams" } };
+    const directTeamMatches = knockoutRecords.filter((record) => {
+      return (
+        normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityHomeTeam) &&
+        normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityAwayTeam)
+      );
+    });
+    const selectedDirect = selectAuthoritativeRecord(directTeamMatches, identity.officialMatchNumber);
+    if (selectedDirect.conflict !== undefined) return { match: null, ambiguity: selectedDirect.conflict };
+    if (selectedDirect.record !== undefined) {
+      return { match: { record: selectedDirect.record, orientation: "canonical", method: "teams" } };
+    }
+
+    const reversedTeamMatches = knockoutRecords.filter((record) => {
+      return (
+        normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityAwayTeam) &&
+        normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityHomeTeam)
+      );
+    });
+    const selectedReversed = selectAuthoritativeRecord(reversedTeamMatches, identity.officialMatchNumber);
+    if (selectedReversed.conflict !== undefined) return { match: null, ambiguity: selectedReversed.conflict };
+    if (selectedReversed.record !== undefined) {
+      return { match: { record: selectedReversed.record, orientation: "canonical", method: "reversed_teams" } };
+    }
   }
 
-  const reversedTeamMatches = knockoutRecords.filter((record) => {
-    return (
-      normalizeTeamKey(record.homeTeam) === normalizeTeamKey(identityAwayTeam) &&
-      normalizeTeamKey(record.awayTeam) === normalizeTeamKey(identityHomeTeam)
-    );
-  });
-  const selectedReversed = selectAuthoritativeRecord(reversedTeamMatches, identity.officialMatchNumber);
-  if (selectedReversed.conflict !== undefined) return { match: null, ambiguity: selectedReversed.conflict };
-  if (selectedReversed.record !== undefined) {
-    return { match: { record: selectedReversed.record, orientation: "canonical", method: "reversed_teams" } };
-  }
-
-  return { match: null };
+  if (!identity.allowRoundOverlapFallback) return { match: null };
+  return findRoundOverlapProviderRecord(identity, knockoutRecords);
 }
 
 function sourcePath(source: KnockoutParticipantSource, records: Map<number, ResolvedMatchRecord>): readonly number[] {
@@ -1240,6 +1299,7 @@ export function buildOfficialWorldCup2026KnockoutProjection(
   const r32Warnings = validateOfficialRoundOf32Fixtures();
   const records = new Map<number, ResolvedMatchRecord>();
   const matches: OfficialKnockoutFixtureProjection[] = [];
+  const consumedProviderFixtureIds = new Set<string>();
 
   for (const topology of WORLD_CUP_2026_OFFICIAL_KNOCKOUT_TOPOLOGY) {
     let home = resolveParticipant(topology.homeSource, records);
@@ -1252,11 +1312,14 @@ export function buildOfficialWorldCup2026KnockoutProjection(
         officialMatchNumber: topology.matchNumber,
         ...(fixtureFoundation?.providerFixtureId === undefined ? {} : { providerFixtureId: fixtureFoundation.providerFixtureId }),
         ...(home.team === undefined ? {} : { homeTeam: home.team }),
-        ...(away.team === undefined ? {} : { awayTeam: away.team })
+        ...(away.team === undefined ? {} : { awayTeam: away.team }),
+        allowRoundOverlapFallback: topology.stage !== "round_of_32"
       },
-      providerRecords
+      providerRecords,
+      consumedProviderFixtureIds
     );
     let providerMatch = providerLookup.match;
+    if (providerMatch !== null) consumedProviderFixtureIds.add(providerMatch.record.providerFixtureId);
     const matchWarnings: string[] = [];
 
     let officialScore: OfficialKnockoutScore | undefined;
