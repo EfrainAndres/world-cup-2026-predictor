@@ -4,8 +4,14 @@ import { describe, expect, test } from "vitest";
 import type {
   OfficialKnockoutFixtureProjection,
   OfficialKnockoutPodium,
-  OfficialKnockoutProjectionResult
+  OfficialKnockoutProjectionResult,
+  PredictMatchFromLiveEloRequest,
+  PredictMatchFromLiveEloResponse,
+  PredictMatchFromLiveEloSuccessResponse,
+  WorldCup2026ExternalFixtureRecord,
+  WorldCup2026SyncResult
 } from "@world-cup-2026-predictor/api";
+import { buildOfficialWorldCup2026KnockoutProjection } from "@world-cup-2026-predictor/api";
 import { OfficialKnockoutTournament } from "./OfficialKnockoutTournament";
 
 // Only the fields OfficialKnockoutTournament reads are stubbed; the service
@@ -80,6 +86,153 @@ function projection(
       metadata: { apiVersion: "test", notes: [] }
     }
   } as unknown as OfficialKnockoutProjectionResult;
+}
+
+function syncResult(records: readonly WorldCup2026ExternalFixtureRecord[] = []): WorldCup2026SyncResult {
+  return {
+    status: "success",
+    providerMode: "local_static",
+    activeProvider: "test_provider",
+    cacheUsed: false,
+    localFallbackUsed: false,
+    externalProviderEnabled: true,
+    syncedAt: "2026-06-28T12:00:00.000Z",
+    fixtures: [],
+    liveMatches: [],
+    completedResults: records,
+    standings: [],
+    normalizationIssues: [],
+    warnings: []
+  };
+}
+
+function providerRecord(input: {
+  id: string;
+  matchday: number;
+  stage: string;
+  homeTeam: string;
+  awayTeam: string;
+  status?: WorldCup2026ExternalFixtureRecord["status"];
+  homeScore?: number;
+  awayScore?: number;
+  winner?: string;
+}): WorldCup2026ExternalFixtureRecord {
+  return {
+    providerFixtureId: input.id,
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: input.stage,
+    matchday: input.matchday,
+    kickoffAt: "2026-06-28T16:00:00.000Z",
+    homeTeam: input.homeTeam,
+    awayTeam: input.awayTeam,
+    status: input.status ?? "scheduled",
+    ...(input.homeScore === undefined ? {} : { homeScore: input.homeScore }),
+    ...(input.awayScore === undefined ? {} : { awayScore: input.awayScore }),
+    ...(input.winner === undefined ? {} : { winner: input.winner }),
+    updatedAt: "2026-06-28T18:00:00.000Z"
+  };
+}
+
+function fakePrediction(input: {
+  homeGoals?: number;
+  awayGoals?: number;
+  homeWin?: number;
+  awayWin?: number;
+} = {}): PredictMatchFromLiveEloSuccessResponse {
+  return {
+    status: "success",
+    request: {
+      homeTeam: "Home",
+      awayTeam: "Away",
+      expectedHomeGoals: 1.4,
+      expectedAwayGoals: 1.1,
+      maxGoals: 6,
+      normalizeMatrix: true
+    },
+    expectedGoals: {
+      home: 1.4,
+      away: 1.1,
+      eloDifference: 30,
+      baseExpectedGoals: 1.2,
+      goalsAdjustment: 0.2,
+      preset: "balanced",
+      presetDescription: "Balanced",
+      formulaVersion: "v2",
+      adjustmentPer100: 0.1,
+      maxAdjustment: 0.5,
+      v1RollbackAvailable: true
+    },
+    liveElo: {
+      homeTeam: "Home",
+      awayTeam: "Away",
+      homeEloRating: 1600,
+      awayEloRating: 1500,
+      homeRank: 1,
+      awayRank: 2,
+      homeMatchesPlayed: 10,
+      awayMatchesPlayed: 10,
+      homeGroup: "A",
+      awayGroup: "B",
+      homeRatingSource: "live_elo_pipeline",
+      awayRatingSource: "live_elo_pipeline",
+      fallbackSeedRating: 1500,
+      matchesProcessed: 100,
+      latestMatchDate: "2026-06-01",
+      dataCoverage: "test",
+      homeInput: "Home",
+      awayInput: "Away",
+      homeMatchedBy: "canonical",
+      awayMatchedBy: "canonical"
+    },
+    outcomeProbabilities: {
+      homeWinProbability: input.homeWin ?? 0.7,
+      drawProbability: 0.15,
+      awayWinProbability: input.awayWin ?? 0.15,
+      totalProbability: 1
+    },
+    mostLikelyScorelines: [
+      {
+        homeGoals: input.homeGoals ?? 2,
+        awayGoals: input.awayGoals ?? 0,
+        probability: 0.12
+      }
+    ],
+    predictionConfidence: {
+      level: "medium",
+      coverageType: "full",
+      reasons: ["test"],
+      dataPoints: {
+        homeUsesFallback: false,
+        awayUsesFallback: false,
+        homeMatchesPlayed: 10,
+        awayMatchesPlayed: 10,
+        historicalMatchesAvailable: 100
+      },
+      manualXgRecommended: false
+    },
+    warnings: [],
+    metadata: {
+      apiVersion: "test",
+      mode: "pure_handlers",
+      serverEnabled: false,
+      databaseEnabled: false,
+      externalServicesEnabled: false,
+      notes: ["test"]
+    }
+  };
+}
+
+function predictorFavoring(favoredTeams: readonly string[]) {
+  const favoredKeys = new Set(favoredTeams.map((team) => team.toLowerCase()));
+  return (request: PredictMatchFromLiveEloRequest): PredictMatchFromLiveEloResponse => {
+    const awayFavored = favoredKeys.has(request.awayTeam.toLowerCase());
+    const homeFavored = favoredKeys.has(request.homeTeam.toLowerCase());
+    if (awayFavored && !homeFavored) {
+      return fakePrediction({ homeGoals: 0, awayGoals: 2, homeWin: 0.15, awayWin: 0.7 });
+    }
+    return fakePrediction();
+  };
 }
 
 describe("OfficialKnockoutTournament", () => {
@@ -248,6 +401,51 @@ describe("OfficialKnockoutTournament", () => {
     expect(card).toContain("Projected to advance");
     expect(card).not.toContain("Official result");
     expect(card).not.toContain("Official winner");
+  });
+
+  test("renders the provider-first graph without stale Canada matchups", () => {
+    const providerProjection = buildOfficialWorldCup2026KnockoutProjection({
+      syncResult: syncResult([
+        providerRecord({
+          id: "provider-r16-canada-morocco",
+          matchday: 5001,
+          stage: "LAST_16",
+          homeTeam: "Canada",
+          awayTeam: "Morocco"
+        }),
+        providerRecord({
+          id: "provider-r16-brazil-norway",
+          matchday: 5002,
+          stage: "LAST_16",
+          homeTeam: "Brazil",
+          awayTeam: "Norway"
+        }),
+        providerRecord({
+          id: "provider-qf-france-morocco",
+          matchday: 5003,
+          stage: "QUARTER_FINALS",
+          homeTeam: "France",
+          awayTeam: "Morocco",
+          status: "live",
+          homeScore: 1,
+          awayScore: 0
+        })
+      ]),
+      predictMatch: predictorFavoring(["Morocco", "Norway", "France"]),
+      generatedAt: "2026-06-28T12:00:00.000Z"
+    });
+    const html = renderToStaticMarkup(<OfficialKnockoutTournament projection={providerProjection} />);
+
+    expect(html).toContain("Match 89: Canada vs Morocco");
+    expect(html).toContain("Match 90: Brazil vs Norway");
+    expect(html).toContain("Match 97: France vs Morocco");
+    expect(html).toContain("Official fixture");
+    expect(html).toContain("Live");
+    expect(html).not.toContain("Match 89: Canada vs Paraguay");
+    expect(html).not.toContain("Match 97: Canada vs Norway");
+    expect(html).not.toContain("Unknown Team");
+    expect(html).not.toContain("Unavailable");
+    expect(html).not.toContain("???");
   });
 
   test("shows Awaiting official confirmation for an unresolved fixture and Cancelled for a cancelled one", () => {
