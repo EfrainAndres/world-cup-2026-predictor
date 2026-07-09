@@ -21,16 +21,33 @@ The service now adds one more fallback step, tried only after provider fixture i
 
 Because this fallback replaces participants (not just scores), the corrected participants propagate automatically through the existing `winner_of`/`loser_of` topology to every downstream round — no separate downstream-specific logic was needed to fix the Quarterfinal symptom.
 
+## 2026-07-09 Follow-Up: Provider-Driven Advancement Dependency Gate
+
+The provider is authoritative for real fixtures, participants, live statuses, scores, and winners, but a completed provider record is not promoted to an `Official result` until the match's feeder dependencies are officially resolved.
+
+The resolver now applies this gate before selecting an official winner:
+
+- Round of 16 official results require the upstream Round of 32 winners referenced by the topology to be official winners.
+- Quarterfinal official results require the upstream Round of 16 winners to be official winners.
+- Semifinal official results require the upstream Quarterfinal winners to be official winners.
+- Final official results require both Semifinal winners to be official winners, and the provider Final participants must match those resolved winners.
+- Third Place official results require both Semifinal losers to be official losers, and the provider Third Place participants must match those resolved losers.
+
+If a provider record is completed but its dependency gate fails, the resolver consumes and defers that provider record for the current build, emits `provider_ahead_unresolved_dependency`, and falls back to the latest internally resolved official/projected state for that match. This prevents impossible states such as a live Quarterfinal coexisting with an official champion, runner-up, or third-place result.
+
+Provider-backed live or scheduled fixtures still display as authoritative fixtures. For example, a live provider Quarterfinal can render as `Official fixture` + `Live`; only the result and downstream podium entries remain projected until the official dependency chain catches up.
+
 ## Policy
 
 For each knockout match:
 
 1. Provider official fixture participants are authoritative when both provider team names can be canonicalized to known World Cup 2026 teams.
 2. Provider orientation is preserved for provider-backed fixtures.
-3. Completed provider results, when internally consistent, advance the official winner.
+3. Completed provider results, when internally consistent and dependency-valid, advance the official winner.
 4. The internal fixed topology for matches 73-104 is fallback topology only.
 5. Model projections run only after participants are resolved, using the resolved home and away teams.
 6. Provider records are matched to a match by, in order: provider fixture id; official match number (via matchday); exact team pair; reversed team pair; round-participant overlap (Round of 16 and later only).
+7. Loose exact/reversed team matching and round-participant overlap do not attach a provider record with a known knockout match number to any different topology match.
 
 ## Fallback Cases
 
@@ -40,6 +57,7 @@ The internal topology remains the fallback when:
 - provider teams are missing, TBD, duplicated, or placeholders;
 - provider teams cannot be canonicalized through the existing alias/identity pipeline;
 - duplicate provider records are equal-authority conflicts and are rejected as ambiguous;
+- a completed provider result appears ahead of unresolved or non-official feeder dependencies;
 - more than one round-participant-overlap candidate exists for the same match and no single candidate can be chosen without guessing;
 - the match is in the Round of 32 and no provider record matches by fixture id, match number, or exact/reversed team pair.
 
@@ -51,13 +69,19 @@ When provider participants differ from internally derived participants and are u
 
 - `provider_fixture_participants_override_internal_topology`
 
-Warnings include match number, round, provider fixture id, provider teams, and internally derived teams.
+When completed provider results appear ahead of official feeder dependencies, the service emits:
+
+- `provider_ahead_unresolved_dependency`
+
+Warnings include match number, round, provider fixture id, provider teams, internally derived teams where relevant, and dependency details where relevant.
 
 ## Provider Identity Policy
 
 Provider fixture id is preferred when canonical static fixture metadata has one. Current static knockout fallback data does not yet include provider fixture ids for matches 73-104.
 
 Until that metadata is available, provider records are matched by guarded knockout records using provider `matchday` when it maps to the internal match number, then by exact/reversed team identity where possible, then by round-participant overlap for Round of 16 and later. This is a pragmatic compatibility policy, not a claim that `football-data.org` matchday is a universal official match-number field.
+
+If a provider record's `matchday` already maps to a known knockout match number (73-104), that record is not eligible for loose team-pair or round-overlap matching against a different internal match number. This preserves provider chronology when available and prevents a later provider fixture (for example, a Quarterfinal with `matchday=97`) from being consumed by an earlier matching team pair.
 
 Future provider integrations should add an explicit official match number or advancement edge when available. If a provider exposes only generic round/stage data without a trustworthy match number, the service should not infer bracket slot from round alone.
 

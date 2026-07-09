@@ -203,6 +203,53 @@ describe("OfficialKnockoutTournament", () => {
     expect(card).not.toContain("Projected participant");
   });
 
+  test("labels provider-backed live fixtures as official fixtures without official results", () => {
+    const html = renderToStaticMarkup(
+      <OfficialKnockoutTournament
+        projection={projection([
+          fixture({
+            fixtureId: "wc2026-match-97",
+            officialMatchNumber: 97,
+            stage: "quarterfinal",
+            sourceState: "projected_result",
+            status: "live",
+            sourceClassification: "provider_official_fixture",
+            providerFixtureId: "provider-qf-live",
+            home: {
+              team: "France",
+              source: { kind: "official_team", team: "France" },
+              state: "official_participant",
+              path: []
+            },
+            away: {
+              team: "Morocco",
+              source: { kind: "official_team", team: "Morocco" },
+              state: "official_participant",
+              path: []
+            },
+            projectedScore: { homeGoals: 1, awayGoals: 0 },
+            winner: {
+              team: "France",
+              source: { kind: "official_team", team: "France" },
+              state: "projected_winner",
+              path: []
+            },
+            advancementMethod: "projected_regulation"
+          })
+        ])}
+      />
+    );
+
+    const card = html.slice(html.indexOf("<article"), html.indexOf("</article>"));
+    expect(card).toContain("Official fixture");
+    expect(card).toContain("Live");
+    expect(card).toContain("France");
+    expect(card).toContain("Morocco");
+    expect(card).toContain("Projected to advance");
+    expect(card).not.toContain("Official result");
+    expect(card).not.toContain("Official winner");
+  });
+
   test("shows Awaiting official confirmation for an unresolved fixture and Cancelled for a cancelled one", () => {
     const html = renderToStaticMarkup(
       <OfficialKnockoutTournament
