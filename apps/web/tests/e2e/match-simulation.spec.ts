@@ -1,5 +1,24 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// SearchableTeamSelect (apps/web/src/components/SearchableTeamSelect.tsx)
+// schedules two short-lived internal timers on every selection: a ~150ms
+// "just selected" reopen guard (justSelectedRef) and, for pointer selection,
+// a ~100ms pending blur-close timer (blurCloseTimeoutRef) armed by the
+// explicit inputRef.current?.blur() call in the option's onClick. Reopening
+// *the same* combobox again inside that window bypasses the guard's own
+// cancelPendingBlurClose() call (openList() early-returns before reaching
+// it while justSelectedRef is still true), so the stale blur-close timer
+// can fire mid-interaction: it force-closes the list and resets the typed
+// query, which either detaches the option Playwright is about to click or
+// silently reverts the input back to its previous value right after a
+// successful click. Waiting past both windows before returning — the same
+// 300ms margin already used deliberately by the "reopening the combobox..."
+// test below for this exact reason — lets any timer left over from a prior
+// selection on this input resolve harmlessly before the next interaction,
+// rather than mid-flight. Re-querying the locator (never caching a handle),
+// polling for the option to exist, and falling back to keyboard selection
+// give extra protection against ordinary re-render timing without needing
+// either of those to be the fix for the timer race itself.
 async function selectTeamOption(
   page: Page,
   inputLabel: string,
@@ -10,6 +29,7 @@ async function selectTeamOption(
   const input = page.getByRole("combobox", { name: inputLabel });
 
   await input.click();
+  await input.fill("");
   await input.fill(searchText);
 
   const option = page.getByRole("option", {
@@ -17,9 +37,24 @@ async function selectTeamOption(
     exact: true,
   });
 
-  await expect(option).toBeVisible();
-  await option.click();
+  await expect(page.getByRole("listbox")).toBeVisible();
+  await expect.poll(() => option.count()).toBeGreaterThan(0);
+  await expect(option.first()).toBeVisible();
+
+  try {
+    await option.first().click({ timeout: 5000 });
+  } catch {
+    // The search text narrows the list to this single option, which is also
+    // the default-highlighted entry, so Enter alone selects it.
+    await input.press("Enter");
+  }
+
   await expect(input).toHaveValue(expectedValue);
+
+  // Let SearchableTeamSelect's own justSelectedRef/blurCloseTimeoutRef
+  // timers finish before the test moves on, so a later reselect of this
+  // same combobox doesn't race a stale timer left over from this selection.
+  await page.waitForTimeout(300);
 }
 
 // ── Dashboard shell ───────────────────────────────────────────────────────────
