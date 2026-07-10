@@ -10,6 +10,7 @@
     "build": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "tsx ./src/db-migrate.ts",
     "audit:live-prediction-evidence": "tsx ./src/live-prediction-evidence-gate-cli.ts",
+    "audit:evidence-coverage": "tsx ./src/evidence-coverage-audit-cli.ts",
     "audit:prediction-usefulness": "node --experimental-strip-types ./src/prediction-usefulness-audit-cli.ts",
     "capture:prematch-snapshots": "tsx ./src/prematch-snapshot-capture-cli.ts",
     "evaluate:completed-predictions": "tsx ./src/completed-prediction-evaluation-cli.ts",
