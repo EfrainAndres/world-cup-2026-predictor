@@ -2,9 +2,12 @@ import {
   HISTORICAL_VALIDATION_EPSILON,
   PROBABILITY_SUM_TOLERANCE
 } from "../../model/src/index.js";
-import { canonicalizeTeamName, normalizeTeamSearchText } from "./team-aliases.js";
 import { computeContentHash } from "./snapshot-service.js";
-import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
+import {
+  evidenceTeamKey,
+  isSupportedWorldCup2026EvidenceSnapshotFixture,
+  resolveWorldCup2026EvidenceFixture
+} from "./world-cup-2026-evidence-fixtures.js";
 import type { PredictionEvaluationStore } from "./prediction-evaluation-store.js";
 import type { AsyncPredictionEvaluationStore } from "./async-evaluation-store.js";
 import type {
@@ -95,71 +98,40 @@ function makeIssue(
 }
 
 function normalizeOutcomeTeamName(team: string): string {
-  return normalizeTeamSearchText(canonicalizeTeamName(team));
+  return evidenceTeamKey(team);
 }
 
 function resolveFixtureId(
   record: WorldCup2026ExternalFixtureRecord
 ): { fixtureId?: string; reverseFixtureId?: string } {
+  const resolved = resolveWorldCup2026EvidenceFixture(record);
+  if ("issueCode" in resolved) return {};
+
   const home = normalizeOutcomeTeamName(record.homeTeam);
   const away = normalizeOutcomeTeamName(record.awayTeam);
-  const directById = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(
-    (fixture) => fixture.id === record.providerFixtureId
-  );
+  const fixtureHome = normalizeOutcomeTeamName(resolved.fixture.homeTeam);
+  const fixtureAway = normalizeOutcomeTeamName(resolved.fixture.awayTeam);
 
-  if (directById !== undefined) {
-    const directHome = normalizeOutcomeTeamName(directById.homeTeam);
-    const directAway = normalizeOutcomeTeamName(directById.awayTeam);
-
-    if (directHome === home && directAway === away) {
-      return { fixtureId: directById.id };
-    }
-
-    if (directHome === away && directAway === home) {
-      return { reverseFixtureId: directById.id };
-    }
-
-    return {};
-  }
-
-  const directByTeams = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(
-    (fixture) =>
-      normalizeOutcomeTeamName(fixture.homeTeam) === home &&
-      normalizeOutcomeTeamName(fixture.awayTeam) === away
-  );
-  if (directByTeams !== undefined) {
-    return { fixtureId: directByTeams.id };
-  }
-
-  const reverseByTeams = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(
-    (fixture) =>
-      normalizeOutcomeTeamName(fixture.homeTeam) === away &&
-      normalizeOutcomeTeamName(fixture.awayTeam) === home
-  );
-  if (reverseByTeams !== undefined) {
-    return { reverseFixtureId: reverseByTeams.id };
-  }
+  if (fixtureHome === home && fixtureAway === away) return { fixtureId: resolved.fixture.id };
+  if (fixtureHome === away && fixtureAway === home) return { reverseFixtureId: resolved.fixture.id };
 
   return {};
 }
 
 function orientCompletedResultToCanonicalFixture(
   record: WorldCup2026ExternalFixtureRecord,
-  fixtureId: string,
+  _fixtureId: string,
+  snapshot: Pick<WorldCup2026PredictionSnapshot, "homeTeam" | "awayTeam">,
   reversed: boolean
 ): WorldCup2026ExternalFixtureRecord | undefined {
-  const fixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find((candidate) => candidate.id === fixtureId);
-  if (fixture === undefined) return undefined;
   const { homeScore, awayScore, ...recordWithoutScore } = record;
   const canonicalHomeScore = reversed ? awayScore : homeScore;
   const canonicalAwayScore = reversed ? homeScore : awayScore;
 
   return {
     ...recordWithoutScore,
-    homeTeam: fixture.homeTeam,
-    awayTeam: fixture.awayTeam,
-    ...(fixture.group === undefined ? {} : { group: fixture.group }),
-    ...(fixture.matchday === undefined ? {} : { matchday: fixture.matchday }),
+    homeTeam: snapshot.homeTeam,
+    awayTeam: snapshot.awayTeam,
     ...(canonicalHomeScore === undefined ? {} : { homeScore: canonicalHomeScore }),
     ...(canonicalAwayScore === undefined ? {} : { awayScore: canonicalAwayScore })
   };
@@ -317,6 +289,7 @@ function resolveCompletedResultForSnapshot(
       const canonicalRecord = orientCompletedResultToCanonicalFixture(
         record,
         resolved.fixtureId,
+        snapshot,
         false
       );
       if (canonicalRecord !== undefined) {
@@ -329,6 +302,7 @@ function resolveCompletedResultForSnapshot(
       const canonicalRecord = orientCompletedResultToCanonicalFixture(
         record,
         resolved.reverseFixtureId,
+        snapshot,
         true
       );
       if (canonicalRecord !== undefined) {
@@ -624,11 +598,13 @@ function buildEvaluationFromSnapshot(
     }
   }
 
-  const officialFixture = WORLD_CUP_2026_GROUP_STAGE_FIXTURES.find(
-    (fixture) => fixture.id === snapshot.fixtureId
-  );
-
-  if (officialFixture === undefined) {
+  if (
+    !isSupportedWorldCup2026EvidenceSnapshotFixture({
+      fixtureId: snapshot.fixtureId,
+      homeTeam: snapshot.homeTeam,
+      awayTeam: snapshot.awayTeam
+    })
+  ) {
     return {
       status: "not_eligible",
       issues: [

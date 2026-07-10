@@ -15,6 +15,7 @@ import {
   type WorldCup2026ExternalFixtureRecord,
   type WorldCup2026PredictionSnapshot
 } from "../src/index.js";
+import { resolveWorldCup2026EvidenceFixture } from "../src/world-cup-2026-evidence-fixtures.js";
 
 const FIXTURE_A1 = "wc2026-group-a-md1-01-mexico-vs-south-africa";
 const FIXTURE_K4 = "wc2026-group-k-md2-04-dr-congo-vs-colombia";
@@ -106,6 +107,32 @@ function completedResultWithoutScore(): WorldCup2026ExternalFixtureRecord {
   delete result.homeScore;
   delete result.awayScore;
   return result;
+}
+
+function completedKnockoutResult(
+  overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}
+): WorldCup2026ExternalFixtureRecord {
+  return {
+    providerFixtureId: "fd-qf-france-morocco",
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: "QUARTER_FINALS",
+    matchday: 97,
+    kickoffAt: "2026-07-04T20:00:00.000Z",
+    homeTeam: "France",
+    awayTeam: "Morocco",
+    status: "finished",
+    homeScore: 1,
+    awayScore: 0,
+    updatedAt: "2026-07-04T22:30:00.000Z",
+    ...overrides
+  };
+}
+
+function makeKnockoutSnapshot(overrides: Partial<WorldCup2026PredictionSnapshot> = {}): WorldCup2026PredictionSnapshot {
+  const snapshot = makeSnapshot(overrides);
+  delete snapshot.group;
+  return snapshot;
 }
 
 function makePersistence(): PredictionHistoryPersistenceResolution {
@@ -272,6 +299,41 @@ describe("automatic completed prediction evaluation", () => {
       awayGoals: 0,
       outcome: "home_win"
     });
+  });
+
+  it("evaluates provider-backed knockout snapshots when the official result is completed", async () => {
+    const resolved = resolveWorldCup2026EvidenceFixture(completedKnockoutResult());
+    expect("issueCode" in resolved).toBe(false);
+    if ("issueCode" in resolved) return;
+
+    const persistence = makePersistence();
+    await storeSnapshot(
+      persistence,
+      makeKnockoutSnapshot({
+        snapshotId: "snap-auto-knockout-qf-france-morocco",
+        fixtureId: resolved.fixture.id,
+        capturedAt: "2026-07-04T12:00:00.000Z",
+        cutoffAt: "2026-07-04T20:00:00.000Z",
+        kickoffAt: "2026-07-04T20:00:00.000Z",
+        matchday: 97,
+        homeTeam: "France",
+        awayTeam: "Morocco",
+        contentHash: "hash-auto-knockout-qf"
+      })
+    );
+
+    const report = await evaluateCompletedWorldCup2026PredictionSnapshots({
+      persistence,
+      completedResults: [completedKnockoutResult()],
+      evaluatedAt: "2026-07-04T23:00:00.000Z"
+    });
+
+    expect(report.status).toBe("success");
+    expect(report.summary.evaluated).toBe(1);
+    expect(report.summary.unresolvedFixture).toBe(0);
+    const evaluation = (await persistence.evaluationStore.list())[0];
+    expect(evaluation?.fixtureId).toBe(resolved.fixture.id);
+    expect(evaluation?.actual).toMatchObject({ homeGoals: 1, awayGoals: 0 });
   });
 
   it("rejects snapshots captured after kickoff", async () => {

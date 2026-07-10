@@ -12,6 +12,10 @@ import {
   type DatabaseConnectivityResult,
   type ProviderReadinessReport
 } from "../src/prematch-capture-preflight.js";
+import {
+  captureWorldCup2026PreMatchSnapshots
+} from "../src/prematch-snapshot-capture.js";
+import { createAsyncInMemorySnapshotStore } from "../src/async-snapshot-store.js";
 import type { WorldCup2026SyncResult } from "../src/schemas.js";
 
 // ---------------------------------------------------------------------------
@@ -61,6 +65,22 @@ function makeFixture(overrides: FixtureOverrides = {}): FixtureRecord {
     season: "2026",
     homeTeam: homeTeam ?? "Mexico",
     awayTeam: awayTeam ?? "South Africa",
+    status: status ?? "scheduled",
+    ...(kickoffAt !== undefined ? { kickoffAt } : {})
+  };
+}
+
+function makeKnockoutFixture(overrides: FixtureOverrides = {}): FixtureRecord {
+  const { kickoffAt: koOverride, homeTeam, awayTeam, status } = overrides;
+  const kickoffAt = koOverride === null ? undefined : (koOverride ?? KICKOFF);
+  return {
+    providerFixtureId: "fd-qf-france-morocco",
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: "QUARTER_FINALS",
+    matchday: 97,
+    homeTeam: homeTeam ?? "France",
+    awayTeam: awayTeam ?? "Morocco",
     status: status ?? "scheduled",
     ...(kickoffAt !== undefined ? { kickoffAt } : {})
   };
@@ -283,6 +303,32 @@ describe("ready states", () => {
     expect(result.issues).toHaveLength(0);
   });
 
+  it("uses the same eligibility boundary as dry-run capture for provider-backed knockout fixtures", async () => {
+    const fixture = makeKnockoutFixture({ kickoffAt: KICKOFF });
+    const result = await runPreMatchCaptureActivationPreflight({
+      env: VALID_ENV,
+      now: INSIDE_WINDOW,
+      checkDatabaseConnectivity: async () => CONNECTED,
+      synchronize: async () => makeSyncResult({ fixtures: [fixture] })
+    });
+
+    const dryRun = await captureWorldCup2026PreMatchSnapshots({
+      now: INSIDE_WINDOW,
+      dryRun: true,
+      persistence: ({
+        provider: "memory",
+        snapshotStore: createAsyncInMemorySnapshotStore(),
+        metadata: { provider: "memory", persistent: false, configuredProvider: "memory" }
+      } as unknown as NonNullable<Parameters<typeof captureWorldCup2026PreMatchSnapshots>[0]["persistence"]>),
+      fixtureRecords: [fixture]
+    });
+
+    expect(result.status).toBe("ready");
+    expect(result.providerReadiness?.fixturesInCurrentCaptureWindow).toBe(1);
+    expect(dryRun.eligibleFixtures).toBe(1);
+    expect(dryRun.results[0]?.action).toBe("would_capture");
+  });
+
   it("does not include FOOTBALL_DATA_API_TOKEN in the result for any status", async () => {
     const result = await runPreMatchCaptureActivationPreflight({
       env: VALID_ENV,
@@ -330,6 +376,13 @@ describe("assessProviderReadiness", () => {
     expect(r.fixturesInCurrentCaptureWindow).toBe(1);
   });
 
+  it("counts a scheduled resolved knockout fixture in the current capture window", () => {
+    const sync = makeSyncResult({ fixtures: [makeKnockoutFixture({ kickoffAt: KICKOFF })] });
+    const r = assessProviderReadiness(sync, INSIDE_WINDOW);
+    expect(r.fixturesInCurrentCaptureWindow).toBe(1);
+    expect(r.unresolvedTeams).toBe(0);
+  });
+
   it("counts fixtures NOT in window as 0 when now is too early", () => {
     const notYetInWindow = makeFixture({ kickoffAt: KICKOFF });
     const sync = makeSyncResult({ fixtures: [notYetInWindow] });
@@ -338,7 +391,7 @@ describe("assessProviderReadiness", () => {
   });
 
   it("counts unresolved teams when names are not canonical WC2026 names", () => {
-    const badFixture = makeFixture({ homeTeam: "Unknown FC", awayTeam: "Mystery United" });
+    const badFixture = makeKnockoutFixture({ homeTeam: "Unknown FC", awayTeam: "Mystery United" });
     const sync = makeSyncResult({ fixtures: [badFixture] });
     const r = assessProviderReadiness(sync, INSIDE_WINDOW);
     expect(r.unresolvedTeams).toBe(1);

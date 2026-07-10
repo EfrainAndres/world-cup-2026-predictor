@@ -208,6 +208,14 @@ async function main(): Promise<void> {
   console.log(`  skipped:            ${report.skipped}`);
   console.log(`  failed:             ${report.failed}`);
 
+  const skippedByReason = Object.entries(report.skippedByReason).sort(([a], [b]) => a.localeCompare(b));
+  if (skippedByReason.length > 0) {
+    console.log("  skipped_by_reason:");
+    for (const [reason, count] of skippedByReason) {
+      console.log(`    ${reason}: ${count}`);
+    }
+  }
+
   if (report.failed > 0) {
     for (const result of report.results) {
       if (result.action === "failed") {
