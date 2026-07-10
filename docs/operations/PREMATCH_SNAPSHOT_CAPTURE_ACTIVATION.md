@@ -6,7 +6,7 @@ Phase 12.18A2. Describes how to activate, verify, and operate the automated pre-
 
 ## Overview
 
-The capture pipeline discovers upcoming World Cup 2026 fixtures from the `football_data_org` provider, generates one deterministic pre-match prediction per fixture, and persists an immutable snapshot before kickoff. This document explains how to take that pipeline from zero to a running scheduled workflow.
+The capture pipeline discovers upcoming World Cup 2026 fixtures from the `football_data_org` provider, generates one deterministic pre-match prediction per fixture, and persists an immutable snapshot before kickoff. It supports static group-stage fixture identities and provider-backed knockout fixture identities when both participants are resolved. This document explains how to take that pipeline from zero to a running scheduled workflow.
 
 ---
 
@@ -85,7 +85,7 @@ PREMATCH_CAPTURE_MODE=dry_run \
   pnpm --filter @world-cup-2026-predictor/api capture:prematch-snapshots
 ```
 
-Output includes `eligible`, `would_capture`, and `skipped` counts. No `captured` write occurs.
+Output includes `eligible`, `would_capture`, `skipped`, and `skipped_by_reason` counts. No `captured` write occurs.
 
 ### capture
 
@@ -153,9 +153,19 @@ Pre-match snapshot capture complete.
   already captured:   0
   skipped:            <N>
   failed:             0
+  skipped_by_reason:
+    already_completed: <N>
+    too_early: <N>
+    window_closed: <N>
+    unsupported_fixture_stage: <N>
+    unresolved_teams: <N>
+    invalid_kickoff: <N>
+    already_captured: <N>
 ```
 
 In dry run mode `captured` reflects `would_capture` count (no actual write).
+
+If preflight reports `in_current_capture_window: 1`, dry run must now show either `eligible: 1`, `already captured: 1`, or a specific `skipped_by_reason` bucket for that same fixture. A prior mismatch occurred because preflight counted scheduled provider fixtures by timing only, while capture only resolved static group-stage fixtures. A provider-backed knockout fixture could therefore be counted as in-window by preflight but skipped as unsupported by capture without an aggregate reason. Preflight and capture now share the same fixture identity resolver and eligibility boundaries.
 
 ### Step 3: First Real Capture
 
@@ -253,6 +263,8 @@ A partial failure exits non-zero and lists the failed fixture IDs with sanitized
 | --- | --- | --- |
 | `prediction_failed` | Predictor returned non-success for a resolvable fixture. | Check Elo pipeline; verify team names are recognized. |
 | `unresolved_teams` | Home or away team name not found in the Elo pipeline. | Add team aliases or verify provider team names. |
+| `unsupported_fixture_stage` | Provider record cannot be classified as group stage or a supported knockout stage. | Verify provider `stage`, `matchday`, and team data. |
+| `invalid_kickoff` | Kickoff is missing or unparsable. | Verify provider kickoff data. |
 | `persistence_failed` | Snapshot store write failed. | Check `DATABASE_URL` connectivity and table health. |
 | `snapshot_identity_conflict` | Conflicting snapshot with same idempotency key and different content hash. | Investigate model version or policy mismatch. |
 | `look_ahead_guard` | Final guard caught a post-kickoff `now`. | Likely a clock skew; the run should recover on the next attempt. |
@@ -315,3 +327,4 @@ The GitHub Actions workflow, provider configuration, database connectivity, pref
 - The capture window (24h → 15m) means the window for any single fixture lasts approximately 23h 45m. Missing it requires waiting for the next eligible fixture.
 - Advisory lock mutual exclusion is per-database-connection; two processes on different hosts can run concurrently if the advisory lock is not held. The lock is always attempted before starting the capture loop.
 - The `PREMATCH_CAPTURE_MAX_FIXTURES_PER_RUN` limit (32) caps how many fixtures can be captured in a single run. All eligible fixtures across all groups could be queued in one day if scheduling concentrates fixtures, but 32 is well above any realistic single-day peak.
+- Knockout snapshots are provider-backed and require canonicalizable teams, a supported knockout stage or official knockout match number, scheduled status, kickoff time, and `capturedAt < kickoffAt`. They do not write a fake group code because the persistence schema only allows group codes A-L.

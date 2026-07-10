@@ -31,7 +31,10 @@ import {
   buildWorldCup2026PredictionSnapshot,
   WORLD_CUP_2026_PREDICTION_MODEL_VERSION
 } from "./snapshot-service.js";
-import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
+import {
+  resolveWorldCup2026EvidenceFixture,
+  type WorldCup2026EvidenceFixture
+} from "./world-cup-2026-evidence-fixtures.js";
 import { SnapshotStorageError } from "./async-snapshot-store.js";
 import {
   resolvePredictionHistoryPersistence,
@@ -42,8 +45,7 @@ import type {
   ApiMetadata,
   PredictMatchFromLiveEloRequest,
   PredictMatchFromLiveEloResponse,
-  WorldCup2026ExternalFixtureRecord,
-  WorldCup2026Fixture
+  WorldCup2026ExternalFixtureRecord
 } from "./schemas.js";
 
 // ---------------------------------------------------------------------------
@@ -275,6 +277,24 @@ export interface PreMatchSnapshotCaptureResult {
   issueCode?: string;
 }
 
+export type PreMatchCaptureSkipReason =
+  | "already_completed"
+  | "already_started"
+  | "too_early"
+  | "window_closed"
+  | "unsupported_fixture_stage"
+  | "unresolved_teams"
+  | "invalid_kickoff"
+  | "already_captured"
+  | "provider_invalid"
+  | "capture_disabled"
+  | "max_fixtures_per_run_reached"
+  | "prediction_failed"
+  | "persistence_failed"
+  | "snapshot_identity_conflict"
+  | "look_ahead_guard"
+  | "other";
+
 export interface CapturePreMatchSnapshotsReport {
   generatedAt: string;
   dryRun: boolean;
@@ -286,6 +306,7 @@ export interface CapturePreMatchSnapshotsReport {
   alreadyCaptured: number;
   skipped: number;
   failed: number;
+  skippedByReason: Partial<Record<PreMatchCaptureSkipReason, number>>;
   results: PreMatchSnapshotCaptureResult[];
   metadata: ApiMetadata;
 }
@@ -306,46 +327,39 @@ export interface CapturePreMatchSnapshotsInput {
 }
 
 interface DiscoveredFixture {
-  fixture: WorldCup2026Fixture;
+  fixture: WorldCup2026EvidenceFixture;
   kickoffAt: string | undefined;
   status: WorldCup2026ExternalFixtureRecord["status"];
 }
 
-function buildFixtureLookup(): {
-  byId: Map<string, WorldCup2026Fixture>;
-  byTeams: Map<string, WorldCup2026Fixture>;
-} {
-  return {
-    byId: new Map(WORLD_CUP_2026_GROUP_STAGE_FIXTURES.map((fixture) => [fixture.id, fixture])),
-    byTeams: new Map(
-      WORLD_CUP_2026_GROUP_STAGE_FIXTURES.map((fixture) => [
-        `${fixture.homeTeam}|${fixture.awayTeam}`,
-        fixture
-      ])
-    )
-  };
+interface UnsupportedFixture {
+  record: WorldCup2026ExternalFixtureRecord;
+  eligibility: PreMatchCaptureEligibility;
+  issueCode: string;
 }
 
 function discoverFixtures(
   records: readonly WorldCup2026ExternalFixtureRecord[],
   fixtureIds: readonly string[] | undefined
-): { discovered: DiscoveredFixture[]; unsupported: WorldCup2026ExternalFixtureRecord[] } {
-  const lookup = buildFixtureLookup();
+): { discovered: DiscoveredFixture[]; unsupported: UnsupportedFixture[] } {
   const allowList = fixtureIds === undefined ? undefined : new Set(fixtureIds);
   const seen = new Set<string>();
   const discovered: DiscoveredFixture[] = [];
-  const unsupported: WorldCup2026ExternalFixtureRecord[] = [];
+  const unsupported: UnsupportedFixture[] = [];
 
   for (const record of records) {
-    const fixture =
-      lookup.byId.get(record.providerFixtureId) ??
-      lookup.byTeams.get(`${record.homeTeam}|${record.awayTeam}`);
+    const resolved = resolveWorldCup2026EvidenceFixture(record);
 
-    if (fixture === undefined) {
-      unsupported.push(record);
+    if ("issueCode" in resolved) {
+      unsupported.push({
+        record,
+        eligibility: resolved.issueCode === "unresolved_teams" ? "unresolved_teams" : "unsupported_fixture",
+        issueCode: resolved.issueCode
+      });
       continue;
     }
 
+    const { fixture } = resolved;
     if (allowList !== undefined && !allowList.has(fixture.id)) {
       continue;
     }
@@ -374,6 +388,48 @@ function discoverFixtures(
   });
 
   return { discovered, unsupported };
+}
+
+function skipReasonForResult(result: PreMatchSnapshotCaptureResult): PreMatchCaptureSkipReason | undefined {
+  if (result.action === "captured" || result.action === "would_capture") return undefined;
+  if (result.action === "already_captured" || result.eligibility === "already_captured") return "already_captured";
+  if (result.issueCode === "fixture_completed") return "already_completed";
+  if (
+    result.issueCode === "fixture_live" ||
+    result.issueCode === "fixture_halftime" ||
+    result.issueCode === "kickoff_reached"
+  ) return "already_started";
+  if (result.eligibility === "too_early") return "too_early";
+  if (result.eligibility === "window_closed") return "window_closed";
+  if (result.eligibility === "missing_kickoff" || result.issueCode === "invalid_kickoff_timestamp") return "invalid_kickoff";
+  if (result.eligibility === "unresolved_teams" || result.issueCode === "unresolved_teams") return "unresolved_teams";
+  if (result.eligibility === "provider_invalid") return "provider_invalid";
+  if (
+    result.issueCode === "unsupported_fixture_stage" ||
+    result.issueCode === "not_official_fixture" ||
+    result.issueCode === "fixture_postponed" ||
+    result.issueCode === "fixture_cancelled" ||
+    result.issueCode === "fixture_status_unknown" ||
+    result.issueCode === "fixture_status_unsupported"
+  ) return "unsupported_fixture_stage";
+  if (result.issueCode === "capture_disabled") return "capture_disabled";
+  if (result.issueCode === "max_fixtures_per_run_reached") return "max_fixtures_per_run_reached";
+  if (result.issueCode === "prediction_failed") return "prediction_failed";
+  if (result.issueCode === "persistence_failed") return "persistence_failed";
+  if (result.issueCode === "snapshot_identity_conflict") return "snapshot_identity_conflict";
+  if (result.issueCode === "look_ahead_guard") return "look_ahead_guard";
+  return "other";
+}
+
+function summarizeSkippedByReason(
+  results: readonly PreMatchSnapshotCaptureResult[]
+): Partial<Record<PreMatchCaptureSkipReason, number>> {
+  const counts: Partial<Record<PreMatchCaptureSkipReason, number>> = {};
+  for (const result of results) {
+    const reason = skipReasonForResult(result);
+    if (reason !== undefined) counts[reason] = (counts[reason] ?? 0) + 1;
+  }
+  return counts;
 }
 
 function predictorTeamIssue(prediction: PredictMatchFromLiveEloResponse): boolean {
@@ -656,18 +712,21 @@ export async function captureWorldCup2026PreMatchSnapshots(
 
   // Unsupported provider records (not official WC2026 fixtures) are reported but
   // never silently dropped.
-  for (const record of unsupported) {
+  for (const entry of unsupported) {
+    const { record } = entry;
     results.push({
       fixtureId: record.providerFixtureId,
       homeTeam: record.homeTeam,
       awayTeam: record.awayTeam,
       kickoffAt: record.kickoffAt ?? null,
-      eligibility: "unsupported_fixture",
+      eligibility: entry.eligibility,
       action: "skipped",
-      issueCode: "not_official_fixture"
+      issueCode: entry.issueCode
     });
     skipped += 1;
   }
+
+  const skippedByReason = summarizeSkippedByReason(results);
 
   lastRunStatus = {
     lastAttemptedRunAt: now,
@@ -691,6 +750,7 @@ export async function captureWorldCup2026PreMatchSnapshots(
     alreadyCaptured,
     skipped,
     failed,
+    skippedByReason,
     results,
     metadata: buildApiMetadata(
       [
@@ -818,6 +878,7 @@ export async function runScheduledPreMatchSnapshotCapture(
       alreadyCaptured: 0,
       skipped: 0,
       failed: 0,
+      skippedByReason: {},
       results: [],
       metadata: buildApiMetadata(["Another capture run is already in progress. This run was skipped."], {
         databaseEnabled: persistence.metadata.persistent

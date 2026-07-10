@@ -23,6 +23,7 @@ import {
   type WorldCup2026PredictionEvaluation,
   type WorldCup2026PredictionSnapshot
 } from "../src/index.js";
+import { resolveWorldCup2026EvidenceFixture } from "../src/world-cup-2026-evidence-fixtures.js";
 
 const FIXTURE_A1 = "wc2026-group-a-md1-01-mexico-vs-south-africa";
 const FIXTURE_B1 = "wc2026-group-b-md1-01-canada-vs-bosnia-herzegovina";
@@ -111,6 +112,32 @@ function makeCompletedResult(
     updatedAt: "2026-06-11T21:30:00Z",
     ...overrides
   };
+}
+
+function makeCompletedKnockoutResult(
+  overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}
+): WorldCup2026ExternalFixtureRecord {
+  return {
+    providerFixtureId: "fd-qf-france-morocco",
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: "QUARTER_FINALS",
+    matchday: 97,
+    kickoffAt: "2026-07-04T20:00:00.000Z",
+    homeTeam: "France",
+    awayTeam: "Morocco",
+    status: "finished",
+    homeScore: 1,
+    awayScore: 0,
+    updatedAt: "2026-07-04T22:30:00.000Z",
+    ...overrides
+  };
+}
+
+function makeKnockoutSnapshot(overrides: Partial<WorldCup2026PredictionSnapshot> = {}): WorldCup2026PredictionSnapshot {
+  const snapshot = makeSnapshot(overrides);
+  delete snapshot.group;
+  return snapshot;
 }
 
 describe("prediction evaluation helpers", () => {
@@ -384,6 +411,66 @@ describe("prediction evaluation service", () => {
     expect(unsupported.issues[0]?.code).toBe("unsupported_snapshot_state");
     expect(invalidFixture.status).toBe("not_eligible");
     expect(invalidFixture.issues[0]?.code).toBe("invalid_fixture_identity");
+  });
+
+  it("evaluates a provider-backed knockout snapshot against a completed official result", () => {
+    const resolved = resolveWorldCup2026EvidenceFixture(makeCompletedKnockoutResult());
+    expect("issueCode" in resolved).toBe(false);
+    if ("issueCode" in resolved) return;
+
+    const store = createInMemoryPredictionEvaluationStore();
+    const result = evaluateWorldCup2026PredictionSnapshot({
+      snapshot: makeKnockoutSnapshot({
+        snapshotId: "snap-knockout-qf-france-morocco",
+        fixtureId: resolved.fixture.id,
+        capturedAt: "2026-07-04T12:00:00.000Z",
+        cutoffAt: "2026-07-04T20:00:00.000Z",
+        kickoffAt: "2026-07-04T20:00:00.000Z",
+        matchday: 97,
+        homeTeam: "France",
+        awayTeam: "Morocco",
+        contentHash: "hash-knockout-qf-france-morocco"
+      }),
+      completedResults: [makeCompletedKnockoutResult()],
+      evaluationStore: store,
+      resultSource: "football_data_org_results_provider",
+      evaluatedAt: "2026-07-04T23:00:00.000Z"
+    });
+
+    expect(result.status).toBe("evaluated");
+    expect(result.issues).toEqual([]);
+    expect(result.evaluation?.fixtureId).toBe(resolved.fixture.id);
+    expect(result.evaluation?.actual).toMatchObject({
+      homeGoals: 1,
+      awayGoals: 0,
+      outcome: "home_win"
+    });
+  });
+
+  it("rejects knockout snapshots captured at or after kickoff", () => {
+    const resolved = resolveWorldCup2026EvidenceFixture(makeCompletedKnockoutResult());
+    expect("issueCode" in resolved).toBe(false);
+    if ("issueCode" in resolved) return;
+
+    const store = createInMemoryPredictionEvaluationStore();
+    const result = evaluateWorldCup2026PredictionSnapshot({
+      snapshot: makeKnockoutSnapshot({
+        snapshotId: "snap-knockout-post-kickoff",
+        fixtureId: resolved.fixture.id,
+        capturedAt: "2026-07-04T20:00:00.000Z",
+        cutoffAt: "2026-07-04T20:00:00.000Z",
+        kickoffAt: "2026-07-04T20:00:00.000Z",
+        matchday: 97,
+        homeTeam: "France",
+        awayTeam: "Morocco",
+        contentHash: "hash-knockout-post-kickoff"
+      }),
+      completedResults: [makeCompletedKnockoutResult()],
+      evaluationStore: store
+    });
+
+    expect(result.status).toBe("not_eligible");
+    expect(result.issues[0]?.code).toBe("snapshot_after_kickoff");
   });
 
   it("creates idempotent immutable evaluations without mutating the original snapshot", () => {

@@ -27,6 +27,7 @@ import {
   WORLD_CUP_2026_GROUP_STAGE_FIXTURES,
   WORLD_CUP_2026_LOCAL_STATIC_RESULTS
 } from "../src/world-cup-2026-teams.js";
+import { resolveWorldCup2026EvidenceFixture } from "../src/world-cup-2026-evidence-fixtures.js";
 import type { PredictionHistoryPersistenceResolution } from "../src/persistence-runtime.js";
 import type {
   PredictMatchFromLiveEloResponse,
@@ -69,6 +70,23 @@ function record(id: string, overrides: RecordOverrides = {}): WorldCup2026Extern
     ...(kickoffAt !== null ? { kickoffAt } : {}),
     ...(overrides.homeScore !== undefined ? { homeScore: overrides.homeScore } : {}),
     ...(overrides.awayScore !== undefined ? { awayScore: overrides.awayScore } : {})
+  };
+}
+
+function knockoutRecord(
+  overrides: Partial<WorldCup2026ExternalFixtureRecord> = {}
+): WorldCup2026ExternalFixtureRecord {
+  return {
+    providerFixtureId: "fd-qf-france-morocco",
+    competition: "FIFA World Cup",
+    season: "2026",
+    stage: "QUARTER_FINALS",
+    matchday: 97,
+    kickoffAt: KICKOFF,
+    homeTeam: "France",
+    awayTeam: "Morocco",
+    status: "scheduled",
+    ...overrides
   };
 }
 
@@ -358,6 +376,103 @@ describe("dry-run mode", () => {
       })
     ).resolves.toBeDefined();
   });
+
+  it("reports skip reason counts without exposing raw provider details", async () => {
+    const store = createAsyncInMemorySnapshotStore();
+    const report = await captureWorldCup2026PreMatchSnapshots({
+      now: INSIDE_WINDOW,
+      dryRun: true,
+      persistence: makeResolution(store),
+      fixtureRecords: [
+        record(FIXTURE_A1, { status: "finished", homeScore: 1, awayScore: 0 }),
+        record(FIXTURE_A2, { kickoffAt: null }),
+        {
+          providerFixtureId: "external-secret-ish",
+          competition: "FIFA World Cup",
+          season: "2026",
+          stage: "QUARTER_FINALS",
+          homeTeam: "Unknown FC",
+          awayTeam: "Mystery United",
+          status: "scheduled",
+          kickoffAt: KICKOFF
+        }
+      ]
+    });
+
+    expect(report.skippedByReason).toMatchObject({
+      already_completed: 1,
+      invalid_kickoff: 1,
+      unresolved_teams: 1
+    });
+    expect(JSON.stringify(report)).not.toContain("postgres://");
+    expect(JSON.stringify(report)).not.toContain("token");
+  });
+});
+
+describe("provider-backed knockout capture", () => {
+  it("treats a scheduled resolved knockout fixture in the capture window as eligible", async () => {
+    const store = createAsyncInMemorySnapshotStore();
+    const report = await captureWorldCup2026PreMatchSnapshots({
+      now: INSIDE_WINDOW,
+      dryRun: true,
+      persistence: makeResolution(store),
+      fixtureRecords: [knockoutRecord()]
+    });
+
+    expect(report.eligibleFixtures).toBe(1);
+    expect(report.captured).toBe(1);
+    expect(report.skipped).toBe(0);
+    expect(report.results[0]).toMatchObject({
+      homeTeam: "France",
+      awayTeam: "Morocco",
+      action: "would_capture"
+    });
+    expect(report.results[0]?.fixtureId).toMatch(/^wc2026-knockout-quarterfinal-/);
+  });
+
+  it("captures a knockout snapshot with deterministic provider-backed identity and no group code", async () => {
+    const store = createAsyncInMemorySnapshotStore();
+    const resolved = resolveWorldCup2026EvidenceFixture(knockoutRecord());
+    expect("issueCode" in resolved).toBe(false);
+    if ("issueCode" in resolved) return;
+
+    const report = await captureWorldCup2026PreMatchSnapshots({
+      now: INSIDE_WINDOW,
+      persistence: makeResolution(store),
+      predictor: predictMatchFromLiveElo,
+      fixtureRecords: [knockoutRecord()]
+    });
+
+    expect(report.captured).toBe(1);
+    const [snapshot] = await store.list();
+    expect(snapshot?.fixtureId).toBe(resolved.fixture.id);
+    expect(snapshot?.group).toBeUndefined();
+    expect(snapshot?.matchday).toBe(97);
+    expect(snapshot?.homeTeam).toBe("France");
+    expect(snapshot?.awayTeam).toBe("Morocco");
+    expect(Date.parse(snapshot!.capturedAt)).toBeLessThan(Date.parse(snapshot!.kickoffAt!));
+  });
+
+  it("does not create retroactive snapshots for completed knockout fixtures", async () => {
+    const store = createAsyncInMemorySnapshotStore();
+    const report = await captureWorldCup2026PreMatchSnapshots({
+      now: INSIDE_WINDOW,
+      persistence: makeResolution(store),
+      predictor: predictMatchFromLiveElo,
+      fixtureRecords: [
+        knockoutRecord({
+          status: "finished",
+          homeScore: 1,
+          awayScore: 0
+        })
+      ]
+    });
+
+    expect(report.captured).toBe(0);
+    expect(report.skipped).toBe(1);
+    expect(report.skippedByReason.already_completed).toBe(1);
+    expect((await store.list())).toHaveLength(0);
+  });
 });
 
 describe("failure handling without fabrication", () => {
@@ -484,7 +599,7 @@ describe("exclusion reporting", () => {
     });
     expect(report.skipped).toBe(1);
     expect(report.results[0]?.eligibility).toBe("unsupported_fixture");
-    expect(report.results[0]?.issueCode).toBe("not_official_fixture");
+    expect(report.results[0]?.issueCode).toBe("unsupported_fixture_stage");
   });
 });
 

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { LIVE_ELO_PIPELINE_VERSION } from "../../model/src/index.js";
-import type { PredictMatchFromLiveEloSuccessResponse, WorldCup2026Fixture } from "./schemas.js";
+import type { PredictMatchFromLiveEloSuccessResponse } from "./schemas.js";
 import type { WorldCup2026PredictionSnapshot } from "./schemas.js";
 
 export const WORLD_CUP_2026_PREDICTION_MODEL_VERSION = `wc2026-prediction-${LIVE_ELO_PIPELINE_VERSION}`;
@@ -38,7 +38,13 @@ export function buildSnapshotId(idempotencyKey: string): string {
 }
 
 export interface BuildSnapshotInput {
-  fixture: WorldCup2026Fixture;
+  fixture: {
+    id: string;
+    homeTeam: string;
+    awayTeam: string;
+    group?: string;
+    matchday?: number;
+  };
   prediction: PredictMatchFromLiveEloSuccessResponse;
   capturedAt: string;
   cutoffAt: string;

@@ -16,7 +16,9 @@ import {
   evaluatePreMatchCaptureEligibility,
   resolvePreMatchSnapshotCapturePolicy
 } from "./prematch-snapshot-capture.js";
-import { WORLD_CUP_2026_GROUP_STAGE_FIXTURES } from "./world-cup-2026-teams.js";
+import {
+  resolveWorldCup2026EvidenceFixture
+} from "./world-cup-2026-evidence-fixtures.js";
 import type { WorldCup2026SyncResult } from "./schemas.js";
 import type { SynchronizeWorldCup2026ResultsInput } from "./live-results-sync.js";
 
@@ -78,10 +80,6 @@ export interface RunPreMatchCaptureActivationPreflightInput {
 // Provider readiness assessment (pure, injectable)
 // ---------------------------------------------------------------------------
 
-const WC2026_TEAM_NAMES = new Set<string>(
-  WORLD_CUP_2026_GROUP_STAGE_FIXTURES.flatMap((f) => [f.homeTeam, f.awayTeam])
-);
-
 export function assessProviderReadiness(
   syncResult: WorldCup2026SyncResult,
   now: string
@@ -105,12 +103,14 @@ export function assessProviderReadiness(
     const missingKickoffForScheduled = record.status === "scheduled" && !hasKickoff;
     if (teamsEmpty || missingKickoffForScheduled) invalidFixtures++;
 
-    // Unresolved: team name not in the canonical WC2026 roster.
-    if (!WC2026_TEAM_NAMES.has(record.homeTeam) || !WC2026_TEAM_NAMES.has(record.awayTeam)) {
+    const resolvedFixture = resolveWorldCup2026EvidenceFixture(record);
+
+    // Unresolved: team names cannot canonicalize to the WC2026 roster.
+    if ("issueCode" in resolvedFixture && resolvedFixture.issueCode === "unresolved_teams") {
       unresolvedTeams++;
     }
 
-    if (record.status === "scheduled" && hasKickoff) {
+    if (!("issueCode" in resolvedFixture) && record.status === "scheduled" && hasKickoff) {
       const kickoffMs = Date.parse(record.kickoffAt!);
       if (kickoffMs > nowMs) {
         upcomingFixtures++;
