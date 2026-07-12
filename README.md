@@ -189,7 +189,7 @@ The QA strategy is a major portfolio focus. Coverage includes:
 - Historical validation and replay checks.
 - Local commands that match CI checks.
 
-The project uses data fixtures and test helper factories. It does not currently implement a custom Playwright fixture architecture with `test.extend()`, and it does not use a formal Page Object Model. The E2E suite uses direct accessible locators plus local helpers where justified; shared helpers would be the next maintainability step before adding heavier framework patterns.
+The project uses data fixtures, test helper factories, and a focused Playwright architecture for the Match Simulation / Predictions workflow. The reference E2E pattern uses custom fixtures, a `PredictionsPage`, a reusable `SearchableTeamSelect` component object, a `PredictionFlow`, and typed prediction test data while keeping business assertions in specs. See `docs/testing/PLAYWRIGHT_TEST_ARCHITECTURE.md` for the migration policy.
 
 This makes the project relevant for QA Engineer, Senior QA, and SDET interviews because the test strategy covers both product behavior and technical contracts.
 
