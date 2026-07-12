@@ -1,152 +1,161 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "../fixtures/test.fixture";
+import {
+  tournamentBracketRoundKeys,
+  tournamentConfirmedRoundOf32Fixtures,
+  tournamentLaterRoundFixtureCounts,
+  tournamentRoundKeys,
+  tournamentRounds,
+  tournamentSentinelTexts,
+  tournamentSmokeStats,
+  tournamentStaleTopologyRegressions,
+  tournamentViewports
+} from "../data/tournament-test-data";
 
-const REQUIRED_VIEWPORTS = [
-  { width: 320, height: 568 },
-  { width: 375, height: 667 },
-  { width: 390, height: 844 },
-  { width: 430, height: 932 },
-  { width: 768, height: 1024 },
-  { width: 1440, height: 900 }
-];
+test("Tournament page renders the official knockout experience @smoke", async ({ tournamentPage }) => {
+  await tournamentPage.goto();
 
-test("Tournament page renders the official knockout experience @smoke", async ({ page }) => {
-  await page.goto("/tournament");
-
-  await expect(page).toHaveTitle(/Tournament · World Cup 2026 Predictor/);
-  await expect(page.getByRole("heading", { name: "Tournament", exact: true })).toBeVisible();
-  await expect(page.getByText("Official knockout topology")).toBeVisible();
-  await expect(page.getByText("Official R32 fixtures")).toBeVisible();
-  await expect(page.getByText("16").first()).toBeVisible();
+  await expect(tournamentPage.page).toHaveTitle(/Tournament · World Cup 2026 Predictor/);
+  await expect(tournamentPage.titleHeading).toBeVisible();
+  await expect(tournamentPage.page.getByText(tournamentSmokeStats.officialKnockoutTopology)).toBeVisible();
+  await expect(tournamentPage.page.getByText(tournamentSmokeStats.officialRoundOf32Fixtures)).toBeVisible();
+  await expect(tournamentPage.page.getByText(tournamentSmokeStats.officialRoundOf32FixtureCount).first()).toBeVisible();
 });
 
-test("Tournament nav item is active on /tournament", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto("/tournament");
+test("Tournament nav item is active on /tournament", async ({ tournamentPage }) => {
+  await tournamentPage.page.setViewportSize({ width: 1280, height: 800 });
+  await tournamentPage.goto();
 
-  const nav = page.getByRole("navigation", { name: "Primary navigation" });
-  await expect(nav.getByRole("link", { name: "Tournament" })).toHaveAttribute("aria-current", "page");
+  await expect(tournamentPage.primaryNavigation.getByRole("link", { name: "Tournament" })).toHaveAttribute(
+    "aria-current",
+    "page"
+  );
 });
 
-test("Round navigation contains seven exact destinations", async ({ page }) => {
-  await page.goto("/tournament");
+test("Round navigation contains seven exact destinations", async ({ tournamentPage, tournamentRoundNav }) => {
+  await tournamentPage.goto();
 
-  const nav = page.getByRole("navigation", { name: "Tournament round navigation" });
-  await expect(nav.getByRole("link", { name: "Champion", exact: true })).toHaveAttribute("href", "#tournament-champion-outlook");
-  await expect(nav.getByRole("link", { name: "Round of 32", exact: true })).toHaveAttribute("href", "#tournament-round-of-32");
-  await expect(nav.getByRole("link", { name: "Round of 16", exact: true })).toHaveAttribute("href", "#tournament-round-of-16");
-  await expect(nav.getByRole("link", { name: "Quarterfinals", exact: true })).toHaveAttribute("href", "#tournament-quarterfinals");
-  await expect(nav.getByRole("link", { name: "Semifinals", exact: true })).toHaveAttribute("href", "#tournament-semifinals");
-  await expect(nav.getByRole("link", { name: "Final", exact: true })).toHaveAttribute("href", "#tournament-final");
-  await expect(nav.getByRole("link", { name: "Third Place", exact: true })).toHaveAttribute("href", "#tournament-third-place");
+  for (const round of tournamentRoundKeys) {
+    await expect(tournamentRoundNav.link(round)).toHaveAttribute("href", tournamentRounds[round].href);
+  }
 });
 
-test("Tournament page shows one complete bracket with all six stages", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page shows one complete bracket with all six stages", async ({ tournamentPage, knockoutBracket }) => {
+  await tournamentPage.goto();
 
-  const bracket = page.getByRole("region", { name: "Knockout bracket", exact: true });
-  await expect(bracket).toHaveCount(1);
-  await expect(bracket).toBeVisible();
+  await expect(knockoutBracket.root).toHaveCount(1);
+  await expect(knockoutBracket.root).toBeVisible();
 
-  await expect(page.getByRole("region", { name: "Round of 32", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Round of 16", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Quarterfinals", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Semifinals", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Final", exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Third Place Match", exact: true })).toBeVisible();
+  for (const round of tournamentBracketRoundKeys) {
+    await expect(tournamentPage.getRoundSection(round)).toBeVisible();
+  }
 });
 
-test("Tournament page shows exactly 16 official Round-of-32 fixtures", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page shows exactly 16 official Round-of-32 fixtures", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  const roundOf32 = page.locator("section#tournament-round-of-32");
-  await expect(roundOf32.locator("[data-knockout-fixture]")).toHaveCount(16);
+  const roundOf32 = knockoutBracket.round("roundOf32");
+  await expect(knockoutBracket.fixtureCardsInRound("roundOf32")).toHaveCount(16);
   await expect(roundOf32.getByText("Official fixture")).toHaveCount(16);
   await expect(roundOf32.getByText("Projected result")).toHaveCount(16);
 });
 
-test("Tournament page shows confirmed official Round-of-32 matchups", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page shows confirmed official Round-of-32 matchups", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  const examples = [
-    [73, "South Africa", "Canada"],
-    [74, "Brazil", "Japan"],
-    [80, "England", "DR Congo"],
-    [82, "United States", "Bosnia-Herzegovina"],
-    [87, "Argentina", "Cape Verde"],
-    [88, "Colombia", "Ghana"]
-  ] as const;
-
-  for (const [matchNumber, homeTeam, awayTeam] of examples) {
-    const card = page.locator(`[data-knockout-fixture="${matchNumber}"]`);
-    await expect(card).toBeVisible();
-    await expect(card.getByTitle(homeTeam).first()).toBeVisible();
-    await expect(card.getByTitle(awayTeam).first()).toBeVisible();
-    await expect(card.getByText("Official fixture")).toBeVisible();
+  for (const fixture of tournamentConfirmedRoundOf32Fixtures) {
+    const match = knockoutBracket.match(fixture.matchNumber);
+    await expect(match.card).toBeVisible();
+    await expect(match.teamName(fixture.homeTeam)).toBeVisible();
+    await expect(match.teamName(fixture.awayTeam)).toBeVisible();
+    await expect(match.badge("Official fixture")).toBeVisible();
   }
 });
 
-test("Tournament page distinguishes projected participants from official fixtures", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page distinguishes projected participants from official fixtures", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  const roundOf16 = page.locator("section#tournament-round-of-16");
+  const roundOf16 = knockoutBracket.round("roundOf16");
   await expect(roundOf16.getByText("Projected participant").first()).toBeVisible();
   await expect(roundOf16.getByText("Official participant")).toHaveCount(0);
 });
 
-test("Tournament projected fixtures explain regulation score and advancement method", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament projected fixtures explain regulation score and advancement method", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  const firstFixture = page.locator("[data-knockout-fixture]").first();
+  const firstFixture = knockoutBracket.fixtureCards().first();
   await expect(firstFixture.getByText("Projected after regulation")).toBeVisible();
   await expect(firstFixture.getByText("Projected to advance")).toBeVisible();
   await expect(firstFixture.getByText("Advancement:")).toBeVisible();
 });
 
-test("Tournament page shows champion, runner-up, third place, and fourth place", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page shows champion, runner-up, third place, and fourth place", async ({
+  championOutlook,
+  tournamentPage
+}) => {
+  await tournamentPage.goto();
 
-  const champion = page.getByRole("region", { name: "Champion outlook", exact: true });
-  await expect(champion.getByText("Champion", { exact: true })).toBeVisible();
-  await expect(champion.getByText("Runner-up", { exact: true })).toBeVisible();
-  await expect(champion.getByText("Third place", { exact: true })).toBeVisible();
-  await expect(champion.getByText("Fourth place", { exact: true })).toBeVisible();
-  await expect(champion.getByText("Projected", { exact: true })).toHaveCount(4);
+  await expect(championOutlook.podiumLabel("Champion")).toBeVisible();
+  await expect(championOutlook.podiumLabel("Runner-up")).toBeVisible();
+  await expect(championOutlook.podiumLabel("Third place")).toBeVisible();
+  await expect(championOutlook.podiumLabel("Fourth place")).toBeVisible();
+  await expect(championOutlook.resolutionBadge("Projected")).toHaveCount(4);
 });
 
-test("Tournament later rounds are fully populated from projections", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament later rounds are fully populated from projections", async ({ tournamentPage, knockoutBracket }) => {
+  await tournamentPage.goto();
 
-  for (const [sectionId, fixtureCount] of [
-    ["tournament-round-of-16", 8],
-    ["tournament-quarterfinals", 4],
-    ["tournament-semifinals", 2],
-    ["tournament-final", 1],
-    ["tournament-third-place", 1]
-  ] as const) {
-    const section = page.locator(`section#${sectionId}`);
-    await expect(section.locator("[data-knockout-fixture]")).toHaveCount(fixtureCount);
+  for (const { round, fixtureCount } of tournamentLaterRoundFixtureCounts) {
+    const section = knockoutBracket.round(round);
+    await expect(knockoutBracket.fixtureCardsInRound(round)).toHaveCount(fixtureCount);
     await expect(section.getByText("Awaiting participant")).toHaveCount(0);
     await expect(section.getByText("Projected to advance").first()).toBeVisible();
   }
 });
 
-test("Tournament Final and Third Place stay projected until official dependencies resolve", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament Final and Third Place stay projected until official dependencies resolve", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  const final = page.locator("section#tournament-final");
-  const thirdPlace = page.locator("section#tournament-third-place");
+  const final = knockoutBracket.round("final");
+  const thirdPlace = knockoutBracket.round("thirdPlace");
   await expect(final.getByText("Projected result")).toBeVisible();
   await expect(thirdPlace.getByText("Projected result")).toBeVisible();
   await expect(final.getByText("Official result")).toHaveCount(0);
   await expect(thirdPlace.getByText("Official result")).toHaveCount(0);
 });
 
-test("Tournament page never shows sentinel team names", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page preserves provider-first stale topology regressions", async ({
+  tournamentPage,
+  knockoutBracket
+}) => {
+  await tournamentPage.goto();
 
-  await expect(page.getByText("Unknown Team")).toHaveCount(0);
-  await expect(page.getByText("Unavailable")).toHaveCount(0);
-  await expect(page.getByText("???")).toHaveCount(0);
+  for (const regression of Object.values(tournamentStaleTopologyRegressions)) {
+    await expect(knockoutBracket.matchesContaining(regression.teamA, regression.teamB)).toHaveCount(0);
+    await expect(tournamentPage.page.getByText(regression.forbiddenPairText, { exact: true })).toHaveCount(0);
+  }
+});
+
+test("Tournament page never shows sentinel team names", async ({ tournamentPage }) => {
+  await tournamentPage.goto();
+
+  for (const sentinelText of tournamentSentinelTexts) {
+    await expect(tournamentPage.page.getByText(sentinelText)).toHaveCount(0);
+  }
 });
 
 test("Home tournament outlook shows a resolved projected podium without sentinels", async ({ page }) => {
@@ -154,54 +163,53 @@ test("Home tournament outlook shows a resolved projected podium without sentinel
 
   const outlook = page.locator("#home-tournament-outlook");
   await expect(outlook.getByText("Projected champion")).toBeVisible();
-  await expect(outlook.getByText("Unknown Team")).toHaveCount(0);
-  await expect(outlook.getByText("Unavailable")).toHaveCount(0);
-  await expect(outlook.getByText("???")).toHaveCount(0);
+
+  for (const sentinelText of tournamentSentinelTexts) {
+    await expect(outlook.getByText(sentinelText)).toHaveCount(0);
+  }
 });
 
-test("Tournament page surfaces TeamIdentity flags in bracket and podium summaries", async ({ page }) => {
-  await page.goto("/tournament");
+test("Tournament page surfaces TeamIdentity flags in bracket and podium summaries", async ({
+  championOutlook,
+  knockoutBracket,
+  tournamentPage
+}) => {
+  await tournamentPage.goto();
 
-  await expect(page.locator("#tournament-champion-outlook img").first()).toBeVisible();
-  await expect(page.locator("#tournament-bracket img").first()).toBeVisible();
+  await expect(championOutlook.root.locator("img").first()).toBeVisible();
+  await expect(knockoutBracket.root.locator("img").first()).toBeVisible();
 });
 
-test("Technical disclosure is collapsed by default", async ({ page }) => {
-  await page.goto("/tournament");
+test("Technical disclosure is collapsed by default", async ({ tournamentPage }) => {
+  await tournamentPage.goto();
 
-  const disclosure = page.locator("details").filter({ hasText: "Technical/provenance disclosure" });
-  await expect(disclosure).toBeVisible();
-  await expect(disclosure).not.toHaveAttribute("open");
+  await expect(tournamentPage.technicalDisclosure).toBeVisible();
+  await expect(tournamentPage.technicalDisclosure).not.toHaveAttribute("open");
 });
 
-test("Home tournament CTA still routes to /tournament", async ({ page }) => {
+test("Home tournament CTA still routes to /tournament", async ({ page, tournamentPage }) => {
   await page.goto("/");
 
   await page.getByRole("link", { name: "View tournament", exact: true }).click();
   await expect(page).toHaveURL("/tournament");
-  await expect(page.getByRole("heading", { name: "Tournament", exact: true })).toBeVisible();
+  await expect(tournamentPage.titleHeading).toBeVisible();
 });
 
-for (const viewport of REQUIRED_VIEWPORTS) {
-  test(`Tournament page has no horizontal overflow at ${viewport.width}x${viewport.height}`, async ({ page }) => {
-    await page.setViewportSize(viewport);
-    await page.goto("/tournament");
+for (const viewport of tournamentViewports) {
+  test(`Tournament page has no horizontal overflow at ${viewport.width}x${viewport.height}`, async ({
+    tournamentPage
+  }) => {
+    await tournamentPage.page.setViewportSize(viewport);
+    await tournamentPage.goto();
 
-    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
-      scrollWidth: document.documentElement.scrollWidth,
-      clientWidth: document.documentElement.clientWidth
-    }));
-
-    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+    await tournamentPage.expectNoHorizontalOverflow();
   });
 }
 
-test("Mobile round navigation remains usable", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/tournament");
+test("Mobile round navigation remains usable", async ({ tournamentFlow, tournamentPage }) => {
+  await tournamentPage.page.setViewportSize({ width: 390, height: 844 });
+  await tournamentFlow.openRound("final");
 
-  const nav = page.getByRole("navigation", { name: "Tournament round navigation" });
-  await expect(nav).toBeVisible();
-  await nav.getByRole("link", { name: "Final", exact: true }).click();
-  await expect(page.locator("section#tournament-final")).toBeInViewport();
+  await expect(tournamentPage.roundNavigation).toBeVisible();
+  await expect(tournamentPage.getRoundSection("final")).toBeInViewport();
 });

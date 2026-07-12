@@ -2,7 +2,7 @@
 
 ## Goals
 
-This architecture starts the E2E suite migration from large spec-local helper blocks toward a scalable Senior SDET-style framework. The first reference implementation is `apps/web/tests/e2e/match-simulation.spec.ts` because it covers route navigation, scheduled fixtures, custom team selection, Auto Predict, stale-result reset behavior, accessibility interactions, and mobile overflow.
+This architecture starts the E2E suite migration from large spec-local helper blocks toward a scalable Senior SDET-style framework. The first reference implementation is `apps/web/tests/e2e/match-simulation.spec.ts` because it covers route navigation, scheduled fixtures, custom team selection, Auto Predict, stale-result reset behavior, accessibility interactions, and mobile overflow. The second reference implementation is `apps/web/tests/e2e/tournament.spec.ts` because it covers provider-first knockout regressions, bracket scoping, round navigation, podium state, provenance disclosure, accessibility, and responsive behavior.
 
 The goal is not to wrap every Playwright call. The goal is to move stable interaction ownership into focused objects while keeping business assertions visible in specs.
 
@@ -11,17 +11,24 @@ The goal is not to wrap every Playwright call. The goal is to move stable intera
 ```text
 apps/web/tests/
 ├── components/
-│   └── searchable-team-select.component.ts
+│   ├── champion-outlook.component.ts
+│   ├── knockout-bracket.component.ts
+│   ├── searchable-team-select.component.ts
+│   └── tournament-round-nav.component.ts
 ├── data/
-│   └── prediction-test-data.ts
+│   ├── prediction-test-data.ts
+│   └── tournament-test-data.ts
 ├── e2e/
-│   └── match-simulation.spec.ts
+│   ├── match-simulation.spec.ts
+│   └── tournament.spec.ts
 ├── fixtures/
 │   └── test.fixture.ts
 ├── flows/
-│   └── prediction.flow.ts
+│   ├── prediction.flow.ts
+│   └── tournament.flow.ts
 └── pages/
-    └── predictions.page.ts
+    ├── predictions.page.ts
+    └── tournament.page.ts
 ```
 
 Future specs should reuse these folders instead of creating parallel helper directories.
@@ -29,6 +36,8 @@ Future specs should reuse these folders instead of creating parallel helper dire
 ## Page Objects
 
 Page Objects represent route-level capabilities. `PredictionsPage` owns navigation to `/predictions`, route-level controls, result-region accessors, preset buttons, scheduled fixture controls, and route-level technical helpers such as horizontal overflow checks.
+
+`TournamentPage` owns navigation to `/tournament`, route-level heading and navigation locators, champion-outlook and knockout-bracket regions, technical disclosure access, round-section lookup, match-card lookup by official match number, and route-level technical helpers such as horizontal overflow checks.
 
 Page Objects should:
 
@@ -52,9 +61,19 @@ The component preserves the CI stability behavior required by the production `Se
 
 Component Objects may include technical waits or assertions only when needed to complete a safe interaction, such as waiting for the listbox to be visible before selecting an option.
 
+Tournament component objects follow the same rule:
+
+- `KnockoutBracket` scopes fixture-card lookup to the bracket region and exposes match cards, per-round fixture cards, team-name lookup, status badges, and pair containment helpers.
+- `TournamentRoundNav` owns the horizontal round navigation links and navigation action, while specs assert which section is visible or active.
+- `ChampionOutlook` exposes podium labels and official/projected resolution badges without deciding whether the podium is correct.
+
+Match-card scoping is preferred for provider-first regressions. For example, the spec asks the bracket for cards containing `Canada` and `Norway` and asserts the count is zero; the component object does not hide that business verdict.
+
 ## Flows
 
 Flows model business workflows by composing Page Objects and Component Objects. `PredictionFlow` owns common setup paths such as selecting custom teams, running manual predictions, running Auto Predict, and running scheduled fixture predictions.
+
+`TournamentFlow` owns reusable setup/navigation sequences such as opening `/tournament`, moving to a specific round through the round navigation, and opening the technical provenance disclosure. It does not assert team names, official/projected status, podium correctness, or provider-first behavior.
 
 Flows should:
 
@@ -77,6 +96,11 @@ Flows should not:
 - `homeTeamSelect`
 - `awayTeamSelect`
 - `predictionFlow`
+- `tournamentPage`
+- `knockoutBracket`
+- `tournamentRoundNav`
+- `championOutlook`
+- `tournamentFlow`
 
 Specs import `test` and `expect` from this fixture file. Each fixture is created per test from the current `page`, so the pattern remains parallel-safe and worker-safe. Do not add mutable module-level state to fixtures.
 
@@ -99,6 +123,8 @@ Avoid:
 ## Assertion Policy
 
 Business assertions stay in spec files. Examples include result headings, probability cards, confidence text, stale-result clearing, accessibility behavior, and mobile overflow expectations.
+
+Tournament business assertions also stay in `tournament.spec.ts`: correct fixture teams, stale topology absence, official/projected/live labels, podium resolution state, sentinel absence, technical disclosure behavior, and responsive overflow.
 
 Page and Component Objects may expose locators or state accessors to make assertions readable:
 
